@@ -1,11 +1,14 @@
-FROM tomcat:10.1-jdk17
+# Use Tomcat 9 (suitable for javax.servlet.*)
+FROM tomcat:9.0-jdk17-temurin
 
-# Remove default ROOT app
+# Remove the default ROOT application
 RUN rm -rf /usr/local/tomcat/webapps/ROOT
 
-# Copy your WAR into Tomcat's webapps folder
+# Copy your WAR file into Tomcat's webapps folder
 COPY PInventory.war /usr/local/tomcat/webapps/ROOT.war
 
+# Expose the Railway port
 EXPOSE 8080
 
-CMD ["sh", "-c", "catalina.sh run -Dport=$PORT"]
+# Start Tomcat — note: Railway sets PORT env var automatically
+CMD ["sh", "-c", "catalina.sh run"]
