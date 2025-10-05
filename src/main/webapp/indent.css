@@ -1,0 +1,208 @@
+/* =======================
+   Global Page Layout
+======================= */
+body {
+    font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin: 25px 0 15px 0;
+    font-size: 32px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* =======================
+   Toolbar (Search + Actions)
+======================= */
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 80%;
+    margin: 20px auto;
+    padding: 12px 18px;
+    border-radius: 12px;
+}
+
+.toolbar input[type="text"] {
+    flex: 1;
+    margin-right: 15px;
+    padding: 10px 14px;
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    outline: none;
+    font-size: 20px;
+    transition: all 0.3s ease;
+}
+.toolbar input[type="text"]:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 8px rgba(52,152,219,0.3);
+}
+
+.toolbar button {
+    padding: 10px 18px;
+    background: linear-gradient(90deg, #3498db, #2c80b4);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+.toolbar button:hover {
+    background: linear-gradient(90deg, #2980b9, #21618c);
+    transform: translateY(-2px);
+    border: 2px solid #F57C0C;
+}
+
+/* =======================
+   Table Styling
+======================= */
+table {
+    border-collapse: collapse;
+    width: auto;
+    margin: 10px auto;
+    background: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    padding: 8px 8px;
+    text-align: center;
+    font-size: 14px;
+}
+
+th {
+    background: linear-gradient(90deg, #34495e, #2c3e50);
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+tr:nth-child(even) {
+    background: #f8faff;
+}
+
+tr:hover {
+    background: #f1f6fc;
+    transition: background 0.3s ease;
+}
+
+/* =======================
+   Buttons & Links (Global)
+======================= */
+input.btn,
+input.btn-red,
+input.btn-green,
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    font-size: 16px;
+    margin-left: 10px;
+    
+}
+
+input[type="submit"],
+input[type="button"],
+input[type="reset"] {
+    background: #3498db;
+    
+}
+input[type="submit"]:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover {
+    background: #2980b9;
+    
+}
+
+.btn-red { background: #e74c3c; }
+.btn-green { background: #008080; }
+
+/* Table Action Buttons */
+a,
+button {
+    padding: 7px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+/* Action Colors */
+a.delete {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+a.delete:hover {
+    background: linear-gradient(90deg, #c0392b, #922b21);
+    transform: translateY(-2px);
+}
+
+a.approve,
+.approve {
+    background: linear-gradient(90deg, #27ae60, #1e8449);
+}
+a.approve:hover,
+.approve:hover {
+    background: linear-gradient(90deg, #1e8449, #145a32);
+    transform: translateY(-2px);
+}
+
+a.edit {
+    background: linear-gradient(90deg, #2980b9, #1f6391);
+}
+a.edit:hover {
+    background: linear-gradient(90deg, #1f6391, #154360);
+    transform: translateY(-2px);
+}
+
+button.Iapprove {
+    background: linear-gradient(90deg, #16a085, #12876b);
+}
+button.Iapprove:hover {
+    background: linear-gradient(90deg, #12876b, #0e6655);
+    transform: translateY(-2px);
+}
+
+/* =======================
+   Status Labels
+======================= */
+span {
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    display: inline-block;
+    text-transform: capitalize;
+}
+
+span[style*="green"] {
+    background: #eafaf1;
+    color: #27ae60;
+    border: 1px solid #27ae60;
+}
+
+span[style*="red"] {
+    background: #fdecea;
+    color: #e74c3c;
+    border: 1px solid #e74c3c;
+}

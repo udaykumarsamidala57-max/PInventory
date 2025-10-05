@@ -1,0 +1,7 @@
+INDEX VERSION 1.4+C:\Users\srsad\eclipse-workspace\PInventory\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+1006020563.index
+2507657867.index
+2859196214.index
+1359826320.index
+399874394.index
+816783369.index
