@@ -1,99 +1,116 @@
-/* Main content */
+/* ====== General Page Styling ====== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(120deg, #eef2f7, #f9fbfd);
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+    transition: background 0.4s ease-in-out;
+}
+
+/* ====== Main Layout ====== */
 .main-content {
     margin-left: 240px;
     margin-top: 70px;
-    padding: 50px 0;
+    padding: 60px 0;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
     min-height: calc(100vh - 140px);
-    background: linear-gradient(135deg, #f7f9fc, #eef2f7);
+    background: linear-gradient(135deg, #f8faff, #eef3fb);
 }
 
-/* Card - elegant glass effect */
+/* ====== Elegant Card ====== */
 .card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 35px;
-    width: 80%;
-    max-width: 900px;
-    margin: 25px auto;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.97);
+    border-radius: 18px;
+    padding: 45px;
+    width: 85%;
+    max-width: 950px;
+    margin: 30px auto;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
     backdrop-filter: blur(8px);
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+.card::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at center, rgba(108,92,231,0.08), transparent 70%);
+    transform: rotate(25deg);
 }
 .card:hover {
     transform: translateY(-6px);
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
 }
 
-/* Headings */
+/* ====== Headings ====== */
 h2 {
-    font-size: 24px;
+    font-size: 26px;
     font-weight: 700;
     color: #2d3436;
-    margin-bottom: 25px;
-    border-left: 5px solid #6c5ce7;
+    margin-bottom: 30px;
+    border-left: 6px solid #6c5ce7;
     padding-left: 12px;
-    text-align: center;
     letter-spacing: 0.6px;
+    text-transform: uppercase;
 }
 
-/* Input and Form Styling */
+/* ====== Form Inputs ====== */
 form {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 18px;
     align-items: center;
+    gap: 16px;
+}
+
+label {
+    font-weight: 600;
+    font-size: 15px;
+    color: #333;
+    display: block;
+    margin-bottom: 5px;
 }
 
 input[type="text"],
 input[type="number"],
-input[type="email"],
-input[type="password"],
 input[type="date"],
-select,
-textarea {
+select {
     width: 90%;
     max-width: 600px;
-    padding: 12px 16px;
+    padding: 12px 14px;
     border: 1px solid #dcdfe6;
     border-radius: 10px;
-    background: #ffffff;
     font-size: 15px;
     color: #333;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
     outline: none;
     transition: all 0.25s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
 input:focus,
-select:focus,
-textarea:focus {
+select:focus {
     border-color: #6c5ce7;
     box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
 }
 
-label {
-    width: 90%;
-    max-width: 600px;
-    font-weight: 600;
-    font-size: 15px;
-    color: #444;
-    margin-bottom: -10px;
-}
-
-/* Table */
+/* ====== Table Styling ====== */
 table.main-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 16px;
+    margin-top: 20px;
+    background: #fff;
     border-radius: 14px;
     overflow: hidden;
-    background: #ffffff;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
 }
 
 table.main-table thead {
@@ -102,37 +119,40 @@ table.main-table thead {
 }
 table.main-table thead th {
     padding: 14px 10px;
-    text-align: center;
     font-weight: 600;
-    font-size: 16px;
+    font-size: 15px;
+    text-transform: uppercase;
     letter-spacing: 0.3px;
 }
+
 table.main-table tbody td {
     padding: 14px;
     border-bottom: 1px solid #f1f1f1;
     text-align: center;
     color: #555;
+    transition: all 0.25s ease;
 }
 table.main-table tbody tr:hover {
-    background: #f8f8ff;
+    background: #f9f9ff;
+    transform: scale(1.005);
 }
 
-/* Button container */
+/* ====== Button Container ====== */
 .btn-container {
     text-align: center;
-    margin: 25px 0;
+    margin: 30px 0;
 }
 
-/* Buttons */
+/* ====== Buttons ====== */
 .btn {
-    padding: 10px 18px;
+    padding: 10px 20px;
     border: none;
     border-radius: 12px;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.25s ease;
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 0.5px;
+    transition: all 0.25s ease;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
@@ -145,15 +165,6 @@ table.main-table tbody tr:hover {
     transform: translateY(-2px);
 }
 
-.btn-red {
-    background: linear-gradient(135deg, #e74c3c, #ff7675);
-    color: #fff;
-}
-.btn-red:hover {
-    background: linear-gradient(135deg, #c0392b, #e74c3c);
-    transform: translateY(-2px);
-}
-
 .btn-info {
     background: linear-gradient(135deg, #3498db, #2980b9);
     color: #fff;
@@ -163,12 +174,60 @@ table.main-table tbody tr:hover {
     transform: translateY(-2px);
 }
 
-/* Error message */
+.btn-red {
+    background: linear-gradient(135deg, #e74c3c, #ff7675);
+    color: #fff;
+}
+.btn-red:hover {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    transform: translateY(-2px);
+}
+
+/* ====== Error Message ====== */
 .error-msg {
     color: #e74c3c;
     text-align: center;
     font-weight: 600;
-    margin: 15px 0;
+    margin: 20px 0;
     font-size: 15px;
     letter-spacing: 0.4px;
+}
+
+/* ====== Responsive Design ====== */
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 40px 15px;
+    }
+    .card {
+        width: 95%;
+        padding: 25px;
+    }
+    h2 {
+        font-size: 22px;
+    }
+    table.main-table thead {
+        display: none;
+    }
+    table.main-table, table.main-table tbody, table.main-table tr, table.main-table td {
+        display: block;
+        width: 100%;
+    }
+    table.main-table tr {
+        margin-bottom: 15px;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+    table.main-table td {
+        text-align: left;
+        padding: 10px 15px;
+        position: relative;
+    }
+    table.main-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6c5ce7;
+        display: block;
+        margin-bottom: 5px;
+    }
 }

@@ -1,134 +1,24 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
     HttpSession sess = request.getSession(false);
-    if (sess == null || sess.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
+   if (sess == null || sess.getAttribute("username") == null) {
+       response.sendRedirect("login.jsp");
         return;
-    }
-    String user  = (String) sess.getAttribute("username");
-    String role  = (String) sess.getAttribute("role");
+   }
+  String user  = (String) sess.getAttribute("username");
+   String role  = (String) sess.getAttribute("role");
 %>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SRS System - Indent List</title>
-
-<!-- ✅ Font & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- ✅ External Form Styles -->
-<link rel="stylesheet" href="CSS/Form.css">
-
-<!-- ✅ Internal Page Styles -->
-<style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background-color: #f4f6f9;
-        margin: 0;
-        padding: 0;
-    }
-
-    .main-content {
-        width: 90%;
-        margin: 60px auto;
-        max-width: 1000px;
-    }
-
-    .card {
-        background: #fff;
-        border-radius: 15px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        padding: 30px;
-    }
-
-    h2 {
-        color: #333;
-        font-weight: 600;
-        margin-bottom: 20px;
-    }
-
-    .main-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 25px;
-    }
-
-    .main-table th, .main-table td {
-        padding: 10px 12px;
-        border: 1px solid #ddd;
-        text-align: left;
-        vertical-align: middle;
-    }
-
-    .main-table th {
-        background-color: #e8f0fe;
-        color: #333;
-    }
-
-    select, input[type="text"], input[type="number"], input[type="date"] {
-        width: 95%;
-        padding: 7px;
-        border-radius: 6px;
-        border: 1px solid #ccc;
-        font-size: 14px;
-        outline: none;
-    }
-
-    select:focus, input:focus {
-        border-color: #007bff;
-        box-shadow: 0 0 5px rgba(0,123,255,0.3);
-    }
-
-    .btn {
-        padding: 8px 14px;
-        border-radius: 6px;
-        font-weight: 500;
-        font-size: 14px;
-        cursor: pointer;
-        border: none;
-        transition: 0.2s ease-in-out;
-    }
-
-    .btn-info {
-        background-color: #007bff;
-        color: #fff;
-    }
-
-    .btn-info:hover {
-        background-color: #0056b3;
-    }
-
-    .btn-green {
-        background-color: #28a745;
-        color: white;
-    }
-
-    .btn-green:hover {
-        background-color: #1e7e34;
-    }
-
-    .btn-red {
-        background-color: #dc3545;
-        color: #fff;
-    }
-
-    .btn-red:hover {
-        background-color: #b02a37;
-    }
-
-    p {
-        margin-top: 10px;
-        font-weight: 500;
-    }
-
-    p[style*="color:red"] {
-        color: #d9534f !important;
-    }
-</style>
-
+    <title>SRS System - Indent List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="CSS/Form.css">
+<title>Create Indent</title>
 <script>
     var department   = [];
     <c:forEach var="d" items="${masterData.departments}">
@@ -161,30 +51,24 @@
 <body>
 
 <%@ include file="header.jsp" %>
-<center>
-<br><br><br>
+<center></br></br></br>
 <div class="main-content">
-<div class="card">
-
+        <div class="card">
 <h2 align="center">Create Indent</h2>
 
+<table class="main-table">
 <form action="IndentServlet" method="post" id="indentForm">
    <table class="main-table">
-      <tr>
-         <td><label>Indent No:</label></td>
-         <td><input type="text" name="indentNumber" value="${nextIndentNo}" readonly></td>
-      </tr>
-      <tr>
-         <td><label>Date:</label></td>
-         <td><input type="date" name="date" required></td>
-      </tr>
-      <tr>
-         <td><label>Department:</label></td>
-         <td><select name="department" id="departmentSelect"></select></td>
-      </tr>
+      <tr><td><label>Indent No:</label></td>
+          <td><input type="text" name="indentNumber" value="${nextIndentNo}" readonly></td></tr>
+      <tr><td><label>Date:</label></td>
+          <td><input type="date" name="date" required></td></tr>
+      <tr><td><label>Department:</label></td>
+          <td><select name="department" id="departmentSelect"></select></td></tr>
    </table>
 
-   <table id="itemsTable" class="main-table">
+   <!-- Items table -->
+   <table border="1" id="itemsTable" class="main-table">
    <thead>
    <tr>
        <th>Category</th>
@@ -204,13 +88,14 @@
        <input type="submit" class="btn btn-green" value="Save Indent">
    </center>
 
-   <!-- Hidden fields -->
+   <!-- ✅ Hidden fields placed here -->
    <input type="hidden" name="itemIds">
    <input type="hidden" name="itemNames">
    <input type="hidden" name="quantities">
    <input type="hidden" name="purposes">
    <input type="hidden" name="uoms">
 </form>
+
 
 <script>
 function populateDepartments() {
@@ -267,7 +152,7 @@ function fillCategories(catSel, subSel, itemSel, uomCell) {
                 let o = document.createElement('option');
                 o.value = i.name;
                 o.text = i.name;
-                o.dataset.id = i.id;
+                o.dataset.id = i.id;      // ✅ attach item id
                 o.dataset.uom = i.UOM;
                 itemSel.add(o);
             });
@@ -282,6 +167,7 @@ function fillCategories(catSel, subSel, itemSel, uomCell) {
     catSel.onchange();
 }
 
+// collect data before submit
 document.getElementById('indentForm').onsubmit = function() {
     const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
     document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
@@ -304,10 +190,9 @@ document.getElementById('indentForm').onsubmit = function() {
 <c:if test="${not empty message}">
     <p style="color:red;">${message}</p>
 </c:if>
-
-</div>
 </div>
 <%@ include file="Footer.jsp" %>
-</center>
+
+
 </body>
 </html>
