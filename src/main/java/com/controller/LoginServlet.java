@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
+import com.bean.DBUtil;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
@@ -37,7 +37,7 @@ public class LoginServlet extends HttpServlet {
 
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost:3306/inventory", "root", "Udaysrs@1959");
+            con = DBUtil.getConnection();
 
             ps = con.prepareStatement("SELECT role,department FROM users WHERE username=? AND password=?");
             ps.setString(1, uname);
