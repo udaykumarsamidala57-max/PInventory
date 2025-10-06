@@ -6,10 +6,11 @@ import java.sql.SQLException;
 
 public class DBUtil {
 
-    private static final String URL = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory";
+	private static final String URL = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
 
     private static final String USER = "root";
     private static final String PASSWORD = "AUJrxXyvLxTXfsPDXMnFTTgpLcOaewkO";
+    
 
     static {
         try {
