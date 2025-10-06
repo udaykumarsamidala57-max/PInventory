@@ -36,9 +36,26 @@ public class IssueServlet extends HttpServlet {
                 int itemId = Integer.parseInt(itemIds[i].trim());
                 double qtyIssued = Double.parseDouble(quantities[i].trim());
 
-                // === Insert into stock_issues (issue_id auto-incremented) ===
+                // === Check available qty ===
+                double available = 0;
+                String sqlCheck = "SELECT balance_qty FROM stock WHERE item_id=?";
+                try (PreparedStatement ps = con.prepareStatement(sqlCheck)) {
+                    ps.setInt(1, itemId);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            available = rs.getDouble("balance_qty");
+                        }
+                    }
+                }
+
+                if (qtyIssued > available) {
+                    throw new Exception("Insufficient stock for Item ID " + itemId +
+                            ". Available: " + available + ", Requested: " + qtyIssued);
+                }
+
+                // === Insert into stock_issues ===
                 String sqlIssue = "INSERT INTO stock_issues (issueno, item_id, issued_to, qty_issued, remarks) " +
-                                  "VALUES (?, ?, ?, ?, ?)";
+                        "VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement ps = con.prepareStatement(sqlIssue)) {
                     ps.setString(1, issueno);
                     ps.setInt(2, itemId);
@@ -106,10 +123,13 @@ public class IssueServlet extends HttpServlet {
                 }
             }
 
-            // === Load Items (with category & subcategory) ===
+            // === Load Items with available balance ===
             List<Map<String, String>> items = new ArrayList<>();
             try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT Item_id, Item_name, UOM, Category, Sub_Category FROM item_master")) {
+                    "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
+                            "COALESCE(s.balance_qty,0) AS available_qty " +
+                            "FROM item_master im " +
+                            "LEFT JOIN stock s ON im.Item_id = s.item_id")) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, String> i = new HashMap<>();
@@ -118,6 +138,7 @@ public class IssueServlet extends HttpServlet {
                         i.put("UOM", rs.getString("UOM"));
                         i.put("category", rs.getString("Category"));
                         i.put("subcategory", rs.getString("Sub_Category"));
+                        i.put("available", String.valueOf(rs.getDouble("available_qty")));
                         items.add(i);
                     }
                 }

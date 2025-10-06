@@ -43,10 +43,10 @@ public class GRNServlet extends HttpServlet {
                 }
             }
 
-            // --- Already received qty per item ---
+            // --- Already accepted qty per item ---
             Map<Integer, Integer> receivedMap = new HashMap<>();
             try (PreparedStatement psRec = con.prepareStatement(
-                "SELECT gi.po_item_id, SUM(gi.qty_received) AS rec " +
+                "SELECT gi.po_item_id, SUM(gi.qty_accepted) AS rec " +
                 "FROM grn_items gi JOIN grn_master gm ON gi.grn_id=gm.grn_id " +
                 "WHERE gm.po_id=? GROUP BY gi.po_item_id")) {
                 psRec.setInt(1, poId);
@@ -127,11 +127,11 @@ public class GRNServlet extends HttpServlet {
                 }
             }
 
-            // --- Fetch ordered qty + already received for validation ---
+            // --- Fetch ordered qty + already accepted for validation ---
             Map<Integer, Double> orderedMap = new HashMap<>();
             Map<Integer, Double> alreadyReceivedMap = new HashMap<>();
             try (PreparedStatement psItems = con.prepareStatement(
-                "SELECT pi.po_item_id, pi.qty, IFNULL(SUM(gi.qty_received),0) as rec " +
+                "SELECT pi.po_item_id, pi.qty, IFNULL(SUM(gi.qty_accepted),0) as rec " +
                 "FROM po_items pi " +
                 "LEFT JOIN grn_items gi ON pi.po_item_id=gi.po_item_id " +
                 "LEFT JOIN grn_master gm ON gi.grn_id=gm.grn_id " +
@@ -159,7 +159,7 @@ public class GRNServlet extends HttpServlet {
                     request.setAttribute("error",
                         "❌ Error: Accepted qty for PO Item " + poItemId +
                         " exceeds remaining balance. Ordered=" + orderedQty +
-                        ", Already Received=" + alreadyRec +
+                        ", Already Accepted=" + alreadyRec +
                         ", Remaining=" + remaining);
                     request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
                     return;
