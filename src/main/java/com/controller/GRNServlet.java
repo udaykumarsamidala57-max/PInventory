@@ -20,7 +20,7 @@ public class GRNServlet extends HttpServlet {
 
         String poNumber = request.getParameter("po_number");
         if (poNumber == null || poNumber.isEmpty()) {
-            request.getRequestDispatcher("PO/GRNForm.jsp").forward(request, response);
+            request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
             return;
         }
 
