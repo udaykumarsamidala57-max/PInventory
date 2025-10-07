@@ -68,7 +68,7 @@ public class AIndentListServlet extends HttpServlet {
 
         request.setAttribute("role", role);
         request.setAttribute("indents", list);
-        request.getRequestDispatcher("Indent/AIndentList.jsp").forward(request, response);
+        request.getRequestDispatcher("AIndentList.jsp").forward(request, response);
     }
 
     @Override
