@@ -74,7 +74,7 @@ public class IndentlistServlet extends HttpServlet {
 
         // Send data to JSP
         request.setAttribute("indents", list);
-        RequestDispatcher rd = request.getRequestDispatcher("indentList.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("Indent/indentList.jsp");
         rd.forward(request, response);
     }
 }

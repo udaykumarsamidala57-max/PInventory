@@ -264,6 +264,45 @@ public class GRNServlet extends HttpServlet {
                 }
             }
 
+            // --- Check if PO should be Closed or Partially Received ---
+            boolean allReceived = true;
+            boolean anyReceived = false;
+
+            try (PreparedStatement psCheck = con.prepareStatement(
+                "SELECT pi.qty AS ordered, IFNULL(SUM(gi.qty_accepted),0) AS received " +
+                "FROM po_items pi " +
+                "LEFT JOIN grn_items gi ON pi.po_item_id = gi.po_item_id " +
+                "LEFT JOIN grn_master gm ON gi.grn_id = gm.grn_id " +
+                "WHERE pi.po_id = ? " +
+                "GROUP BY pi.po_item_id, pi.qty")) {
+
+                psCheck.setInt(1, poId);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    while (rs.next()) {
+                        double ordered = rs.getDouble("ordered");
+                        double received = rs.getDouble("received");
+                        if (received > 0) anyReceived = true;
+                        if (received < ordered) {
+                            allReceived = false;
+                        }
+                    }
+                }
+            }
+
+            if (allReceived) {
+                try (PreparedStatement psClose = con.prepareStatement(
+                        "UPDATE po_master SET po_status='Closed' WHERE po_id=?")) {
+                    psClose.setInt(1, poId);
+                    psClose.executeUpdate();
+                }
+            } else if (anyReceived) {
+                try (PreparedStatement psPartial = con.prepareStatement(
+                        "UPDATE po_master SET po_status='Partially Received' WHERE po_id=?")) {
+                    psPartial.setInt(1, poId);
+                    psPartial.executeUpdate();
+                }
+            }
+
             con.commit();
             request.setAttribute("message", "✅ GRN Created Successfully. GRN No: " + grnNo);
 

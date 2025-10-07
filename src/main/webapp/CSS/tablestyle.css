@@ -123,34 +123,52 @@ h2 {
 }
 
 /* Modern Table */
-table.main-table {
-    width: 98%;
-            margin: 0 auto;
-            border-collapse: collapse;
-            border: 2px solid #b0c4de;
-            background: #fff;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            border-radius: 6px;
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px;
 }
 
-table.main-table thead {
-    background: linear-gradient(135deg, #4b6cb7, #182848);
+/* Modern orange-blue gradient header */
+/* ====== Table Header Gradient ====== */
+thead {
+    background: linear-gradient(135deg, #ff8c00, #8e2de2);
+
+}
+
+th {
     color: #fff;
-}
-table.main-table thead th {
-    padding: 12px;
-    text-align: center;
     font-weight: 600;
-    font-size: 13px;
-}
-table.main-table tbody td {
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
     text-align: center;
-    color: #555;
+    padding: 12px 10px;
+    border: none;
+    background: transparent; /* ensure gradient from thead applies fully */
 }
-table.main-table tbody tr:hover {
-    background: #f9f9ff;
+
+/* Subtle table hover and clean rows */
+td {
+    padding: 10px;
+    text-align: center;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    transition: background 0.3s ease;
+}
+
+tr:hover td {
+    background: rgba(0, 123, 255, 0.05);
+}
+
+/* ====== Scrollbar ====== */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #ff8c00, #007bff);
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #ff6a00, #0056d6);
 }
 
 /* Buttons */
