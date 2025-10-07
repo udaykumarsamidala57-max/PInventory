@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class DBUtil {
 
-	private static final String URL = "jdbc:mysql://mysql.railway.internal:3306/inventory";
+	private static final String URL = "mysql://root:vSZVibKCzvcovcGjaLlxrTddrjiNPVQn@mysql.railway.internal:3306/inventory";
 	private static final String USER = "root";
 	private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
     
