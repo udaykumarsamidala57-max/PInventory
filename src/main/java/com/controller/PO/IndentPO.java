@@ -1,4 +1,4 @@
-package com.controller;
+package com.controller.PO;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -63,7 +63,7 @@ public class IndentPO extends HttpServlet {
         	}
 
         request.setAttribute("indentList", indentList);
-        RequestDispatcher rd = request.getRequestDispatcher("IndentPO.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("PO/IndentPO.jsp");
         rd.forward(request, response);
     }
 }

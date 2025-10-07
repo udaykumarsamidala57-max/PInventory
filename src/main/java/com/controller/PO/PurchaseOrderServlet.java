@@ -89,7 +89,7 @@ public class PurchaseOrderServlet extends HttpServlet {
         request.setAttribute("vendorMap", vendorMap);
         request.setAttribute("nextPONumber", nextPONumber);
 
-        RequestDispatcher rd = request.getRequestDispatcher("PurchaseOrder.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("PO/PurchaseOrder.jsp");
         rd.forward(request, response);
     }
 
