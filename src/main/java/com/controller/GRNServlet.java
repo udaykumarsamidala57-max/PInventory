@@ -83,7 +83,7 @@ public class GRNServlet extends HttpServlet {
             request.setAttribute("vendorName", vendorName);
             request.setAttribute("items", itemList);
 
-            request.getRequestDispatcher("PO/GRNForm.jsp").forward(request, response);
+            request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
 
         } catch(Exception e) {
             throw new ServletException("DB Error: " + e.getMessage(), e);
@@ -161,7 +161,7 @@ public class GRNServlet extends HttpServlet {
                         " exceeds remaining balance. Ordered=" + orderedQty +
                         ", Already Accepted=" + alreadyRec +
                         ", Remaining=" + remaining);
-                    request.getRequestDispatcher("PO/GRNForm.jsp").forward(request, response);
+                    request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
                     return;
                 }
             }
