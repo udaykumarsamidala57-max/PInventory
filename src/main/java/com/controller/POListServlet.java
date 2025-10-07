@@ -45,7 +45,7 @@ public class POListServlet extends HttpServlet {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            response.sendRedirect("PO/POListServlet");
+            response.sendRedirect("POListServlet");
             return;
         }
 
@@ -125,7 +125,7 @@ public class POListServlet extends HttpServlet {
 
         // ✅ Forward PO list to JSP
         request.setAttribute("poList", poList);
-        RequestDispatcher rd = request.getRequestDispatcher("PO/POlist.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("POlist.jsp");
         rd.forward(request, response);
     }
 }

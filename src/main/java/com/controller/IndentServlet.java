@@ -114,7 +114,7 @@ public class IndentServlet extends HttpServlet {
             masterData.put("items", items);
 
             request.setAttribute("masterData", masterData);
-            request.getRequestDispatcher("Indent/indent.jsp").forward(request, response);
+            request.getRequestDispatcher("indent.jsp").forward(request, response);
 
         } catch (Exception e) {
             throw new ServletException("DB Error (GET): " + e.getMessage(), e);

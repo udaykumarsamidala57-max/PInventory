@@ -311,6 +311,6 @@ public class GRNServlet extends HttpServlet {
             request.setAttribute("error", "❌ Error: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("PO/GRNForm.jsp").forward(request, response);
+        request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
     }
 }

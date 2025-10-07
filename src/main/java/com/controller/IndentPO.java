@@ -63,7 +63,7 @@ public class IndentPO extends HttpServlet {
         	}
 
         request.setAttribute("indentList", indentList);
-        RequestDispatcher rd = request.getRequestDispatcher("PO/IndentPO.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("IndentPO.jsp");
         rd.forward(request, response);
     }
 }

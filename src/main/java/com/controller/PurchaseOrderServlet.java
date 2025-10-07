@@ -251,7 +251,7 @@ public class PurchaseOrderServlet extends HttpServlet {
             // =====================================================
             // STEP 5: REDIRECT
             // =====================================================
-            response.sendRedirect("PO/POListServlet");
+            response.sendRedirect("POListServlet");
 
         } catch (Exception e) {
             throw new ServletException("PO Creation Error: " + e.getMessage(), e);

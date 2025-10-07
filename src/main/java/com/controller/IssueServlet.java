@@ -96,7 +96,7 @@ public class IssueServlet extends HttpServlet {
             request.setAttribute("message", "❌ Error while issuing stock: " + e.getMessage());
         }
 
-        request.getRequestDispatcher("Issue/issue.jsp").forward(request, response);
+        request.getRequestDispatcher("issue.jsp").forward(request, response);
     }
 
     @Override
@@ -148,7 +148,7 @@ public class IssueServlet extends HttpServlet {
             request.setAttribute("categories", categories);
             request.setAttribute("items", items);
 
-            request.getRequestDispatcher("Issue/issue.jsp").forward(request, response);
+            request.getRequestDispatcher("issue.jsp").forward(request, response);
         } catch (Exception e) {
             throw new ServletException("DB Error (GET): " + e.getMessage(), e);
         }
