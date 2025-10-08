@@ -91,32 +91,7 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
 
 <form method="post" action="<%=request.getContextPath()%>/PurchaseOrderServlet">
     <!-- Indent Items -->
-    <table>
-        <tr>
-            <th>Sl No</th><th>Indent No</th><th>Item</th><th>Qty</th>
-            <th>Rate</th><th>Discount %</th><th>GST %</th>
-        </tr>
-        <%
-        int sl = 1;
-        if(indentList != null){
-            for(POItems item: indentList){
-        %>
-        <tr>
-            <td><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
-            <td><input type="text" name="indentNo" value="<%=item.getIndentNo()%>" readonly></td>
-            <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
-            <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
-            <td><input type="number" step="any" name="qty" value="<%=item.getQty()%>" readonly></td>
-
-            <td><input type="number" step="0.01" name="rate"></td>
-            <td><input type="number" step="0.01" name="discPercent"></td>
-            <td><input type="number" step="0.01" name="gstPercent"></td>
-        </tr>
-        <%
-            }
-        }
-        %>
-    </table>
+    
 
     <!-- Vendor & PO Details -->
     <table class="form-section">
@@ -168,6 +143,32 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
                 <input type="submit" value="Submit PO">
             </td>
         </tr>
+    </table>
+    <table>
+        <tr>
+            <th>Sl No</th><th>Indent No</th><th>Item</th><th>Qty</th>
+            <th>Rate</th><th>Discount %</th><th>GST %</th>
+        </tr>
+        <%
+        int sl = 1;
+        if(indentList != null){
+            for(POItems item: indentList){
+        %>
+        <tr>
+            <td><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
+            <td><input type="text" name="indentNo" value="<%=item.getIndentNo()%>" readonly></td>
+            <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
+            <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
+            <td><input type="number" step="any" name="qty" value="<%=item.getQty()%>" readonly></td>
+
+            <td><input type="number" step="0.01" name="rate"></td>
+            <td><input type="number" step="0.01" name="discPercent"></td>
+            <td><input type="number" step="0.01" name="gstPercent"></td>
+        </tr>
+        <%
+            }
+        }
+        %>
     </table>
 </form>
 
