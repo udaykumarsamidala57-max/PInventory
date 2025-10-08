@@ -7,7 +7,7 @@
 <!-- FOOTER -->
 <footer>
     <p>©<%= todayDate %> | SRS Inventory System | 
-   <i class="fas fa-leaf" style="color:green;"></i> Crafted with devotion 
+   <i class="fas fa-leaf" style="color:green;"></i> Professionally crafted
    <i class="fas fa-leaf" style="color:green;"></i> by Your Team
 </p>
 

@@ -6,15 +6,19 @@
 }
 
 body {
-    font-family: 'Inter', 'Poppins', sans-serif;
-    background: #f5f7fb;
-    color: #2d3436;
-    height: 100vh;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #dbe8ff 0%, #e6d7ff 25%, #ffd6e0 50%, #d9faff 100%);
+    color: #2c3e50;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    background-attachment: fixed;
+    transition: background 0.4s ease-in-out;
 }
 
 /* Header */
 header {
-    background: #ffffff;
+    background: white;
     padding: 0 30px;
     display: flex;
     justify-content: space-between;
