@@ -84,10 +84,8 @@ if (poNumber != null) {
 
     if (rsPO.next()) {
 %>
-
-    <h2>Sandur Residential School</h2>
-    <h6>Palace Road, Shivapur, Sandur 583119, Ballari (Dist.), Karnataka</h6>
-    <h6>(A Unit of Shivapur Shikshana Samiti, Affiliated to CISCE, New Delhi, School Code: KA071)</h6>
+<img src="Header.png" alt="School Logo">
+   
     <h6>Website: www.sandurschool.edu.in</h6>
     <h6>Email: srsadmin@sandurschool.com <span class="tab"></span> Ph: 08395-260246</h6>
 
