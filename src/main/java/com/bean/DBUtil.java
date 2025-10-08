@@ -6,13 +6,16 @@ import java.sql.SQLException;
 
 public class DBUtil {
 
-	private static final String URL =
-		    "http://shuttle.proxy.rlwy.net:26985";
+	private static final String URL = 
+		    "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory";
 
 
 	private static final String USER = "root";
 	private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
     
+
+
+
 
     static {
         try {
