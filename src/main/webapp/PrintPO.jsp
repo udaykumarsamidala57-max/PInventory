@@ -237,7 +237,7 @@ if (poNumber != null) {
        <b>Vendor Address:</b> <%= rsPO.getString("vendor_address") %></td>
     </tr>
 </table>
-
+<p>We are pleased to place our order the supply of below items on the terms and conditions mentioned below :</p>
 <%
     PreparedStatement pstItems = con.prepareStatement(
         "SELECT description, qty, rate, amount, discount_percent, discount_value, gst_percent, gst_value, net_amount " +

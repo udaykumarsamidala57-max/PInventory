@@ -34,7 +34,7 @@ public class IndentPO extends HttpServlet {
 
         List<IndentItems> indentList = new ArrayList<>();
 
-        String sql = "SELECT * FROM indent WHERE status = 'Approved' AND POStatus IS NULL ORDER BY indent_id DESC";
+        String sql = "SELECT * FROM indent WHERE status = 'Approved' AND POStatus IS NULL AND Indentnext = 'PO' ORDER BY indent_id DESC";
 
         try (Connection con = DBUtil.getConnection();
         	     PreparedStatement ps = con.prepareStatement(sql);

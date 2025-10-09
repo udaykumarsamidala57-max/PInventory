@@ -8,7 +8,7 @@ public class IndentItemFull {
     private Date date;
     private String itemName;
     private double qty;
-    private String uom;           // FIXED: Proper camelCase
+    private String uom;
     private String department;
     private String requestedBy;
     private String purpose;
@@ -16,8 +16,10 @@ public class IndentItemFull {
     private String istatus;
     private String approvedBy;
     private double balanceQty;
+    private Date Iapprovevdate;
+    private Date Fapprovevdate;
+    private String indentNext;
 
-    // Getters and setters
     public int getId() { return id; }
     public void setId(int id) { this.id = id; }
 
@@ -33,8 +35,8 @@ public class IndentItemFull {
     public double getQty() { return qty; }
     public void setQty(double qty) { this.qty = qty; }
 
-    public String getUom() { return uom; }           // FIXED getter
-    public void setUom(String uom) { this.uom = uom; } // FIXED setter
+    public String getUom() { return uom; }
+    public void setUom(String uom) { this.uom = uom; }
 
     public String getDepartment() { return department; }
     public void setDepartment(String department) { this.department = department; }
@@ -56,4 +58,13 @@ public class IndentItemFull {
 
     public double getBalanceQty() { return balanceQty; }
     public void setBalanceQty(double balanceQty) { this.balanceQty = balanceQty; }
+
+    public Date getIapprovevdate() { return Iapprovevdate; }
+    public void setIapprovevdate(Date Iapprovevdate) { this.Iapprovevdate = Iapprovevdate; }
+
+    public Date getFapprovevdate() { return Fapprovevdate; }
+    public void setFapprovevdate(Date Fapprovevdate) { this.Fapprovevdate = Fapprovevdate; }
+
+    public String getIndentNext() { return indentNext; }
+    public void setIndentNext(String indentNext) { this.indentNext = indentNext; }
 }

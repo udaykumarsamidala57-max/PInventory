@@ -13,6 +13,8 @@ public class Indentlist {
     private String requestedBy;
     private String purpose;
     private String status;
+    private java.sql.Date Iapprovevdate;
+    private java.sql.Date Fapprovevdate;
 
     // Getters and Setters
     public int getIndentId() { return indentId; }
@@ -44,4 +46,10 @@ public class Indentlist {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    
+    public Date getIapprovevdate() { return Iapprovevdate; }
+    public void setIapprovevdate(Date date) { this.Iapprovevdate = date; }
+
+    public Date getFapprovevdate() { return Fapprovevdate; }
+    public void setFapprovevdate(Date date) { this.Fapprovevdate = date; }
 }
