@@ -167,7 +167,7 @@ if (indentNumber != null) {
     ResultSet rs = pst.executeQuery();
 
     boolean hasRecords = false;
-    String indentDate = "", department = "", requestedBy = "", status = "", purpose = "";
+    String indentDate = "", department = "", requestedBy = "", status = "", purpose = "",Indentnext="";
 
     if (rs.next()) {
         hasRecords = true;
@@ -176,6 +176,7 @@ if (indentNumber != null) {
         requestedBy = rs.getString("requested_by");
         purpose = rs.getString("purpose");
         status = rs.getString("status");
+        
 %>
 
     <div class="indent-info">
@@ -222,8 +223,13 @@ if (indentNumber != null) {
 <%
     } else {
 %>
-        <div class="not-approved">
-            <p>NOT APPROVED</p>
+         <div class="footer">
+            <p>For SANDUR RESIDENTIAL SCHOOL</p>
+        </div>
+
+        <div class="sign">
+            
+            <p>Authorised Signatory</p>
         </div>
 <%
     }

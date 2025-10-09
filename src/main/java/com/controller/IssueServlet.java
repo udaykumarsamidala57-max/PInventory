@@ -13,144 +13,154 @@ public class IssueServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        String issueno = request.getParameter("issueno");
-        String issuedTo = request.getParameter("issuedTo");
-        String remarks = request.getParameter("remarks");
-
-        String[] itemIds = request.getParameter("itemIds").split(",");
-        String[] quantities = request.getParameter("quantities").split(",");
-
-        HttpSession sess = request.getSession(false);
-        if (sess == null || sess.getAttribute("username") == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
-
-        try (Connection con = DBUtil.getConnection()) {
-            con.setAutoCommit(false);
-
-            for (int i = 0; i < itemIds.length; i++) {
-                int itemId = Integer.parseInt(itemIds[i].trim());
-                double qtyIssued = Double.parseDouble(quantities[i].trim());
-
-                // === Check available qty ===
-                double available = 0;
-                String sqlCheck = "SELECT balance_qty FROM stock WHERE item_id=?";
-                try (PreparedStatement ps = con.prepareStatement(sqlCheck)) {
-                    ps.setInt(1, itemId);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            available = rs.getDouble("balance_qty");
-                        }
-                    }
-                }
-
-                if (qtyIssued > available) {
-                    throw new Exception("Insufficient stock for Item ID " + itemId +
-                            ". Available: " + available + ", Requested: " + qtyIssued);
-                }
-
-                // === Insert into stock_issues ===
-                String sqlIssue = "INSERT INTO stock_issues (issueno, item_id, issued_to, qty_issued, remarks) " +
-                        "VALUES (?, ?, ?, ?, ?)";
-                try (PreparedStatement ps = con.prepareStatement(sqlIssue)) {
-                    ps.setString(1, issueno);
-                    ps.setInt(2, itemId);
-                    ps.setString(3, issuedTo);
-                    ps.setDouble(4, qtyIssued);
-                    ps.setString(5, remarks);
-                    ps.executeUpdate();
-                }
-
-                // === Update stock table ===
-                String sqlUpdateStock = "UPDATE stock SET total_issued = total_issued + ?, " +
-                        "balance_qty = balance_qty - ?, last_updated = CURRENT_TIMESTAMP WHERE item_id = ?";
-                try (PreparedStatement ps = con.prepareStatement(sqlUpdateStock)) {
-                    ps.setDouble(1, qtyIssued);
-                    ps.setDouble(2, qtyIssued);
-                    ps.setInt(3, itemId);
-                    ps.executeUpdate();
-                }
-
-                // === Insert into stock_ledger ===
-                String sqlLedger = "INSERT INTO stock_ledger (item_id, trans_type, trans_id, qty, running_balance, remarks, trans_date) " +
-                        "VALUES (?, 'ISSUE', ?, ?, " +
-                        "(SELECT balance_qty FROM stock WHERE item_id = ?), ?, NOW())";
-                try (PreparedStatement ps = con.prepareStatement(sqlLedger)) {
-                    ps.setInt(1, itemId);
-                    ps.setString(2, issueno);
-                    ps.setDouble(3, qtyIssued);
-                    ps.setInt(4, itemId);
-                    ps.setString(5, remarks);
-                    ps.executeUpdate();
-                }
-            }
-
-            con.commit();
-            request.setAttribute("message", "✅ Stock issued successfully under Issue No: " + issueno);
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("message", "❌ Error while issuing stock: " + e.getMessage());
-        }
-
-        request.getRequestDispatcher("issue.jsp").forward(request, response);
-    }
-
-    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         try (Connection con = DBUtil.getConnection()) {
-            // === Load next Issue No ===
             String nextNo = "1";
-            String sql = "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues";
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues");
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) nextNo = rs.getString("next_no");
+            }
+
+            // ✅ Load only indents whose Indentnext='Issue' and not yet issued
+            List<Map<String, Object>> indentList = new ArrayList<>();
+            String sql = """
+                SELECT indent_id, indent_no, requested_by, department, item_id, item_name,
+                       qty, UOM, purpose, remarks
+                FROM indent
+                WHERE status='Approved' 
+                  AND Indentnext='Issue' 
+                  AND (Issued_status IS NULL OR Issued_status='Pending')
+                ORDER BY indent_id DESC
+            """;
             try (PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    nextNo = rs.getString("next_no");
-                }
-            }
-
-            // === Load Active Categories ===
-            List<String> categories = new ArrayList<>();
-            try (PreparedStatement ps = con.prepareStatement("SELECT DISTINCT Category FROM item_master");
-                 ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    categories.add(rs.getString("Category"));
-                }
-            }
-
-            // === Load Items with available balance ===
-            List<Map<String, String>> items = new ArrayList<>();
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
-                            "COALESCE(s.balance_qty,0) AS available_qty " +
-                            "FROM item_master im " +
-                            "LEFT JOIN stock s ON im.Item_id = s.item_id")) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        Map<String, String> i = new HashMap<>();
-                        i.put("id", String.valueOf(rs.getInt("Item_id")));
-                        i.put("name", rs.getString("Item_name"));
-                        i.put("UOM", rs.getString("UOM"));
-                        i.put("category", rs.getString("Category"));
-                        i.put("subcategory", rs.getString("Sub_Category"));
-                        i.put("available", String.valueOf(rs.getDouble("available_qty")));
-                        items.add(i);
-                    }
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    row.put("indent_id", rs.getInt("indent_id"));
+                    row.put("indent_no", rs.getString("indent_no"));
+                    row.put("requested_by", rs.getString("requested_by"));
+                    row.put("department", rs.getString("department"));
+                    row.put("item_id", rs.getInt("item_id"));
+                    row.put("item_name", rs.getString("item_name"));
+                    row.put("qty_requested", rs.getDouble("qty"));
+                    row.put("UOM", rs.getString("UOM"));
+                    row.put("purpose", rs.getString("purpose"));
+                    row.put("remarks", rs.getString("remarks"));
+                    indentList.add(row);
                 }
             }
 
             request.setAttribute("nextIssueNo", nextNo);
-            request.setAttribute("categories", categories);
-            request.setAttribute("items", items);
-
+            request.setAttribute("indentList", indentList);
             request.getRequestDispatcher("issue.jsp").forward(request, response);
+
         } catch (Exception e) {
             throw new ServletException("DB Error (GET): " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String indentId = request.getParameter("indentId");
+        String itemId = request.getParameter("itemId");
+        String qtyIssuedStr = request.getParameter("qtyIssued");
+
+        if (indentId == null || itemId == null || qtyIssuedStr == null || qtyIssuedStr.isEmpty()) {
+            request.setAttribute("message", "❌ Missing data for issue process!");
+            doGet(request, response);
+            return;
+        }
+
+        double qtyIssued = Double.parseDouble(qtyIssuedStr);
+        String issueno = "0";
+
+        try (Connection con = DBUtil.getConnection()) {
+            con.setAutoCommit(false);
+
+            // ✅ Get next issue number
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues");
+                 ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) issueno = rs.getString("next_no");
+            }
+
+            // ✅ Get issued_to (requested_by)
+            String issuedTo = "";
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT requested_by FROM indent WHERE indent_id=?")) {
+                ps.setString(1, indentId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) issuedTo = rs.getString("requested_by");
+                }
+            }
+
+            // ✅ Check available stock
+            double available = 0;
+            try (PreparedStatement ps = con.prepareStatement("SELECT balance_qty FROM stock WHERE item_id=?")) {
+                ps.setInt(1, Integer.parseInt(itemId));
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) available = rs.getDouble("balance_qty");
+                }
+            }
+
+            if (qtyIssued > available) {
+                throw new Exception("Insufficient stock! Available: " + available + ", Requested: " + qtyIssued);
+            }
+
+            // ✅ Insert into stock_issues
+            try (PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO stock_issues (issueno, item_id, issued_to, qty_issued, remarks, indent_id, issue_date) VALUES (?, ?, ?, ?, ?, ?, NOW())")) {
+                ps.setString(1, issueno);
+                ps.setInt(2, Integer.parseInt(itemId));
+                ps.setString(3, issuedTo);
+                ps.setDouble(4, qtyIssued);
+                ps.setString(5, "Issued against indent " + indentId);
+                ps.setString(6, indentId);
+                ps.executeUpdate();
+            }
+
+            // ✅ Update stock table
+            try (PreparedStatement ps = con.prepareStatement(
+                    "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ? WHERE item_id = ?")) {
+                ps.setDouble(1, qtyIssued);
+                ps.setDouble(2, qtyIssued);
+                ps.setInt(3, Integer.parseInt(itemId));
+                ps.executeUpdate();
+            }
+
+            // ✅ Update indent (Issued_qty, Issued_status, POStatus, and Indentnext)
+            try (PreparedStatement ps = con.prepareStatement(
+                    "UPDATE indent SET Issued_status='Issued', Issued_qty=?, POStatus='Completed', Indentnext='Issued' WHERE indent_id=?")) {
+                ps.setDouble(1, qtyIssued);
+                ps.setString(2, indentId);
+                ps.executeUpdate();
+            }
+
+            // ✅ Insert into stock_ledger
+            try (PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO stock_ledger (item_id, trans_type, trans_id, qty, running_balance, remarks, trans_date) "
+                            + "VALUES (?, 'ISSUE', ?, ?, (SELECT balance_qty FROM stock WHERE item_id=?), ?, NOW())")) {
+                ps.setInt(1, Integer.parseInt(itemId));
+                ps.setString(2, issueno);
+                ps.setDouble(3, qtyIssued);
+                ps.setInt(4, Integer.parseInt(itemId));
+                ps.setString(5, "Issue for indent " + indentId);
+                ps.executeUpdate();
+            }
+
+            con.commit();
+            request.setAttribute("message", "✅ Issued successfully! Indent ID: " + indentId);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("message", "❌ Error: " + e.getMessage());
+        }
+
+        doGet(request, response);
     }
 }

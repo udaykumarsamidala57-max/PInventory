@@ -52,7 +52,7 @@ public class PurchaseOrderServlet extends HttpServlet {
             if (selectedIds != null && selectedIds.length > 0) {
                 String placeholders = String.join(",", Collections.nCopies(selectedIds.length, "?"));
                 String sql = "SELECT indent_id, indent_no, item_id, item_name, qty FROM indent "
-                        + "WHERE status='Approved' AND indent_id IN (" + placeholders + ") ORDER BY indent_id DESC";
+                        + "WHERE Indentnext='PO' AND indent_id IN (" + placeholders + ") ORDER BY indent_id DESC";
                 PreparedStatement ps = con.prepareStatement(sql);
                 for (int i = 0; i < selectedIds.length; i++) {
                     ps.setString(i + 1, selectedIds[i]);

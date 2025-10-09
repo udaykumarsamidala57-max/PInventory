@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: "Segoe UI", Arial, sans-serif;
-            background: #f5f7fa;
+            background: linear-gradient(135deg, #dbe8ff 0%, #e6d7ff 25%, #ffd6e0 50%, #d9faff 100%);
             margin: 20px;
             color: #333;
         }
@@ -30,16 +30,25 @@
             border-collapse: collapse;
             margin-bottom: 25px;
         }
-        table th, table td {
+         table td {
             border: 1px solid #ddd;
             padding: 10px 12px;
             text-align: center;
-        }
-        table th {
-            background: #2c3e50;
-            color: #fff;
-            font-weight: 600;
-        }
+            
+            }
+      thead {
+    background: linear-gradient(135deg, #ff8c00, #8e2de2);
+
+}
+
+th {
+    color: #fff;
+    font-weight: 600;
+    text-align: center;
+    padding: 8px 8px;
+    border: none;
+    background: transparent; /* ensure gradient from thead applies fully */
+}
         table tr:nth-child(even) {
             background: #f9f9f9;
         }
@@ -138,16 +147,14 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             <td><strong>General Conditions:</strong></td>
             <td><textarea name="generalConditions"></textarea></td>
         </tr>
-        <tr>
-            <td colspan="2" style="text-align:center;">
-                <input type="submit" value="Submit PO">
-            </td>
-        </tr>
+        
     </table>
     <table>
         <tr>
+      <thead>
             <th>Sl No</th><th>Indent No</th><th>Item</th><th>Qty</th>
             <th>Rate</th><th>Discount %</th><th>GST %</th>
+            </thead>
         </tr>
         <%
         int sl = 1;
@@ -169,6 +176,11 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             }
         }
         %>
+        <tr>
+            <td colspan="7" style="text-align:center;">
+                <input type="submit" value="Submit PO">
+            </td>
+        </tr>
     </table>
 </form>
 

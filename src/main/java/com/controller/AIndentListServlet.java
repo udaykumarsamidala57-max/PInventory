@@ -27,9 +27,22 @@ public class AIndentListServlet extends HttpServlet {
         user = (String) sess.getAttribute("username");
         List<IndentItemFull> list = new ArrayList<>();
 
-        String sql = "SELECT i.*, s.balance_qty FROM indent i "
-                   + "LEFT JOIN stock s ON i.item_id = s.item_id "
-                   + "ORDER BY i.indent_id DESC";
+        // Map: item_id -> sum(qty) of approved indents already marked as Issue
+        Map<Integer, Double> pendingPerItem = new HashMap<>();
+        String pendingSql = "SELECT item_id, COALESCE(SUM(qty),0) AS pending_sum " +
+                "FROM indent WHERE Indentnext='Issue' AND status='Approved' GROUP BY item_id";
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(pendingSql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                pendingPerItem.put(rs.getInt("item_id"), rs.getDouble("pending_sum"));
+            }
+        } catch (Exception e) {
+            request.setAttribute("errorMsg", "DB Error (pending sums): " + e.getMessage());
+        }
+
+        String sql = "SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty " +
+                "FROM indent i LEFT JOIN stock s ON i.item_id = s.item_id ORDER BY i.indent_id DESC";
 
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
@@ -40,6 +53,7 @@ public class AIndentListServlet extends HttpServlet {
                 ind.setId(rs.getInt("indent_id"));
                 ind.setIndentNo(rs.getString("indent_no"));
                 ind.setDate(rs.getDate("indent_date"));
+                ind.setItemId(rs.getInt("item_id"));
                 ind.setItemName(rs.getString("item_name"));
                 ind.setQty(rs.getDouble("qty"));
                 ind.setBalanceQty(rs.getDouble("balance_qty"));
@@ -62,6 +76,7 @@ public class AIndentListServlet extends HttpServlet {
 
         request.setAttribute("role", role);
         request.setAttribute("indents", list);
+        request.setAttribute("pendingPerItem", pendingPerItem);
         request.getRequestDispatcher("AIndentList.jsp").forward(request, response);
     }
 
@@ -81,6 +96,7 @@ public class AIndentListServlet extends HttpServlet {
 
         try (Connection con = DBUtil.getConnection()) {
 
+            // In-charge approval
             if ("Iapprove".equalsIgnoreCase(action)) {
                 String sql = "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
@@ -92,16 +108,74 @@ public class AIndentListServlet extends HttpServlet {
                 }
 
             } else if ("approve".equalsIgnoreCase(action)) {
+
                 String indentnext = request.getParameter("indentnext");
                 if (indentnext == null || indentnext.trim().isEmpty()) indentnext = "Issue";
 
-                String sql = "UPDATE indent SET status='Approved', Fapprovedate=?, Indentnext=? WHERE indent_id=?";
-                try (PreparedStatement ps = con.prepareStatement(sql)) {
-                    java.sql.Date todayDate = new java.sql.Date(System.currentTimeMillis());
-                    ps.setDate(1, todayDate);
-                    ps.setString(2, indentnext);
-                    ps.setInt(3, id);
-                    ps.executeUpdate();
+                // Fetch item details
+                int itemId = 0;
+                double indentQty = 0;
+                double balanceQty = 0;
+                String itemSql = "SELECT i.item_id, i.qty, COALESCE(s.balance_qty,0) AS balance_qty " +
+                        "FROM indent i LEFT JOIN stock s ON i.item_id = s.item_id WHERE i.indent_id=?";
+                try (PreparedStatement ps = con.prepareStatement(itemSql)) {
+                    ps.setInt(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            itemId = rs.getInt("item_id");
+                            indentQty = rs.getDouble("qty");
+                            balanceQty = rs.getDouble("balance_qty");
+                        } else {
+                            request.setAttribute("errorMsg", "Indent not found.");
+                            doGet(request, response);
+                            return;
+                        }
+                    }
+                }
+
+                java.sql.Date todayDate = new java.sql.Date(System.currentTimeMillis());
+
+                if ("Issue".equalsIgnoreCase(indentnext)) {
+                    // Check if enough stock
+                    double sumIssuedIndents = 0;
+                    String sumSql = "SELECT COALESCE(SUM(qty),0) FROM indent " +
+                            "WHERE item_id=? AND Indentnext='Issue' AND status='Approved' AND indent_id<>?";
+                    try (PreparedStatement ps = con.prepareStatement(sumSql)) {
+                        ps.setInt(1, itemId);
+                        ps.setInt(2, id);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) sumIssuedIndents = rs.getDouble(1);
+                        }
+                    }
+
+                    double totalRequired = sumIssuedIndents + indentQty;
+                    if (totalRequired > balanceQty) {
+                        request.setAttribute("errorMsg",
+                                "Stock not available. Available: " + balanceQty +
+                                        ", Pending Issue Qty: " + sumIssuedIndents +
+                                        ", Requested: " + indentQty);
+                        doGet(request, response);
+                        return;
+                    }
+
+                    // Enough stock → approve and set Issue
+                    String sql = "UPDATE indent SET status='Approved', Fapprovedate=?, Indentnext=? WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(sql)) {
+                        ps.setDate(1, todayDate);
+                        ps.setString(2, "Issue");
+                        ps.setInt(3, id);
+                        ps.executeUpdate();
+                    }
+
+                } else {
+                    // PO or Management Note → update Indentnext only, no status change
+                    String sql = "UPDATE indent SET Indentnext=?, Fapprovedate=? WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(sql)) {
+                        ps.setString(1, indentnext);
+                        ps.setDate(2, todayDate);
+                        ps.setInt(3, id);
+                        ps.executeUpdate();
+                    }
                 }
 
             } else if ("delete".equalsIgnoreCase(action)) {

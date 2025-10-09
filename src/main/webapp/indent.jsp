@@ -17,6 +17,55 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="CSS/Form.css">
+<style>
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: #fff;
+  padding: 25px 30px;
+  border-radius: 12px;
+  text-align: center;
+  width: 320px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: fadeIn 0.3s ease;
+}
+#popupTitle {
+  font-family: 'Poppins', sans-serif;
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+#popupMessage {
+  color: #555;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+#popupOkBtn {
+  background: #28a745;
+  border: none;
+  color: white;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: 'Poppins', sans-serif;
+}
+#popupOkBtn:hover {
+  background: #218838;
+}
+@keyframes fadeIn {
+  from {opacity: 0; transform: scale(0.9);}
+  to {opacity: 1; transform: scale(1);}
+}
+</style>
 </head>
 <body>
 
@@ -72,11 +121,16 @@
             <input type="hidden" name="purposes">
             <input type="hidden" name="uoms">
         </form>
-
-        <c:if test="${not empty message}">
-            <p style="color:red;">${message}</p>
-        </c:if>
     </div>
+</div>
+
+<!-- Popup Modal -->
+<div class="modal-overlay" id="popupOverlay">
+  <div class="modal" id="popupBox">
+    <h3 id="popupTitle">Notice</h3>
+    <p id="popupMessage"></p>
+    <button id="popupOkBtn">OK</button>
+  </div>
 </div>
 
 <%@ include file="Footer.jsp" %>
@@ -142,7 +196,7 @@
         tr.querySelector(".removeBtn").onclick = () => tr.remove();
     }
 
-    // Fill categories, subcategories, and items based on selections
+    // Fill categories, subcategories, and items
     function fillCategories(catSel, subSel, itemSel, uomCell, selectedDept) {
         catSel.innerHTML = '<option value="">-- Select Category --</option>';
         const deptCategories = categories.filter(c => c.departmentName === selectedDept);
@@ -206,7 +260,7 @@
         this.uoms.value       = uomsArr.join(",");
     });
 
-    // Set date field to today's date only
+    // Restrict date to today
     function restrictDateToToday() {
         const today = new Date().toISOString().split('T')[0];
         const dateField = document.getElementById("dateField");
@@ -215,7 +269,7 @@
         dateField.max = today;
     }
 
-    // Initialize page
+    // Initialize
     document.addEventListener("DOMContentLoaded", () => {
         populateDepartments();
         restrictDateToToday();
@@ -227,6 +281,26 @@
             }
             addRow();
         });
+    });
+
+    // Popup Handling
+    document.addEventListener('DOMContentLoaded', function() {
+        var overlay = document.getElementById('popupOverlay');
+        var okBtn = document.getElementById('popupOkBtn');
+
+        if (okBtn) {
+            okBtn.addEventListener('click', function() {
+                overlay.style.display = 'none';
+                window.location.href = 'indentList.jsp';
+            });
+        }
+
+        <% if (request.getAttribute("message") != null) {
+             String msg = ((String) request.getAttribute("message")).replace("\r", "").replace("\n", "\\n").replace("\"", "\\\"");
+        %>
+          document.getElementById('popupMessage').innerText = "<%= msg %>";
+          overlay.style.display = 'flex';
+        <% } %>
     });
 </script>
 
