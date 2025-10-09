@@ -66,7 +66,7 @@
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-    <h2>Quick Links</h2>
+    <h2>Navigation</h2>
     <a href="IndentServlet"><i class="fas fa-home"></i> Home</a>
 
     <a href="IndentServlet"><i class="fas fa-file-alt"></i> Indent Form</a>
@@ -79,7 +79,6 @@
     <a href="IssueServlet"><i class="fas fa-box"></i> Issue Items</a>
     <a href="Issuereport.jsp"><i class="fas fa-chart-line"></i> Issue Report</a>
     <a href="Stock.jsp"><i class="fas fa-chart-line"></i> Stock Report</a>
-   
    
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
