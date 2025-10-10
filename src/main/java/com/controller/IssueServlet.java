@@ -26,15 +26,13 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Load only indents whose Indentnext='Issue' and not yet issued
             List<Map<String, Object>> indentList = new ArrayList<>();
-            String sql = """
-                SELECT indent_id, indent_no, requested_by, department, item_id, item_name,
-                       qty, UOM, purpose, remarks
-                FROM indent
-                WHERE status='Approved' 
-                  AND Indentnext='Issue' 
-                  AND (Issued_status IS NULL OR Issued_status='Pending')
-                ORDER BY indent_id DESC
-            """;
+            String sql = "SELECT indent_id, indent_no, requested_by, department, item_id, item_name, "
+                    + "qty, UOM, purpose, remarks "
+                    + "FROM indent "
+                    + "WHERE status='Approved' "
+                    + "AND Indentnext='Issue' "
+                    + "AND (Issued_status IS NULL OR Issued_status='Pending') "
+                    + "ORDER BY indent_id DESC";
             try (PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
