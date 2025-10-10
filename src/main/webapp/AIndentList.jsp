@@ -26,11 +26,10 @@
     <link rel="stylesheet" href="CSS/tablestyle.css">
     <style>
         body { font-family: 'Poppins', sans-serif; }
-
         .highlight-cell { background-color: #fff3cd; }
         .btn-orange { background-color: #ff9800; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
 
-        /* Modern centered popup modal */
+        /* Modal Styling */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0;
@@ -52,17 +51,8 @@
             animation: fadeIn 0.25s ease;
         }
 
-        .modal h3 {
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 18px;
-        }
-
-        .modal p {
-            color: #555;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
+        .modal h3 { color: #333; font-weight: 600; margin-bottom: 18px; }
+        .modal p { color: #555; font-size: 24px; margin-bottom: 20px; }
 
         .modal button {
             background-color: #007bff;
@@ -74,14 +64,25 @@
             cursor: pointer;
             transition: background 0.3s ease;
         }
-
-        .modal button:hover {
-            background-color: #0056b3;
-        }
+        .modal button:hover { background-color: #0056b3; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.9); }
             to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Inline dropdown + approve */
+        .dropdown-container {
+            display: none;
+            margin-top: 5px;
+        }
+        .dropdown-container select {
+            padding: 4px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .dropdown-container button {
+            margin-left: 6px;
         }
     </style>
 </head>
@@ -104,14 +105,14 @@
 
         <table class="main-table">
             <thead>
-                <tr>
-                    <th>ID</th><th>Indent No</th><th>Date</th><th>Item</th><th>Qty</th><th>Available Qty</th>
-                    <th>UOM</th><th>Department</th><th>Requested By</th><th>Purpose</th>
-                    <th>In-Charge Action</th><th>In-Charge Status</th>
-                    <th>L1 Approved By</th><th>L1 Approved Date</th>
-                    <th>Status</th><th>Final Approved Date</th><th>Next Step</th><th>Actions</th><th>View/Print</th>
-                </tr>
-            </thead>
+    <tr>
+        <th>ID</th><th>Ind. No</th><th>Date</th><th>Item</th><th>Qty</th><th>Avl. Qty</th>
+        <th>UOM</th><th>Dept.</th><th>Req. By</th><th>Purpose</th>
+        <th>I/C Act</th><th>I/C Stat</th>
+        <th>L1 By</th><th>L1 Dt</th>
+        <th>Status</th><th>Fnl Dt</th><th>Next</th><th>Actn</th><th>V/P</th>
+    </tr>
+</thead>
             <tbody>
             <%
                 List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
@@ -159,22 +160,32 @@
                     <td class="<%= (!"Issue".equalsIgnoreCase(next) && !"Approved".equalsIgnoreCase(status)) ? "highlight-cell" : "" %>">
                         <% if ("Global".equalsIgnoreCase(role) && "Approved".equalsIgnoreCase(I_Status)
                                 && !"Approved".equalsIgnoreCase(status)) { %>
-                            <form action="AIndentListServlet" method="post"
-                                  data-qty="<%= ind.getQty() %>"
-                                  data-balance="<%= ind.getBalanceQty() %>"
-                                  data-pending="<%= pending %>"
-                                  onsubmit="return validateApprovalForm(this)">
-                                <input type="hidden" name="id" value="<%= ind.getId() %>">
-                                <input type="hidden" name="action" value="approve">
 
-                                <select name="indentnext" required>
-                                    <option value="">--Select Next Step--</option>
-                                    <option value="Issue" <%= "Issue".equalsIgnoreCase(next)?"selected":"" %>>Issue</option>
-                                    <option value="PO" <%= "PO".equalsIgnoreCase(next)?"selected":"" %>>PO</option>
-                                    <option value="Management Note" <%= "Management Note".equalsIgnoreCase(next)?"selected":"" %>>Management Note</option>
-                                </select>
-                                <button class="btn-orange" type="submit">Final Approve</button>
-                            </form>
+                            <!-- Button to show dropdown -->
+                            <button class="btn-orange" type="button"
+                                    onclick="toggleDropdown(<%= ind.getId() %>)">
+                                Final Approve
+                            </button>
+
+                            <!-- Hidden form with dropdown -->
+                            <div class="dropdown-container" id="dropdown-<%= ind.getId() %>">
+                                <form action="AIndentListServlet" method="post"
+                                      data-qty="<%= ind.getQty() %>"
+                                      data-balance="<%= ind.getBalanceQty() %>"
+                                      data-pending="<%= pending %>"
+                                      onsubmit="return validateApprovalForm(this)">
+                                    <input type="hidden" name="id" value="<%= ind.getId() %>">
+                                    <input type="hidden" name="action" value="approve">
+
+                                    <select name="indentnext" required>
+                                        <option value="">--Select Next Step--</option>
+                                        <option value="Issue" <%= "Issue".equalsIgnoreCase(next)?"selected":"" %>>Issue</option>
+                                        <option value="PO" <%= "PO".equalsIgnoreCase(next)?"selected":"" %>>PO</option>
+                                        <option value="Management Note" <%= "Management Note".equalsIgnoreCase(next)?"selected":"" %>>Management Note</option>
+                                    </select>
+                                    <button class="btn btn-blue" type="submit">Confirm</button>
+                                </form>
+                            </div>
                         <% } %>
                     </td>
 
@@ -195,7 +206,7 @@
 
 <%@ include file="Footer.jsp" %>
 
-<!-- Modern Modal Popup -->
+<!-- Modal -->
 <div class="modal-overlay" id="popupOverlay">
   <div class="modal" id="popupBox">
     <h3 id="popupTitle">Notice</h3>
@@ -204,9 +215,8 @@
   </div>
 </div>
 
-
 <script>
-let formToSubmit = null; // hold which form to submit after OK
+let formToSubmit = null;
 
 function showPopup(msg, form = null) {
     document.getElementById("popupMessage").innerText = msg;
@@ -222,10 +232,20 @@ function closePopup() {
     }
 }
 
-/* Attach OK button click event */
 document.getElementById("popupOkBtn").addEventListener("click", closePopup);
 
-/* Handles validation + popup display */
+/* Toggle dropdown visibility */
+function toggleDropdown(id) {
+    document.querySelectorAll(".dropdown-container").forEach(d => {
+        if (d.id === "dropdown-" + id) {
+            d.style.display = d.style.display === "block" ? "none" : "block";
+        } else {
+            d.style.display = "none";
+        }
+    });
+}
+
+/* Validate approval before submit */
 function validateApprovalForm(form) {
     const qty = parseFloat(form.dataset.qty) || 0;
     const balance = parseFloat(form.dataset.balance) || 0;
