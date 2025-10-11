@@ -1,14 +1,8 @@
 package com.controller;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -31,7 +25,10 @@ public class IndentServlet extends HttpServlet {
 
         String role = (String) sess.getAttribute("role");
         String user = (String) sess.getAttribute("username");
-        String deptSession = (String) sess.getAttribute("department"); // may be null
+        String deptSession = (String) sess.getAttribute("department");
+
+        // Get selected department if passed (for dynamic category filtering)
+        String selectedDept = request.getParameter("selectedDept");
 
         try (Connection con = DBUtil.getConnection()) {
 
@@ -60,7 +57,6 @@ public class IndentServlet extends HttpServlet {
                     }
                 }
             } else {
-                // Non-Global: use department from session, but validate it exists in dept_cate
                 if (deptSession != null && !deptSession.trim().isEmpty()) {
                     String validateDept = "SELECT Department FROM dept_cate WHERE Department = ? LIMIT 1";
                     try (PreparedStatement ps = con.prepareStatement(validateDept)) {
@@ -71,23 +67,33 @@ public class IndentServlet extends HttpServlet {
                                 d.put("name", rs.getString("Department"));
                                 departments.add(d);
                             } else {
-                                // department not found in master table: still provide session dept as fallback
                                 Map<String, String> d = new HashMap<>();
                                 d.put("name", deptSession.trim());
                                 departments.add(d);
                             }
                         }
                     }
-                } else {
-                    // no session department; leave departments empty
                 }
             }
 
-            // Categories (Category + Department)
+            // ===== Categories: Filter by Selected Department =====
             List<Map<String, String>> categories = new ArrayList<>();
-            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>''";
-            try (PreparedStatement ps = con.prepareStatement(catSql);
-                 ResultSet rs = ps.executeQuery()) {
+            String catSql;
+            PreparedStatement psCat;
+            if (selectedDept != null && !selectedDept.trim().isEmpty()) {
+                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = ? AND Category IS NOT NULL AND Category<>''";
+                psCat = con.prepareStatement(catSql);
+                psCat.setString(1, selectedDept.trim());
+            } else if (deptSession != null && !deptSession.trim().isEmpty()) {
+                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = ? AND Category IS NOT NULL AND Category<>''";
+                psCat = con.prepareStatement(catSql);
+                psCat.setString(1, deptSession.trim());
+            } else {
+                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>''";
+                psCat = con.prepareStatement(catSql);
+            }
+
+            try (ResultSet rs = psCat.executeQuery()) {
                 while (rs.next()) {
                     Map<String, String> c = new HashMap<>();
                     c.put("name", rs.getString("Category"));
@@ -96,7 +102,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // Subcategories (from 'category' table)
+            // ===== Subcategories =====
             List<Map<String, String>> subcats = new ArrayList<>();
             String subSql = "SELECT Sub_Category, Category FROM category WHERE Status='Active'";
             try (PreparedStatement ps = con.prepareStatement(subSql);
@@ -109,7 +115,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // Items
+            // ===== Items =====
             List<Map<String, String>> items = new ArrayList<>();
             String itemSql = "SELECT Item_id, Item_name, UOM, Category, Sub_Category FROM item_master";
             try (PreparedStatement ps = con.prepareStatement(itemSql);
@@ -131,6 +137,7 @@ public class IndentServlet extends HttpServlet {
             masterData.put("items", items);
 
             request.setAttribute("masterData", masterData);
+            request.setAttribute("selectedDept", selectedDept);
             request.getRequestDispatcher("indent.jsp").forward(request, response);
 
         } catch (SQLException e) {
@@ -149,7 +156,6 @@ public class IndentServlet extends HttpServlet {
         }
 
         String user = (String) sess.getAttribute("username");
-
         String indentNumber = request.getParameter("indentNumber");
         String date = request.getParameter("date");
         String department = request.getParameter("department");
@@ -169,18 +175,14 @@ public class IndentServlet extends HttpServlet {
                 if (idStr.isEmpty() || qtyStr.isEmpty()) continue;
 
                 int id = Integer.parseInt(idStr);
-                double qty = Double.parseDouble(qtyStr); // allow decimal quantities
+                double qty = Double.parseDouble(qtyStr);
                 String name = itemNames[i] != null ? itemNames[i].trim() : "";
                 String purp = purposes.length > i && purposes[i] != null ? purposes[i].trim() : "";
                 String uom = uoms.length > i && uoms[i] != null ? uoms[i].trim() : "";
 
-                // basic validation
-                if (name.isEmpty()) continue;
-                if (qty <= 0) continue;
-
+                if (name.isEmpty() || qty <= 0) continue;
                 items.add(new IndentItem(id, name, qty, purp, uom));
-            } catch (Exception ignored) {
-            }
+            } catch (Exception ignored) {}
         }
 
         if (indentNumber == null || indentNumber.trim().isEmpty()) {
@@ -195,11 +197,8 @@ public class IndentServlet extends HttpServlet {
         }
 
         try (Connection con = DBUtil.getConnection()) {
-
-            // disable auto-commit for batch insert safety
             con.setAutoCommit(false);
             try {
-                // Check duplicate indent number (prepared)
                 String dupSql = "SELECT COUNT(*) FROM indent WHERE indent_no = ?";
                 try (PreparedStatement ps = con.prepareStatement(dupSql)) {
                     ps.setString(1, indentNumber);
@@ -213,7 +212,6 @@ public class IndentServlet extends HttpServlet {
                     }
                 }
 
-                // Insert items using batch prepared statement
                 String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department,"
                         + "requested_by, purpose, remarks, uom) VALUES(?,?,?,?,?,?,?,?,?,?)";
 
@@ -227,7 +225,7 @@ public class IndentServlet extends HttpServlet {
                         ps.setString(6, department);
                         ps.setString(7, indentedBy);
                         ps.setString(8, it.getPurpose());
-                        ps.setString(9, user); // remarks (storing user as before)
+                        ps.setString(9, user);
                         ps.setString(10, it.getUom());
                         ps.addBatch();
                     }
