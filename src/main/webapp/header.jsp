@@ -69,8 +69,10 @@
     <h2>Navigation</h2>
     <a href="IndentServlet"><i class="fas fa-home"></i> Home</a>
 
-    <a href="IndentServlet"><i class="fas fa-file-alt"></i> Indent Form</a>
+    <a href="IndentServlet"><i class="fas fa-file-alt"></i> Item Requisition Form</a>
+   <% if ("Global".equalsIgnoreCase(roles)||"Incharge".equalsIgnoreCase(roles)) { %>
     <a href="AIndentListServlet"><i class="fas fa-check-circle"></i> Approve Indent</a>
+    <%} %>
     <a href="IndentlistServlet"><i class="fas fa-list"></i> Indent Report</a>
 
     <a href="IndentPO"><i class="fas fa-shopping-cart"></i>Create Purchase Order</a>

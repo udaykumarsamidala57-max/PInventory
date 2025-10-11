@@ -13,7 +13,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SRS System - Create Indent</title>
+<title>SRS System - Items Requisition From</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="CSS/Form.css">
@@ -73,7 +73,7 @@
 
 <div class="main-content">
     <div class="card">
-        <h2 align="center">Create Indent</h2>
+        <h2 align="center">ITEMS REQUISITION FORM</h2>
 
         <form action="IndentServlet" method="post" id="indentForm">
             <table class="main-table">

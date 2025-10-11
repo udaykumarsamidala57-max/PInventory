@@ -117,8 +117,8 @@ input[type="text"], input[type="date"] {
           <th>IApproveDate</th>
           <th>Status</th>
           <th>FApproveDate</th>
-          <th>Next</th>
-          <th>Issued Status</th>
+          <th>Indent status</th>
+          
           <th>View / Print</th>
         </tr>
       </thead>
@@ -144,7 +144,7 @@ input[type="text"], input[type="date"] {
           <td><%= ind.getStatus() %></td>
           <td><%= ind.getFapprovevdate() %></td>
           <td><%= ind.getIndentNext() %></td>
-          <td><%= (ind.getIndentNext() != null && ind.getIndentNext().equalsIgnoreCase("Issue")) ? "Pending" : "" %></td>
+          
           <td>
             <form action="PrintIndent.jsp" method="get">
               <input type="hidden" name="IndentNumber" value="<%= ind.getIndentNo() %>">

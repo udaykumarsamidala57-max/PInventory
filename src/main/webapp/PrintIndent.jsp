@@ -217,7 +217,7 @@ if (indentNumber != null) {
         </div>
 
         <div class="sign">
-            <p><b>Ashiya Banu</b></p>
+            <p><b></b></p>
             <p>Authorised Signatory</p>
         </div>
 <%
