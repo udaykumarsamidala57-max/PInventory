@@ -13,7 +13,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>SRS System - Items Requisition From</title>
+<title>SRS System - Items Requisition Form</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="CSS/Form.css">
@@ -114,7 +114,6 @@
                 <button type="submit" class="btn btn-green">Save Indent</button>
             </center>
 
-            <!-- Hidden fields for sending collected data -->
             <input type="hidden" name="itemIds">
             <input type="hidden" name="itemNames">
             <input type="hidden" name="quantities">
@@ -136,10 +135,10 @@
 <%@ include file="Footer.jsp" %>
 
 <script>
-    // Prepare master data arrays
-    const department = [];
+    // ====== Master Data ======
+    const departments = [];
     <c:forEach var="d" items="${masterData.departments}">
-        department.push({ name: '${d.name}' });
+        departments.push({ name: '${d.name}' });
     </c:forEach>
 
     const categories = [];
@@ -163,11 +162,11 @@
         });
     </c:forEach>
 
-    // Populate departments
+    // ===== Populate Departments =====
     function populateDepartments() {
         const sel = document.getElementById('departmentSelect');
         sel.innerHTML = '<option value="">-- Select Department --</option>';
-        department.forEach(d => {
+        departments.forEach(d => {
             const opt = document.createElement('option');
             opt.value = d.name;
             opt.text = d.name;
@@ -175,7 +174,7 @@
         });
     }
 
-    // Add new row
+    // ===== Add Item Row =====
     function addRow() {
         const tbody = document.querySelector("#itemsTable tbody");
         const tr = document.createElement("tr");
@@ -196,10 +195,18 @@
         tr.querySelector(".removeBtn").onclick = () => tr.remove();
     }
 
-    // Fill categories, subcategories, and items
+    // ===== Fill Category/Subcategory/Items =====
     function fillCategories(catSel, subSel, itemSel, uomCell, selectedDept) {
         catSel.innerHTML = '<option value="">-- Select Category --</option>';
-        const deptCategories = categories.filter(c => c.departmentName === selectedDept);
+        let deptCategories = [];
+
+        // If Global user, show all categories
+        <% if ("Global".equalsIgnoreCase(role)) { %>
+            deptCategories = categories;
+        <% } else { %>
+            deptCategories = categories.filter(c => c.departmentName === selectedDept);
+        <% } %>
+
         deptCategories.forEach(c => {
             const opt = document.createElement('option');
             opt.value = c.name;
@@ -239,7 +246,7 @@
         };
     }
 
-    // Collect and submit data
+    // ===== Submit Data =====
     document.getElementById('indentForm').addEventListener('submit', function(e) {
         const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
 
@@ -260,7 +267,7 @@
         this.uoms.value       = uomsArr.join(",");
     });
 
-    // Restrict date to today
+    // ===== Restrict Date to Today =====
     function restrictDateToToday() {
         const today = new Date().toISOString().split('T')[0];
         const dateField = document.getElementById("dateField");
@@ -269,13 +276,13 @@
         dateField.max = today;
     }
 
-    // Initialize
+    // ===== Init =====
     document.addEventListener("DOMContentLoaded", () => {
         populateDepartments();
         restrictDateToToday();
         document.getElementById("addItemBtn").addEventListener("click", () => {
             const deptSel = document.getElementById("departmentSelect");
-            if (!deptSel.value) {
+            if (!deptSel.value && "<%=role%>" !== "Global") {
                 alert("Please select a Department first!");
                 return;
             }
@@ -283,7 +290,7 @@
         });
     });
 
-    // Popup Handling
+    // ===== Popup Handling =====
     document.addEventListener('DOMContentLoaded', function() {
         var overlay = document.getElementById('popupOverlay');
         var okBtn = document.getElementById('popupOkBtn');

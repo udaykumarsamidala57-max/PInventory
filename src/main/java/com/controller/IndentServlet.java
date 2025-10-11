@@ -26,8 +26,6 @@ public class IndentServlet extends HttpServlet {
         String role = (String) sess.getAttribute("role");
         String user = (String) sess.getAttribute("username");
         String deptSession = (String) sess.getAttribute("department");
-
-        // Get selected department if passed (for dynamic category filtering)
         String selectedDept = request.getParameter("selectedDept");
 
         try (Connection con = DBUtil.getConnection()) {
@@ -41,14 +39,16 @@ public class IndentServlet extends HttpServlet {
             }
             request.setAttribute("nextIndentNo", nextIndentNo);
 
-            // ===== Master Data =====
+            // ===== Master Data Map =====
             Map<String, Object> masterData = new HashMap<>();
 
-            // Departments
+            // ===== Departments =====
             List<Map<String, String>> departments = new ArrayList<>();
-            if ("Global".equalsIgnoreCase(role)) {
-                String deptQuery = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
-                try (PreparedStatement ps = con.prepareStatement(deptQuery);
+            String deptSql;
+
+            if ("Global".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(deptSession)) {
+                deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
+                try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         Map<String, String> d = new HashMap<>();
@@ -76,11 +76,16 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // ===== Categories: Filter by Selected Department =====
+            // ===== Categories =====
             List<Map<String, String>> categories = new ArrayList<>();
             String catSql;
             PreparedStatement psCat;
-            if (selectedDept != null && !selectedDept.trim().isEmpty()) {
+
+            if ("Global".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(deptSession)) {
+                // Global user → Load all categories
+                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>'' ORDER BY Department, Category";
+                psCat = con.prepareStatement(catSql);
+            } else if (selectedDept != null && !selectedDept.trim().isEmpty()) {
                 catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = ? AND Category IS NOT NULL AND Category<>''";
                 psCat = con.prepareStatement(catSql);
                 psCat.setString(1, selectedDept.trim());
@@ -131,6 +136,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
+            // ===== Attach All =====
             masterData.put("departments", departments);
             masterData.put("categories", categories);
             masterData.put("subcategories", subcats);
@@ -199,6 +205,7 @@ public class IndentServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
             try {
+                // Check duplicate
                 String dupSql = "SELECT COUNT(*) FROM indent WHERE indent_no = ?";
                 try (PreparedStatement ps = con.prepareStatement(dupSql)) {
                     ps.setString(1, indentNumber);
@@ -212,9 +219,8 @@ public class IndentServlet extends HttpServlet {
                     }
                 }
 
-                String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department,"
-                        + "requested_by, purpose, remarks, uom) VALUES(?,?,?,?,?,?,?,?,?,?)";
-
+                // Insert
+                String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom) VALUES(?,?,?,?,?,?,?,?,?,?)";
                 try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                     for (IndentItem it : items) {
                         ps.setString(1, indentNumber);
