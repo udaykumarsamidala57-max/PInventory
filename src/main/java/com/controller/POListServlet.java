@@ -20,7 +20,6 @@ import com.bean.PO;
 import com.bean.POItems;
 
 @WebServlet("/POListServlet")
-
 public class POListServlet extends HttpServlet {
 
     @Override
@@ -80,7 +79,7 @@ public class POListServlet extends HttpServlet {
                 String poNumber = rs.getString("po_number");
 
                 po.setPoNumber(poNumber);
-                po.setPoDate(rs.getString("po_date")); // ✅ Use lowercase if column name is po_date
+                po.setPoDate(rs.getString("po_date"));
                 po.setVendorName(rs.getString("vendor_name"));
                 po.setTotalAmount(rs.getDouble("total_amount"));
                 po.setApproval(rs.getString("Approval"));
@@ -123,9 +122,15 @@ public class POListServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ✅ Forward PO list to JSP
+        // ✅ Send PO data to both JSPs
         request.setAttribute("poList", poList);
+
+        // Option 1️⃣: Forward to default POlist.jsp (existing behavior)
         RequestDispatcher rd = request.getRequestDispatcher("POlist.jsp");
+        rd.forward(request, response);
+
+        request.setAttribute("poList", poList);
+        RequestDispatcher rd1 = request.getRequestDispatcher("ListPO.jsp");
         rd.forward(request, response);
     }
 }

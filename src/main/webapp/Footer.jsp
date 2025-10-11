@@ -7,8 +7,8 @@
 <!-- FOOTER -->
 <footer>
     <p>©<%= todayDate %> | SRS Inventory System | 
-   <i class="fas fa-leaf" style="color:green;"></i> Professionally crafted
-   <i class="fas fa-leaf" style="color:green;"></i> by Your Team
+   <i class="fas fa-leaf" style="color:green;"></i> Developed by 
+   <i class="fas fa-leaf" style="color:green;"></i> School IT Department
 </p>
 
 </footer>
