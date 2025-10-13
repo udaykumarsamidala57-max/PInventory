@@ -1,6 +1,12 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
+
 <%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
     String poNumber = request.getParameter("poNumber");
 %>
 <html>

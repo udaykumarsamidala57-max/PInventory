@@ -1,5 +1,10 @@
 <%@ page import="com.bean.GRNItem, java.util.*" %>
 <%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
     String poNumber = (String) request.getAttribute("poNumber");
     String vendorName = (String) request.getAttribute("vendorName");
     List<GRNItem> items = (List<GRNItem>) request.getAttribute("items");

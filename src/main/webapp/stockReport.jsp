@@ -1,7 +1,13 @@
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page import="com.bean.DBUtil" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+%>
 <%
     Connection conn = null;
     PreparedStatement ps = null, psCat = null;
@@ -58,15 +64,7 @@
         body { font-family: 'Poppins', sans-serif; margin: 30px; background-color: #f7f9fc; }
         h2 { text-align: center; color: #333; }
         form { text-align: center; margin-bottom: 20px; }
-        table { width: 95%; margin: 0 auto; border-collapse: collapse; background: white; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background-color: #007bff; color: white; }
-        tr:hover { background-color: #f1f1f1; }
-        input[type="date"], select {
-            padding: 6px;
-            font-size: 14px;
-            margin: 5px;
-        }
+       
         input[type="submit"] {
             background-color: #007bff;
             color: white;
@@ -79,8 +77,17 @@
             background-color: #0056b3;
         }
     </style>
+  
+     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="CSS/tablestyle.css">
+   
 </head>
 <body>
+
+<%@ include file="header.jsp" %>
+<div class="main-content">
+  <div class="card">
     <h2>Stock Summary Report</h2>
 
     <form method="get" action="stockReport.jsp">
@@ -104,14 +111,16 @@
         <input type="submit" value="View Report">
     </form>
 
-    <table>
+    <table  class="main-table">
         <tr>
+        <thead>
             <th>Category</th>
             <th>Item ID</th>
             <th>Item Name</th>
             <th>Total Receipts</th>
             <th>Total Issues</th>
             <th>Closing Balance</th>
+            </thead>
         </tr>
         <%
             boolean hasData = false;
@@ -133,6 +142,10 @@
             }
         %>
     </table>
+      </div>
+</div>
+
+<jsp:include page="Footer.jsp" />
 </body>
 </html>
 

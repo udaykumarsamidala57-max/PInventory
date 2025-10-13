@@ -1,6 +1,13 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+%>
 <html>
 <head>
     <title>Stock Issue Report</title>
