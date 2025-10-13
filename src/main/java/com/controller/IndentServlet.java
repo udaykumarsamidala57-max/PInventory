@@ -30,7 +30,7 @@ public class IndentServlet extends HttpServlet {
 
         try (Connection con = DBUtil.getConnection()) {
 
-            // ===== Next Indent Number =====
+            // === Next Indent Number ===
             int nextIndentNo = 1;
             String sqlNext = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 AS next_no FROM indent";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
@@ -39,14 +39,14 @@ public class IndentServlet extends HttpServlet {
             }
             request.setAttribute("nextIndentNo", nextIndentNo);
 
-            // ===== Master Data Map =====
+            // === Master Data ===
             Map<String, Object> masterData = new HashMap<>();
 
-            // ===== Departments =====
+            // === Departments ===
             List<Map<String, String>> departments = new ArrayList<>();
             String deptSql;
 
-            if ("Global".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(deptSession)) {
+            if ("Global".equalsIgnoreCase(role)) {
                 deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
                 try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
@@ -56,49 +56,17 @@ public class IndentServlet extends HttpServlet {
                         departments.add(d);
                     }
                 }
-            } else {
-                if (deptSession != null && !deptSession.trim().isEmpty()) {
-                    String validateDept = "SELECT Department FROM dept_cate WHERE Department = ? LIMIT 1";
-                    try (PreparedStatement ps = con.prepareStatement(validateDept)) {
-                        ps.setString(1, deptSession.trim());
-                        try (ResultSet rs = ps.executeQuery()) {
-                            if (rs.next()) {
-                                Map<String, String> d = new HashMap<>();
-                                d.put("name", rs.getString("Department"));
-                                departments.add(d);
-                            } else {
-                                Map<String, String> d = new HashMap<>();
-                                d.put("name", deptSession.trim());
-                                departments.add(d);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ===== Categories =====
-            List<Map<String, String>> categories = new ArrayList<>();
-            String catSql;
-            PreparedStatement psCat;
-
-            if ("Global".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(deptSession)) {
-                // Global user → Load all categories
-                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>'' ORDER BY Department, Category";
-                psCat = con.prepareStatement(catSql);
-            } else if (selectedDept != null && !selectedDept.trim().isEmpty()) {
-                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = ? AND Category IS NOT NULL AND Category<>''";
-                psCat = con.prepareStatement(catSql);
-                psCat.setString(1, selectedDept.trim());
             } else if (deptSession != null && !deptSession.trim().isEmpty()) {
-                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = ? AND Category IS NOT NULL AND Category<>''";
-                psCat = con.prepareStatement(catSql);
-                psCat.setString(1, deptSession.trim());
-            } else {
-                catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>''";
-                psCat = con.prepareStatement(catSql);
+                Map<String, String> d = new HashMap<>();
+                d.put("name", deptSession.trim());
+                departments.add(d);
             }
 
-            try (ResultSet rs = psCat.executeQuery()) {
+            // === Categories ===
+            List<Map<String, String>> categories = new ArrayList<>();
+            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>''";
+            try (PreparedStatement ps = con.prepareStatement(catSql);
+                 ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, String> c = new HashMap<>();
                     c.put("name", rs.getString("Category"));
@@ -107,7 +75,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // ===== Subcategories =====
+            // === Subcategories ===
             List<Map<String, String>> subcats = new ArrayList<>();
             String subSql = "SELECT Sub_Category, Category FROM category WHERE Status='Active'";
             try (PreparedStatement ps = con.prepareStatement(subSql);
@@ -120,7 +88,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // ===== Items =====
+            // === Items ===
             List<Map<String, String>> items = new ArrayList<>();
             String itemSql = "SELECT Item_id, Item_name, UOM, Category, Sub_Category FROM item_master";
             try (PreparedStatement ps = con.prepareStatement(itemSql);
@@ -136,7 +104,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // ===== Attach All =====
+            // === Attach ===
             masterData.put("departments", departments);
             masterData.put("categories", categories);
             masterData.put("subcategories", subcats);
@@ -147,7 +115,7 @@ public class IndentServlet extends HttpServlet {
             request.getRequestDispatcher("indent.jsp").forward(request, response);
 
         } catch (SQLException e) {
-            throw new ServletException("DB Error (GET): " + e.getMessage(), e);
+            throw new ServletException("DB Error: " + e.getMessage(), e);
         }
     }
 
@@ -165,7 +133,6 @@ public class IndentServlet extends HttpServlet {
         String indentNumber = request.getParameter("indentNumber");
         String date = request.getParameter("date");
         String department = request.getParameter("department");
-        String indentedBy = user;
 
         String[] itemIds = splitSafe(request.getParameter("itemIds"));
         String[] itemNames = splitSafe(request.getParameter("itemNames"));
@@ -205,7 +172,7 @@ public class IndentServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
             try {
-                // Check duplicate
+                // Check duplicate indent number
                 String dupSql = "SELECT COUNT(*) FROM indent WHERE indent_no = ?";
                 try (PreparedStatement ps = con.prepareStatement(dupSql)) {
                     ps.setString(1, indentNumber);
@@ -219,8 +186,10 @@ public class IndentServlet extends HttpServlet {
                     }
                 }
 
-                // Insert
-                String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom) VALUES(?,?,?,?,?,?,?,?,?,?)";
+                // Insert indent items
+                String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom) "
+                        + "VALUES(?,?,?,?,?,?,?,?,?,?)";
+
                 try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                     for (IndentItem it : items) {
                         ps.setString(1, indentNumber);
@@ -229,9 +198,9 @@ public class IndentServlet extends HttpServlet {
                         ps.setString(4, it.getName());
                         ps.setDouble(5, it.getQty());
                         ps.setString(6, department);
-                        ps.setString(7, indentedBy);
+                        ps.setString(7, user);
                         ps.setString(8, it.getPurpose());
-                        ps.setString(9, user);
+                        ps.setString(9, "");
                         ps.setString(10, it.getUom());
                         ps.addBatch();
                     }
@@ -239,16 +208,16 @@ public class IndentServlet extends HttpServlet {
                 }
 
                 con.commit();
-                request.setAttribute("message", "Indent saved successfully! Items added: " + items.size());
+                request.setAttribute("message", "✅ Indent saved successfully!");
             } catch (SQLException e) {
                 con.rollback();
-                request.setAttribute("message", "Error while saving indent (DB): " + e.getMessage());
+                request.setAttribute("message", "❌ Error while saving indent: " + e.getMessage());
             } finally {
                 con.setAutoCommit(true);
             }
 
         } catch (SQLException e) {
-            request.setAttribute("message", "Error while saving indent: " + e.getMessage());
+            request.setAttribute("message", "❌ Database error: " + e.getMessage());
         }
 
         doGet(request, response);

@@ -82,6 +82,7 @@
     <a href="Issuereport.jsp"><i class="fas fa-chart-line"></i> Issue Report</a>
     <a href="Stock.jsp"><i class="fas fa-chart-line"></i> Stock Report</a>
     <a href="stockReport.jsp"><i class="fas fa-chart-line"></i> Stock Ledger Report</a>
+    <a href="ItemsMaster.jsp"><i class="fas fa-file-alt"></i> Item Master</a>
    
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>

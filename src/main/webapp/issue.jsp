@@ -1,11 +1,11 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
-    HttpSession sess = request.getSession(false);
-    if (sess == null || sess.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
 %>
 <!DOCTYPE html>
 <html>
