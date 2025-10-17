@@ -32,6 +32,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <th>Item</th>
                     <th>Qty Requested</th>
                     <th>UOM</th>
+                    <th>Requested By</th>
                     <th>Qty To Issue</th>
                     <th>Action</th>
                 </tr>
@@ -46,6 +47,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                             <td>${i.item_name}</td>
                             <td>${i.qty_requested}</td>
                             <td>${i.UOM}</td>
+                            <td>${i.requested_by}</td>
                             <td><input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required></td>
                             <td>
                                 <input type="hidden" name="indentId" value="${i.indent_id}">

@@ -5,13 +5,16 @@
 
 <%
     HttpSession sess = request.getSession(false);
-    if (sess == null || sess.getAttribute("username") == null) {
+    if (sess == null || sess.getAttribute("username") == null ) {
         response.sendRedirect("login.jsp");
         return;
     }
+   
 
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
+    
+
 
     Map<Integer, Double> pendingMap = (Map<Integer, Double>) request.getAttribute("pendingPerItem");
     if (pendingMap == null) pendingMap = new HashMap<>();
