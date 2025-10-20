@@ -81,7 +81,7 @@ function addRow() {
     <td><select class="subcat"><option value="">--Select--</option></select></td>
     <td><select class="item"><option value="">--Select--</option></select></td>
     <td class="uom"></td>
-    <td><input type="number" min="1" class="qty" required></td>
+    <td><input type="number" class="qty" required></td>
     <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>
   `;
   tbody.appendChild(tr);
