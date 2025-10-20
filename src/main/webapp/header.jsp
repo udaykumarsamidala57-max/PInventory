@@ -15,9 +15,12 @@
 <!-- HEADER -->
 <style>
 <style>
+
 .user-info {
     display: inline-block;
-    background: #4a90e2;   /* heading background */
+    background: white;   /* heading background */
+      
+    
     color: #fff;
     padding: 10px 20px;
     border-radius: 8px;
