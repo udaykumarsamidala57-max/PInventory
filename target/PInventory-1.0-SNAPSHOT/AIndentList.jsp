@@ -14,9 +14,7 @@
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
     
- if( !"Global".equalsIgnoreCase(role)||!"Incharge".equalsIgnoreCase(role)){
-	 return;
-    }
+
 
     Map<Integer, Double> pendingMap = (Map<Integer, Double>) request.getAttribute("pendingPerItem");
     if (pendingMap == null) pendingMap = new HashMap<>();

@@ -15,9 +15,12 @@
 <!-- HEADER -->
 <style>
 <style>
+
 .user-info {
     display: inline-block;
-    background: #4a90e2;   /* heading background */
+    background: white;   /* heading background */
+      
+    
     color: #fff;
     padding: 10px 20px;
     border-radius: 8px;
@@ -83,6 +86,7 @@
     <a href="Stock.jsp"><i class="fas fa-chart-line"></i> Stock Report</a>
     <a href="stockReport.jsp"><i class="fas fa-chart-line"></i> Stock Ledger Report</a>
     <a href="ItemsMaster.jsp"><i class="fas fa-file-alt"></i> Item Master</a>
+    <a href="AddStock"><i class="fas fa-file-alt"></i> Add Stock</a>
    
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
