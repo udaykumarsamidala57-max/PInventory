@@ -194,7 +194,7 @@
         <button id="popupOkBtn">OK</button>
     </div>
 </div>
-
+<%@ include file="Footer.jsp" %>
 <script>
 let formToSubmit = null;
 function showPopup(msg, form = null) {
