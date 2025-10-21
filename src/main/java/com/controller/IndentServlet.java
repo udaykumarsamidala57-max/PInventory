@@ -24,7 +24,6 @@ public class IndentServlet extends HttpServlet {
         }
 
         String role = (String) sess.getAttribute("role");
-        String user = (String) sess.getAttribute("username");
         String deptSession = (String) sess.getAttribute("department");
         String selectedDept = request.getParameter("selectedDept");
 
@@ -44,10 +43,8 @@ public class IndentServlet extends HttpServlet {
 
             // === Departments ===
             List<Map<String, String>> departments = new ArrayList<>();
-            String deptSql;
-
             if ("Global".equalsIgnoreCase(role)) {
-                deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
+                String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
                 try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -104,7 +101,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
-            // === Attach ===
+            // === Attach Data ===
             masterData.put("departments", departments);
             masterData.put("categories", categories);
             masterData.put("subcategories", subcats);
@@ -130,9 +127,17 @@ public class IndentServlet extends HttpServlet {
         }
 
         String user = (String) sess.getAttribute("username");
+        String role = (String) sess.getAttribute("role");
+        String deptSession = (String) sess.getAttribute("department");
+
         String indentNumber = request.getParameter("indentNumber");
         String date = request.getParameter("date");
         String department = request.getParameter("department");
+
+        // ✅ Fix: ensure department always has value for non-Global users
+        if (!"Global".equalsIgnoreCase(role) && (department == null || department.trim().isEmpty())) {
+            department = deptSession;
+        }
 
         String[] itemIds = splitSafe(request.getParameter("itemIds"));
         String[] itemNames = splitSafe(request.getParameter("itemNames"));

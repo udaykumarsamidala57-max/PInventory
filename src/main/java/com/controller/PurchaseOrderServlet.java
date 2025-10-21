@@ -2,14 +2,9 @@ package com.controller;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.*;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletException;
+import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
@@ -37,49 +32,47 @@ public class PurchaseOrderServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection()) {
 
             // --- Generate next PO number ---
-            Statement stNext = con.createStatement();
-            ResultSet rsNext = stNext.executeQuery("SELECT po_number FROM po_master ORDER BY po_id DESC LIMIT 1");
-            if (rsNext.next()) {
-                String lastPo = rsNext.getString("po_number");
-                String numPart = lastPo.replaceAll("\\D+", "");
-                int nextNum = numPart.isEmpty() ? 1 : Integer.parseInt(numPart) + 1;
-                nextPONumber = String.format("PO%04d", nextNum);
+            try (Statement stNext = con.createStatement();
+                 ResultSet rsNext = stNext.executeQuery("SELECT po_number FROM po_master ORDER BY po_id DESC LIMIT 1")) {
+                if (rsNext.next()) {
+                    String lastPo = rsNext.getString("po_number");
+                    String numPart = lastPo.replaceAll("\\D+", "");
+                    int nextNum = numPart.isEmpty() ? 1 : Integer.parseInt(numPart) + 1;
+                    nextPONumber = String.format("PO%04d", nextNum);
+                }
             }
-            rsNext.close();
-            stNext.close();
 
-            // --- Load selected indents (include item_id also) ---
+            // --- Load selected indents ---
             if (selectedIds != null && selectedIds.length > 0) {
                 String placeholders = String.join(",", Collections.nCopies(selectedIds.length, "?"));
                 String sql = "SELECT indent_id, indent_no, item_id, item_name, qty FROM indent "
                         + "WHERE Indentnext='PO' AND indent_id IN (" + placeholders + ") ORDER BY indent_id DESC";
-                PreparedStatement ps = con.prepareStatement(sql);
-                for (int i = 0; i < selectedIds.length; i++) {
-                    ps.setString(i + 1, selectedIds[i]);
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    for (int i = 0; i < selectedIds.length; i++) {
+                        ps.setString(i + 1, selectedIds[i]);
+                    }
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            POItems item = new POItems();
+                            item.setId(rs.getInt("indent_id"));
+                            item.setIndentNo(rs.getString("indent_no"));
+                            item.setItemId(rs.getInt("item_id"));
+                            item.setItemName(rs.getString("item_name"));
+                            item.setQty(rs.getDouble("qty"));
+                            indentList.add(item);
+                        }
+                    }
                 }
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
-                    POItems item = new POItems();
-                    item.setId(rs.getInt("indent_id"));
-                    item.setIndentNo(rs.getString("indent_no"));
-                    item.setItemId(rs.getInt("item_id"));
-                    item.setItemName(rs.getString("item_name"));
-                    item.setQty(rs.getDouble("qty"));
-                    indentList.add(item);
-                }
-                rs.close();
-                ps.close();
             }
 
-            // --- Load vendors ---
-            Statement st2 = con.createStatement();
-            ResultSet rs2 = st2.executeQuery("SELECT name,gstin,address FROM vendors ORDER BY name");
-            while (rs2.next()) {
-                vendorMap.put(rs2.getString("name"),
-                        new String[] { rs2.getString("gstin"), rs2.getString("address") });
+            // --- Load vendor list ---
+            try (Statement st2 = con.createStatement();
+                 ResultSet rs2 = st2.executeQuery("SELECT name, gstin, address FROM vendors ORDER BY name")) {
+                while (rs2.next()) {
+                    vendorMap.put(rs2.getString("name"),
+                            new String[]{rs2.getString("gstin"), rs2.getString("address")});
+                }
             }
-            rs2.close();
-            st2.close();
 
         } catch (Exception e) {
             throw new ServletException("DB Error: " + e.getMessage(), e);
@@ -103,7 +96,7 @@ public class PurchaseOrderServlet extends HttpServlet {
         String[] rates = request.getParameterValues("rate");
         String[] discPercents = request.getParameterValues("discPercent");
         String[] gstPercents = request.getParameterValues("gstPercent");
-        String[] selectedIds = request.getParameterValues("indentNo");
+        String[] selectedIds = request.getParameterValues("indentId");
 
         String vname = request.getParameter("vendorName");
         String vgstin = request.getParameter("vendorGSTIN");
@@ -119,22 +112,19 @@ public class PurchaseOrderServlet extends HttpServlet {
             throw new ServletException("PO Creation Error: No items found to process.");
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        Connection con = null;
+        try {
+            con = DBUtil.getConnection();
+            con.setAutoCommit(false); // ✅ Transaction start
 
-            // =====================================================
-            // STEP 1: CLUB MULTIPLE RECORDS OF SAME ITEM
-            // =====================================================
+            // STEP 1: Club same items
             class MergedItem {
                 int itemId;
                 String description;
-                double qty;
-                double rate;
-                double discPercent;
-                double gstPercent;
+                double qty, rate, discPercent, gstPercent;
             }
 
             Map<Integer, MergedItem> merged = new LinkedHashMap<>();
-
             for (int i = 0; i < itemIds.length; i++) {
                 int id = Integer.parseInt(itemIds[i]);
                 double qty = Double.parseDouble(qtys[i]);
@@ -143,8 +133,7 @@ public class PurchaseOrderServlet extends HttpServlet {
                 double gstP = Double.parseDouble(gstPercents[i]);
 
                 if (merged.containsKey(id)) {
-                    MergedItem m = merged.get(id);
-                    m.qty += qty; // add quantities if same item
+                    merged.get(id).qty += qty;
                 } else {
                     MergedItem m = new MergedItem();
                     m.itemId = id;
@@ -157,12 +146,8 @@ public class PurchaseOrderServlet extends HttpServlet {
                 }
             }
 
-            // =====================================================
-            // STEP 2: INSERT INTO po_master (with totals)
-            // =====================================================
+            // STEP 2: Calculate totals
             double totalGst = 0, totalDis = 0, totalAmount = 0;
-
-            // Calculate totals before inserting master
             for (MergedItem m : merged.values()) {
                 double amount = m.qty * m.rate;
                 double discVal = (m.discPercent / 100.0) * amount;
@@ -173,88 +158,90 @@ public class PurchaseOrderServlet extends HttpServlet {
                 totalAmount += (net + gstVal);
             }
 
-            PreparedStatement psPO = con.prepareStatement(
-                    "INSERT INTO po_master(vendor_name,vendor_gstin,vendor_address,po_number,quotation_number,po_date,billing_address,total_gst,total_dis,total_amount,amount_in_words,terms_conditions,general_conditions) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-                    Statement.RETURN_GENERATED_KEYS);
+            // STEP 3: Insert into po_master
+            String insertMaster = "INSERT INTO po_master(vendor_name,vendor_gstin,vendor_address,po_number,"
+                    + "quotation_number,po_date,billing_address,total_gst,total_dis,total_amount,"
+                    + "amount_in_words,terms_conditions,general_conditions,po_status,Approval) "
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'Open','Pending')";
 
-            psPO.setString(1, vname);
-            psPO.setString(2, vgstin);
-            psPO.setString(3, vaddress);
-            psPO.setString(4, poNo);
-            psPO.setString(5, quotationNo);
-            psPO.setString(6, poDate);
-            psPO.setString(7, billingAddress);
-            psPO.setDouble(8, totalGst);
-            psPO.setDouble(9, totalDis);
-            psPO.setDouble(10, totalAmount);
-            psPO.setString(11, "");
-            psPO.setString(12, terms);
-            psPO.setString(13, general);
-            psPO.executeUpdate();
-
-            ResultSet rsKey = psPO.getGeneratedKeys();
             int poId = 0;
-            if (rsKey.next()) {
-                poId = rsKey.getInt(1);
-            }
-            rsKey.close();
-            psPO.close();
-
-            // =====================================================
-            // STEP 3: INSERT CLUBBED ITEMS INTO po_items
-            // =====================================================
-            PreparedStatement psItems = con.prepareStatement(
-                    "INSERT INTO po_items(po_id,po_no,sl_no,item_id,description,qty,rate,amount,discount_percent,discount_value,gst_percent,gst_value,net_amount) "
-                            + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)");
-
-            int slno = 1;
-            for (MergedItem m : merged.values()) {
-                double amount = m.qty * m.rate;
-                double discVal = (m.discPercent / 100.0) * amount;
-                double net = amount - discVal;
-                double gstVal = (m.gstPercent / 100.0) * net;
-                double netAmt = net + gstVal;
-
-                psItems.setInt(1, poId);
-                psItems.setString(2, poNo);
-                psItems.setInt(3, slno++);
-                psItems.setInt(4, m.itemId);
-                psItems.setString(5, m.description);
-                psItems.setBigDecimal(6, new BigDecimal(m.qty));
-                psItems.setBigDecimal(7, new BigDecimal(m.rate));
-                psItems.setBigDecimal(8, new BigDecimal(amount));
-                psItems.setBigDecimal(9, new BigDecimal(m.discPercent));
-                psItems.setBigDecimal(10, new BigDecimal(discVal));
-                psItems.setBigDecimal(11, new BigDecimal(m.gstPercent));
-                psItems.setBigDecimal(12, new BigDecimal(gstVal));
-                psItems.setBigDecimal(13, new BigDecimal(netAmt));
-                psItems.addBatch();
-            }
-
-            psItems.executeBatch();
-            psItems.close();
-
-            // =====================================================
-            // STEP 4: UPDATE INDENT STATUS
-            // =====================================================
-            if (selectedIds != null && selectedIds.length > 0) {
-                String placeholders = String.join(",", Collections.nCopies(selectedIds.length, "?"));
-                PreparedStatement psUpdate = con.prepareStatement(
-                        "UPDATE indent SET POStatus='Raised' WHERE indent_id IN (" + placeholders + ")");
-                for (int i = 0; i < selectedIds.length; i++) {
-                    psUpdate.setString(i + 1, selectedIds[i]);
+            try (PreparedStatement psPO = con.prepareStatement(insertMaster, Statement.RETURN_GENERATED_KEYS)) {
+                psPO.setString(1, vname);
+                psPO.setString(2, vgstin);
+                psPO.setString(3, vaddress);
+                psPO.setString(4, poNo);
+                psPO.setString(5, quotationNo);
+                psPO.setString(6, poDate);
+                psPO.setString(7, billingAddress);
+                psPO.setDouble(8, totalGst);
+                psPO.setDouble(9, totalDis);
+                psPO.setDouble(10, totalAmount);
+                psPO.setString(11, "");
+                psPO.setString(12, terms);
+                psPO.setString(13, general);
+                psPO.executeUpdate();
+                try (ResultSet rsKey = psPO.getGeneratedKeys()) {
+                    if (rsKey.next()) {
+                        poId = rsKey.getInt(1);
+                    }
                 }
-                psUpdate.executeUpdate();
-                psUpdate.close();
             }
 
-            // =====================================================
-            // STEP 5: REDIRECT
-            // =====================================================
+            // STEP 4: Insert into po_items
+            String insertItems = "INSERT INTO po_items(po_id,po_no,sl_no,item_id,description,qty,rate,amount,"
+                    + "discount_percent,discount_value,gst_percent,gst_value,net_amount) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+
+            try (PreparedStatement psItems = con.prepareStatement(insertItems)) {
+                int slno = 1;
+                for (MergedItem m : merged.values()) {
+                    double amount = m.qty * m.rate;
+                    double discVal = (m.discPercent / 100.0) * amount;
+                    double net = amount - discVal;
+                    double gstVal = (m.gstPercent / 100.0) * net;
+                    double netAmt = net + gstVal;
+
+                    psItems.setInt(1, poId);
+                    psItems.setString(2, poNo);
+                    psItems.setInt(3, slno++);
+                    psItems.setInt(4, m.itemId);
+                    psItems.setString(5, m.description);
+                    psItems.setBigDecimal(6, BigDecimal.valueOf(m.qty));
+                    psItems.setBigDecimal(7, BigDecimal.valueOf(m.rate));
+                    psItems.setBigDecimal(8, BigDecimal.valueOf(amount));
+                    psItems.setBigDecimal(9, BigDecimal.valueOf(m.discPercent));
+                    psItems.setBigDecimal(10, BigDecimal.valueOf(discVal));
+                    psItems.setBigDecimal(11, BigDecimal.valueOf(m.gstPercent));
+                    psItems.setBigDecimal(12, BigDecimal.valueOf(gstVal));
+                    psItems.setBigDecimal(13, BigDecimal.valueOf(netAmt));
+                    psItems.addBatch();
+                }
+                psItems.executeBatch();
+            }
+
+            // STEP 5: Update indent table
+            String[] selectedIdS = request.getParameterValues("indentId");
+            if (selectedIdS != null && selectedIdS.length > 0) {
+                String placeholders = String.join(",", Collections.nCopies(selectedIdS.length, "?"));
+                String sql = "UPDATE indent SET POStatus='Raised' WHERE indent_id IN (" + placeholders + ")";
+                try (PreparedStatement psUpdate = con.prepareStatement(sql)) {
+                    for (int i = 0; i < selectedIdS.length; i++) {
+                        psUpdate.setString(i + 1, selectedIdS[i]);
+                    }
+                    psUpdate.executeUpdate();
+                }
+            }
+            con.commit(); // ✅ Transaction success
             response.sendRedirect("POListServlet");
 
         } catch (Exception e) {
+            try {
+                if (con != null) con.rollback();
+            } catch (SQLException ignored) {}
             throw new ServletException("PO Creation Error: " + e.getMessage(), e);
+        } finally {
+            try {
+                if (con != null) con.setAutoCommit(true);
+            } catch (SQLException ignored) {}
         }
     }
 }

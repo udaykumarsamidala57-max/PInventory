@@ -37,6 +37,7 @@
           <td><label>Date:</label></td>
           <td><input type="date" name="date" id="dateField" required></td>
         </tr>
+
         <tr>
           <td><label>Department:</label></td>
           <td>
@@ -46,6 +47,9 @@
                 <option value="${d.name}" <c:if test="${d.name == selectedDept}">selected</c:if>>${d.name}</option>
               </c:forEach>
             </select>
+            <% if (!"Global".equalsIgnoreCase(role)) { %>
+              <input type="hidden" name="department" value="<%= dept %>">
+            <% } %>
           </td>
         </tr>
       </table>
@@ -88,7 +92,6 @@
 const userRole = "<%= (role != null ? role : "") %>";
 const userDept = "<%= (dept != null ? dept : "") %>";
 
-// ===== Master Data =====
 const categories = [];
 <c:forEach var="c" items="${masterData.categories}">
   categories.push({ name: '${c.name}', departmentName: '${c.departmentName}' });
@@ -108,17 +111,18 @@ document.addEventListener("DOMContentLoaded", () => {
   restrictDateToToday();
 
   if (userRole !== "Global" && userDept) {
-    document.getElementById("departmentSelect").value = userDept;
-    document.getElementById("departmentSelect").disabled = true;
+    const deptSelect = document.getElementById("departmentSelect");
+    deptSelect.value = userDept;
+    deptSelect.disabled = true;
   }
 
-  document.getElementById("addItemBtn").addEventListener("click", () => addRow(userRole));
+  document.getElementById("addItemBtn").addEventListener("click", () => addRow());
 });
 
-function addRow(userRole) {
+function addRow() {
   const deptSel = document.getElementById("departmentSelect");
-  const selectedDept = deptSel.value;
-  if (!selectedDept && userRole !== "Global") {
+  const selectedDept = deptSel.value || userDept;
+  if (!selectedDept) {
     alert("Please select a Department first!");
     return;
   }
@@ -195,7 +199,6 @@ function restrictDateToToday() {
   dateField.max = today;
 }
 
-// ===== Submit =====
 document.getElementById('indentForm').addEventListener('submit', function() {
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
   document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {

@@ -36,25 +36,22 @@ if (sess == null || sess.getAttribute("username") == null) {
             border-collapse: collapse;
             margin-bottom: 25px;
         }
-         table td {
+        table td {
             border: 1px solid #ddd;
             padding: 10px 12px;
             text-align: center;
-            
-            }
-      thead {
-    background: linear-gradient(135deg, #ff8c00, #8e2de2);
-
-}
-
-th {
-    color: #fff;
-    font-weight: 600;
-    text-align: center;
-    padding: 8px 8px;
-    border: none;
-    background: transparent; /* ensure gradient from thead applies fully */
-}
+        }
+        thead {
+            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        }
+        th {
+            color: #fff;
+            font-weight: 600;
+            text-align: center;
+            padding: 8px 8px;
+            border: none;
+            background: transparent;
+        }
         table tr:nth-child(even) {
             background: #f9f9f9;
         }
@@ -105,8 +102,6 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
 %>
 
 <form method="post" action="<%=request.getContextPath()%>/PurchaseOrderServlet">
-    <!-- Indent Items -->
-    
 
     <!-- Vendor & PO Details -->
     <table class="form-section">
@@ -153,35 +148,50 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             <td><strong>General Conditions:</strong></td>
             <td><textarea name="generalConditions"></textarea></td>
         </tr>
-        
     </table>
+
+    <!-- Indent Items Table -->
     <table>
-        <tr>
-      <thead>
-            <th>Sl No</th><th>Indent No</th><th>Item</th><th>Qty</th>
-            <th>Rate</th><th>Discount %</th><th>GST %</th>
-            </thead>
-        </tr>
+        <thead>
+            <tr>
+                <th>Sl No</th>
+                <th>Indent No</th>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Rate</th>
+                <th>Discount %</th>
+                <th>GST %</th>
+            </tr>
+        </thead>
+
         <%
         int sl = 1;
-        if(indentList != null){
+        if(indentList != null && !indentList.isEmpty()){
             for(POItems item: indentList){
         %>
         <tr>
             <td><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
-            <td><input type="text" name="indentNo" value="<%=item.getIndentNo()%>" readonly></td>
+
+            <!-- ✅ Show indentNo but send hidden indentId -->
+            <td>
+                <input type="text" value="<%=item.getIndentNo()%>" readonly>
+                <input type="hidden" name="indentId" value="<%=item.getId()%>">
+            </td>
+
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
             <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
             <td><input type="number" step="any" name="qty" value="<%=item.getQty()%>" readonly></td>
-
             <td><input type="number" step="0.01" name="rate"></td>
             <td><input type="number" step="0.01" name="discPercent"></td>
             <td><input type="number" step="0.01" name="gstPercent"></td>
         </tr>
         <%
             }
-        }
+        } else {
         %>
+        <tr><td colspan="7" style="text-align:center; color:red;">No Indent Items Found</td></tr>
+        <% } %>
+
         <tr>
             <td colspan="7" style="text-align:center;">
                 <input type="submit" value="Submit PO">
@@ -190,14 +200,15 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
     </table>
 </form>
 
+<!-- Vendor Auto-fill JS -->
 <script type="text/javascript">
 var vendorData = {
 <%
-int count=0,size=vendorMap.size();
+int count=0, size=vendorMap.size();
 for(Map.Entry<String,String[]> e: vendorMap.entrySet()){
-String name=e.getKey().replace("\"","\\\"");
-String gst=e.getValue()[0].replace("\"","\\\"");
-String addr=e.getValue()[1].replace("\"","\\\"");
+String name = e.getKey().replace("\"","\\\"");
+String gst = e.getValue()[0].replace("\"","\\\"");
+String addr = e.getValue()[1].replace("\"","\\\"");
 %>
 "<%=name%>":["<%=gst%>","<%=addr%>"]<%= (++count<size)?",":""%>
 <% } %>

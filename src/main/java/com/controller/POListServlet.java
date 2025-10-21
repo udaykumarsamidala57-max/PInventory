@@ -29,7 +29,7 @@ public class POListServlet extends HttpServlet {
         String deleteId = request.getParameter("delete_id");
         String approveId = request.getParameter("Approve_id");
 
-        // ✅ Handle deletion
+        // ✅ Handle Deletion
         if (deleteId != null) {
             try (Connection con = DBUtil.getConnection();
                  PreparedStatement ps1 = con.prepareStatement("DELETE FROM po_items WHERE po_no=?");
@@ -48,7 +48,7 @@ public class POListServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Handle approval
+        // ✅ Handle Approval
         if (approveId != null) {
             try (Connection con = DBUtil.getConnection();
                  PreparedStatement ps = con.prepareStatement(
@@ -65,26 +65,27 @@ public class POListServlet extends HttpServlet {
             return;
         }
 
-        // ✅ Fetch Purchase Orders and their related items
+        // ✅ Fetch Purchase Orders and their items
         List<PO> poList = new ArrayList<>();
 
         try (Connection con = DBUtil.getConnection();
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(
-                     "SELECT * FROM po_master WHERE po_status = 'Open' OR po_status = 'Partially Received' ORDER BY po_date DESC")) {
+                     "SELECT * FROM po_master " +
+                     "WHERE po_status IN ('Open', 'Partially Received') " +
+                     "ORDER BY po_date DESC")) {
 
             while (rs.next()) {
                 PO po = new PO();
                 int poId = rs.getInt("PO_id");
-                String poNumber = rs.getString("po_number");
 
-                po.setPoNumber(poNumber);
+                po.setPoNumber(rs.getString("po_number"));
                 po.setPoDate(rs.getString("po_date"));
                 po.setVendorName(rs.getString("vendor_name"));
                 po.setTotalAmount(rs.getDouble("total_amount"));
                 po.setApproval(rs.getString("Approval"));
 
-                // ✅ Fetch related PO items with balance and received quantities
+                // ✅ Fetch items for this PO
                 List<POItems> items = new ArrayList<>();
                 try (PreparedStatement ps2 = con.prepareStatement(
                         "SELECT i.*, s.balance_qty, " +
@@ -122,15 +123,11 @@ public class POListServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // ✅ Send PO data to both JSPs
+        // ✅ Set data in request
         request.setAttribute("poList", poList);
 
-        // Option 1️⃣: Forward to default POlist.jsp (existing behavior)
+        // ✅ Forward to JSP (only once)
         RequestDispatcher rd = request.getRequestDispatcher("POlist.jsp");
-        rd.forward(request, response);
-
-        request.setAttribute("poList", poList);
-        RequestDispatcher rd1 = request.getRequestDispatcher("ListPO.jsp");
         rd.forward(request, response);
     }
 }

@@ -15,8 +15,8 @@
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Purchase Orders</title>
-    
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -34,7 +34,7 @@
         /* Main Table */
         table.main-table {
             width: 98%;
-            margin: 0 auto;
+            margin: 0 auto 40px auto;
             border-collapse: collapse;
             border: 2px solid #b0c4de;
             background: #fff;
@@ -42,20 +42,16 @@
             border-radius: 6px;
         }
         table.main-table thead {
-    background: linear-gradient(135deg, #ff8c00, #8e2de2);
-    color: white;
-            padding: 8px;
+            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+            color: white;
             font-size: 16px;
+        }
 
-}
-
-       
-        table.main-table td {
+        table.main-table td, table.main-table th {
             border: 1px solid #dcdcdc;
             padding: 8px;
             text-align: center;
             font-size: 15px;
-            background-color: #f9f9f9;
         }
 
         table.main-table tr:nth-child(even) td { background-color: #f2f6fa; }
@@ -146,6 +142,14 @@
             color: #666 !important;
             cursor: not-allowed;
         }
+
+        .no-data {
+            text-align: center;
+            color: red;
+            padding: 12px;
+            font-weight: bold;
+            background: #fff5f5;
+        }
     </style>
 
     <script>
@@ -162,26 +166,29 @@
         }
     </script>
 </head>
+
 <body>
 <jsp:include page="header.jsp" />
 
 <div class="main-content">
     <div class="main-section">
         <h2>Purchase Orders</h2>
+
         <table class="main-table">
-        <thead>
-            <tr>
-                <th>PO Number</th>
-                <th>PO Date</th>
-                <th>Vendor Name</</th>
-                <th>Total Amount</th>
-                <th>Approval Status</th>
-                <th>Action</th>
-                <th>Print</th>
-                <th>GRN</th>
-                <th>Items</th>
-            </tr>
-</thead>
+            <thead>
+                <tr>
+                    <th>PO Number</th>
+                    <th>PO Date</th>
+                    <th>Vendor Name</th>
+                    <th>Total Amount</th>
+                    <th>Approval Status</th>
+                    <th>Action</th>
+                    <th>Print</th>
+                    <th>GRN</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
             <%
                 List<PO> list = (List<PO>) request.getAttribute("poList");
                 if (list != null && !list.isEmpty()) {
@@ -189,106 +196,107 @@
                         String approval = po.getApproval();
                         String poId = po.getPoNumber().replaceAll("\\s+", "_");
             %>
-            <tr>
-                <td><%= po.getPoNumber() %></td>
-                <td><%= po.getPoDate() %></td>
-                <td><%= po.getVendorName() %></td>
-                <td><%= po.getTotalAmount() %></td>
-                <td><%= approval %></td>
+                <tr>
+                    <td><%= po.getPoNumber() %></td>
+                    <td><%= po.getPoDate() %></td>
+                    <td><%= po.getVendorName() %></td>
+                    <td><%= po.getTotalAmount() %></td>
+                    <td><%= approval %></td>
 
-                <td>
-                    <!-- Delete -->
-                    <form action="POListServlet" method="get" style="margin:0;">
-                        <input type="hidden" name="delete_id" value="<%= po.getPoNumber() %>">
-                        <input type="submit" value="Delete"
-                               class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "delete-btn" : "disabled" %>"
-                               <%= !"Approved".equalsIgnoreCase(approval) ? "" : "disabled" %>
-                               onclick="return confirm('Are you sure you want to delete this record?');" />
-                    </form>
+                    <td>
+                        <!-- Delete -->
+                        <form action="POListServlet" method="get" style="margin:0;">
+                            <input type="hidden" name="delete_id" value="<%= po.getPoNumber() %>">
+                            <input type="submit" value="Delete"
+                                class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "delete-btn" : "disabled" %>"
+                                <%= !"Approved".equalsIgnoreCase(approval) ? "" : "disabled" %>
+                                onclick="return confirm('Are you sure you want to delete this record?');" />
+                        </form>
 
-                    <!-- Approve -->
-                    <% if("Global".equalsIgnoreCase(role)){ %>
-                    <form action="POListServlet" method="get" style="margin:0;">
-                        <input type="hidden" name="Approve_id" value="<%= po.getPoNumber() %>">
-                        <input type="submit" value="Approve"
-                               class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "approve-btn" : "disabled" %>"
-                               <%= (!"Approved".equalsIgnoreCase(approval)) ? "" : "disabled" %>
-                               onclick="return confirm('Are you sure you want to approve this record?');">
-                    </form>
-                    <% } %>
-                </td>
-
-                <!-- Print -->
-                <td>
-                    <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
-                        <input type="hidden" name="poNumber" value="<%= po.getPoNumber() %>">
-                        <input type="submit" value="View / Print" class="action-btn print-btn" />
-                    </form>
-                </td>
-
-                <!-- GRN -->
-                <td>
-                    <form action="GRNServlet" method="get" style="margin:0;">
-                        <input type="hidden" name="po_number" value="<%= po.getPoNumber() %>">
-                        <input type="submit" value="GRN"
-                               class="action-btn <%= "Approved".equalsIgnoreCase(approval) ? "grn-btn" : "disabled" %>"
-                               <%= "Approved".equalsIgnoreCase(approval) ? "" : "disabled" %> />
-                    </form>
-                </td>
-
-                <!-- Expand Items -->
-                <td>
-                    <input type="button" id="btn-<%= poId %>" value="Show Items"
-                           class="action-btn expand-btn" onclick="toggleItems('<%= poId %>')">
-                </td>
-            </tr>
-
-            <!-- Items Block -->
-            <tr>
-                <td colspan="9" style="padding:0;">
-                    <div class="items-block" id="items-<%= poId %>">
-                        <h4>Items for PO: <%= po.getPoNumber() %></h4>
-                        <%
-                            if (po.getItems() != null && !po.getItems().isEmpty()) {
-                        %>
-                        <table class="items-table">
-                            <tr>
-                                <td>Item ID</td>
-                                <td>Description</td>
-                                <td>PO Quantity</td>
-                        <!--         <td>Balance Qty</td>✅ new -->
-                                <td>Received Qty</td>
-                                <td>Balance to Receive </td>
-                                <td>Rate</td>
-                                <td>Discount %</td>
-                                <td>GST %</td>
-                            </tr>
-                            <% for (POItems item : po.getItems()) { %>
-                            <tr>
-                                <td><%= item.getItemId() %></td>
-                                <td><%= item.getItemName() %></td>
-                                <td><%= item.getQty() %></td>
-                             
-                             <td><%= item.getReceivedQty() %></td>
-                             <td><%= item.gettobeReceivedQty() %></td>
-                                <td><%= item.getRate() %></td>
-                                <td><%= item.getDiscountPercent() %></td>
-                                <td><%= item.getGstPercent() %></td>
-                            </tr>
-                            <% } %>
-                        </table>
-                        <% } else { %>
-                        <p style="color:red;">No items found for this PO.</p>
+                        <!-- Approve -->
+                        <% if ("Global".equalsIgnoreCase(role)) { %>
+                        <form action="POListServlet" method="get" style="margin:0;">
+                            <input type="hidden" name="Approve_id" value="<%= po.getPoNumber() %>">
+                            <input type="submit" value="Approve"
+                                class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "approve-btn" : "disabled" %>"
+                                <%= (!"Approved".equalsIgnoreCase(approval)) ? "" : "disabled" %>
+                                onclick="return confirm('Are you sure you want to approve this record?');">
+                        </form>
                         <% } %>
-                    </div>
-                </td>
-            </tr>
-            <%      }
-                } else { %>
-            <tr>
-                <td colspan="9" style="text-align:center; color:red;">No Purchase Orders Found</td>
-            </tr>
+                    </td>
+
+                    <!-- Print -->
+                    <td>
+                        <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
+                            <input type="hidden" name="poNumber" value="<%= po.getPoNumber() %>">
+                            <input type="submit" value="View / Print" class="action-btn print-btn" />
+                        </form>
+                    </td>
+
+                    <!-- GRN -->
+                    <td>
+                        <form action="GRNServlet" method="get" style="margin:0;">
+                            <input type="hidden" name="po_number" value="<%= po.getPoNumber() %>">
+                            <input type="submit" value="GRN"
+                                class="action-btn <%= "Approved".equalsIgnoreCase(approval) ? "grn-btn" : "disabled" %>"
+                                <%= "Approved".equalsIgnoreCase(approval) ? "" : "disabled" %> />
+                        </form>
+                    </td>
+
+                    <!-- Expand Items -->
+                    <td>
+                        <input type="button" id="btn-<%= poId %>" value="Show Items"
+                            class="action-btn expand-btn" onclick="toggleItems('<%= poId %>')">
+                    </td>
+                </tr>
+
+                <!-- Items Block -->
+                <tr>
+                    <td colspan="9" style="padding:0;">
+                        <div class="items-block" id="items-<%= poId %>">
+                            <h4>Items for PO: <%= po.getPoNumber() %></h4>
+                            <%
+                                if (po.getItems() != null && !po.getItems().isEmpty()) {
+                            %>
+                            <table class="items-table">
+                                <tr>
+                                    <th>Item ID</th>
+                                    <th>Description</th>
+                                    <th>PO Quantity</th>
+                                    <th>Received Qty</th>
+                                    <th>Balance to Receive</th>
+                                    <th>Rate</th>
+                                    <th>Discount %</th>
+                                    <th>GST %</th>
+                                </tr>
+                                <% for (POItems item : po.getItems()) { %>
+                                <tr>
+                                    <td><%= item.getItemId() %></td>
+                                    <td><%= item.getItemName() %></td>
+                                    <td><%= item.getQty() %></td>
+                                    <td><%= item.getReceivedQty() %></td>
+                                    <td><%= item.gettobeReceivedQty() %></td>
+                                    <td><%= item.getRate() %></td>
+                                    <td><%= item.getDiscountPercent() %></td>
+                                    <td><%= item.getGstPercent() %></td>
+                                </tr>
+                                <% } %>
+                            </table>
+                            <% } else { %>
+                            <p class="no-data">No items found for this PO.</p>
+                            <% } %>
+                        </div>
+                    </td>
+                </tr>
+            <% 
+                    }
+                } else { 
+            %>
+                <tr>
+                    <td colspan="9" class="no-data">No Purchase Orders Found</td>
+                </tr>
             <% } %>
+            </tbody>
         </table>
     </div>
 </div>
