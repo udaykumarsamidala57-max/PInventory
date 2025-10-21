@@ -10,6 +10,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <!DOCTYPE html>
 <html>
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
 <title>Indent Full Report</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
@@ -38,7 +39,7 @@ body {
   margin-top: 15px;
 }
 .main-table th, .main-table td {
-  padding: 10px;
+  padding: 7px;
   text-align: center;
   border: 1px solid #ddd;
 }
@@ -218,22 +219,39 @@ function resetFilters() {
 }
 
 function downloadExcel() {
-  const table = document.getElementById('dataTable');
-  let csv = [];
-  for (let row of table.rows) {
-    let cols = [];
-    for (let cell of row.cells) {
-      let text = cell.innerText.replace(/"/g, '""');
-      cols.push(`"${text}"`);
-    }
-    csv.push(cols.join(","));
-  }
-  const blob = new Blob([csv.join("\n")], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "Indent_Full_Report.csv";
-  link.click();
-}
+	  const table = document.getElementById('dataTable');
+	  let csv = [];
+	  
+	  // Get all rows (thead + tbody)
+	  const rows = table.querySelectorAll('tr');
+
+	  rows.forEach(row => {
+	    let cols = row.querySelectorAll('th, td');
+	    let rowData = [];
+
+	    cols.forEach(cell => {
+	      // Handle text content only, ignore inner buttons/forms
+	      let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+	      rowData.push('"' + text + '"');
+	    });
+
+	    csv.push(rowData.join(','));
+	  });
+
+	  // Convert to Blob
+	  const csvString = csv.join('\n');
+	  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+	  const link = document.createElement('a');
+	  const url = URL.createObjectURL(blob);
+
+	  link.setAttribute('href', url);
+	  link.setAttribute('download', 'Indent_Full_Report.csv');
+	  link.style.visibility = 'hidden';
+
+	  document.body.appendChild(link);
+	  link.click();
+	  document.body.removeChild(link);
+	}
 
 // Expand/Collapse
 let expanded = true;

@@ -10,7 +10,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <html>
 <head>
     <title>Create Purchase Order</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: "Segoe UI", Arial, sans-serif;

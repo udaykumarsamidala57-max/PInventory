@@ -13,15 +13,15 @@
 %>
 
 <!-- HEADER -->
-<style>
+
 <style>
 
 .user-info {
     display: inline-block;
-    background: white;   /* heading background */
+    background:  #007bff !important;;  /* heading background */
       
     
-    color: #fff;
+    color: white !important;
     padding: 10px 20px;
     border-radius: 8px;
     cursor: pointer;
@@ -34,6 +34,7 @@
 
 /* Role is hidden initially */
 .user-role {
+   color: white;
     max-height: 0;
     opacity: 0;
     overflow: hidden;
@@ -56,6 +57,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
 </head>
 
 <header>

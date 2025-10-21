@@ -70,6 +70,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             <input type="text" id="searchBox" placeholder="Search item name...">
             <button class="btn" onclick="filterTable()">Filter</button>
             <button class="btn" style="background:#6c757d" onclick="resetFilter()">Reset</button>
+            <button class="btn btn-info" onclick="downloadExcel()">Download Excel</button>
         </div>
 
         <table class="main-table" id="stockTable">
@@ -148,6 +149,40 @@ function resetFilter() {
     document.getElementById("searchBox").value = "";
     filterTable();
 }
+function downloadExcel() {
+	  const table = document.getElementById('stockTable');
+	  let csv = [];
+	  
+	  // Get all rows (thead + tbody)
+	  const rows = table.querySelectorAll('tr');
+
+	  rows.forEach(row => {
+	    let cols = row.querySelectorAll('th, td');
+	    let rowData = [];
+
+	    cols.forEach(cell => {
+	      // Handle text content only, ignore inner buttons/forms
+	      let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+	      rowData.push('"' + text + '"');
+	    });
+
+	    csv.push(rowData.join(','));
+	  });
+
+	  // Convert to Blob
+	  const csvString = csv.join('\n');
+	  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+	  const link = document.createElement('a');
+	  const url = URL.createObjectURL(blob);
+
+	  link.setAttribute('href', url);
+	  link.setAttribute('download', 'Stock Report.csv');
+	  link.style.visibility = 'hidden';
+
+	  document.body.appendChild(link);
+	  link.click();
+	  document.body.removeChild(link);
+	}
 </script>
 
 </body>

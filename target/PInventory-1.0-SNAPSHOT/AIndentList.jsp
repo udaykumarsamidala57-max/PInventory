@@ -9,12 +9,9 @@
         response.sendRedirect("login.jsp");
         return;
     }
-   
 
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
-    
-
 
     Map<Integer, Double> pendingMap = (Map<Integer, Double>) request.getAttribute("pendingPerItem");
     if (pendingMap == null) pendingMap = new HashMap<>();
@@ -33,7 +30,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body { font-family: 'Poppins', sans-serif; }
         .highlight-cell { background-color: #fff3cd; }
@@ -54,6 +51,8 @@
         .dropdown-container button { margin-left: 6px; }
         .cancelled-row { background-color: #f8d7da !important; }
         .edit-modal input, .edit-modal textarea { width: 90%; margin: 6px auto; padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
+        .btn-blue { background-color: #007bff; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; }
+        .btn-blue:hover { background-color: #0056b3; }
     </style>
 </head>
 
@@ -81,10 +80,11 @@
             <input type="text" id="keywordSearch" placeholder="Search keyword..." class="filter-input" style="flex:1; min-width:200px;">
             <button onclick="filterTable()" class="btn btn-blue">Search</button>
             <button onclick="resetFilters()" class="btn btn-orange">Reset</button>
+            
         </div>
 
         <!-- Indent table -->
-        <table class="main-table">
+        <table class="main-table" id="indentTable">
             <thead>
             <tr>
                 <th>ID</th><th>Ind. No</th><th>Date</th><th>Item</th><th>Qty</th><th>Avl. Qty</th>
@@ -240,7 +240,7 @@ function validateApprovalForm(form) {
         showPopup("✅ Indent moved to Purchase Order section.", form);
         return false;
     } else if (next === "Cancelled") {
-        form.submit(); // Direct cancel (Option A)
+        form.submit();
         return false;
     } else if (next === "Management Note") {
         showPopup("ℹ️ Indent moved to Management Note section.", form);
@@ -250,6 +250,40 @@ function validateApprovalForm(form) {
         return false;
     }
 }
+
+// ==========================
+// SEARCH FILTERS (WORKING)
+// ==========================
+function filterTable() {
+    const fromDate = document.getElementById("fromDate").value;
+    const toDate = document.getElementById("toDate").value;
+    const keyword = document.getElementById("keywordSearch").value.toLowerCase();
+
+    const rows = document.querySelectorAll("#indentTable tbody tr");
+
+    rows.forEach(row => {
+        const date = row.cells[2].textContent.trim();
+        const text = row.textContent.toLowerCase();
+        let visible = true;
+
+        if (fromDate && date < fromDate) visible = false;
+        if (toDate && date > toDate) visible = false;
+        if (keyword && !text.includes(keyword)) visible = false;
+
+        row.style.display = visible ? "" : "none";
+    });
+}
+
+function resetFilters() {
+    document.getElementById("fromDate").value = "";
+    document.getElementById("toDate").value = "";
+    document.getElementById("keywordSearch").value = "";
+    document.querySelectorAll("#indentTable tbody tr").forEach(r => r.style.display = "");
+}
+
+// ==========================
+// EXCEL DOWNLOAD
+// ==========================//
 </script>
 
 </body>

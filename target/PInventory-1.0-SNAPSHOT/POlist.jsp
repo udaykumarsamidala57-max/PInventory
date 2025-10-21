@@ -16,7 +16,7 @@
     <meta charset="UTF-8">
     <title>SRS System - Purchase Orders</title>
     
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;

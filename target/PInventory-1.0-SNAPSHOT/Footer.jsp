@@ -3,7 +3,7 @@
     SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy"); // Example: 04 October 2025
     String todayDate = sdf.format(Calendar.getInstance().getTime());
 %>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- FOOTER -->
 <footer>
     <p>©<%= todayDate %> | SRS Inventory System | 
