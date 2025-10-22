@@ -70,6 +70,9 @@ public class SendOTPServlet extends HttpServlet {
     private boolean sendEmailViaBrevo(String to, int otp) {
         try {
             String apiKey = System.getenv("BREVO_API_KEY"); // 🔑 Replace this with your real Brevo API key
+            if (apiKey == null || apiKey.isEmpty()) {
+                throw new RuntimeException("⚠️ Brevo API key not found in environment variables!");
+            }
 
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
