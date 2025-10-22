@@ -8,7 +8,7 @@
         body { font-family: Arial; background: #f2f2f2; }
         .container {
             width: 350px; margin: 100px auto; padding: 25px;
-            background: white; box-shadow: 0px 0px 10px gray; border-radius: 8px;
+            background: white; box-shadow: 0px 0px 10px gray; border-radius: 9px;
         }
         input { width: 100%; padding: 10px; margin: 8px 0; }
         button { width: 100%; padding: 10px; background: #0763B3; color: white; border: none; border-radius: 4px; }
