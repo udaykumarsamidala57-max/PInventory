@@ -69,7 +69,7 @@ public class SendOTPServlet extends HttpServlet {
     // ✅ Brevo (Sendinblue) API method — Works in Railway
     private boolean sendEmailViaBrevo(String to, int otp) {
         try {
-            String apiKey = "YOUR_BREVO_API_KEY"; // 🔑 Replace this with your real Brevo API key
+            String apiKey = System.getenv("BREVO_API_KEY"); // 🔑 Replace this with your real Brevo API key
 
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
