@@ -9,8 +9,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import com.bean.DBUtil;
 
-@WebServlet("/VerifyOTPServlet")
-public class VerifyOTPServlet extends HttpServlet {
+@WebServlet("/VerifyOtpServlet")
+public class VerifyOtpServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)

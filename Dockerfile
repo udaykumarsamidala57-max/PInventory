@@ -1,7 +1,9 @@
 # Stage 1: Build WAR using Maven
 FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-COPY . .
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Deploy WAR on Tomcat

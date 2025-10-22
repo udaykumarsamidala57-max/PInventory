@@ -18,7 +18,7 @@
 <body>
 <div class="container">
     <h2>Enter OTP</h2>
-    <form action="VerifyOTPServlet" method="post">
+    <form action="VerifyOtpServlet" method="post">
         <input type="hidden" name="email" value="<%= request.getAttribute("email") %>">
         <label>OTP</label>
         <input type="text" name="otp" required>
