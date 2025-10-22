@@ -26,4 +26,3 @@ com\bean\Addstock.class
 com\bean\PO.class
 com\controller\SendOTPServlet.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
-com\controller\SendOTPServlet$1.class
