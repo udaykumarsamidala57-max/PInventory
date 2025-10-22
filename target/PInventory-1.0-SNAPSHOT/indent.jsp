@@ -25,7 +25,7 @@
 
 <div class="main-content">
   <div class="card">
-    <h2 align="center">ITEMS REQUISITION FORM</h2>
+    <h2 align="center">INDENT FORM</h2>
 
     <form action="IndentServlet" method="post" id="indentForm">
       <table class="main-table">
@@ -150,10 +150,22 @@ function addRow() {
 }
 
 function fillDropdowns(catSel, subSel, itemSel, uomCell, selectedDept) {
-  let filteredCats = (userRole === "Global") ? categories : categories.filter(c => c.departmentName === selectedDept);
+  let filteredCats = (userRole === "Global") 
+      ? categories 
+      : categories.filter(c => c.departmentName === selectedDept);
+
+  // ✅ Get DISTINCT categories by name
+  const uniqueCats = [];
+  const seen = new Set();
+  filteredCats.forEach(c => {
+    if (!seen.has(c.name)) {
+      seen.add(c.name);
+      uniqueCats.push(c);
+    }
+  });
 
   catSel.innerHTML = '<option value="">-- Select Category --</option>';
-  filteredCats.forEach(c => {
+  uniqueCats.forEach(c => {
     const opt = document.createElement('option');
     opt.value = c.name;
     opt.text = c.name;
