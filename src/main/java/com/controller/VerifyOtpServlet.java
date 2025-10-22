@@ -7,8 +7,6 @@ import java.time.format.DateTimeFormatter;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
-
 import com.bean.DBUtil;
 
 @WebServlet("/VerifyOTPServlet")

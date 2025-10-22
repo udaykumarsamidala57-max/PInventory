@@ -11,7 +11,6 @@ import javax.mail.internet.*;
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
 import com.bean.DBUtil;
 
 @WebServlet("/SendOTPServlet")
