@@ -37,7 +37,6 @@
           <td><label>Date:</label></td>
           <td><input type="date" name="date" id="dateField" required></td>
         </tr>
-
         <tr>
           <td><label>Department:</label></td>
           <td>
@@ -63,6 +62,7 @@
             <th>SubCategory</th>
             <th>Item</th>
             <th>UOM</th>
+            <th>Available Stock</th>
             <th>Qty</th>
             <th>Purpose</th>
             <th>Action</th>
@@ -104,7 +104,14 @@ const subcategories = [];
 
 const items = [];
 <c:forEach var="i" items="${masterData.items}">
-  items.push({ id: '${i.id}', name: '${i.name}', UOM: '${i.UOM}', category: '${i.category}', subcategory: '${i.subcategory}' });
+  items.push({ 
+    id: '${i.id}', 
+    name: '${i.name}', 
+    UOM: '${i.UOM}', 
+    category: '${i.category}', 
+    subcategory: '${i.subcategory}', 
+    stock: '${i.stock}' // ✅ new stock info
+  });
 </c:forEach>
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -134,6 +141,7 @@ function addRow() {
     <td><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
     <td><select class="item"><option value="">-- Select Item --</option></select></td>
     <td class="uom"></td>
+    <td class="stock"></td>
     <td><input type="number" class="qty" min="1" required></td>
     <td><input type="text" class="purpose" required></td>
     <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>
@@ -144,24 +152,24 @@ function addRow() {
   const subSel = tr.querySelector(".subcat");
   const itemSel = tr.querySelector(".item");
   const uomCell = tr.querySelector(".uom");
+  const stockCell = tr.querySelector(".stock");
 
-  fillDropdowns(catSel, subSel, itemSel, uomCell, selectedDept);
+  fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept);
   tr.querySelector(".removeBtn").onclick = () => tr.remove();
 }
 
-function fillDropdowns(catSel, subSel, itemSel, uomCell, selectedDept) {
+function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
   let filteredCats = (userRole === "Global") 
       ? categories 
       : categories.filter(c => c.departmentName === selectedDept);
 
-  // ✅ Get DISTINCT categories by name
-  const uniqueCats = [];
+  // Unique categories
   const seen = new Set();
-  filteredCats.forEach(c => {
-    if (!seen.has(c.name)) {
-      seen.add(c.name);
-      uniqueCats.push(c);
-    }
+  const uniqueCats = filteredCats.filter(c => {
+    const key = c.name;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
   });
 
   catSel.innerHTML = '<option value="">-- Select Category --</option>';
@@ -193,6 +201,7 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, selectedDept) {
       o.text = i.name;
       o.dataset.id = i.id;
       o.dataset.uom = i.UOM;
+      o.dataset.stock = i.stock;
       itemSel.add(o);
     });
   };
@@ -200,6 +209,7 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, selectedDept) {
   itemSel.onchange = () => {
     const opt = itemSel.options[itemSel.selectedIndex];
     uomCell.textContent = opt ? opt.dataset.uom || '' : '';
+    stockCell.textContent = opt ? opt.dataset.stock || '0' : '0';
   };
 }
 

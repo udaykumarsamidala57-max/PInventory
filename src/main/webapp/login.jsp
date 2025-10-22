@@ -20,7 +20,7 @@
         h2 {
             text-align: center;
         }
-        input[type=text], input[type=password] {
+        input[type=text], input[type=password], input[type=email] {
             width: 100%;
             padding: 10px;
             margin: 8px 0;
@@ -30,7 +30,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #4CAF50;
+            background: #0763B3;
             color: white;
             font-size: 16px;
             border: none;
@@ -44,25 +44,21 @@
             color: red;
             text-align: center;
         }
+        hr { margin: 20px 0; }
     </style>
 </head>
 <body>
     <div class="login-container">
         <h2>User Login</h2>
-        <form action="LoginServlet" method="post">
-            <label for="username">Username</label>
-            <input type="text" name="username" required>
+        
 
-            <label for="password">Password</label>
-            <input type="password" name="password" required>
+        <hr>
 
-            <button type="submit">Login</button>
+        <form action="SendOTPServlet" method="post">
+            <label>Login via Email</label>
+            <input type="email" name="email" placeholder="Enter your registered email" required>
+            <button type="submit">Send OTP</button>
         </form>
-
-        <!-- Show error message if login fails -->
-        <div class="error">
-            <%= request.getAttribute("error") != null ? request.getAttribute("error") : "" %>
-        </div>
     </div>
 </body>
 </html>

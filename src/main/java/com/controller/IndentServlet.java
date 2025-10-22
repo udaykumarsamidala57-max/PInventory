@@ -87,19 +87,24 @@ public class IndentServlet extends HttpServlet {
 
             // === Items ===
             List<Map<String, String>> items = new ArrayList<>();
-            String itemSql = "SELECT Item_id, Item_name, UOM, Category, Sub_Category FROM item_master";
-            try (PreparedStatement ps = con.prepareStatement(itemSql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, String> i = new HashMap<>();
-                    i.put("id", String.valueOf(rs.getInt("Item_id")));
-                    i.put("name", rs.getString("Item_name"));
-                    i.put("UOM", rs.getString("UOM"));
-                    i.put("category", rs.getString("Category"));
-                    i.put("subcategory", rs.getString("Sub_Category"));
-                    items.add(i);
-                }
-            }
+            String itemSql = 
+            	    "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
+            	    "COALESCE(s.balance_qty, 0) AS stock " +
+            	    "FROM item_master im " +
+            	    "LEFT JOIN stock s ON im.Item_id = s.item_id";
+            	try (PreparedStatement ps = con.prepareStatement(itemSql);
+            	     ResultSet rs = ps.executeQuery()) {
+            	    while (rs.next()) {
+            	        Map<String, String> i = new HashMap<>();
+            	        i.put("id", String.valueOf(rs.getInt("Item_id")));
+            	        i.put("name", rs.getString("Item_name"));
+            	        i.put("UOM", rs.getString("UOM"));
+            	        i.put("category", rs.getString("Category"));
+            	        i.put("subcategory", rs.getString("Sub_Category"));
+            	        i.put("stock", rs.getString("stock"));
+            	        items.add(i);
+            	    }
+            	}
 
             // === Attach Data ===
             masterData.put("departments", departments);
