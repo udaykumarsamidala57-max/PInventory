@@ -1,16 +1,17 @@
 package com.controller;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Properties;
 import java.util.Random;
-import javax.mail.*;
-import javax.mail.internet.*;
+
 import javax.servlet.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
+
 import com.bean.DBUtil;
 
 @WebServlet("/SendOTPServlet")
@@ -38,10 +39,19 @@ public class SendOTPServlet extends HttpServlet {
                 ps.setString(3, email);
                 ps.executeUpdate();
 
-                sendEmail(email, otp);
-                request.setAttribute("email", email);
-                RequestDispatcher rd = request.getRequestDispatcher("verify_otp.jsp");
-                rd.forward(request, response);
+                // Send OTP using Brevo API
+                boolean sent = sendEmailViaBrevo(email, otp);
+
+                if (sent) {
+                    request.setAttribute("email", email);
+                    RequestDispatcher rd = request.getRequestDispatcher("verify_otp.jsp");
+                    rd.forward(request, response);
+                } else {
+                    request.setAttribute("error", "Failed to send OTP. Try again later.");
+                    RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
+                    rd.forward(request, response);
+                }
+
             } else {
                 request.setAttribute("error", "Email not registered!");
                 RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
@@ -56,28 +66,41 @@ public class SendOTPServlet extends HttpServlet {
         }
     }
 
-    private void sendEmail(String to, int otp) throws MessagingException {
-        final String from = "udaykumarsamidala57@gmail.com"; // your Gmail
-        final String password = "ppmx bxto kijp qike"; // Gmail App Password
+    // ✅ Brevo (Sendinblue) API method — Works in Railway
+    private boolean sendEmailViaBrevo(String to, int otp) {
+        try {
+            String apiKey = "YOUR_BREVO_API_KEY"; // 🔑 Replace this with your real Brevo API key
 
-        Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", "smtp.gmail.com");
-        props.put("mail.smtp.port", "587");
+            URL url = new URL("https://api.brevo.com/v3/smtp/email");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("accept", "application/json");
+            conn.setRequestProperty("api-key", apiKey);
+            conn.setRequestProperty("content-type", "application/json");
+            conn.setDoOutput(true);
 
-        Session session = Session.getInstance(props, new Authenticator() {
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(from, password);
+            String json = """
+            {
+              "sender": {"name":"SRS ADMIN CENTRAL","email":"srsadmincentral"},
+              "to":[{"email":"%s"}],
+              "subject":"Your OTP for Login",
+              "htmlContent":"<p>Your OTP is <b>%d</b>.<br>It is valid for 5 minutes.</p><p>Regards,<br>System Admin</p>"
             }
-        });
+            """.formatted(to, otp);
 
-        Message message = new MimeMessage(session);
-        message.setFrom(new InternetAddress(from));
-        message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
-        message.setSubject("Your OTP for Login");
-        message.setText("Your OTP is: " + otp + "\nIt is valid for 5 minutes.\n\nRegards,\nSystem Admin");
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(json.getBytes());
+            }
 
-        Transport.send(message);
+            int code = conn.getResponseCode();
+            conn.disconnect();
+
+            System.out.println("Brevo API response code: " + code);
+            return code == 201 || code == 202; // success
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
