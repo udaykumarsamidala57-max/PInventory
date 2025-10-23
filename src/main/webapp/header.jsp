@@ -76,21 +76,29 @@
     <a href="IndentServlet"><i class="fas fa-home"></i> Home</a>
 
     <a href="IndentServlet"><i class="fas fa-file-alt"></i> Item Requisition Form</a>
-   <% if ("Global".equalsIgnoreCase(roles)||"Incharge".equalsIgnoreCase(roles)) { %>
+   <% if ("Global".equalsIgnoreCase(roles)||"Incharge".equalsIgnoreCase(roles)||"Admin".equalsIgnoreCase(roles)) { %>
     <a href="AIndentListServlet"><i class="fas fa-check-circle"></i> Approve Indent</a>
     <%} %>
     <a href="IndentlistServlet"><i class="fas fa-list"></i> Indent Report</a>
-
+     <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="IndentPO"><i class="fas fa-shopping-cart"></i>Create Purchase Order</a>
+    <%} %>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="POListServlet"><i class="fas fa-check-circle"></i> Approve PO</a>
+    <%} %>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="GRNServlet"><i class="fas fa-shopping-cart"></i> GRN Entry</a>
+     <%} %>
+      <% if ("Global".equalsIgnoreCase(roles)||"Stores".equalsIgnoreCase(depts) ) {%>
     <a href="IssueServlet"><i class="fas fa-box"></i> Issue Items</a>
+    <%} %>
     <a href="Issuereport.jsp"><i class="fas fa-chart-line"></i> Issue Report</a>
     <a href="Stock.jsp"><i class="fas fa-chart-line"></i> Stock Report</a>
     <a href="stockReport.jsp"><i class="fas fa-chart-line"></i> Stock Ledger Report</a>
     <a href="ItemsMaster.jsp"><i class="fas fa-file-alt"></i> Item Master</a>
+    <% if ("Global".equalsIgnoreCase(roles)) {%>
     <a href="AddStock"><i class="fas fa-file-alt"></i> Add Stock</a>
-   
+   <%} %>
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
 
