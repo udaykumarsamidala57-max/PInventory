@@ -125,7 +125,7 @@
                 <td><%= ind.getRequestedBy() %></td>
                 <td><%= ind.getPurpose() %></td>
                 <td>
-                    <% if (("Incharge".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(role)) && !"Approved".equalsIgnoreCase(I_Status)) { %>
+                    <% if (("Incharge".equalsIgnoreCase(role)||"Admin".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(role)) && !"Approved".equalsIgnoreCase(I_Status)) { %>
                         <form action="AIndentListServlet" method="post">
                             <input type="hidden" name="id" value="<%= ind.getId() %>">
                             <input type="hidden" name="action" value="Iapprove">
