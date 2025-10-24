@@ -6,19 +6,14 @@ import java.sql.SQLException;
 
 public class DBUtil {
 
-	
-	private static final String URL = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory";
-	
-    private static final String USER = "root";
-	private static final String PASSWORD = "123456789abcd19592025";
-
-
+    private static final String URL = System.getenv("MYSQLHOST");   // ✅ now loaded from Railway
+    private static final String USER = System.getenv("MYSQLUSER");
+    private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
 
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
         } catch (ClassNotFoundException e) {
-        	
             e.printStackTrace();
         }
     }
