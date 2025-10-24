@@ -140,11 +140,10 @@ input[type="text"], input[type="date"] {
                String status = ind.getStatus();
 
                // Determine CSS styles
-               String istatusStyle = (istatus == null || istatus.trim().isEmpty() || istatus.equalsIgnoreCase("pending"))
-                ? "color:red;font-weight:bold;" : "";
-
+                String istatusStyle = istatus.equalsIgnoreCase("Approved")? "color:Green;font-weight:bold;" : "color:red;font-weight:bold;";
+                
                String statusStyle = (status == null || status.trim().isEmpty() || status.equalsIgnoreCase("pending"))
-               ? "color:red;font-weight:bold;" : "";
+               ? "color:red;font-weight:bold;" : "color:Green;font-weight:bold;";
         %>
         <tr class="data-row">
           <td><%= ind.getId() %></td>
