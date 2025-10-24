@@ -151,6 +151,13 @@ table {
     margin-top: 20px;
 }
 
+.main-table {
+  display: block;
+  max-height: 500px; /* adjust height as needed */
+  overflow-y: auto;
+  border-collapse: collapse;
+}
+
 /* Modern orange-blue gradient header */
 /* ====== Table Header Gradient ====== */
 thead {
@@ -160,6 +167,10 @@ thead {
 
 th {
     color: #fff;
+      position: sticky;
+    position: sticky;
+    top: 0;  
+    z-index: 10; /* ensure header stays on top of rows */
     font-weight: 600;
     text-align: center;
     padding: 6px 6px;

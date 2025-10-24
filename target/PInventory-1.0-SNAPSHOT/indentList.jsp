@@ -135,6 +135,17 @@ input[type="text"], input[type="date"] {
           if (indents != null && !indents.isEmpty()) {
             for (IndentItemFull ind : indents) {
         %>
+        <%
+               String istatus = ind.getIstatus();
+               String status = ind.getStatus();
+
+               // Determine CSS styles
+               String istatusStyle = (istatus == null || istatus.trim().isEmpty() || istatus.equalsIgnoreCase("pending"))
+                ? "color:red;font-weight:bold;" : "";
+
+               String statusStyle = (status == null || status.trim().isEmpty() || status.equalsIgnoreCase("pending"))
+               ? "color:red;font-weight:bold;" : "";
+        %>
         <tr class="data-row">
           <td><%= ind.getId() %></td>
           <td><%= ind.getIndentNo() %></td>
@@ -147,9 +158,10 @@ input[type="text"], input[type="date"] {
           <td><%= ind.getDepartment() %></td>
           <td><%= ind.getRequestedBy() %></td>
           <td><%= ind.getPurpose() %></td>
-          <td><%= ind.getIstatus() %></td>
+         <td style="<%= istatusStyle %>"><%= (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus %></td>
+         
           <td><%= ind.getIapprovevdate() %></td>
-          <td><%= ind.getStatus() %></td>
+         <td style="<%= statusStyle %>"><%= (status == null || status.trim().isEmpty()) ? "Pending" : status %></td>
           <td><%= ind.getFapprovevdate() %></td>
           <td><%= ind.getIndentNext() %></td>
           
