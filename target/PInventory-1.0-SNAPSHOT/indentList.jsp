@@ -95,8 +95,8 @@ input[type="text"], input[type="date"] {
 
 <div class="main-content">
   <div class="card">
-    <h2 style="text-align:center;">Indent Full Report</h2>
-
+    <h1 style="text-align:center;">Indents Report</h1>
+<br>
     <div class="search-bar">
       <input type="text" id="keywordSearch" placeholder="Search by any field..." onkeyup="filterTable()">
       <label>From: <input type="date" id="fromDate"></label>
@@ -114,8 +114,8 @@ input[type="text"], input[type="date"] {
           <th onclick="sortTable(1)">Indent No</th>
           <th onclick="sortTable(2)">Date</th>
           <th onclick="sortTable(3)">Item</th>
-          <th>Qty</th>
-          <th>Issued Qty</th>
+          <th>Avail. Qty</th>
+          <th>Req. Qty</th>
           <th>UOM</th>
           <th>Dept</th>
           <th>Requested By</th>
@@ -140,8 +140,9 @@ input[type="text"], input[type="date"] {
           <td><%= ind.getIndentNo() %></td>
           <td><%= ind.getDate() %></td>
           <td><%= ind.getItemName() %></td>
+           <td><%= ind.getBalanceQty() %></td>
           <td><%= ind.getQty() %></td>
-          <td><%= ind.getBalanceQty() %></td>
+         
           <td><%= ind.getUom() %></td>
           <td><%= ind.getDepartment() %></td>
           <td><%= ind.getRequestedBy() %></td>

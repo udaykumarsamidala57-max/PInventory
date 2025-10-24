@@ -36,7 +36,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Indent List</title>
+    <title>Approve Indent</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
@@ -71,8 +71,8 @@
 
 <div class="main-content">
     <div class="card">
-        <h2>Indent List</h2>
-
+        <h1 align="center">Approve Indent</h1>
+<br>
         <% if (errorMsg != null) { %>
         <script>
             document.addEventListener("DOMContentLoaded", function() {
@@ -97,7 +97,7 @@
         <table class="main-table" id="indentTable">
             <thead>
             <tr>
-                <th>ID</th><th>Ind. No</th><th>Date</th><th>Item</th><th>Qty</th><th>Avl. Qty</th>
+                <th>ID</th><th>Ind. No</th><th>Date</th><th>Item</th><th>Avl. Qty</th><th>Req.Qty</th>
                 <th>UOM</th><th>Dept.</th><th>Req. By</th><th>Purpose</th>
                 <th>I/C Act</th><th>I/C Stat</th><th>Status</th><th>Next</th><th>Actions</th>
             </tr>
@@ -118,8 +118,8 @@
                 <td><%= ind.getIndentNo() %></td>
                 <td><%= ind.getDate() %></td>
                 <td><%= ind.getItemName() %></td>
-                <td><%= ind.getQty() %></td>
                 <td><%= ind.getBalanceQty() %></td>
+                <td><%= ind.getQty() %></td>
                 <td><%= ind.getUom() %></td>
                 <td><%= ind.getDepartment() %></td>
                 <td><%= ind.getRequestedBy() %></td>

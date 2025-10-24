@@ -142,7 +142,7 @@ function addRow() {
     <td><select class="item"><option value="">-- Select Item --</option></select></td>
     <td class="uom"></td>
     <td class="stock"></td>
-    <td><input type="number" class="qty" min="1" required></td>
+    <td><input type="number" class="qty" min="0" step="any" required></td>
     <td><input type="text" class="purpose" required></td>
     <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>
   `;
