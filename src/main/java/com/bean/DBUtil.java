@@ -5,27 +5,26 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class DBUtil {
+    private static Connection connection = null;
 
-    private static final String HOST = System.getenv("MYSQLHOST");
-    private static final String PORT = System.getenv("MYSQLPORT");
-    private static final String DB = System.getenv("MYSQLDATABASE");
-    private static final String USER = System.getenv("MYSQLUSER");
-    private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
+    public static Connection getConnection() throws SQLException, ClassNotFoundException {
+        if (connection == null || connection.isClosed()) {
+            String host = System.getenv("RAILWAY_PRIVATE_DOMAIN"); // ✅ private domain
+            if (host == null || host.isEmpty()) host = System.getenv("MYSQLHOST"); // fallback
 
-    private static final String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DB
-            + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+            String port = System.getenv("MYSQLPORT");
+            String dbName = System.getenv("MYSQLDATABASE");
+            String user = System.getenv("MYSQLUSER");
+            String pass = System.getenv("MYSQLPASSWORD");
 
-    static {
-        try {
+            String url = "jdbc:mysql://" + host + ":" + port + "/" + dbName +
+                         "?useSSL=false&allowPublicKeyRetrieval=true";
+
             Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("✅ MySQL Driver Loaded Successfully!");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            System.out.println("🔗 Connecting to: " + url);
+            connection = DriverManager.getConnection(url, user, pass);
+            System.out.println("✅ Connected successfully!");
         }
-    }
-
-    public static Connection getConnection() throws SQLException {
-        System.out.println("🔗 Connecting to DB: " + URL);
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        return connection;
     }
 }
