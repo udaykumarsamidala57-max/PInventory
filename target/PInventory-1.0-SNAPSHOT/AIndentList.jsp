@@ -113,6 +113,8 @@
                         double pending = (itemId != null && pendingMap.get(itemId) != null) ? pendingMap.get(itemId) : 0.0;
                         boolean editable = (next == null || next.isEmpty());
             %>
+            
+            
             <tr class="<%= "Cancelled".equalsIgnoreCase(status) ? "cancelled-row" : "" %>">
                 <td><%= ind.getId() %></td>
                 <td><%= ind.getIndentNo() %></td>
@@ -134,6 +136,7 @@
                     <% } %>
                 </td>
                 <td><%= I_Status %></td>
+                
                 <td><%= status %></td>
                 <td><%= next %></td>
                 <td>

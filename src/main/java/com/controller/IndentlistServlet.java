@@ -34,10 +34,11 @@ public class IndentlistServlet extends HttpServlet {
 
             StringBuilder listSql = new StringBuilder();
             listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ")
-                   .append("FROM indent i ")
-                   .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
-                   .append("WHERE (TRIM(i.Indentnext) NOT IN ('Cancelled') OR i.Indentnext IS NULL) ")
-                   .append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
+            .append("FROM indent i ")
+            .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
+            .append("WHERE (TRIM(i.Indentnext) NOT IN ('Cancelled') OR i.Indentnext IS NULL) ")
+            .append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ")
+            .append("ORDER BY i.status DESC");
 
             // Department-based filter
             if (!"Global".equalsIgnoreCase(role)) {
