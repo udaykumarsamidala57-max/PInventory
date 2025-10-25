@@ -53,9 +53,9 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("department", department);
                 // Redirect based on role
                 if ("Global".equalsIgnoreCase(role)) {
-                    response.sendRedirect("IndentServlet");
+                    response.sendRedirect("Home");
                 } else if ("incharge".equalsIgnoreCase(role)) {
-                    response.sendRedirect("IndentServlet");
+                    response.sendRedirect("Home");
                 } else {
                     response.sendRedirect("IndentServlet");
                 }

@@ -73,7 +73,7 @@
 <!-- SIDEBAR -->
 <div class="sidebar">
     <h2>Navigation</h2>
-    <a href="IndentServlet"><i class="fas fa-home"></i> Home</a>
+    <a href="Home"><i class="fas fa-home"></i> Home</a>
 
     <a href="IndentServlet"><i class="fas fa-file-alt"></i> Item Requisition Form</a>
    <% if ("Global".equalsIgnoreCase(roles)||"Incharge".equalsIgnoreCase(roles)||"Admin".equalsIgnoreCase(roles)) { %>
