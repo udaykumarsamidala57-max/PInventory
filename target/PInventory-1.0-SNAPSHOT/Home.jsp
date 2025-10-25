@@ -79,7 +79,7 @@
     }
 
     th {
-        background: #007bff;
+        background: blue;
         color: white;
     }
 
@@ -162,6 +162,7 @@
 
         <!-- 🔹 Pending Summary -->
         <div class="summary-card">
+        <h3>Pending Indents</h3>
             <br><br>
             <h3>Pending at In-charge</h3>
             <h2><%= request.getAttribute("istatusPending") %></h2>
@@ -171,30 +172,7 @@
         </div>
 
         <!-- 🔹 Total Indents by Department -->
-        <div class="summary-card2">
-            <div class="table-box">
-                <h3>Total Indents by Department</h3>
-                <table>
-                    <tr>
-                        <th>Department</th>
-                        <th>Total</th>
-                    </tr>
-                    <%
-                        Map<String, Integer> totalDeptMap = (Map<String, Integer>) request.getAttribute("totalDeptMap");
-                        if (totalDeptMap != null && !totalDeptMap.isEmpty()) {
-                            for (Map.Entry<String, Integer> entry : totalDeptMap.entrySet()) {
-                    %>
-                    <tr>
-                        <td><%= entry.getKey() %></td>
-                        <td><%= entry.getValue() %></td>
-                    </tr>
-                    <%  }
-                        } else { %>
-                    <tr><td colspan="2">No Indents Found</td></tr>
-                    <% } %>
-                </table>
-            </div>
-        </div>
+        
 
         <!-- 🔹 Pending by Department -->
         <div class="summary-card2">
@@ -217,6 +195,31 @@
                     <%  }
                         } else { %>
                     <tr><td colspan="2">No Pending Found</td></tr>
+                    <% } %>
+                </table>
+            </div>
+        </div>
+        <div class="summary-card">
+        <h3>Total Indents by Department</h3>
+            <div class="table-box">
+                
+                <table>
+                    <tr>
+                        <th>Department</th>
+                        <th>Total</th>
+                    </tr>
+                    <%
+                        Map<String, Integer> totalDeptMap = (Map<String, Integer>) request.getAttribute("totalDeptMap");
+                        if (totalDeptMap != null && !totalDeptMap.isEmpty()) {
+                            for (Map.Entry<String, Integer> entry : totalDeptMap.entrySet()) {
+                    %>
+                    <tr>
+                        <td><%= entry.getKey() %></td>
+                        <td><%= entry.getValue() %></td>
+                    </tr>
+                    <%  }
+                        } else { %>
+                    <tr><td colspan="2">No Indents Found</td></tr>
                     <% } %>
                 </table>
             </div>
