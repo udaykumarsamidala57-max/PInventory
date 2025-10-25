@@ -39,7 +39,7 @@ public class IndentlistServlet extends HttpServlet {
                    .append("WHERE 1=1 "); // Show all records (no exclusion)
 
             // Department-based filter
-            if (!"Global".equalsIgnoreCase(role)) {
+            if (!"Global".equalsIgnoreCase(role)&& !"Finance".equalsIgnoreCase(dept)) {
                 if ("Admin".equalsIgnoreCase(role)) {
                     listSql.append(" AND i.department IN ('Electrical','Housekeeping','Plumbing','Dininghall') ");
                 } else {
@@ -58,7 +58,7 @@ public class IndentlistServlet extends HttpServlet {
             PreparedStatement ps = con.prepareStatement(listSql.toString());
 
             // Set department parameter if not Global/Admin
-            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
+            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)&&!"Finance".equalsIgnoreCase(dept)) {
                 ps.setString(1, dept);
             }
 
