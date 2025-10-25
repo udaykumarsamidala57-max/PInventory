@@ -1,8 +1,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<% 
- HttpSession sess = request.getSession(false);
+<%
+    HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
         return;
@@ -111,12 +111,10 @@
         color: #333;
     }
 
-    .not-approved {
+    .stamp {
         color: red;
-        text-align: center;
         font-weight: bold;
-        font-size: 22px;
-        margin-top: 20px;
+        font-size: 18px;
         text-transform: uppercase;
     }
 
@@ -154,7 +152,6 @@
 <div class="container">
     <div class="header">
         <img src="Header.png" alt="School Logo">
-       
     </div>
     <hr>
     <h2>Indent Details</h2>
@@ -171,7 +168,9 @@ if (indentNumber != null) {
     ResultSet rs = pst.executeQuery();
 
     boolean hasRecords = false;
-    String indentDate = "", department = "", requestedBy = "", status = "", purpose = "",Indentnext="";
+    String indentDate = "", department = "", requestedBy = "", purpose = "";
+    boolean allApproved = true; // ✅ Track approval state of all items
+    int count = 1;
 
     if (rs.next()) {
         hasRecords = true;
@@ -179,8 +178,6 @@ if (indentNumber != null) {
         department = rs.getString("department");
         requestedBy = rs.getString("requested_by");
         purpose = rs.getString("purpose");
-        status = rs.getString("status");
-        
 %>
 
     <div class="indent-info">
@@ -198,46 +195,43 @@ if (indentNumber != null) {
             <th>Quantity</th>
             <th>Status</th>
         </tr>
+
 <%
-        int count = 1;
         do {
+            String itemStatus = rs.getString("status");
+            if (itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim())) {
+                allApproved = false;
+            }
 %>
         <tr>
             <td><%= count++ %></td>
             <td><%= rs.getString("item_name") %></td>
             <td><%= rs.getString("qty") %></td>
-            <td><%= rs.getString("status") %></td>
+            <td><%= itemStatus %></td>
         </tr>
 <%
         } while (rs.next());
 %>
     </table>
 
-<%
-    if ("Approved".equalsIgnoreCase(status)) {
-%>
-        <div class="footer">
-            <p>For SANDUR RESIDENTIAL SCHOOL</p>
-        </div>
+    <div class="footer">
+        <p>For SANDUR RESIDENTIAL SCHOOL</p>
+    </div>
 
-        <div class="sign">
-            <p><b></b></p>
-            <p>Authorised Signatory</p>
-        </div>
+    <div class="sign">
 <%
-    } else {
+        if (allApproved) {
 %>
-         <div class="footer">
-            <p>For SANDUR RESIDENTIAL SCHOOL</p>
-        </div>
-
-        <div class="sign">
-            
-            <p>Authorised Signatory</p>
-        </div>
+            <p><b>Ashiya Banu</b></p>
+            <p class="stamp">Authorised Signatory</p>
 <%
-    }
+        } else {
 %>
+            <p>Authorised Signatory</p>
+<%
+        }
+%>
+    </div>
 
     <button class="print-btn" onclick="window.print()">Print Indent</button>
 
@@ -245,6 +239,7 @@ if (indentNumber != null) {
     } else {
         out.println("<p style='text-align:center;color:red;font-size:16px;'>No Indent Found!</p>");
     }
+
     con.close();
 }
 %>

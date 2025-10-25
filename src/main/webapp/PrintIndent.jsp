@@ -1,8 +1,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
-<% 
- HttpSession sess = request.getSession(false);
+<%
+    HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
         return;
@@ -111,13 +111,19 @@
         color: #333;
     }
 
-    .not-approved {
-        color: red;
-        text-align: center;
+    /* ✅ Modern green APPROVED stamp */
+    .stamp {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 6px 14px;
+        border: 2px solid #28a745;
+        color: #28a745;
         font-weight: bold;
-        font-size: 22px;
-        margin-top: 20px;
+        font-size: 20px;
         text-transform: uppercase;
+        border-radius: 6px;
+        transform: rotate(-8deg);
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
     }
 
     @media print {
@@ -154,7 +160,6 @@
 <div class="container">
     <div class="header">
         <img src="Header.png" alt="School Logo">
-       
     </div>
     <hr>
     <h2>Indent Details</h2>
@@ -171,7 +176,9 @@ if (indentNumber != null) {
     ResultSet rs = pst.executeQuery();
 
     boolean hasRecords = false;
-    String indentDate = "", department = "", requestedBy = "", status = "", purpose = "",Indentnext="";
+    String indentDate = "", department = "", requestedBy = "", purpose = "";
+    boolean allApproved = true;
+    int count = 1;
 
     if (rs.next()) {
         hasRecords = true;
@@ -179,8 +186,6 @@ if (indentNumber != null) {
         department = rs.getString("department");
         requestedBy = rs.getString("requested_by");
         purpose = rs.getString("purpose");
-        status = rs.getString("status");
-        
 %>
 
     <div class="indent-info">
@@ -198,46 +203,44 @@ if (indentNumber != null) {
             <th>Quantity</th>
             <th>Status</th>
         </tr>
+
 <%
-        int count = 1;
         do {
+            String itemStatus = rs.getString("status");
+            if (itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim())) {
+                allApproved = false;
+            }
 %>
         <tr>
             <td><%= count++ %></td>
             <td><%= rs.getString("item_name") %></td>
             <td><%= rs.getString("qty") %></td>
-            <td><%= rs.getString("status") %></td>
+            <td><%= itemStatus %></td>
         </tr>
 <%
         } while (rs.next());
 %>
     </table>
 
-<%
-    if ("Approved".equalsIgnoreCase(status)) {
-%>
-        <div class="footer">
-            <p>For SANDUR RESIDENTIAL SCHOOL</p>
-        </div>
+    <div class="footer">
+        <p>For SANDUR RESIDENTIAL SCHOOL</p>
+    </div>
 
-        <div class="sign">
-            <p><b></b></p>
-            <p>Authorised Signatory</p>
-        </div>
+    <div class="sign">
 <%
-    } else {
+        if (allApproved) {
 %>
-         <div class="footer">
-            <p>For SANDUR RESIDENTIAL SCHOOL</p>
-        </div>
-
-        <div class="sign">
-            
-            <p>Authorised Signatory</p>
-        </div>
+            <p><b>Ashiya Banu</b></p>
+            <p><b>Authorized Signatory</b></p>
+            <p class="stamp">Approved</p>
 <%
-    }
+        } else {
 %>
+            <p><b>Authorised Signatory</b></p>
+<%
+        }
+%>
+    </div>
 
     <button class="print-btn" onclick="window.print()">Print Indent</button>
 
@@ -245,6 +248,7 @@ if (indentNumber != null) {
     } else {
         out.println("<p style='text-align:center;color:red;font-size:16px;'>No Indent Found!</p>");
     }
+
     con.close();
 }
 %>
