@@ -21,6 +21,7 @@ com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\bean\IndentItems.class
 com\bean\IndentItemFull.class
+com\controller\Home.class
 com\controller\PO.class
 com\bean\Addstock.class
 com\bean\PO.class
