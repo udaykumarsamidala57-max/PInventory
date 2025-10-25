@@ -34,11 +34,9 @@ public class IndentlistServlet extends HttpServlet {
 
             StringBuilder listSql = new StringBuilder();
             listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ")
-            .append("FROM indent i ")
-            .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
-            .append("WHERE (TRIM(i.Indentnext) NOT IN ('Cancelled') OR i.Indentnext IS NULL) ")
-            .append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ")
-            .append("ORDER BY i.status DESC");
+                   .append("FROM indent i ")
+                   .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
+                   .append("WHERE 1=1 "); // Show all records (no exclusion)
 
             // Department-based filter
             if (!"Global".equalsIgnoreCase(role)) {
@@ -49,7 +47,13 @@ public class IndentlistServlet extends HttpServlet {
                 }
             }
 
-            listSql.append("ORDER BY i.indent_id DESC");
+            // Order — Pending first, then Approved, then Cancelled
+            listSql.append("ORDER BY CASE ")
+                   .append("WHEN (i.Istatus IS NULL OR TRIM(i.Istatus) = '' OR TRIM(i.Istatus) = 'Pending') THEN 0 ")
+                   .append("WHEN TRIM(i.Istatus) = 'Approved' THEN 1 ")
+                   .append("WHEN TRIM(i.Istatus) = 'Cancelled' THEN 2 ")
+                   .append("ELSE 3 END, ")
+                   .append("i.indent_id DESC");
 
             PreparedStatement ps = con.prepareStatement(listSql.toString());
 
@@ -73,22 +77,15 @@ public class IndentlistServlet extends HttpServlet {
                 ind.setRequestedBy(rs.getString("requested_by"));
                 ind.setPurpose(rs.getString("purpose"));
                 ind.setIstatus(rs.getString("Istatus"));
-                ind.setApprovedBy(rs.getString("IstausApprove")); // corrected typo
+                ind.setApprovedBy(rs.getString("IstausApprove"));
                 ind.setStatus(rs.getString("status"));
                 ind.setIndentNext(rs.getString("Indentnext"));
 
                 // Optional columns — handle safely
-                try {
-                    ind.setIapprovevdate(rs.getDate("Iapprovedate"));
-                } catch (SQLException ignored) {}
-                try {
-                    ind.setFapprovevdate(rs.getDate("Fapprovedate"));
-                } catch (SQLException ignored) {}
+                try { ind.setIapprovevdate(rs.getDate("Iapprovedate")); } catch (SQLException ignored) {}
+                try { ind.setFapprovevdate(rs.getDate("Fapprovedate")); } catch (SQLException ignored) {}
 
-                // Balance qty from alias
-                try {
-                    ind.setBalanceQty(rs.getDouble("balance_qty"));
-                } catch (SQLException ignored) {}
+                try { ind.setBalanceQty(rs.getDouble("balance_qty")); } catch (SQLException ignored) {}
 
                 list.add(ind);
             }
