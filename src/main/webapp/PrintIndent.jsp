@@ -230,7 +230,7 @@ if (indentNumber != null) {
 <%
         if (allApproved) {
 %>
-            <p><b>Ashiya Banu</b></p>
+            
             <p><b>Authorized Signatory</b></p>
             <p class="stamp">Approved</p>
 <%

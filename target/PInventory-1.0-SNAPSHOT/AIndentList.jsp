@@ -99,7 +99,7 @@
             <tr>
                 <th>ID</th><th>Ind. No</th><th>Date</th><th>Item</th><th>Avl. Qty</th><th>Req.Qty</th>
                 <th>UOM</th><th>Dept.</th><th>Req. By</th><th>Purpose</th>
-                <th>I/C Act</th><th>I/C Stat</th><th>Status</th><th>Next</th><th>Actions</th>
+                <th>I/C Act</th><th>L1</th><th>L2</th><th>Next</th><th>Actions</th>
             </tr>
             </thead>
             <tbody>

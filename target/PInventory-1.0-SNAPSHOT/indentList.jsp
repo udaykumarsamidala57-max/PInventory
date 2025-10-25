@@ -120,9 +120,9 @@ input[type="text"], input[type="date"] {
           <th>Dept</th>
           <th>Requested By</th>
           <th>Purpose</th>
-          <th>IStatus</th>
+          <th>L1 Status</th>
           <th>IApproveDate</th>
-          <th>Status</th>
+          <th>L2 Status</th>
           <th>FApproveDate</th>
           <th>Indent status</th>
           

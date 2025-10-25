@@ -111,11 +111,19 @@
         color: #333;
     }
 
+    /* ✅ Modern green APPROVED stamp */
     .stamp {
-        color: red;
+        display: inline-block;
+        margin-top: 15px;
+        padding: 6px 14px;
+        border: 2px solid #28a745;
+        color: #28a745;
         font-weight: bold;
-        font-size: 18px;
+        font-size: 20px;
         text-transform: uppercase;
+        border-radius: 6px;
+        transform: rotate(-8deg);
+        box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
     }
 
     @media print {
@@ -169,7 +177,7 @@ if (indentNumber != null) {
 
     boolean hasRecords = false;
     String indentDate = "", department = "", requestedBy = "", purpose = "";
-    boolean allApproved = true; // ✅ Track approval state of all items
+    boolean allApproved = true;
     int count = 1;
 
     if (rs.next()) {
@@ -222,12 +230,13 @@ if (indentNumber != null) {
 <%
         if (allApproved) {
 %>
-            <p><b>Ashiya Banu</b></p>
-            <p class="stamp">Authorised Signatory</p>
+            
+            <p><b>Authorized Signatory</b></p>
+            <p class="stamp">Approved</p>
 <%
         } else {
 %>
-            <p>Authorised Signatory</p>
+            <p><b>Authorised Signatory</b></p>
 <%
         }
 %>
