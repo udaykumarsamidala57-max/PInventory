@@ -16,6 +16,11 @@ public class Home extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	 HttpSession sess = request.getSession(false);
+         if (sess == null || sess.getAttribute("username") == null) {
+             response.sendRedirect("login.jsp");
+             return;
+         }
 
         int istatusPending = 0;
         int statusPending = 0;
