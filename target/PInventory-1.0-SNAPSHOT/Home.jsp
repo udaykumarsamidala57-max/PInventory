@@ -14,32 +14,53 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Indent Dashboard</title>
 <style>
+    /* 🌐 Global Reset */
+    * {
+        box-sizing: border-box;
+    }
+
     body {
         font-family: 'Segoe UI', sans-serif;
         background-color: #f6f8fb;
         margin: 0;
     }
 
+    /* 🧱 Main Container */
     .container {
         max-width: 1800px;
         margin: 40px auto;
         padding: 20px;
+        margin-left: 250px; /* shift content right for sidebar (adjust if sidebar width differs) */
+        transition: all 0.3s ease;
     }
 
-    h1 {
+    @media (max-width: 992px) {
+        .container {
+            margin-left: 200px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            margin-left: 0;
+            padding: 10px;
+        }
+    }
+
+    h1, h3 {
         color: #003366;
         text-align: center;
-        margin-bottom: 30px;
     }
 
-    /* Summary Cards */
+    /* 📊 Summary Section */
     .summary {
         display: flex;
         justify-content: center;
-        gap: 25px;
         flex-wrap: wrap;
+        gap: 20px;
         margin-bottom: 40px;
     }
 
@@ -50,6 +71,11 @@
         width: 320px;
         text-align: center;
         box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+
+    .summary-card:hover, .summary-card2:hover {
+        transform: translateY(-5px);
     }
 
     .summary-card h3, .summary-card2 h3 {
@@ -59,27 +85,24 @@
 
     .summary-card h2, .summary-card2 h2 {
         color: #007bff;
-        font-size: 30px;
-        margin: 0;
+        font-size: 28px;
+        margin: 5px 0;
     }
 
-    /* Table Section */
+    /* 📋 Table Section */
     .table-box {
         background: white;
         border-radius: 10px;
         box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         padding: 15px;
-    }
-
-    .table-box h3 {
-        color: #003366;
-        margin-bottom: 10px;
+        overflow-x: auto;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
-        font-size: 15px;
+        font-size: 14px;
+        min-width: 250px;
     }
 
     th, td {
@@ -89,7 +112,7 @@
     }
 
     th {
-        background: blue;
+        background: #0047b3;
         color: white;
     }
 
@@ -97,32 +120,47 @@
         background-color: #f1f7ff;
     }
 
-    /* Stages Section */
-    .stages {
-        background: white;
-        border-radius: 10px;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-        padding: 20px;
-    }
+    /* 🔹 Stages Section */
+   .stages {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    padding: 20px;
+    margin-top: 30px;
 
+    display: inline-block;     /* Shrink to fit cards */
+    width: fit-content;        /* Auto width */
+    max-width: 100%;           /* Prevent overflow */
+    margin-left: auto;         /* Center horizontally */
+    margin-right: auto;
+    text-align: center;        /* Center title + inner content */
+}
+
+.container {
+    max-width: 1800px;
+    margin: 40px auto;
+    padding: 20px;
+    margin-left: 250px; /* for sidebar */
+    transition: all 0.3s ease;
+    text-align: center; /* ✅ centers inline-block sections like .stages */
+}
     .stage-title {
         color: #003366;
         text-align: center;
         margin-bottom: 20px;
+        font-weight: 600;
+        font-size: 20px;
     }
 
     .stage-cards {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
-        gap: 25px;
-        padding: 0 20px;
-    }
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;   /* Center all cards inside */
+    gap: 15px;
+}
 
     .stage-card {
-        flex: 1 1 200px;
-        max-width: 250px;
-        min-width: 160px;
+        flex: 0 1 180px;
         border-radius: 10px;
         text-align: center;
         padding: 15px;
@@ -137,23 +175,39 @@
 
     .stage-card h4 {
         margin: 5px 0;
-        font-size: 17px;
+        font-size: 16px;
         color: #003366;
     }
 
     .stage-card h2 {
-        font-size: 28px;
+        font-size: 26px;
         margin: 0;
         font-weight: bold;
         color: #004085;
     }
 
-    /* Stage colors */
+    /* 🎨 Stage Color Themes */
     .approval-pending { background: #fff8e1; border-left: 6px solid #ffc107; }
     .po { background: #e7f1ff; border-left: 6px solid #007bff; }
     .issue-pending { background: #eafbea; border-left: 6px solid #28a745; }
     .issued { background: #e8f4f8; border-left: 6px solid #17a2b8; }
     .management-note { background: #f5e6ff; border-left: 6px solid #6f42c1; }
+
+    /* 📱 Responsive Adjustments */
+    @media (max-width: 576px) {
+        .summary-card, .summary-card2 {
+            width: 100%;
+        }
+
+        .stage-card {
+            flex: 1 1 45%;
+            font-size: 14px;
+        }
+
+        .stage-card h2 {
+            font-size: 22px;
+        }
+    }
 
     footer {
         text-align: center;
@@ -167,13 +221,14 @@
 <%@ include file="header.jsp" %>
 
 <div class="container">
-    <br><br>
-    <div class="summary">
+<BR>
+    <h1>Indent Dashboard</h1>
 
-        <!-- 🔹 Pending Summary -->
+    <!-- ✅ Summary Cards -->
+    <div class="summary">
         <div class="summary-card">
-        <h3>Pending Indents</h3>
-            <br><br>
+            <h3>Pending Indents</h3>
+            <br>
             <h3>Pending at In-charge</h3>
             <h2><%= request.getAttribute("istatusPending") %></h2>
             <br>
@@ -181,10 +236,6 @@
             <h2><%= request.getAttribute("statusPending") %></h2>
         </div>
 
-        <!-- 🔹 Total Indents by Department -->
-        
-
-        <!-- 🔹 Pending by Department -->
         <div class="summary-card2">
             <div class="table-box">
                 <h3>Pending by Department</h3>
@@ -209,10 +260,10 @@
                 </table>
             </div>
         </div>
+
         <div class="summary-card">
-        <h3>Total Indents by Department</h3>
+            <h3>Total Indents by Department</h3>
             <div class="table-box">
-                
                 <table>
                     <tr>
                         <th>Department</th>
@@ -236,11 +287,13 @@
         </div>
     </div>
 
-    <!-- 🔹 Stages Section -->
+    <!-- ✅ Stages Section -->
+   <!-- Centering wrapper -->
+<div style="text-align: center;">
     <div class="stages">
         <h3 class="stage-title">Indents / Issues by Stage</h3>
         <div class="stage-cards">
-            <%
+            <% 
                 Map<String, Integer> nextStageCountMap = (Map<String, Integer>) request.getAttribute("nextStageCountMap");
                 if (nextStageCountMap != null) {
                     String[][] stages = {
@@ -263,6 +316,7 @@
             %>
         </div>
     </div>
+</div>
 
     <footer>© <%= java.time.Year.now() %> Inventory Management Dashboard</footer>
 </div>
