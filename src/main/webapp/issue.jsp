@@ -15,6 +15,16 @@ if (sess == null || sess.getAttribute("username") == null) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="CSS/Form.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .low-stock {
+            color: red;
+            font-weight: bold;
+        }
+        .ok-stock {
+            color: blue;
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
 <%@ include file="header.jsp" %>
@@ -32,8 +42,9 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <th>Department</th>
                     <th>Item</th>
                     <th>Qty Requested</th>
+                    <th>Available Stock</th>
                     <th>UOM</th>
-                    <th>Requested By</th>
+                    <th>Purpose</th>
                     <th>Qty To Issue</th>
                     <th>Action</th>
                 </tr>
@@ -47,12 +58,28 @@ if (sess == null || sess.getAttribute("username") == null) {
                             <td>${i.department}</td>
                             <td>${i.item_name}</td>
                             <td>${i.qty_requested}</td>
+
+                            <!-- ✅ Show available stock with color -->
+                            <td>
+                                <c:choose>
+                                    <c:when test="${i.available_stock lt i.qty_requested}">
+                                        <span class="low-stock">${i.available_stock}</span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="ok-stock">${i.available_stock}</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+
                             <td>${i.UOM}</td>
-                            <td>${i.requested_by}</td>
-                            <td><input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required></td>
+                            <td>${i.purpose}</td>
+                            <td>
+                                <input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required>
+                            </td>
                             <td>
                                 <input type="hidden" name="indentId" value="${i.indent_id}">
                                 <input type="hidden" name="itemId" value="${i.item_id}">
+                                <input type="hidden" name="department" value="${i.department}">
                                 <input type="submit" class="btn btn-green" value="Issue">
                             </td>
                         </form>

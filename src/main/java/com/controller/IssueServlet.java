@@ -16,7 +16,11 @@ public class IssueServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        List<Map<String, Object>> indentList = new ArrayList<>();
+
         try (Connection con = DBUtil.getConnection()) {
+
+            // ✅ Generate next issue number
             String nextNo = "1";
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues");
@@ -24,8 +28,7 @@ public class IssueServlet extends HttpServlet {
                 if (rs.next()) nextNo = rs.getString("next_no");
             }
 
-            // ✅ Load only indents whose Indentnext='Issue' and not yet issued
-            List<Map<String, Object>> indentList = new ArrayList<>();
+            // ✅ Fetch approved indents pending issue
             String sql = "SELECT indent_id, indent_no, requested_by, department, item_id, item_name, "
                     + "qty, UOM, purpose, remarks "
                     + "FROM indent "
@@ -33,30 +36,50 @@ public class IssueServlet extends HttpServlet {
                     + "AND Indentnext='Issue' "
                     + "AND (Issued_status IS NULL OR Issued_status='Pending') "
                     + "ORDER BY indent_id DESC";
+
             try (PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
+
                 while (rs.next()) {
                     Map<String, Object> row = new LinkedHashMap<>();
+                    int itemId = rs.getInt("item_id");
+
+                    // ✅ Get available stock safely
+                    double availableStock = 0;
+                    try (PreparedStatement ps2 = con.prepareStatement(
+                            "SELECT COALESCE(balance_qty,0) AS balance_qty FROM stock WHERE item_id=?")) {
+                        ps2.setInt(1, itemId);
+                        try (ResultSet rs2 = ps2.executeQuery()) {
+                            if (rs2.next()) {
+                                availableStock = rs2.getDouble("balance_qty");
+                            }
+                        }
+                    }
+
+                    // ✅ Add record
                     row.put("indent_id", rs.getInt("indent_id"));
                     row.put("indent_no", rs.getString("indent_no"));
                     row.put("requested_by", rs.getString("requested_by"));
                     row.put("department", rs.getString("department"));
-                    row.put("item_id", rs.getInt("item_id"));
+                    row.put("item_id", itemId);
                     row.put("item_name", rs.getString("item_name"));
                     row.put("qty_requested", rs.getDouble("qty"));
                     row.put("UOM", rs.getString("UOM"));
                     row.put("purpose", rs.getString("purpose"));
                     row.put("remarks", rs.getString("remarks"));
+                    row.put("available_stock", availableStock); // ✅ store in list
                     indentList.add(row);
                 }
             }
 
+            // ✅ Send data to JSP
             request.setAttribute("nextIssueNo", nextNo);
             request.setAttribute("indentList", indentList);
             request.getRequestDispatcher("issue.jsp").forward(request, response);
 
         } catch (Exception e) {
-            throw new ServletException("DB Error (GET): " + e.getMessage(), e);
+            e.printStackTrace();
+            throw new ServletException("Error loading Issue page: " + e.getMessage(), e);
         }
     }
 
@@ -67,6 +90,7 @@ public class IssueServlet extends HttpServlet {
         String indentId = request.getParameter("indentId");
         String itemId = request.getParameter("itemId");
         String qtyIssuedStr = request.getParameter("qtyIssued");
+        String department = request.getParameter("department");
 
         if (indentId == null || itemId == null || qtyIssuedStr == null || qtyIssuedStr.isEmpty()) {
             request.setAttribute("message", "❌ Missing data for issue process!");
@@ -80,14 +104,14 @@ public class IssueServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
 
-            // ✅ Get next issue number
+            // ✅ Next issue number
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues");
                  ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) issueno = rs.getString("next_no");
             }
 
-            // ✅ Get issued_to (requested_by)
+            // ✅ Get issued_to
             String issuedTo = "";
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT requested_by FROM indent WHERE indent_id=?")) {
@@ -99,10 +123,10 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Check available stock
             double available = 0;
-            try (PreparedStatement ps = con.prepareStatement("SELECT balance_qty FROM stock WHERE item_id=?")) {
+            try (PreparedStatement ps = con.prepareStatement("SELECT COALESCE(balance_qty,0) FROM stock WHERE item_id=?")) {
                 ps.setInt(1, Integer.parseInt(itemId));
                 try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) available = rs.getDouble("balance_qty");
+                    if (rs.next()) available = rs.getDouble(1);
                 }
             }
 
@@ -112,17 +136,19 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Insert into stock_issues
             try (PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO stock_issues (issueno, item_id, issued_to, qty_issued, remarks, indent_id, issue_date) VALUES (?, ?, ?, ?, ?, ?, NOW())")) {
+                    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, issue_date) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())")) {
                 ps.setString(1, issueno);
                 ps.setInt(2, Integer.parseInt(itemId));
                 ps.setString(3, issuedTo);
-                ps.setDouble(4, qtyIssued);
-                ps.setString(5, "Issued against indent " + indentId);
-                ps.setString(6, indentId);
+                ps.setString(4, department);
+                ps.setDouble(5, qtyIssued);
+                ps.setString(6, "Issued against indent " + indentId);
+                ps.setString(7, indentId);
                 ps.executeUpdate();
             }
 
-            // ✅ Update stock table
+            // ✅ Update stock
             try (PreparedStatement ps = con.prepareStatement(
                     "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ? WHERE item_id = ?")) {
                 ps.setDouble(1, qtyIssued);
@@ -131,7 +157,7 @@ public class IssueServlet extends HttpServlet {
                 ps.executeUpdate();
             }
 
-            // ✅ Update indent (Issued_qty, Issued_status, POStatus, and Indentnext)
+            // ✅ Update indent
             try (PreparedStatement ps = con.prepareStatement(
                     "UPDATE indent SET Issued_status='Issued', Issued_qty=?, POStatus='Completed', Indentnext='Issued' WHERE indent_id=?")) {
                 ps.setDouble(1, qtyIssued);
