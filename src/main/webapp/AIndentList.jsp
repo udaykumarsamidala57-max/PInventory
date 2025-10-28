@@ -47,7 +47,7 @@
 <style>
 body {
     font-family: 'Poppins', sans-serif;
-    background-color: #eef2f8;
+    background: linear-gradient(135deg, #e3f2fd, #f8fbff);
     color: #333;
     margin: 0;
     padding: 0;
@@ -56,49 +56,61 @@ h1 {
     color: #003366;
     text-align: center;
     margin: 25px 0;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.5px;
 }
+
+/* ---------- Main Card ---------- */
 .card {
     background: transparent;
-    max-width: 95%;
+    max-width: 96%;
     margin: auto;
 }
+
+/* ---------- Filter Bar ---------- */
 .filter-bar {
-    background: white;
-    padding: 12px 18px;
+    background: #ffffff;
+    padding: 15px 20px;
     border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    margin-bottom: 25px;
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
+    justify-content: space-between;
 }
 .filter-input {
-    padding: 7px 10px;
+    padding: 8px 12px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #cfd8dc;
     min-width: 150px;
+    font-size: 14px;
+}
+.filter-bar button {
+    min-width: 90px;
 }
 
 /* ---------- Indent Card ---------- */
 .indent-card {
     background: white;
     border-radius: 14px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
     margin-bottom: 25px;
     overflow: hidden;
-    transition: transform 0.2s ease;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
 }
 .indent-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
 }
 
 /* ---------- Indent Header ---------- */
 .indent-header {
-    background: linear-gradient(90deg, #004080, #0059b3);
+    background: linear-gradient(90deg, #004080, #0073e6);
     color: white;
-    padding: 14px 20px;
+    padding: 14px 18px;
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
@@ -109,38 +121,37 @@ h1 {
     text-align: center;
     font-size: 14px;
     font-weight: 500;
-    margin: 3px 0;
 }
 .indent-header .indent-no {
-    font-weight: 800;
-    font-size: 20px;
+    font-weight: 700;
+    font-size: 18px;
 }
 
-/* ---------- Inner Table ---------- */
+/* ---------- Table ---------- */
 .inner-table {
     width: 98%;
-    margin: 12px auto 20px;
+    margin: 15px auto 20px;
     border-collapse: collapse;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 .inner-table th {
-    background-color: #f0f4fa;
+    background-color: #eaf3ff;
     color: #003366;
-    padding: 10px 12px;
+    padding: 10px;
     font-size: 13px;
-    border-bottom: 2px solid #d5e0f2;
+    border-bottom: 2px solid #dce6f5;
+    text-align: center;
 }
 .inner-table td {
-    padding: 8px 12px;
-    border-bottom: 1px solid #e6ecf5;
+    padding: 9px 10px;
+    border-bottom: 1px solid #edf2f7;
     text-align: center;
     background-color: #fff;
     font-size: 13px;
 }
-.inner-table tr:nth-child(even) td { background-color: #f9fbff; }
-.inner-table tr:hover td { background-color: #eef4ff; }
+.inner-table tr:nth-child(even) td { background-color: #f8fbff; }
+.inner-table tr:hover td { background-color: #eaf3ff; transition: 0.2s; }
 
 .cancelled-row td {
     background-color: #ffe6e6 !important;
@@ -150,10 +161,11 @@ h1 {
 button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     border: none;
     border-radius: 6px;
-    padding: 6px 10px;
+    padding: 7px 12px;
     font-size: 13px;
     cursor: pointer;
     font-weight: 500;
+    transition: all 0.2s ease;
 }
 .btn-blue { background-color: #007bff; color: white; }
 .btn-blue:hover { background-color: #0056b3; }
@@ -170,18 +182,28 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
 .dropdown-container {
     display: none;
     margin-top: 6px;
-    background: #f8f9fb;
-    padding: 8px;
-    border-radius: 6px;
+    background: #f4f7fc;
+    padding: 10px;
+    border-radius: 8px;
     border: 1px solid #d1d9e6;
+    animation: fadeIn 0.2s ease;
 }
-.dropdown-container select { padding: 6px; border-radius: 5px; border: 1px solid #ccc; }
+.dropdown-container select {
+    padding: 6px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
 .dropdown-container button { margin-left: 6px; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
+}
 
 /* ---------- Modals ---------- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.4);
+    background: rgba(0,0,0,0.45);
     display: none;
     justify-content: center;
     align-items: center;
@@ -191,11 +213,16 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     background: white;
     border-radius: 10px;
     width: 400px;
-    padding: 20px;
+    padding: 25px;
     text-align: center;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    animation: fadeIn 0.3s ease;
 }
-.modal h3 { color: #004080; font-weight: 600; margin-bottom: 10px; }
+.modal h3 {
+    color: #004080;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
 .modal button { margin-top: 10px; }
 
 @media (max-width: 768px) {
@@ -210,7 +237,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
 
 <div class="main-content">
 <div class="card">
-    <h1>Approve Indent</h1>
+    <h1><i class="fa-solid fa-file-signature"></i> Approve Indent</h1>
 
     <% if (errorMsg != null) { %>
     <script>
@@ -221,11 +248,17 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     <% } %>
 
     <div class="filter-bar">
-        <label>From:</label><input type="date" id="fromDate" class="filter-input">
-        <label>To:</label><input type="date" id="toDate" class="filter-input">
-        <input type="text" id="keywordSearch" placeholder="Search keyword..." class="filter-input" style="flex:1; min-width:200px;">
-        <button onclick="filterTable()" class="btn-blue">Search</button>
-        <button onclick="resetFilters()" class="btn-orange">Reset</button>
+        <div>
+            <label>From:</label>
+            <input type="date" id="fromDate" class="filter-input">
+        </div>
+        <div>
+            <label>To:</label>
+            <input type="date" id="toDate" class="filter-input">
+        </div>
+        <input type="text" id="keywordSearch" placeholder="🔍 Search keyword..." class="filter-input" style="flex:1; min-width:200px;">
+        <button onclick="filterTable()" class="btn-blue"><i class="fa-solid fa-search"></i> Search</button>
+        <button onclick="resetFilters()" class="btn-orange"><i class="fa-solid fa-rotate"></i> Reset</button>
     </div>
 
     <% if (!groupedIndents.isEmpty()) { 
@@ -236,11 +269,11 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     %>
     <div class="indent-card">
         <div class="indent-header">
-            <div class="indent-no">Indent No: <%= indentNo %></div>
-            <div>Date: <%= first.getDate() %></div>
-            <div>Dept: <%= first.getDepartment() %></div>
-            <div>Requested By: <%= first.getRequestedBy() %></div>
-            <div>Status: <%= first.getStatus() %></div>
+            <div class="indent-no">#<%= indentNo %></div>
+            <div><i class="fa-regular fa-calendar"></i> <%= first.getDate() %></div>
+            <div><i class="fa-solid fa-building"></i> <%= first.getDepartment() %></div>
+            <div><i class="fa-solid fa-user"></i> <%= first.getRequestedBy() %></div>
+            <div><i class="fa-solid fa-circle-check"></i> <%= first.getStatus() %></div>
         </div>
 
         <table class="inner-table">
@@ -272,7 +305,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                         <form action="AIndentListServlet" method="post">
                             <input type="hidden" name="id" value="<%= ind.getId() %>">
                             <input type="hidden" name="action" value="Iapprove">
-                            <button class="btn-green" type="submit">Approve</button>
+                            <button class="btn-green" type="submit"><i class="fa-solid fa-check"></i> Approve</button>
                         </form>
                     <% } %>
                 </td>
@@ -281,15 +314,15 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                 <td><%= status %></td>
                 <td>
                     <% if (editable) { %>
-                        <button class="btn-edit" type="button" onclick="openEditModal(<%= ind.getId() %>, '<%= ind.getQty() %>', '<%= ind.getPurpose().replace("'", "\\'") %>')">Edit</button>
+                        <button class="btn-edit" type="button" onclick="openEditModal(<%= ind.getId() %>, '<%= ind.getQty() %>', '<%= ind.getPurpose().replace("'", "\\'") %>')"><i class="fa-solid fa-pen"></i> Edit</button>
                         <form action="AIndentListServlet" method="post" style="display:inline;">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<%= ind.getId() %>">
-                            <button type="submit" class="btn-delete">Delete</button>
+                            <button type="submit" class="btn-delete"><i class="fa-solid fa-trash"></i> Delete</button>
                         </form>
                     <% } %>
                     <% if ("Global".equalsIgnoreCase(role) && "Approved".equalsIgnoreCase(I_Status) && !"Approved".equalsIgnoreCase(status)) { %>
-                        <button class="btn-orange" type="button" onclick="toggleDropdown(<%= ind.getId() %>)">Final Approve</button>
+                        <button class="btn-orange" type="button" onclick="toggleDropdown(<%= ind.getId() %>)"><i class="fa-solid fa-arrow-right"></i> Final Approve</button>
                         <div class="dropdown-container" id="dropdown-<%= ind.getId() %>">
                             <form action="AIndentListServlet" method="post"
                                   data-qty="<%= ind.getQty() %>"
@@ -325,12 +358,12 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
 <!-- Edit Modal -->
 <div class="modal-overlay" id="editModal">
     <div class="modal edit-modal">
-        <h3>Edit Indent</h3>
+        <h3><i class="fa-solid fa-pen"></i> Edit Indent</h3>
         <form action="AIndentListServlet" method="post" id="editForm">
             <input type="hidden" name="action" value="edit">
             <input type="hidden" id="editId" name="id">
             <label>Quantity:</label><br>
-            <input type="number" id="editQty" name="qty" step="0.01" required><br>
+            <input type="number" id="editQty" name="qty" step="0.01" required><br><br>
             <label>Purpose:</label><br>
             <textarea id="editPurpose" name="purpose" rows="3" required></textarea><br>
             <button type="submit" class="btn-blue">Update</button>
@@ -417,7 +450,7 @@ function filterTable() {
 
     rows.forEach(card => {
         const headerText = card.innerText.toLowerCase();
-        const dateText = card.querySelector(".indent-header div:nth-child(2)").innerText.split(":")[1].trim();
+        const dateText = card.querySelector(".indent-header div:nth-child(2)").innerText.split(":")[1]?.trim() || "";
         let visible = true;
 
         if (fromDate && dateText < fromDate) visible = false;
