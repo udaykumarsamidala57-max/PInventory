@@ -29,14 +29,14 @@ public class AIndentListServlet extends HttpServlet {
         String dept = (String) sess.getAttribute("department");
 
         if (
-        	    !"Global".equalsIgnoreCase(role) &&
-        	    !"Incharge".equalsIgnoreCase(role) &&
-        	    !"Admin".equalsIgnoreCase(role)
-        	) {
-        	    response.setContentType("text/html");
-        	    response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
-        	    return;
-        	}
+            !"Global".equalsIgnoreCase(role) &&
+            !"Incharge".equalsIgnoreCase(role) &&
+            !"Admin".equalsIgnoreCase(role)
+        ) {
+            response.setContentType("text/html");
+            response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
+            return;
+        }
 
         List<IndentItemFull> indentList = new ArrayList<>();
         Map<Integer, Double> pendingPerItem = new HashMap<>();
@@ -62,27 +62,28 @@ public class AIndentListServlet extends HttpServlet {
 
         // ---------- 2️⃣ Fetch all active indents ----------
         StringBuilder listSql = new StringBuilder();
-        listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ")
-               .append("FROM indent i ")
-               .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
-               .append("WHERE (TRIM(i.Indentnext) NOT IN ('Issued','Cancelled') OR i.Indentnext IS NULL) ")
-               .append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
+        listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ");
+        listSql.append("FROM indent i ");
+        listSql.append("LEFT JOIN stock s ON i.item_id = s.item_id ");
+        listSql.append("WHERE (TRIM(i.Indentnext) NOT IN ('Issued','Cancelled') OR i.Indentnext IS NULL) ");
+        listSql.append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
 
-        // If not Global, filter by department
+        // Department filtering
         if (!"Global".equalsIgnoreCase(role)) {
             if ("Admin".equalsIgnoreCase(role)) {
-            	listSql.append(" AND i.department IN ('Electrical','Housekeeping','Plumbing','Dininig Hall','RO Plant','Store')");
+                listSql.append("AND i.department IN ('Electrical','Housekeeping','Plumbing','Dining Hall','RO Plant','Store') ");
             } else {
-            	listSql.append(" AND i.department = ?");
+                listSql.append("AND i.department = ? ");
             }
         }
 
-        listSql.append("ORDER BY i.indent_id DESC");
+        // ✅ Order by oldest first (only once)
+        listSql.append("ORDER BY i.indent_id ASC");
 
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(listSql.toString())) {
 
-        	if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
+            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
                 ps.setString(1, dept);
             }
 

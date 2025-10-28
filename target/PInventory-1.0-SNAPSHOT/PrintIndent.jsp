@@ -170,8 +170,12 @@ if (indentNumber != null) {
     Connection con = DBUtil.getConnection();
 
     PreparedStatement pst = con.prepareStatement(
-        "SELECT indent_no, indent_date, item_name, qty, department, requested_by, status, purpose " +
-        "FROM indent WHERE indent_no=?");
+        "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, i.status, i.purpose, " +
+        "COALESCE(s.balance_qty, 0) AS balance_qty " +
+        "FROM indent i " +
+        "LEFT JOIN stock s ON i.item_id = s.item_id " +
+        "WHERE i.indent_no = ?"
+    );
     pst.setString(1, indentNumber);
     ResultSet rs = pst.executeQuery();
 
@@ -200,7 +204,9 @@ if (indentNumber != null) {
         <tr>
             <th>S.No</th>
             <th>Item Name</th>
-            <th>Quantity</th>
+            <th>Balance Qty</th>
+            <th>Req. Quantity</th>
+            
             <th>Status</th>
         </tr>
 
@@ -214,7 +220,9 @@ if (indentNumber != null) {
         <tr>
             <td><%= count++ %></td>
             <td><%= rs.getString("item_name") %></td>
+            <td><%= rs.getBigDecimal("balance_qty") %></td>
             <td><%= rs.getString("qty") %></td>
+            
             <td><%= itemStatus %></td>
         </tr>
 <%
@@ -230,7 +238,6 @@ if (indentNumber != null) {
 <%
         if (allApproved) {
 %>
-            
             <p><b>Authorized Signatory</b></p>
             <p class="stamp">Approved</p>
 <%
@@ -249,6 +256,8 @@ if (indentNumber != null) {
         out.println("<p style='text-align:center;color:red;font-size:16px;'>No Indent Found!</p>");
     }
 
+    rs.close();
+    pst.close();
     con.close();
 }
 %>

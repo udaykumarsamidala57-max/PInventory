@@ -112,8 +112,8 @@ h1 {
     margin: 3px 0;
 }
 .indent-header .indent-no {
-    font-weight: 700;
-    font-size: 16px;
+    font-weight: 800;
+    font-size: 20px;
 }
 
 /* ---------- Inner Table ---------- */
