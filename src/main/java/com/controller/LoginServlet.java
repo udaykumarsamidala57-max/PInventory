@@ -29,7 +29,7 @@ public class LoginServlet extends HttpServlet {
 
         String uname = request.getParameter("username");
         String pass = request.getParameter("password");
-
+        String dept = request.getParameter("department");
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -54,7 +54,7 @@ public class LoginServlet extends HttpServlet {
                 // Redirect based on role
                 if ("Global".equalsIgnoreCase(role)) {
                     response.sendRedirect("Home");
-                } else if ("incharge".equalsIgnoreCase(role)) {
+                } else if ("incharge".equalsIgnoreCase(role)||"Finance".equalsIgnoreCase(dept)) {
                     response.sendRedirect("Home");
                 } else {
                     response.sendRedirect("IndentServlet");
