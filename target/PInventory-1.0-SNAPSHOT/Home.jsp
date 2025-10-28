@@ -94,7 +94,7 @@
         border-radius: 10px;
         box-shadow: 0 3px 10px rgba(0,0,0,0.08);
         padding: 15px;
-        width: 350px;
+        width: 450px;
         flex-shrink: 0;
     }
 
@@ -168,13 +168,7 @@
     <div class="dashboard-row">
 
         <!-- ✅ Summary Card -->
-        <div class="summary-card">
-            <h3>Pending Indents</h3><br>
-            <h3>Pending at In-charge</h3>
-            <h2><%= request.getAttribute("istatusPending") %></h2><br>
-            <h3>Pending at Secretary</h3>
-            <h2><%= request.getAttribute("statusPending") %></h2>
-        </div>
+       
 
         <!-- ✅ Indents by Department -->
         <div class="table-box">
