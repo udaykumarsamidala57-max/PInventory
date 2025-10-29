@@ -29,13 +29,14 @@ public class IssueServlet extends HttpServlet {
             }
 
             // ✅ Fetch approved indents pending issue
-            String sql = "SELECT indent_id, indent_no, requested_by, department, item_id, item_name, "
-                    + "qty, UOM, purpose, remarks "
-                    + "FROM indent "
-                    + "WHERE status='Approved' "
-                    + "AND Indentnext='Issue' "
-                    + "AND (Issued_status IS NULL OR Issued_status='Pending') "
-                    + "ORDER BY indent_id DESC";
+            String sql = """
+                SELECT indent_id, indent_no, requested_by, department, item_id, item_name, qty, UOM, purpose, remarks
+                FROM indent
+                WHERE status='Approved'
+                  AND Indentnext='Issue'
+                  AND (Issued_status IS NULL OR Issued_status='Pending')
+                ORDER BY indent_id DESC
+                """;
 
             try (PreparedStatement ps = con.prepareStatement(sql);
                  ResultSet rs = ps.executeQuery()) {
@@ -44,19 +45,62 @@ public class IssueServlet extends HttpServlet {
                     Map<String, Object> row = new LinkedHashMap<>();
                     int itemId = rs.getInt("item_id");
 
-                    // ✅ Get available stock safely
-                    double availableStock = 0;
-                    try (PreparedStatement ps2 = con.prepareStatement(
-                            "SELECT COALESCE(balance_qty,0) AS balance_qty FROM stock WHERE item_id=?")) {
-                        ps2.setInt(1, itemId);
-                        try (ResultSet rs2 = ps2.executeQuery()) {
-                            if (rs2.next()) {
-                                availableStock = rs2.getDouble("balance_qty");
+                    // ✅ Ensure item exists in stock (auto-create if missing)
+                    try (PreparedStatement psCheck = con.prepareStatement(
+                            "SELECT COUNT(*) FROM stock WHERE item_id=?")) {
+                        psCheck.setInt(1, itemId);
+                        try (ResultSet rsCheck = psCheck.executeQuery()) {
+                            if (rsCheck.next() && rsCheck.getInt(1) == 0) {
+                                try (PreparedStatement psInsert = con.prepareStatement(
+                                        "INSERT INTO stock (item_id, total_received, total_issued, balance_qty, last_price) VALUES (?, 0, 0, 0, 0)")) {
+                                    psInsert.setInt(1, itemId);
+                                    psInsert.executeUpdate();
+                                }
                             }
                         }
                     }
 
-                    // ✅ Add record
+                    double availableStock = 0;
+                    double unitPrice = 0;
+
+                    // ✅ Always try to get latest PO price first
+                    try (PreparedStatement psPO = con.prepareStatement(
+                            "SELECT net_amount, qty FROM po_items WHERE item_id=? AND qty > 0 ORDER BY po_id DESC LIMIT 1")) {
+                        psPO.setInt(1, itemId);
+                        try (ResultSet rsPO = psPO.executeQuery()) {
+                            if (rsPO.next()) {
+                                double netAmount = rsPO.getDouble("net_amount");
+                                double qty = rsPO.getDouble("qty");
+                                if (qty > 0) {
+                                    unitPrice = netAmount / qty;
+
+                                    // ✅ Update stock with latest PO price
+                                    try (PreparedStatement psUpd = con.prepareStatement(
+                                            "UPDATE stock SET last_price=? WHERE item_id=?")) {
+                                        psUpd.setDouble(1, unitPrice);
+                                        psUpd.setInt(2, itemId);
+                                        psUpd.executeUpdate();
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // ✅ Get available stock and (if no PO found) fallback to last_price
+                    try (PreparedStatement ps2 = con.prepareStatement(
+                            "SELECT COALESCE(balance_qty,0) AS balance_qty, COALESCE(last_price,0) AS last_price FROM stock WHERE item_id=?")) {
+                        ps2.setInt(1, itemId);
+                        try (ResultSet rs2 = ps2.executeQuery()) {
+                            if (rs2.next()) {
+                                availableStock = rs2.getDouble("balance_qty");
+                                if (unitPrice == 0) {
+                                    unitPrice = rs2.getDouble("last_price");
+                                }
+                            }
+                        }
+                    }
+
+                    // ✅ Add record for display
                     row.put("indent_id", rs.getInt("indent_id"));
                     row.put("indent_no", rs.getString("indent_no"));
                     row.put("requested_by", rs.getString("requested_by"));
@@ -67,12 +111,12 @@ public class IssueServlet extends HttpServlet {
                     row.put("UOM", rs.getString("UOM"));
                     row.put("purpose", rs.getString("purpose"));
                     row.put("remarks", rs.getString("remarks"));
-                    row.put("available_stock", availableStock); // ✅ store in list
+                    row.put("available_stock", availableStock);
+                    row.put("unit_price", unitPrice);
                     indentList.add(row);
                 }
             }
 
-            // ✅ Send data to JSP
             request.setAttribute("nextIssueNo", nextNo);
             request.setAttribute("indentList", indentList);
             request.getRequestDispatcher("issue.jsp").forward(request, response);
@@ -91,6 +135,7 @@ public class IssueServlet extends HttpServlet {
         String itemId = request.getParameter("itemId");
         String qtyIssuedStr = request.getParameter("qtyIssued");
         String department = request.getParameter("department");
+        String unitPriceStr = request.getParameter("unitPrice");
 
         if (indentId == null || itemId == null || qtyIssuedStr == null || qtyIssuedStr.isEmpty()) {
             request.setAttribute("message", "❌ Missing data for issue process!");
@@ -99,16 +144,35 @@ public class IssueServlet extends HttpServlet {
         }
 
         double qtyIssued = Double.parseDouble(qtyIssuedStr);
+        double unitPrice = (unitPriceStr != null && !unitPriceStr.isEmpty())
+                ? Double.parseDouble(unitPriceStr)
+                : 0.0;
+        double totalValue = qtyIssued * unitPrice;
         String issueno = "0";
 
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
 
-            // ✅ Next issue number
+            // ✅ Generate next issue number
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT COALESCE(MAX(CAST(issueno AS UNSIGNED)),0)+1 AS next_no FROM stock_issues");
                  ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) issueno = rs.getString("next_no");
+            }
+
+            // ✅ Ensure stock record exists
+            try (PreparedStatement psCheck = con.prepareStatement(
+                    "SELECT COUNT(*) FROM stock WHERE item_id=?")) {
+                psCheck.setInt(1, Integer.parseInt(itemId));
+                try (ResultSet rsCheck = psCheck.executeQuery()) {
+                    if (rsCheck.next() && rsCheck.getInt(1) == 0) {
+                        try (PreparedStatement psInsert = con.prepareStatement(
+                                "INSERT INTO stock (item_id, total_received, total_issued, balance_qty, last_price) VALUES (?, 0, 0, 0, 0)")) {
+                            psInsert.setInt(1, Integer.parseInt(itemId));
+                            psInsert.executeUpdate();
+                        }
+                    }
+                }
             }
 
             // ✅ Get issued_to
@@ -123,7 +187,8 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Check available stock
             double available = 0;
-            try (PreparedStatement ps = con.prepareStatement("SELECT COALESCE(balance_qty,0) FROM stock WHERE item_id=?")) {
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT COALESCE(balance_qty,0) FROM stock WHERE item_id=?")) {
                 ps.setInt(1, Integer.parseInt(itemId));
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) available = rs.getDouble(1);
@@ -136,8 +201,8 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Insert into stock_issues
             try (PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, issue_date) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, NOW())")) {
+                    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, unit_price, total_value, issue_date) "
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())")) {
                 ps.setString(1, issueno);
                 ps.setInt(2, Integer.parseInt(itemId));
                 ps.setString(3, issuedTo);
@@ -145,15 +210,18 @@ public class IssueServlet extends HttpServlet {
                 ps.setDouble(5, qtyIssued);
                 ps.setString(6, "Issued against indent " + indentId);
                 ps.setString(7, indentId);
+                ps.setDouble(8, unitPrice);
+                ps.setDouble(9, totalValue);
                 ps.executeUpdate();
             }
 
             // ✅ Update stock
             try (PreparedStatement ps = con.prepareStatement(
-                    "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ? WHERE item_id = ?")) {
+                    "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ?, last_price=? WHERE item_id = ?")) {
                 ps.setDouble(1, qtyIssued);
                 ps.setDouble(2, qtyIssued);
-                ps.setInt(3, Integer.parseInt(itemId));
+                ps.setDouble(3, unitPrice);
+                ps.setInt(4, Integer.parseInt(itemId));
                 ps.executeUpdate();
             }
 

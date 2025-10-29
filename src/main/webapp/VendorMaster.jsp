@@ -249,6 +249,7 @@ a.action-link:hover {
 
   <!-- Add Vendor Form -->
   <div class="form-card">
+  <br><br><br>
     <h3>Add New Vendor</h3>
     <form method="post" class="form-grid">
       <div>

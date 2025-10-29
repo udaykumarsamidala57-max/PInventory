@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.sql.*, com.bean.DBUtil" %>
 <%
-    // ---------------- SESSION & ROLE CHECK ----------------
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
@@ -20,149 +19,165 @@
 <meta charset="UTF-8">
 <title>Vendor Master</title>
 <style>
-/* ----------- GLOBAL DESIGN ----------- */
+/* ---------- BASE ---------- */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f4f6fa;
-  margin: 0;
-  padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #eef2f7;
+    margin: 0;
+    padding: 0;
+    color: #333;
 }
 
-/* ----------- MAIN CONTAINER ----------- */
 .container {
-  width: 85%;
-  margin: 30px auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-  padding: 40px 50px;
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 20px 30px;
 }
 
-/* ----------- HEADINGS ----------- */
-h2, h3 {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 20px;
-}
-
+/* ---------- HEADINGS ---------- */
 h2 {
-  font-size: 26px;
-  font-weight: 600;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 30px;
 }
 
 h3 {
-  font-size: 20px;
-  margin-top: 30px;
-  color: #444;
+    font-size: 20px;
+    color: #555;
+    margin-bottom: 20px;
 }
 
-/* ----------- FORM DESIGN ----------- */
-form {
-  background: #f9fafc;
-  padding: 20px 30px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  margin-bottom: 40px;
+/* ---------- FORM ---------- */
+.form-card, .edit-box {
+    background: #fff;
+    padding: 25px 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 40px;
 }
 
-label {
-  font-weight: 500;
-  display: block;
-  margin-top: 12px;
-  color: #333;
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 30px;
 }
 
-input[type=text], textarea {
-  width: 100%;
-  padding: 10px 12px;
-  margin-top: 6px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 15px;
-  transition: 0.2s;
-  background-color: #fff;
+.form-grid label {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 5px;
+    font-size: 14px;
 }
 
-input[type=text]:focus, textarea:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 4px rgba(13,110,253,0.3);
-  outline: none;
+.form-grid input[type=text],
+.form-grid textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.form-grid input[type=text]:focus,
+.form-grid textarea:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 5px rgba(13,110,253,0.3);
+    outline: none;
 }
 
 textarea {
-  resize: vertical;
-  min-height: 60px;
+    resize: vertical;
+    min-height: 70px;
 }
 
 input[type=submit] {
-  background: linear-gradient(90deg, #0d6efd, #0b5ed7);
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px 12px;
-  font-size: 16px;
-  margin-top: 18px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 500;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 input[type=submit]:hover {
-  background: #084298;
-  box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    background: #084298;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* ----------- TABLE DESIGN ----------- */
+/* ---------- SEARCH BOX ---------- */
+#searchInput {
+    padding: 8px 12px; 
+    border-radius: 8px; 
+    border: 1px solid #ccc; 
+    width: 250px;
+    font-size: 14px;
+    margin-bottom: 15px;
+    float: right;
+}
+
+/* ---------- TABLE ---------- */
+.table-box {
+    overflow-x: 85%;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    padding: 20px;
+}
+
 table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
-  font-size: 15px;
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: middle;
 }
 
 th {
-  background-color: #0d6efd;
-  color: #fff;
-  padding: 10px 12px;
-  text-align: left;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-}
-
-td {
-  padding: 9px 12px;
-  border-bottom: 1px solid #eee;
-  color: #333;
+    background: linear-gradient(90deg, #0d6efd, #0b5ed7);
+    color: #fff;
+    font-weight: 600;
 }
 
 tr:nth-child(even) {
-  background-color: #f9fbff;
+    background-color: #f8f9fa;
 }
 
 tr:hover {
-  background-color: #eef4ff;
+    background-color: #e2e6f0;
 }
 
-/* ----------- ACTION LINKS ----------- */
 a.action-link {
-  color: #0d6efd;
-  text-decoration: none;
-  font-weight: 500;
-  margin: 0 4px;
+    color: #0d6efd;
+    font-weight: 500;
+    text-decoration: none;
+    margin-right: 10px;
 }
 
 a.action-link:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
 
-/* ----------- EDIT BOX ----------- */
-.edit-box {
-  background-color: #f8f9fa;
-  border-radius: 10px;
-  padding: 25px 30px;
-  margin-top: 25px;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    #searchInput {
+        width: 100%;
+        margin-bottom: 20px;
+        float: none;
+    }
 }
 </style>
 </head>
@@ -233,61 +248,77 @@ a.action-link:hover {
   %>
 
   <!-- Add Vendor Form -->
-  <h3>Add New Vendor</h3>
-  <form method="post">
-    <label>Vendor Name</label>
-    <input type="text" name="vendorName" required>
+  <div class="form-card">
+  <br><br><br>
+    <h3>Add New Vendor</h3>
+    <form method="post" class="form-grid">
+      <div>
+        <label>Vendor Name</label>
+        <input type="text" name="vendorName" placeholder="Enter vendor name" required>
+      </div>
+      <div>
+        <label>GSTIN</label>
+        <input type="text" name="gstin" placeholder="Enter GSTIN" required>
+      </div>
+      <div>
+        <label>Contact</label>
+        <input type="text" name="contact" placeholder="Enter contact number" required>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="text" name="email" placeholder="Enter email address" required>
+      </div>
+      <div style="grid-column: span 2;">
+        <label>Address</label>
+        <textarea name="address" placeholder="Enter address" required></textarea>
+      </div>
+      <div style="grid-column: span 2;">
+        <input type="submit" name="add" value="Add Vendor">
+      </div>
+    </form>
+  </div>
 
-    <label>GSTIN</label>
-    <input type="text" name="gstin" required>
-
-    <label>Address</label>
-    <textarea name="address" required></textarea>
-
-    <label>Contact</label>
-    <input type="text" name="contact" required>
-
-    <label>Email</label>
-    <input type="text" name="email" required>
-
-    <input type="submit" name="add" value="Add Vendor">
-  </form>
-
-  <!-- Vendor List Table -->
+  <!-- Vendor List -->
   <h3>Vendor List</h3>
-  <table>
-    <tr>
-      <th>ID</th>
-      <th>Name</th>
-      <th>GSTIN</th>
-      <th>Address</th>
-      <th>Contact</th>
-      <th>Email</th>
-      <th>Actions</th>
-    </tr>
+
+  <!-- Search Box -->
+  <input type="text" id="searchInput" placeholder="Search vendors...">
+<br>
+<br>
+  <div class="table-box">
+    <table id="vendorTable">
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>GSTIN</th>
+        <th>Address</th>
+        <th>Contact</th>
+        <th>Email</th>
+        <th>Actions</th>
+      </tr>
   <%
       Statement st = con.createStatement();
       ResultSet rs = st.executeQuery("SELECT * FROM vendors ORDER BY id DESC");
       while (rs.next()) {
   %>
-    <tr>
-      <td><%= rs.getInt("id") %></td>
-      <td><%= rs.getString("name") %></td>
-      <td><%= rs.getString("GSTIN") %></td>
-      <td><%= rs.getString("address") %></td>
-      <td><%= rs.getString("contact") %></td>
-      <td><%= rs.getString("email") %></td>
-      <td>
-        <a class="action-link" href="VendorMaster.jsp?editId=<%= rs.getInt("id") %>">Edit</a> |
-        <a class="action-link" href="VendorMaster.jsp?deleteId=<%= rs.getInt("id") %>" onclick="return confirm('Delete this vendor?')">Delete</a>
-      </td>
-    </tr>
+      <tr>
+        <td><%= rs.getInt("id") %></td>
+        <td><%= rs.getString("name") %></td>
+        <td><%= rs.getString("GSTIN") %></td>
+        <td><%= rs.getString("address") %></td>
+        <td><%= rs.getString("contact") %></td>
+        <td><%= rs.getString("email") %></td>
+        <td>
+          <a class="action-link" href="VendorMaster.jsp?editId=<%= rs.getInt("id") %>">Edit</a>
+          <a class="action-link" href="VendorMaster.jsp?deleteId=<%= rs.getInt("id") %>" onclick="return confirm('Delete this vendor?')">Delete</a>
+        </td>
+      </tr>
   <%
       }
       rs.close();
       st.close();
 
-      // Edit section
+      // EDIT section
       if (request.getParameter("editId") != null) {
           int editId = Integer.parseInt(request.getParameter("editId"));
           PreparedStatement ps = con.prepareStatement("SELECT * FROM vendors WHERE id=?");
@@ -297,25 +328,32 @@ a.action-link:hover {
   %>
   <div class="edit-box">
     <h3>Edit Vendor</h3>
-    <form method="post">
+    <form method="post" class="form-grid">
       <input type="hidden" name="id" value="<%= rsEdit.getInt("id") %>">
 
-      <label>Vendor Name</label>
-      <input type="text" name="vendorName" value="<%= rsEdit.getString("name") %>" required>
-
-      <label>GSTIN</label>
-      <input type="text" name="gstin" value="<%= rsEdit.getString("GSTIN") %>" required>
-
-      <label>Address</label>
-      <textarea name="address" required><%= rsEdit.getString("address") %></textarea>
-
-      <label>Contact</label>
-      <input type="text" name="contact" value="<%= rsEdit.getString("contact") %>" required>
-
-      <label>Email</label>
-      <input type="text" name="email" value="<%= rsEdit.getString("email") %>" required>
-
-      <input type="submit" name="update" value="Update Vendor">
+      <div>
+        <label>Vendor Name</label>
+        <input type="text" name="vendorName" value="<%= rsEdit.getString("name") %>" required>
+      </div>
+      <div>
+        <label>GSTIN</label>
+        <input type="text" name="gstin" value="<%= rsEdit.getString("GSTIN") %>" required>
+      </div>
+      <div>
+        <label>Contact</label>
+        <input type="text" name="contact" value="<%= rsEdit.getString("contact") %>" required>
+      </div>
+      <div>
+        <label>Email</label>
+        <input type="text" name="email" value="<%= rsEdit.getString("email") %>" required>
+      </div>
+      <div style="grid-column: span 2;">
+        <label>Address</label>
+        <textarea name="address" required><%= rsEdit.getString("address") %></textarea>
+      </div>
+      <div style="grid-column: span 2;">
+        <input type="submit" name="update" value="Update Vendor">
+      </div>
     </form>
   </div>
   <%
@@ -324,12 +362,33 @@ a.action-link:hover {
           ps.close();
       }
   } catch (Exception e) {
-      out.println("<p style='color:red;'>Error: " + e.getMessage() + "</p>");
+      out.println("<p style='color:red; text-align:center;'>Error: " + e.getMessage() + "</p>");
   } finally {
       if (con != null) try { con.close(); } catch (SQLException ex) { ex.printStackTrace(); }
   }
   %>
+    </table>
+  </div>
 </div>
+
+<!-- ---------- SEARCH SCRIPT ---------- -->
+<script>
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    let filter = this.value.toLowerCase();
+    let rows = document.querySelectorAll('#vendorTable tr:not(:first-child)');
+    
+    rows.forEach(row => {
+        let cells = row.querySelectorAll('td');
+        let match = false;
+        cells.forEach(cell => {
+            if(cell.textContent.toLowerCase().includes(filter)) {
+                match = true;
+            }
+        });
+        row.style.display = match ? '' : 'none';
+    });
+});
+</script>
 
 </body>
 </html>
