@@ -101,6 +101,10 @@
     <% if ("Global".equalsIgnoreCase(roles)) {%>
     <a href="AddStock"><i class="fas fa-file-alt"></i> Add Stock</a>
    <%} %>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts)) {%>
+    <a href="VendorMaster.jsp"><i class="fas fa-file-alt"></i> Vendor Master</a>
+   <%} %>
+   
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
 
