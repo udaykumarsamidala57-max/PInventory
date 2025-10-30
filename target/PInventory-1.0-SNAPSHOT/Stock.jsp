@@ -55,8 +55,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                          PreparedStatement ps = con.prepareStatement("SELECT DISTINCT Category FROM item_master");
                          ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
-                            String cat = rs.getString("Category");
-                            categories.add(cat);
+                            categories.add(rs.getString("Category"));
                         }
                     } catch (Exception e) { e.printStackTrace(); }
 
@@ -84,6 +83,8 @@ if (sess == null || sess.getAttribute("username") == null) {
                 <th>Total Received</th>
                 <th>Total Issued</th>
                 <th>Balance Qty</th>
+                <th>Unit Price</th>
+                <th>Total Value</th>
                 <th>Last Updated</th>
             </tr>
             </thead>
@@ -92,11 +93,15 @@ if (sess == null || sess.getAttribute("username") == null) {
                 try (Connection con = DBUtil.getConnection();
                      PreparedStatement ps = con.prepareStatement(
                         "SELECT s.item_id, i.Item_name, i.Category, i.Sub_Category, i.UOM, " +
-                        "s.total_received, s.total_issued, s.balance_qty, s.last_updated " +
-                        "FROM stock s JOIN item_master i ON s.item_id = i.Item_id ORDER BY i.Item_name")) {
+                        "s.total_received, s.total_issued, s.balance_qty, s.last_price, s.last_updated " +
+                        "FROM stock s JOIN item_master i ON s.item_id = i.Item_id " +
+                        "ORDER BY i.Item_name")) {
 
                     try (ResultSet rs = ps.executeQuery()) {
                         while (rs.next()) {
+                            double balance = rs.getDouble("balance_qty");
+                            double unitPrice = rs.getDouble("last_price");
+                            double totalValue = balance * unitPrice;
             %>
                 <tr>
                     <td><%= rs.getInt("item_id") %></td>
@@ -106,14 +111,16 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <td><%= rs.getString("UOM") %></td>
                     <td><%= rs.getDouble("total_received") %></td>
                     <td><%= rs.getDouble("total_issued") %></td>
-                    <td><%= rs.getDouble("balance_qty") %></td>
+                    <td><%= balance %></td>
+                    <td><%= unitPrice %></td>
+                    <td><%= String.format("%.2f", totalValue) %></td>
                     <td><%= rs.getTimestamp("last_updated") %></td>
                 </tr>
             <%
                         }
                     }
                 } catch (Exception e) {
-                    out.println("<tr><td colspan='9'>Error: " + e.getMessage() + "</td></tr>");
+                    out.println("<tr><td colspan='11'>Error: " + e.getMessage() + "</td></tr>");
                 }
             %>
             </tbody>
@@ -149,40 +156,34 @@ function resetFilter() {
     document.getElementById("searchBox").value = "";
     filterTable();
 }
+
 function downloadExcel() {
-	  const table = document.getElementById('stockTable');
-	  let csv = [];
-	  
-	  // Get all rows (thead + tbody)
-	  const rows = table.querySelectorAll('tr');
+    const table = document.getElementById('stockTable');
+    let csv = [];
 
-	  rows.forEach(row => {
-	    let cols = row.querySelectorAll('th, td');
-	    let rowData = [];
+    const rows = table.querySelectorAll('tr');
+    rows.forEach(row => {
+        let cols = row.querySelectorAll('th, td');
+        let rowData = [];
+        cols.forEach(cell => {
+            let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+            rowData.push('"' + text + '"');
+        });
+        csv.push(rowData.join(','));
+    });
 
-	    cols.forEach(cell => {
-	      // Handle text content only, ignore inner buttons/forms
-	      let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
-	      rowData.push('"' + text + '"');
-	    });
+    const csvString = csv.join('\n');
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
 
-	    csv.push(rowData.join(','));
-	  });
-
-	  // Convert to Blob
-	  const csvString = csv.join('\n');
-	  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-	  const link = document.createElement('a');
-	  const url = URL.createObjectURL(blob);
-
-	  link.setAttribute('href', url);
-	  link.setAttribute('download', 'Stock Report.csv');
-	  link.style.visibility = 'hidden';
-
-	  document.body.appendChild(link);
-	  link.click();
-	  document.body.removeChild(link);
-	}
+    link.setAttribute('href', url);
+    link.setAttribute('download', 'Stock_Report.csv');
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 </script>
 
 </body>
