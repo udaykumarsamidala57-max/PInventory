@@ -86,6 +86,10 @@
     <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="POListServlet"><i class="fas fa-check-circle"></i> Approve PO</a>
     <%} %>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts)||"Store".equalsIgnoreCase(depts) ) {%>
+    <a href=" ListPO.jsp"><i class="fas fa-check-circle"></i>PO Report</a>
+    <%} %>
+   
     <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="GRNServlet"><i class="fas fa-shopping-cart"></i> GRN Entry</a>
      <%} %>
