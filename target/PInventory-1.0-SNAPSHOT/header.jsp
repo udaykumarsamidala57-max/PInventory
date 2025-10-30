@@ -89,12 +89,15 @@
     <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="GRNServlet"><i class="fas fa-shopping-cart"></i> GRN Entry</a>
      <%} %>
-      <% if ("Global".equalsIgnoreCase(roles)||"Stores".equalsIgnoreCase(depts) ) {%>
+      <% if ("Global".equalsIgnoreCase(roles)||"Store".equalsIgnoreCase(depts) ) {%>
     <a href="IssueServlet"><i class="fas fa-box"></i> Issue Items</a>
     <%} %>
     <a href="Issuereport.jsp"><i class="fas fa-chart-line"></i> Issue Report</a>
     <a href="Stock.jsp"><i class="fas fa-chart-line"></i> Stock Report</a>
     <a href="stockReport.jsp"><i class="fas fa-chart-line"></i> Stock Ledger Report</a>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
+      <a href="IssueValueReport.jsp"><i class="fas fa-chart-line"></i>Consumption Dash Board</a>
+       <%} %>
     <% if ("Global".equalsIgnoreCase(roles)) {%>
     <a href="ItemsMaster.jsp"><i class="fas fa-file-alt"></i> Item Master</a>
     <%} %>

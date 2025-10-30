@@ -95,7 +95,8 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 <div class="main-content">
     <div class="main-section">
-        <h2 style="margin-bottom:10px;">Stock Issue Report</h2>
+        <h2 style="margin-bottom:10px;">Stock Issue Report &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="IssueValueReport.jsp">Consomption Dash board</a></h2>
 
         <!-- 🔍 Filter Section -->
         <div class="filter-bar">
@@ -119,6 +120,8 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <th>Item Name</th>
                     <th>Issued To</th>
                     <th>Quantity Issued</th>
+                    <th>Unit Price (₹)</th>
+                    <th>Total Value (₹)</th>
                     <th>Issue Date</th>
                     <th>Remarks</th>
                 </tr>
@@ -136,7 +139,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                     con = DBUtil.getConnection();
                     StringBuilder query = new StringBuilder(
                         "SELECT si.issue_id, si.issueno, si.item_id, im.Item_name, " +
-                        "si.issued_to, si.qty_issued, si.issue_date, si.remarks " +
+                        "si.issued_to, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
                         "FROM stock_issues si " +
                         "JOIN item_master im ON si.item_id = im.Item_id "
                     );
@@ -165,16 +168,18 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <td><%= rs.getString("Item_name") %></td>
                     <td><%= rs.getString("issued_to") %></td>
                     <td><%= rs.getBigDecimal("qty_issued") %></td>
+                    <td><%= rs.getBigDecimal("unit_price") != null ? rs.getBigDecimal("unit_price") : 0 %></td>
+                    <td><%= rs.getBigDecimal("total_value") != null ? rs.getBigDecimal("total_value") : 0 %></td>
                     <td><%= rs.getTimestamp("issue_date") %></td>
                     <td><%= rs.getString("remarks") %></td>
                 </tr>
             <%
                     }
                     if(count == 0) {
-                        out.println("<tr><td colspan='7' style='text-align:center;'>No stock issues found.</td></tr>");
+                        out.println("<tr><td colspan='9' style='text-align:center;'>No stock issues found.</td></tr>");
                     }
                 } catch(Exception e) {
-                    out.println("<tr><td colspan='7'>Error: " + e.getMessage() + "</td></tr>");
+                    out.println("<tr><td colspan='9'>Error: " + e.getMessage() + "</td></tr>");
                 } finally {
                     if(rs != null) try { rs.close(); } catch(Exception ignored) {}
                     if(ps != null) try { ps.close(); } catch(Exception ignored) {}

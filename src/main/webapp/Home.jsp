@@ -1,6 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
-<!DOCTYPE html>
 <%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
@@ -8,6 +7,7 @@
         return;
     }
 %>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -22,20 +22,11 @@
     @media(max-width:768px){.container{margin-left:0;padding:10px;}}
 
     .dashboard-row{display:flex;justify-content:center;align-items:stretch;gap:25px;flex-wrap:nowrap;overflow-x:auto;padding-bottom:10px;}
-    .summary-card{background:white;border-radius:10px;padding:20px;width:280px;text-align:center;
-        box-shadow:0 3px 10px rgba(0,0,0,0.1);transition:transform .2s ease;flex-shrink:0;}
-    .summary-card:hover{transform:translateY(-5px);}
-    .summary-card h3{color:#004085;margin-bottom:8px;}
-    .summary-card h2{color:#007bff;font-size:26px;margin:5px 0;}
-    .summary-card:first-child{background:linear-gradient(135deg,#ff8c00,#8e2de2);color:#fff;box-shadow:0 4px 15px rgba(0,0,0,0.2);}
-    .summary-card:first-child h3,.summary-card:first-child h2{color:#fff;}
-
-    .table-box{background:white;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.08);padding:15px;width:450px;flex-shrink:0;}
+    .table-box{background:white;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.08);padding:15px;width:600px;flex-shrink:0;}
     table{width:100%;border-collapse:collapse;font-size:14px;}
     th,td{padding:8px;border-bottom:1px solid #ddd;text-align:center;}
     th{background:linear-gradient(135deg,#ff8c00,#8e2de2);color:white;}
     tr:hover{background:#f1f7ff;}
-
     .stages{background:white;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.08);padding:20px;text-align:center;width:600px;flex-shrink:0;}
     .stage-title{color:#003366;font-size:20px;margin-bottom:20px;}
     .stage-cards{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;}
@@ -50,21 +41,18 @@
     .issue-pending{background:linear-gradient(135deg,#d7f9db,#b2f2bb);border-left:6px solid #28a745;}
     .issued{background:linear-gradient(135deg,#d9f3f9,#b8e3f5);border-left:6px solid #17a2b8;}
     .management-note{background:linear-gradient(135deg,#edd7ff,#d9b8ff);border-left:6px solid #6f42c1;}
-
     .dual-tables{display:flex;flex-wrap:wrap;justify-content:center;gap:25px;margin-top:25px;}
     footer{text-align:center;color:#666;padding:20px;font-size:13px;}
 </style>
 </head>
 <body>
 <%@ include file="header.jsp" %>
+
 <div class="container">
     <h1>Inventory Dashboard</h1>
 
-    <!-- Top summary -->
+    <!-- ✅ Indents by Department -->
     <div class="dashboard-row">
-     
-
-        <!-- Department Table -->
         <div class="table-box">
             <h3>Indents by Department</h3>
             <table>
@@ -88,7 +76,7 @@
             </table>
         </div>
 
-        <!-- Stage Summary -->
+        <!-- ✅ Stage Summary -->
         <div class="stages">
             <h3 class="stage-title">Indents / Issues by Stage</h3>
             <div class="stage-cards">
@@ -109,10 +97,11 @@
 
     <!-- ✅ Top 5 Lists -->
     <div class="dual-tables">
-        <div class="table-box">
+        <!-- 🔹 Top 5 Costliest Items -->
+        <div class="table-box" style="width:600px;">
             <h3>Top 5 Costliest Items</h3>
             <table>
-                <thead><tr><th>Item</th><th>Category</th><th>Last Price (₹)</th></tr></thead>
+                <thead><tr><th>Category</th><th>Item</th><th>Last Price (₹)</th></tr></thead>
                 <tbody>
                 <%
                     List<Map<String,Object>> topCostliest=(List<Map<String,Object>>)request.getAttribute("topCostliest");
@@ -120,8 +109,8 @@
                         for(Map<String,Object> row:topCostliest){
                 %>
                     <tr>
-                        <td><%=row.get("Item_name")%></td>
                         <td><%=row.get("Category")%></td>
+                        <td><%=row.get("Item_name")%></td>
                         <td><%=row.get("last_price")%></td>
                     </tr>
                 <% }}else{ %>
@@ -131,6 +120,7 @@
             </table>
         </div>
 
+        <!-- 🔹 Top 5 Highest Quantity Items -->
         <div class="table-box">
             <h3>Top 5 Highest Quantity Items</h3>
             <table>
