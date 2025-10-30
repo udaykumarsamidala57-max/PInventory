@@ -14,7 +14,8 @@ if (sess == null || sess.getAttribute("username") == null) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -64,6 +65,12 @@ if (sess == null || sess.getAttribute("username") == null) {
         tr:hover {
             background-color: #f1f1f1;
         }
+        td.num, th.num {
+            text-align: right;
+        }
+        td.text, th.text {
+            text-align: left;
+        }
     </style>
 
     <script>
@@ -95,8 +102,8 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 <div class="main-content">
     <div class="main-section">
-        <h2 style="margin-bottom:10px;">Stock Issue Report &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        <a href="IssueValueReport.jsp">Consomption Dash board</a></h2>
+        <h2 style="margin-bottom:10px;">Stock Issue Report &nbsp;&nbsp;&nbsp;&nbsp;
+        <a href="IssueValueReport.jsp">Consumption Dashboard</a></h2>
 
         <!-- 🔍 Filter Section -->
         <div class="filter-bar">
@@ -115,15 +122,16 @@ if (sess == null || sess.getAttribute("username") == null) {
         <table id="issueTable">
             <thead>
                 <tr>
-                    <th>Issue No</th>
-                    <th>Item ID</th>
-                    <th>Item Name</th>
-                    <th>Issued To</th>
-                    <th>Quantity Issued</th>
-                    <th>Unit Price (₹)</th>
-                    <th>Total Value (₹)</th>
-                    <th>Issue Date</th>
-                    <th>Remarks</th>
+                    <th class="text">Issue No</th>
+                    <th class="text">Item ID</th>
+                    <th class="text">Item Name</th>
+                    <th class="text">Issued To</th>
+                    <th class="text">Department</th>
+                    <th class="num">Quantity Issued</th>
+                    <th class="num">Unit Price (₹)</th>
+                    <th class="num">Total Value (₹)</th>
+                    <th class="num">Issue Date</th>
+                    <th class="num">Remarks</th>
                 </tr>
             </thead>
             <tbody>
@@ -138,13 +146,12 @@ if (sess == null || sess.getAttribute("username") == null) {
                 try {
                     con = DBUtil.getConnection();
                     StringBuilder query = new StringBuilder(
-                        "SELECT si.issue_id, si.issueno, si.item_id, im.Item_name, " +
-                        "si.issued_to, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
+                        "SELECT si.issue_id, si.issueno, si.item_id, im.Item_name,  " +
+                        "si.issued_to, si.department, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
                         "FROM stock_issues si " +
                         "JOIN item_master im ON si.item_id = im.Item_id "
                     );
 
-                    // ✅ Apply date range filter if provided
                     if (fromDate != null && !fromDate.isEmpty() && toDate != null && !toDate.isEmpty()) {
                         query.append("WHERE DATE(si.issue_date) BETWEEN ? AND ? ");
                     }
@@ -163,23 +170,24 @@ if (sess == null || sess.getAttribute("username") == null) {
                         count++;
             %>
                 <tr>
-                    <td><%= rs.getString("issueno") %></td>
-                    <td><%= rs.getInt("item_id") %></td>
-                    <td><%= rs.getString("Item_name") %></td>
-                    <td><%= rs.getString("issued_to") %></td>
-                    <td><%= rs.getBigDecimal("qty_issued") %></td>
-                    <td><%= rs.getBigDecimal("unit_price") != null ? rs.getBigDecimal("unit_price") : 0 %></td>
-                    <td><%= rs.getBigDecimal("total_value") != null ? rs.getBigDecimal("total_value") : 0 %></td>
-                    <td><%= rs.getTimestamp("issue_date") %></td>
-                    <td><%= rs.getString("remarks") %></td>
+                    <td class="text"><%= rs.getString("issueno") %></td>
+                    <td class="text"><%= rs.getInt("item_id") %></td>
+                    <td class="text"><%= rs.getString("Item_name") %></td>
+                    <td class="text"><%= rs.getString("issued_to") %></td>
+                    <td class="text"><%= rs.getString("department") %></td>
+                    <td class="num"><%= rs.getBigDecimal("qty_issued") %></td>
+                    <td class="num"><%= rs.getBigDecimal("unit_price") != null ? rs.getBigDecimal("unit_price") : 0 %></td>
+                    <td class="num"><%= rs.getBigDecimal("total_value") != null ? rs.getBigDecimal("total_value") : 0 %></td>
+                    <td class="num"><%= rs.getTimestamp("issue_date") %></td>
+                    <td class="num"><%= rs.getString("remarks") %></td>
                 </tr>
             <%
                     }
                     if(count == 0) {
-                        out.println("<tr><td colspan='9' style='text-align:center;'>No stock issues found.</td></tr>");
+                        out.println("<tr><td colspan='10' style='text-align:center;'>No stock issues found.</td></tr>");
                     }
                 } catch(Exception e) {
-                    out.println("<tr><td colspan='9'>Error: " + e.getMessage() + "</td></tr>");
+                    out.println("<tr><td colspan='10'>Error: " + e.getMessage() + "</td></tr>");
                 } finally {
                     if(rs != null) try { rs.close(); } catch(Exception ignored) {}
                     if(ps != null) try { ps.close(); } catch(Exception ignored) {}

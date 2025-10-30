@@ -20,6 +20,7 @@ com\bean\AggregatedItem.class
 com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\bean\IndentItems.class
+com\controller\DHConsume.class
 com\bean\IndentItemFull.class
 com\controller\Home.class
 com\controller\PO.class

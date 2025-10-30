@@ -14,29 +14,83 @@ if (sess == null || sess.getAttribute("username") == null) {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
+
     <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f7f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        h2 {
+            margin: 20px;
+        }
+
         .filter-box {
-            margin: 20px 0;
+            margin: 20px;
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             align-items: center;
         }
+
         .filter-box select, .filter-box input {
-            padding: 5px 10px;
+            padding: 6px 10px;
             border: 1px solid #ccc;
             border-radius: 6px;
         }
+
         .btn {
-            padding: 6px 14px;
+            padding: 7px 14px;
             border: none;
             background: #007bff;
             color: white;
             border-radius: 6px;
             cursor: pointer;
+            transition: 0.3s;
         }
+
         .btn:hover { background: #0056b3; }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .main-table {
+            width: 98%;
+            margin: 0 auto;
+            border-collapse: collapse;
+            background: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            text-align: left;
+        }
+
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        td.num, th.num {
+            text-align: right;
+        }
+
+        td.text, th.text {
+            text-align: left;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
     </style>
 </head>
+
 <body>
 <jsp:include page="header.jsp" />
 
@@ -46,7 +100,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     <div class="card">
 
         <div class="filter-box">
-            Category:
+            <label>Category:</label>
             <select id="categoryFilter">
                 <option value="">-- All --</option>
                 <%
@@ -65,28 +119,28 @@ if (sess == null || sess.getAttribute("username") == null) {
                 <% } %>
             </select>
 
-            Item Name:
+            <label>Item Name:</label>
             <input type="text" id="searchBox" placeholder="Search item name...">
             <button class="btn" onclick="filterTable()">Filter</button>
-            <button class="btn" style="background:#6c757d" onclick="resetFilter()">Reset</button>
-            <button class="btn btn-info" onclick="downloadExcel()">Download Excel</button>
+            <button class="btn btn-secondary" onclick="resetFilter()">Reset</button>
+            <button class="btn" style="background:#28a745;" onclick="downloadExcel()">Download Excel</button>
         </div>
 
         <table class="main-table" id="stockTable">
             <thead>
-            <tr>
-                <th>Item ID</th>
-                <th>Item Name</th>
-                <th>Category</th>
-                <th>Sub Category</th>
-                <th>UOM</th>
-                <th>Total Received</th>
-                <th>Total Issued</th>
-                <th>Balance Qty</th>
-                <th>Unit Price</th>
-                <th>Total Value</th>
-                <th>Last Updated</th>
-            </tr>
+                <tr>
+                    <th class="num">Item ID</th>
+                    <th class="text">Item Name</th>
+                    <th class="text">Category</th>
+                    <th class="text">Sub Category</th>
+                    <th class="text">UOM</th>
+                    <th class="num">Total Received</th>
+                    <th class="num">Total Issued</th>
+                    <th class="num">Balance Qty</th>
+                    <th class="num">Unit Price (₹)</th>
+                    <th class="num">Total Value (₹)</th>
+                    <th class="text">Last Updated</th>
+                </tr>
             </thead>
             <tbody>
             <%
@@ -104,17 +158,17 @@ if (sess == null || sess.getAttribute("username") == null) {
                             double totalValue = balance * unitPrice;
             %>
                 <tr>
-                    <td><%= rs.getInt("item_id") %></td>
-                    <td><%= rs.getString("Item_name") %></td>
-                    <td><%= rs.getString("Category") %></td>
-                    <td><%= rs.getString("Sub_Category") %></td>
-                    <td><%= rs.getString("UOM") %></td>
-                    <td><%= rs.getDouble("total_received") %></td>
-                    <td><%= rs.getDouble("total_issued") %></td>
-                    <td><%= balance %></td>
-                    <td><%= unitPrice %></td>
-                    <td><%= String.format("%.2f", totalValue) %></td>
-                    <td><%= rs.getTimestamp("last_updated") %></td>
+                    <td class="text"><%= rs.getInt("item_id") %></td>
+                    <td class="text"><%= rs.getString("Item_name") %></td>
+                    <td class="text"><%= rs.getString("Category") %></td>
+                    <td class="text"><%= rs.getString("Sub_Category") %></td>
+                    <td class="text"><%= rs.getString("UOM") %></td>
+                    <td class="num"><%= String.format("%.2f", rs.getDouble("total_received")) %></td>
+                    <td class="num"><%= String.format("%.2f", rs.getDouble("total_issued")) %></td>
+                    <td class="num"><%= String.format("%.2f", balance) %></td>
+                    <td class="num"><%= String.format("%.2f", unitPrice) %></td>
+                    <td class="num"><%= String.format("%.2f", totalValue) %></td>
+                    <td class="num"><%= rs.getTimestamp("last_updated") %></td>
                 </tr>
             <%
                         }
@@ -143,11 +197,7 @@ function filterTable() {
         const matchesCategory = !category || cat === category;
         const matchesSearch = !search || item.includes(search);
 
-        if (matchesCategory && matchesSearch) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
+        row.style.display = (matchesCategory && matchesSearch) ? "" : "none";
     });
 }
 
