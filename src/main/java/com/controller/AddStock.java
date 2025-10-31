@@ -54,57 +54,84 @@ public class AddStock extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String username = (String) sess.getAttribute("username");
+
         String itemIds = request.getParameter("itemIds");
         String quantities = request.getParameter("quantities");
+
+        if (itemIds == null || quantities == null || itemIds.trim().isEmpty() || quantities.trim().isEmpty()) {
+            response.sendRedirect("AddStock?error=invalid_input");
+            return;
+        }
 
         String[] idsArr = itemIds.split(",");
         String[] qtyArr = quantities.split(",");
 
+        if (idsArr.length != qtyArr.length) {
+            response.sendRedirect("AddStock?error=mismatch");
+            return;
+        }
+
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
 
-            // 1️⃣ Insert into stock table
-            String insertStockSql = "INSERT INTO stock (item_id, total_received, total_issued, balance_qty, last_updated) "
-                    + "VALUES (?, ?, 0.00, ?, CURRENT_TIMESTAMP) "
-                    + "ON DUPLICATE KEY UPDATE "
-                    + "total_received = total_received + VALUES(total_received), "
-                    + "balance_qty = balance_qty + VALUES(balance_qty), "
-                    + "last_updated = CURRENT_TIMESTAMP";
+            // 1️⃣ Insert or Update stock (handle both new and existing records)
+            String insertOrUpdateStockSql = """
+                INSERT INTO stock (item_id, total_received, total_issued, balance_qty, last_price, last_updated)
+                VALUES (?, ?, 0.00, ?, 0.00, CURRENT_TIMESTAMP)
+                ON DUPLICATE KEY UPDATE
+                    total_received = total_received + VALUES(total_received),
+                    balance_qty = balance_qty + VALUES(balance_qty),
+                    last_updated = CURRENT_TIMESTAMP
+                """;
 
             // 2️⃣ Insert into stock_ledger
-            String insertLedgerSql = "INSERT INTO stock_ledger (item_id, trans_type, qty, trans_date, running_balance, remarks) "
-                    + "VALUES (?, 'RECEIPT', ?, CURRENT_DATE, ?, ?)";
+            String insertLedgerSql = """
+                INSERT INTO stock_ledger (item_id, trans_type, trans_date, qty, running_balance, remarks)
+                VALUES (?, 'RECEIPT', CURRENT_DATE, ?, ?, ?)
+                """;
 
-            try (PreparedStatement psStock = con.prepareStatement(insertStockSql);
-                 PreparedStatement psLedger = con.prepareStatement(insertLedgerSql)) {
+            // 3️⃣ Query to get last running balance for item
+            String getLastBalanceSql = "SELECT running_balance FROM stock_ledger WHERE item_id = ? ORDER BY ledger_id DESC LIMIT 1";
+
+            try (PreparedStatement psStock = con.prepareStatement(insertOrUpdateStockSql);
+                 PreparedStatement psLedger = con.prepareStatement(insertLedgerSql);
+                 PreparedStatement psGetBalance = con.prepareStatement(getLastBalanceSql)) {
 
                 for (int i = 0; i < idsArr.length; i++) {
-                    int itemId = Integer.parseInt(idsArr[i]);
-                    BigDecimal qty = new BigDecimal(qtyArr[i]);
+                    int itemId = Integer.parseInt(idsArr[i].trim());
+                    BigDecimal qty = new BigDecimal(qtyArr[i].trim());
 
-                    // 🔹 Update stock
+                    // 🔹 Step 1: Insert or update stock
                     psStock.setInt(1, itemId);
                     psStock.setBigDecimal(2, qty);
                     psStock.setBigDecimal(3, qty);
                     psStock.addBatch();
 
-                    // 🔹 Get latest running balance for this item
+                    // 🔹 Step 2: Get current running balance from ledger
                     BigDecimal newBalance = qty;
-                    try (PreparedStatement psGetBalance = con.prepareStatement(
-                            "SELECT running_balance FROM stock_ledger WHERE item_id = ? ORDER BY ledger_id DESC LIMIT 1")) {
-                        psGetBalance.setInt(1, itemId);
-                        try (ResultSet rs = psGetBalance.executeQuery()) {
-                            if (rs.next()) {
-                                newBalance = rs.getBigDecimal("running_balance").add(qty);
+                    psGetBalance.setInt(1, itemId);
+                    try (ResultSet rs = psGetBalance.executeQuery()) {
+                        if (rs.next()) {
+                            BigDecimal lastBalance = rs.getBigDecimal("running_balance");
+                            if (lastBalance != null) {
+                                newBalance = lastBalance.add(qty);
                             }
                         }
                     }
 
-                    // 🔹 Insert ledger record
+                    // 🔹 Step 3: Insert new ledger entry
+                    String remarks = "Manual stock addition by " + username;
                     psLedger.setInt(1, itemId);
                     psLedger.setBigDecimal(2, qty);
                     psLedger.setBigDecimal(3, newBalance);
-                    psLedger.setString(4, "Stock added manually");
+                    psLedger.setString(4, remarks);
                     psLedger.addBatch();
                 }
 
@@ -120,7 +147,7 @@ public class AddStock extends HttpServlet {
             response.sendRedirect("AddStock?success=1");
 
         } catch (SQLException e) {
-            throw new ServletException("Error inserting stock: " + e.getMessage(), e);
+            throw new ServletException("Error inserting/updating stock: " + e.getMessage(), e);
         }
     }
 }

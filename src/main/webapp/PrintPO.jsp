@@ -282,7 +282,8 @@ if (poNumber != null) {
             <td style="text-align:right;"><%= rsItems.getDouble("discount_value") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("gst_percent") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("gst_value") %></td>
-            <td style="text-align:right;"><%= rsItems.getDouble("net_amount") %></td>
+            <td style="text-align:right;"><%= String.format("%.0f", rsItems.getDouble("net_amount")) %></td>
+
         </tr>
     <%
         }
@@ -296,12 +297,16 @@ if (poNumber != null) {
         <td style="text-align:right;"><%= rsPO.getString("total_dis") %></td>
     </tr>
     <tr>
+    <%String s1=  rsPO.getString("total_gst");
+       Double d = Double.parseDouble(s1);%>
         <td>Total GST:</td>
-        <td style="text-align:right;"><%= rsPO.getString("total_gst") %></td>
+        <td style="text-align:right;"><%= String.format("%.0f", d) %></td>
     </tr>
     <tr>
+    <%String s2=  rsPO.getString("total_amount");
+       Double d2 = Double.parseDouble(s2);%>
         <td>Grand Total:</td>
-        <td style="text-align:right;"><%= rsPO.getString("total_amount") %></td>
+        <td style="text-align:right;"><%= String.format("%.0f", d2) %></td>
     </tr>
 </table>
 
