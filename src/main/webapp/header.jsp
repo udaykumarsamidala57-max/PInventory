@@ -79,6 +79,13 @@
    <% if ("Global".equalsIgnoreCase(roles)||"Incharge".equalsIgnoreCase(roles)||"Admin".equalsIgnoreCase(roles)) { %>
     <a href="AIndentListServlet"><i class="fas fa-check-circle"></i> Approve Indent</a>
     <%} %>
+    
+    <% if ("Global".equalsIgnoreCase(roles)) { %>
+    <a href="IssueApprove"><i class="fas fa-check-circle"></i> Approve Issue</a>
+    <%} %>
+    
+   
+    
     <a href="IndentlistServlet"><i class="fas fa-list"></i> Indent Report</a>
      <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="IndentPO"><i class="fas fa-shopping-cart"></i>Create Purchase Order</a>

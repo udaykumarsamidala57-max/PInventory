@@ -7,6 +7,7 @@
         response.sendRedirect("login.jsp");
         return;
     }
+
     String indentNumber = request.getParameter("IndentNumber");
 %>
 <!DOCTYPE html>
@@ -22,7 +23,6 @@
         margin: 0;
         padding: 0;
     }
-
     .container {
         width: 85%;
         margin: 30px auto;
@@ -31,31 +31,25 @@
         border-radius: 12px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     }
-
     .header {
         text-align: center;
         margin-bottom: 10px;
     }
-
     .header img {
-        width: auto;
         height: 200px;
         display: block;
         margin: 0 auto 10px;
     }
-
-    h1, h2, h3, h4 {
+    h2 {
         text-align: center;
         color: #222;
         margin: 4px 0;
     }
-
     hr {
         border: none;
         border-top: 2px solid #007BFF;
         margin: 20px 0;
     }
-
     .indent-info {
         margin: 20px auto;
         width: 90%;
@@ -67,51 +61,42 @@
         grid-template-columns: 1fr 1fr;
         gap: 8px 40px;
     }
-
     .indent-info p {
         font-size: 15px;
         color: #333;
         margin: 5px 0;
     }
-
     table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
     }
-
     th, td {
         border: 1px solid #ddd;
         padding: 10px;
         text-align: center;
     }
-
     th {
         background: #007BFF;
         color: #fff;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
-
     tr:nth-child(even) {
         background: #f9f9f9;
     }
-
     .footer {
         margin-top: 40px;
         text-align: right;
         font-weight: bold;
         color: #444;
     }
-
     .sign {
         margin-top: 60px;
         text-align: right;
         font-weight: 500;
         color: #333;
     }
-
-    /* ✅ Modern green APPROVED stamp */
     .stamp {
         display: inline-block;
         margin-top: 15px;
@@ -125,20 +110,11 @@
         transform: rotate(-8deg);
         box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
     }
-
     @media print {
-        .container {
-            box-shadow: none;
-            border: none;
-        }
-        button {
-            display: none;
-        }
-        .header img {
-            height: 70px;
-        }
+        .container { box-shadow: none; border: none; }
+        button { display: none; }
+        .header img { height: 70px; }
     }
-
     .print-btn {
         display: block;
         margin: 20px auto;
@@ -150,7 +126,6 @@
         cursor: pointer;
         font-size: 15px;
     }
-
     .print-btn:hover {
         background: #0056b3;
     }
@@ -165,13 +140,13 @@
     <h2>Indent Details</h2>
 
 <%
-if (indentNumber != null) {
+if (indentNumber != null && !indentNumber.trim().isEmpty()) {
     Class.forName("com.mysql.cj.jdbc.Driver");
     Connection con = DBUtil.getConnection();
 
     PreparedStatement pst = con.prepareStatement(
-        "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, i.status, i.purpose, " +
-        "COALESCE(s.balance_qty, 0) AS balance_qty " +
+        "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +
+        "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty " +
         "FROM indent i " +
         "LEFT JOIN stock s ON i.item_id = s.item_id " +
         "WHERE i.indent_no = ?"
@@ -180,7 +155,7 @@ if (indentNumber != null) {
     ResultSet rs = pst.executeQuery();
 
     boolean hasRecords = false;
-    String indentDate = "", department = "", requestedBy = "", purpose = "";
+    String indentDate = "", department = "", requestedBy = "", purpose = "", indentNext = "";
     boolean allApproved = true;
     int count = 1;
 
@@ -190,6 +165,12 @@ if (indentNumber != null) {
         department = rs.getString("department");
         requestedBy = rs.getString("requested_by");
         purpose = rs.getString("purpose");
+        indentNext = rs.getString("Indentnext");
+
+        // If indentnext = PO, treat as approved
+        if (indentNext != null && indentNext.trim().equalsIgnoreCase("PO")) {
+            allApproved = true;
+        }
 %>
 
     <div class="indent-info">
@@ -206,14 +187,14 @@ if (indentNumber != null) {
             <th>Item Name</th>
             <th>Balance Qty</th>
             <th>Req. Quantity</th>
-            
             <th>Status</th>
         </tr>
 
 <%
         do {
             String itemStatus = rs.getString("status");
-            if (itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim())) {
+            if ((itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim()))
+                    && (indentNext == null || !indentNext.equalsIgnoreCase("PO"))) {
                 allApproved = false;
             }
 %>
@@ -222,8 +203,7 @@ if (indentNumber != null) {
             <td><%= rs.getString("item_name") %></td>
             <td><%= rs.getBigDecimal("balance_qty") %></td>
             <td><%= rs.getString("qty") %></td>
-            
-            <td><%= itemStatus %></td>
+            <td><%= (indentNext != null && indentNext.equalsIgnoreCase("PO")) ? "Approved" : itemStatus %></td>
         </tr>
 <%
         } while (rs.next());
@@ -235,15 +215,11 @@ if (indentNumber != null) {
     </div>
 
     <div class="sign">
+        <p><b>Authorized Signatory</b></p>
 <%
         if (allApproved) {
 %>
-            <p><b>Authorized Signatory</b></p>
             <p class="stamp">Approved</p>
-<%
-        } else {
-%>
-            <p><b>Authorised Signatory</b></p>
 <%
         }
 %>

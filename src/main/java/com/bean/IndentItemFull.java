@@ -141,4 +141,16 @@ public class IndentItemFull {
     public void setItemId(int itemId) {
         this.itemId = itemId;
     }
+    private String dateStr;
+    private String iapprovevdateStr;
+    private String fapprovevdateStr;
+
+    public String getDateStr() { return dateStr; }
+    public void setDateStr(String dateStr) { this.dateStr = dateStr; }
+
+    public String getIapprovevdateStr() { return iapprovevdateStr; }
+    public void setIapprovevdateStr(String iapprovevdateStr) { this.iapprovevdateStr = iapprovevdateStr; }
+
+    public String getFapprovevdateStr() { return fapprovevdateStr; }
+    public void setFapprovevdateStr(String fapprovevdateStr) { this.fapprovevdateStr = fapprovevdateStr; }
 }

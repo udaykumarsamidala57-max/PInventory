@@ -22,6 +22,7 @@ com\bean\DBUtil.class
 com\bean\IndentItems.class
 com\controller\DHConsume.class
 com\bean\IndentItemFull.class
+com\controller\IssueApprove.class
 com\controller\Home.class
 com\controller\PO.class
 com\bean\Addstock.class
