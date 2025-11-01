@@ -187,20 +187,18 @@ public class SendPendingIndentPDF extends HttpServlet {
             		  "sender": {"name":"SRS Central Admin","email":"udaykumarsamidala57@gmail.com"},
             		  "to":[{"email":"%s"}],
             		  "subject":"🌟 Pending Indents Report – Keep the Workflow Moving!",
-            		  "htmlContent":"<div style='font-family:Poppins,Arial,sans-serif;background:#f9fafb;padding:20px;border-radius:10px;color:#1f2937;line-height:1.7;'>
-            		      <h2 style='color:#2563eb;text-align:center;margin-bottom:10px;'>📊 Pending Indents Summary</h2>
-            		      <p style='font-size:16px;'>Dear <b>Management Team</b>,</p>
-            		      <p style='font-size:15px;'>We’re sharing the latest <b>Pending Indents Report</b> that highlights items currently awaiting PO approval.</p>
-            		      <p style='font-size:15px;'>Your timely review and action will help us maintain seamless operations and ensure all departments receive the resources they need — <b>on time, every time.</b></p>
-            		      <div style='border-left:4px solid #2563eb;padding-left:12px;margin:20px 0;font-size:14px;color:#374151;'>
-            		        <p><i>“Efficiency is doing better what is already being done.”</i><br>— Peter Drucker</p>
-            		      </div>
-            		      <p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>
-            		      <p style='font-size:14px;color:#374151;margin-top:25px;'>Warm regards,<br><b style='color:#2563eb;'>SRS Central Admin</b></p>
-            		    </div>",
-            		  "attachment":[{"content":"%s","name":"PendingIndentsReport.pdf"}]
+            		  "htmlContent":"<div style='font-family:Poppins,Arial,sans-serif;background:#f9fafb;padding:20px;border-radius:10px;color:#1f2937;line-height:1.7;'>"
+            		      + "<h2 style='color:#2563eb;text-align:center;margin-bottom:10px;'>📊 Pending Indents Summary</h2>"
+            		      + "<p style='font-size:16px;'>Dear <b>Management Team</b>,</p>"
+            		      + "<p style='font-size:15px;'>We’re sharing the latest <b>Pending Indents Report</b> that highlights items currently awaiting PO approval.</p>"
+            		      + "<p style='font-size:15px;'>Your timely review and action will help us maintain seamless operations and ensure all departments receive the resources they need — <b>on time, every time.</b></p>"
+            		      + "<div style='border-left:4px solid #2563eb;padding-left:12px;margin:20px 0;font-size:14px;color:#374151;'>"
+            		      + "<p><i>“Efficiency is doing better what is already being done.”</i><br>— Peter Drucker</p></div>"
+            		      + "<p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>"
+            		      + "<p style='font-size:14px;color:#374151;margin-top:25px;'>Warm regards,<br><b style='color:#2563eb;'>SRS Central Admin</b></p></div>",
+            		  "attachments":[{"content":"%s","name":"PendingIndentsReport.pdf"}]
             		}
-            """.formatted(to, base64Pdf);
+            		""".formatted(to, base64Pdf);
 
             // Send HTTP POST
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
