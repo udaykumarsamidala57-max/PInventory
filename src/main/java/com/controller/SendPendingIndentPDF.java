@@ -29,11 +29,20 @@ import com.bean.DBUtil;
 public class SendPendingIndentPDF extends HttpServlet {
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+
+        String toEmail = request.getParameter("email");
+
         try {
-            sendPendingIndentReport();
-            response.getWriter().println("<h3 style='color:green;'>✅ Email with Pending Indents sent successfully via Brevo!</h3>");
+            if (toEmail == null || toEmail.isBlank()) {
+                response.getWriter().println("<h3 style='color:red;'>❌ Please enter a valid email address.</h3>");
+                return;
+            }
+
+            sendPendingIndentReport(toEmail);
+            response.getWriter().println("<h3 style='color:green;'>✅ Email sent successfully to " + toEmail + "</h3>");
         } catch (Exception e) {
             response.getWriter().println("<h3 style='color:red;'>❌ Error: " + e.getMessage() + "</h3>");
             e.printStackTrace();
@@ -41,7 +50,7 @@ public class SendPendingIndentPDF extends HttpServlet {
     }
 
     // -------------------- MAIN LOGIC --------------------
-    public static void sendPendingIndentReport() {
+    public static void sendPendingIndentReport(String toEmail) {
         List<Map<String, Object>> pendingIndents = new ArrayList<>();
 
         String sql = """
@@ -72,13 +81,12 @@ public class SendPendingIndentPDF extends HttpServlet {
         }
 
         if (pendingIndents.isEmpty()) {
-            System.out.println("[Manual Trigger] No pending indents found for PO.");
-            return;
+            throw new RuntimeException("No pending indents found for PO.");
         }
 
         String pdfPath = System.getProperty("java.io.tmpdir") + File.separator + "PendingIndentsReport.pdf";
         generatePDF(pendingIndents, pdfPath);
-        sendBrevoEmailWithAttachment("management@example.com", pdfPath);
+        sendBrevoEmailWithAttachment(toEmail, pdfPath);
     }
 
     // -------------------- PDF CREATION --------------------

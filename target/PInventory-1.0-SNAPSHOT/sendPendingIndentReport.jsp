@@ -1,13 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%
-    // Optional: You can check session login here if needed
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
         return;
     }
-
-    String message = request.getParameter("msg");
 %>
 <!DOCTYPE html>
 <html>
@@ -39,6 +36,14 @@
             color: #444;
             margin-bottom: 30px;
         }
+        input[type="email"] {
+            width: 80%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
         button {
             background-color: #2563eb;
             color: white;
@@ -53,30 +58,18 @@
         button:hover {
             background-color: #1d4ed8;
         }
-        .msg {
-            margin-top: 20px;
-            font-weight: bold;
-            color: green;
-        }
-        .error {
-            color: red;
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>📦 Pending Indent Report</h2>
-        <p>Click the button below to generate and send the latest <b>Pending Indent PDF Report</b> to the management email.</p>
+        <h2>📦 Send Pending Indent Report</h2>
+        <p>Enter the management email below and click “Send” to email the <b>Pending Indent PDF Report</b>.</p>
 
-        <form action="SendPendingIndentPDF" method="get">
+        <form action="SendPendingIndentPDF" method="post">
+            <input type="email" name="email" placeholder="Enter management email" required />
+            <br>
             <button type="submit">📩 Send Pending Indent Report</button>
         </form>
-
-        <% if (message != null) { %>
-            <div class="msg <%= message.contains("error") ? "error" : "" %>">
-                <%= message %>
-            </div>
-        <% } %>
     </div>
 </body>
 </html>
