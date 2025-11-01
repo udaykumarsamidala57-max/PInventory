@@ -3,15 +3,13 @@ package com.controller;
 import java.io.*;
 import java.net.*;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import java.util.*;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import com.bean.DBUtil;
+
+// ✅ Use explicit imports for iText to avoid List conflict
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
@@ -23,8 +21,6 @@ import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
-import com.bean.DBUtil;
 
 @WebServlet("/SendPendingIndentPDF")
 public class SendPendingIndentPDF extends HttpServlet {
@@ -52,7 +48,7 @@ public class SendPendingIndentPDF extends HttpServlet {
 
     // -------------------- MAIN LOGIC --------------------
     public static void sendPendingIndentReport(String toEmail) {
-        List<Map<String, Object>> pendingIndents = new ArrayList<>();
+        java.util.List<Map<String, Object>> pendingIndents = new ArrayList<>();
 
         String sql = """
                 SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
@@ -94,7 +90,7 @@ public class SendPendingIndentPDF extends HttpServlet {
     }
 
     // -------------------- PDF CREATION --------------------
-    private static void generatePDF(List<Map<String, Object>> data, String filePath) {
+    private static void generatePDF(java.util.List<Map<String, Object>> data, String filePath) {
         try {
             Document document = new Document(PageSize.A4, 36, 36, 50, 50);
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
@@ -135,11 +131,7 @@ public class SendPendingIndentPDF extends HttpServlet {
             int serial = 1;
             for (Map<String, Object> row : data) {
                 table.addCell(new Phrase(String.valueOf(serial++), textFont));
-
-                PdfPCell indentCell = new PdfPCell(new Phrase(row.get("indent_no").toString(), textFont));
-                indentCell.setBackgroundColor(new BaseColor(235, 242, 255));
-                table.addCell(indentCell);
-
+                table.addCell(new Phrase(row.get("indent_no").toString(), textFont));
                 table.addCell(new Phrase(row.get("indent_date").toString(), textFont));
                 table.addCell(new Phrase(row.get("item_name").toString(), textFont));
                 table.addCell(new Phrase(row.get("qty").toString(), textFont));
@@ -152,18 +144,16 @@ public class SendPendingIndentPDF extends HttpServlet {
             // Footer Note
             Paragraph note = new Paragraph(
                     "\n📄 Management Note:\nThese indents are pending and require purchase order action.\n" +
-                    "Please review and process them at the earliest.",
+                            "Please review and process them at the earliest.",
                     new Font(Font.FontFamily.HELVETICA, 11, Font.ITALIC, new BaseColor(90, 90, 90))
             );
             note.setSpacingBefore(15f);
             document.add(note);
 
             document.close();
-
             System.out.println("✅ PDF generated successfully: " + filePath);
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("PDF generation failed: " + e.getMessage());
         }
     }
@@ -181,24 +171,31 @@ public class SendPendingIndentPDF extends HttpServlet {
             byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
             String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
 
-            // JSON Payload
+            // HTML content
+            String html = """
+                <div style='background:linear-gradient(90deg,#2563eb,#1d4ed8);color:white;padding:10px 20px;border-radius:8px 8px 0 0;text-align:center;'>
+                  <h2 style='margin:0;font-family:Poppins,sans-serif;'>Sandur Residential School</h2>
+                  <p style='margin:0;font-size:13px;'>Inventory Automation System</p>
+                </div>
+                <div style='background:#f9fafb;padding:20px;color:#1f2937;'>
+                  <h3 style='color:#2563eb;'>📊 Pending Indents Report</h3>
+                  <p>Dear Management,</p>
+                  <p>The latest <b>Pending Indents Report</b> is attached. Please review and approve the pending items for Purchase Orders to ensure smooth departmental operations.</p>
+                  <blockquote style='border-left:4px solid #2563eb;padding-left:10px;color:#374151;font-style:italic;'>“Great systems don’t wait — they evolve with action.”</blockquote>
+                  <p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>
+                  <p style='margin-top:20px;color:#2563eb;font-weight:bold;'>SRS Central Admin</p>
+                </div>
+                """;
+
             String json = """
-            		{
-            		  "sender": {"name":"SRS Central Admin","email":"udaykumarsamidala57@gmail.com"},
-            		  "to":[{"email":"%s"}],
-            		  "subject":"🌟 Pending Indents Report – Keep the Workflow Moving!",
-            		  "htmlContent":"<div style='font-family:Poppins,Arial,sans-serif;background:#f9fafb;padding:20px;border-radius:10px;color:#1f2937;line-height:1.7;'>"
-            		      + "<h2 style='color:#2563eb;text-align:center;margin-bottom:10px;'>📊 Pending Indents Summary</h2>"
-            		      + "<p style='font-size:16px;'>Dear <b>Management Team</b>,</p>"
-            		      + "<p style='font-size:15px;'>We’re sharing the latest <b>Pending Indents Report</b> that highlights items currently awaiting PO approval.</p>"
-            		      + "<p style='font-size:15px;'>Your timely review and action will help us maintain seamless operations and ensure all departments receive the resources they need — <b>on time, every time.</b></p>"
-            		      + "<div style='border-left:4px solid #2563eb;padding-left:12px;margin:20px 0;font-size:14px;color:#374151;'>"
-            		      + "<p><i>“Efficiency is doing better what is already being done.”</i><br>— Peter Drucker</p></div>"
-            		      + "<p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>"
-            		      + "<p style='font-size:14px;color:#374151;margin-top:25px;'>Warm regards,<br><b style='color:#2563eb;'>SRS Central Admin</b></p></div>",
-            		  "attachments":[{"content":"%s","name":"PendingIndentsReport.pdf"}]
-            		}
-            		""".formatted(to, base64Pdf);
+                {
+                  "sender": {"name": "SRS Central Admin", "email": "udaykumarsamidala57@gmail.com"},
+                  "to": [{"email": "%s"}],
+                  "subject": "📦 Pending Indents Report – Sandur Residential School",
+                  "htmlContent": "%s",
+                  "attachments": [{"content": "%s", "name": "PendingIndentsReport.pdf"}]
+                }
+                """.formatted(to, html.replace("\"", "\\\"").replace("\n", ""), base64Pdf);
 
             // Send HTTP POST
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
@@ -215,19 +212,13 @@ public class SendPendingIndentPDF extends HttpServlet {
 
             int responseCode = conn.getResponseCode();
             if (responseCode != 201 && responseCode != 200) {
-                InputStream errorStream = conn.getErrorStream();
-                if (errorStream != null) {
-                    String error = new String(errorStream.readAllBytes());
-                    throw new RuntimeException("Brevo API error (" + responseCode + "): " + error);
-                } else {
-                    throw new RuntimeException("Brevo API returned code: " + responseCode);
-                }
+                String error = new String(conn.getErrorStream().readAllBytes());
+                throw new RuntimeException("Brevo API error (" + responseCode + "): " + error);
             }
 
             System.out.println("✅ Brevo email sent successfully to: " + to);
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Brevo email send failed: " + e.getMessage());
         }
     }
