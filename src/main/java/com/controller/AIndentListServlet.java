@@ -11,8 +11,8 @@ import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.*;
 import com.bean.DBUtil;
 
-@WebServlet("/SendPendingIndentPDF")
-public class SendPendingIndentPDF extends HttpServlet {
+@WebServlet("/AIndentListServlet")
+public class AIndentListServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
