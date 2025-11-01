@@ -65,10 +65,10 @@
         <h2>📦 Send Pending Indent Report</h2>
         <p>Enter the management’s email address to send the <b>Pending Indent PDF</b> automatically.</p>
 
-        <form action="SendPendingIndentPDF" method="post">
-            <input type="email" name="email" placeholder="Enter management email" required><br>
-            <button type="submit">📩 Send Pending Indent Report</button>
-        </form>
+        <form action="SendPendingIndentPDF" method="get">
+    <input type="email" name="email" placeholder="Enter management email" required><br>
+    <button type="submit">📩 Send Pending Indent Report</button>
+</form>
     </div>
 </body>
 </html>
