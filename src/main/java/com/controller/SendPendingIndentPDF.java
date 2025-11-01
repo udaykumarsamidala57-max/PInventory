@@ -188,14 +188,14 @@ public class SendPendingIndentPDF extends HttpServlet {
                 """;
 
             String json = """
-                {
-                  "sender": {"name": "SRS Central Admin", "email": "udaykumarsamidala57@gmail.com"},
-                  "to": [{"email": "%s"}],
-                  "subject": "📦 Pending Indents Report – Sandur Residential School",
-                  "htmlContent": "%s",
-                  "attachments": [{"content": "%s", "name": "PendingIndentsReport.pdf"}]
-                }
-                """.formatted(to, html.replace("\"", "\\\"").replace("\n", ""), base64Pdf);
+            		{
+            		  "sender": {"name": "SRS Central Admin", "email": "udaykumarsamidala57@gmail.com"},
+            		  "to": [{"email": "%s"}],
+            		  "subject": "📦 Pending Indents Report – Sandur Residential School",
+            		  "htmlContent": "%s",
+            		  "attachment": [{"content": "%s", "name": "PendingIndentsReport.pdf"}]
+            		}
+            		""".formatted(to, html.replace("\"", "\\\"").replace("\n", ""), base64Pdf);
 
             // Send HTTP POST
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
