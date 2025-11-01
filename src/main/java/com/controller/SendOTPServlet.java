@@ -83,13 +83,14 @@ public class SendOTPServlet extends HttpServlet {
             conn.setDoOutput(true);
 
             String json = """
-            {
-              "sender": {"name":"SRS ADMIN CENTRAL","email":"udaykumarsamidala57@gmail.com"},
-              "to":[{"email":"%s"}],
-              "subject":"Your OTP for Login",
-              "htmlContent":"<p>Your OTP is <b>%d</b>.<br>It is valid for 5 minutes.</p><p>Regards,<br>System Admin</p>"
-            }
-            """.formatted(to, otp);
+            		{
+            		  "sender": {"name":"SRS Central Admin","email":"udaykumarsamidala57@gmail.com"},
+            		  "to":[{"email":"%s"}],
+            		  "subject":"🔐 Your One-Time Password (OTP) for Login",
+            		  "htmlContent":"<div style='font-family:Poppins,Arial,sans-serif;color:#333;line-height:1.6;'><h2 style='color:#2563eb;'>Hello,</h2><p style='font-size:15px;'>Your one-time password (OTP) for login is:</p><p style='font-size:22px;font-weight:bold;color:#2563eb;letter-spacing:2px;'>%d</p><p style='font-size:14px;color:#555;'>This OTP is valid for <b>5 minutes</b>. Please do not share it with anyone.</p><br><p style='font-size:14px;color:#555;'>Regards,<br><b>SRS Central Admin</b></p></div>"
+            		}
+            		""".formatted(to, otp);
+
 
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(json.getBytes());

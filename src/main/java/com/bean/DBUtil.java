@@ -6,9 +6,7 @@ import java.sql.SQLException;
 
 public class DBUtil {
 
-	//private static final String URL = 
-	//	    "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory"
-	//	    + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&tcpKeepAlive=true";
+
 	
 	private static final String URL = System.getenv("MYSQLHOST");
 	private static final String USER = "root";
