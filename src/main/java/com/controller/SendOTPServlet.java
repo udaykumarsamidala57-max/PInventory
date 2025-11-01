@@ -84,12 +84,10 @@ public class SendOTPServlet extends HttpServlet {
 
             String json = """
             {
-              "sender": {"name":"SRSIT OTP","email":"udaykumarsamidala57@gmail.com"},
+              "sender": {"name":"SRS ADMIN CENTRAL","email":"udaykumarsamidala57@gmail.com"},
               "to":[{"email":"%s"}],
               "subject":"Your OTP for Login",
-              "htmlContent":"<p>Your OTP is <b>%d</b><br>It is valid for 5 minutes.</p><br>
-              <P>Note: This is an auto-generated email. Please don't reply to this.</P>
-              <p>Regards,<br>SRS IT DEPARTMENT</p>"
+              "htmlContent":"<p>Your OTP is <b>%d</b>.<br>It is valid for 5 minutes.</p><p>Regards,<br>System Admin</p>"
             }
             """.formatted(to, otp);
 
