@@ -110,7 +110,7 @@ const items = [];
     UOM: '${i.UOM}', 
     category: '${i.category}', 
     subcategory: '${i.subcategory}', 
-    stock: '${i.stock}' // ✅ new stock info
+    stock: '${i.stock}' 
   });
 </c:forEach>
 
@@ -163,7 +163,6 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
       ? categories 
       : categories.filter(c => c.departmentName === selectedDept);
 
-  // Unique categories
   const seen = new Set();
   const uniqueCats = filteredCats.filter(c => {
     const key = c.name;
@@ -221,17 +220,36 @@ function restrictDateToToday() {
   dateField.max = today;
 }
 
-document.getElementById('indentForm').addEventListener('submit', function() {
+document.getElementById('indentForm').addEventListener('submit', function(event) {
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
+
+  let invalid = false;
   document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
     const sel = tr.querySelector(".item");
     const opt = sel.options[sel.selectedIndex];
+    const stock = parseFloat(opt ? opt.dataset.stock || "0" : "0");
+    const qty = parseFloat(tr.querySelector(".qty").value || "0");
+
+    // ✅ Rule: Accept if stock ≥ qty OR stock == 0
+    // ❌ Reject if stock > 0 but < qty
+    if (stock > 0 && qty > stock) {
+      alert(`Please request only up to the available quantity first.\nAvailable: ${stock}`);
+      invalid = true;
+      return;
+    }
+
     ids.push(opt ? opt.dataset.id : "");
     names.push(opt ? opt.value : "");
-    qtys.push(tr.querySelector(".qty").value);
+    qtys.push(qty);
     purps.push(tr.querySelector(".purpose").value);
     uomsArr.push(tr.querySelector(".uom").textContent);
   });
+
+  if (invalid) {
+    event.preventDefault();
+    return false;
+  }
+
   this.itemIds.value = ids.join(",");
   this.itemNames.value = names.join(",");
   this.quantities.value = qtys.join(",");
