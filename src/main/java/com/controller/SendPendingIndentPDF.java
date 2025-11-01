@@ -9,10 +9,9 @@ import javax.servlet.http.*;
 
 import com.bean.DBUtil;
 
-// ✅ Use explicit imports for iText to avoid List conflict
+// ✅ Explicit iText imports
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
-import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.PageSize;
@@ -81,11 +80,11 @@ public class SendPendingIndentPDF extends HttpServlet {
             throw new RuntimeException("No pending indents found for PO.");
         }
 
-        // Generate PDF file in temp folder
+        // Generate PDF
         String pdfPath = System.getProperty("java.io.tmpdir") + File.separator + "PendingIndentsReport.pdf";
         generatePDF(pendingIndents, pdfPath);
 
-        // Send the PDF via Brevo API
+        // Send Email
         sendBrevoEmailWithAttachment(toEmail, pdfPath);
     }
 
@@ -96,13 +95,11 @@ public class SendPendingIndentPDF extends HttpServlet {
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
             document.open();
 
-            // Fonts
             Font schoolFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(0, 102, 204));
             Font titleFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, new BaseColor(33, 97, 140));
             Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
             Font textFont = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
 
-            // Header
             Paragraph schoolName = new Paragraph("SANDUR RESIDENTIAL SCHOOL", schoolFont);
             schoolName.setAlignment(Element.ALIGN_CENTER);
             document.add(schoolName);
@@ -112,7 +109,6 @@ public class SendPendingIndentPDF extends HttpServlet {
             title.setSpacingAfter(15f);
             document.add(title);
 
-            // Table
             PdfPTable table = new PdfPTable(7);
             table.setWidthPercentage(100);
             table.setSpacingBefore(10f);
@@ -127,7 +123,6 @@ public class SendPendingIndentPDF extends HttpServlet {
                 table.addCell(cell);
             }
 
-            // Rows
             int serial = 1;
             for (Map<String, Object> row : data) {
                 table.addCell(new Phrase(String.valueOf(serial++), textFont));
@@ -141,10 +136,8 @@ public class SendPendingIndentPDF extends HttpServlet {
 
             document.add(table);
 
-            // Footer Note
             Paragraph note = new Paragraph(
-                    "\n📄 Management Note:\nThese indents are pending and require purchase order action.\n" +
-                            "Please review and process them at the earliest.",
+                    "\n📄 Management Note:\nThese indents are pending and require purchase order action.\nPlease review and process them at the earliest.",
                     new Font(Font.FontFamily.HELVETICA, 11, Font.ITALIC, new BaseColor(90, 90, 90))
             );
             note.setSpacingBefore(15f);
@@ -166,26 +159,25 @@ public class SendPendingIndentPDF extends HttpServlet {
                 throw new RuntimeException("⚠️ Brevo API key not found in environment variables!");
             }
 
-            // Read PDF file as Base64
+            // Read PDF file
             File pdfFile = new File(pdfPath);
             byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
             String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
 
-            // HTML content
-            String html = """
-                <div style='background:linear-gradient(90deg,#2563eb,#1d4ed8);color:white;padding:10px 20px;border-radius:8px 8px 0 0;text-align:center;'>
-                  <h2 style='margin:0;font-family:Poppins,sans-serif;'>Sandur Residential School</h2>
-                  <p style='margin:0;font-size:13px;'>Inventory Automation System</p>
-                </div>
-                <div style='background:#f9fafb;padding:20px;color:#1f2937;'>
-                  <h3 style='color:#2563eb;'>📊 Pending Indents Report</h3>
-                  <p>Dear Management,</p>
-                  <p>The latest <b>Pending Indents Report</b> is attached. Please review and approve the pending items for Purchase Orders to ensure smooth departmental operations.</p>
-                  <blockquote style='border-left:4px solid #2563eb;padding-left:10px;color:#374151;font-style:italic;'>“Great systems don’t wait — they evolve with action.”</blockquote>
-                  <p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>
-                  <p style='margin-top:20px;color:#2563eb;font-weight:bold;'>SRS Central Admin</p>
-                </div>
-                """;
+            // ✅ Build HTML content
+            StringBuilder html = new StringBuilder();
+            html.append("<div style='background:linear-gradient(90deg,#2563eb,#1d4ed8);color:white;padding:15px;border-radius:8px 8px 0 0;text-align:center;'>")
+                .append("<h2 style='margin:0;font-family:Poppins,sans-serif;'>Sandur Residential School</h2>")
+                .append("<p style='margin:0;font-size:13px;'>Inventory Automation System</p>")
+                .append("</div>")
+                .append("<div style='background:#f9fafb;padding:20px;color:#1f2937;font-family:Poppins,Arial,sans-serif;'>")
+                .append("<h3 style='color:#2563eb;'>📊 Pending Indents Report</h3>")
+                .append("<p>Dear Management,</p>")
+                .append("<p>The latest <b>Pending Indents Report</b> is attached. Please review and approve the pending items for Purchase Orders to ensure smooth departmental operations.</p>")
+                .append("<blockquote style='border-left:4px solid #2563eb;padding-left:10px;color:#374151;font-style:italic;'>“Great systems don’t wait — they evolve with action.”</blockquote>")
+                .append("<p style='font-size:14px;color:#4b5563;'>Generated automatically by <b>Inventory Automation System</b> – Sandur Residential School.</p>")
+                .append("<p style='margin-top:20px;color:#2563eb;font-weight:bold;'>SRS Central Admin</p>")
+                .append("</div>");
 
             String json = """
             		{
@@ -195,9 +187,8 @@ public class SendPendingIndentPDF extends HttpServlet {
             		  "htmlContent": "%s",
             		  "attachment": [{"content": "%s", "name": "PendingIndentsReport.pdf"}]
             		}
-            		""".formatted(to, html.replace("\"", "\\\"").replace("\n", ""), base64Pdf);
+            		""".formatted(to, html.toString().replace("\"", "\\\""), base64Pdf);
 
-            // Send HTTP POST
             URL url = new URL("https://api.brevo.com/v3/smtp/email");
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
