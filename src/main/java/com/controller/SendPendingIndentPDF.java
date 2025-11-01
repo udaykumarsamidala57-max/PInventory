@@ -179,7 +179,7 @@ public class SendPendingIndentPDF extends HttpServlet {
               </div>
               <div style='padding:20px;'>
                 <h3 style='color:#2563eb;margin-top:0;'>📊 Pending Indents Report</h3>
-                <p>Dear Management,</p>
+                <p>Dear Sir/Madam,</p>
                 <p>The attached <b>Pending Indents Report</b> lists items awaiting Purchase Order action. Kindly review and approve them promptly to ensure uninterrupted operations.</p>
                 <blockquote style='border-left:4px solid #2563eb;padding-left:10px;margin:15px 0;color:#374151;font-style:italic;'>
                   “Great systems don’t wait — they evolve with action.”
