@@ -1,25 +1,24 @@
 package com.controller;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
-import java.util.List;
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import com.itextpdf.text.*;
-import com.itextpdf.text.pdf.*;
+
 import com.bean.DBUtil;
+import com.bean.IndentItemFull;
 
 @WebServlet("/AIndentListServlet")
 public class AIndentListServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
+    // -------------------- GET --------------------
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        response.setContentType("text/html;charset=UTF-8");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-        // -------------------- SESSION VALIDATION --------------------
         HttpSession sess = request.getSession(false);
         if (sess == null || sess.getAttribute("username") == null) {
             response.sendRedirect("login.jsp");
@@ -29,182 +28,262 @@ public class AIndentListServlet extends HttpServlet {
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
 
-        // Only Global role can access this feature
-        if (!"Global".equalsIgnoreCase(role)) {
+        if (
+            !"Global".equalsIgnoreCase(role) &&
+            !"Incharge".equalsIgnoreCase(role) &&
+            !"Admin".equalsIgnoreCase(role)
+        ) {
             response.setContentType("text/html");
-            response.getWriter().println("""
-                <div style='font-family:Arial; margin:50px; text-align:center;'>
-                    <h2 style='color:#dc2626;'>❌ Access Denied</h2>
-                    <p style='color:#555;'>Only <b>Global Admin</b> role can send the Pending Indent Report.</p>
-                    <a href='home.jsp' style='color:#2563eb; text-decoration:none;'>⬅ Go Back</a>
-                </div>
-            """);
+            response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
             return;
         }
 
-        // -------------------- MAIN LOGIC --------------------
-        String toEmail = request.getParameter("email");
-        try {
-            if (toEmail == null || toEmail.isBlank()) {
-                response.getWriter().println("<h3 style='color:red;'>❌ Please enter a valid email address.</h3>");
-                return;
-            }
+        List<IndentItemFull> indentList = new ArrayList<>();
+        Map<Integer, Double> pendingPerItem = new HashMap<>();
 
-            sendPendingIndentReport(toEmail);
-            response.getWriter().println("<h3 style='color:green;'>✅ Email sent successfully to " + toEmail + "</h3>");
-        } catch (Exception e) {
-            response.getWriter().println("<h3 style='color:red;'>❌ Error: " + e.getMessage() + "</h3>");
-            e.printStackTrace();
-        }
-    }
-
-    // -------------------- FETCH & PROCESS DATA --------------------
-    public static void sendPendingIndentReport(String toEmail) {
-        List<Map<String, Object>> pendingIndents = new ArrayList<>();
-
-        String sql = """
-                SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
-                FROM indent
-                WHERE TRIM(status)='Pending' AND TRIM(Indentnext)='PO'
-                ORDER BY indent_id DESC
-                """;
+        // ---------- 1️⃣ Fetch pending qty per item ----------
+        String pendingSql =
+                "SELECT item_id, COALESCE(SUM(qty),0) AS pending_sum " +
+                "FROM indent " +
+                "WHERE Indentnext='Issue' AND status='Approved' " +
+                "GROUP BY item_id";
 
         try (Connection con = DBUtil.getConnection();
-             PreparedStatement ps = con.prepareStatement(sql);
+             PreparedStatement ps = con.prepareStatement(pendingSql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                Map<String, Object> row = new HashMap<>();
-                row.put("indent_no", rs.getString("indent_no"));
-                row.put("indent_date", rs.getString("indent_date"));
-                row.put("item_name", rs.getString("item_name"));
-                row.put("qty", rs.getDouble("qty"));
-                row.put("department", rs.getString("department"));
-                row.put("requested_by", rs.getString("requested_by"));
-                row.put("purpose", rs.getString("purpose"));
-                pendingIndents.add(row);
+                pendingPerItem.put(rs.getInt("item_id"), rs.getDouble("pending_sum"));
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("Database error: " + e.getMessage());
+            request.setAttribute("errorMsg", "DB Error (pending sums): " + e.getMessage());
         }
 
-        if (pendingIndents.isEmpty()) {
-            throw new RuntimeException("No pending indents found for PO.");
+        // ---------- 2️⃣ Fetch all active indents ----------
+        StringBuilder listSql = new StringBuilder();
+        listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ");
+        listSql.append("FROM indent i ");
+        listSql.append("LEFT JOIN stock s ON i.item_id = s.item_id ");
+        listSql.append("WHERE (TRIM(i.Indentnext) NOT IN ('Issued','Cancelled') OR i.Indentnext IS NULL) ");
+        listSql.append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
+
+        // Department filtering
+        if (!"Global".equalsIgnoreCase(role)) {
+            if ("Admin".equalsIgnoreCase(role)) {
+                listSql.append("AND i.department IN ('Electrical','Housekeeping','Plumbing','Dining Hall','RO Plant','Store') ");
+            } else {
+                listSql.append("AND i.department = ? ");
+            }
         }
 
-        String pdfPath = System.getProperty("java.io.tmpdir") + File.separator + "PendingIndentsReport.pdf";
-        generatePDF(pendingIndents, pdfPath);
-        sendBrevoEmailWithAttachment(toEmail, pdfPath);
+        // ✅ Order by oldest first (only once)
+        listSql.append("ORDER BY i.indent_id ASC");
+
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement ps = con.prepareStatement(listSql.toString())) {
+
+            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
+                ps.setString(1, dept);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    IndentItemFull ind = new IndentItemFull();
+                    ind.setId(rs.getInt("indent_id"));
+                    ind.setIndentNo(rs.getString("indent_no"));
+                    ind.setDate(rs.getDate("indent_date"));
+                    ind.setItemId(rs.getInt("item_id"));
+                    ind.setItemName(rs.getString("item_name"));
+                    ind.setQty(rs.getDouble("qty"));
+                    ind.setBalanceQty(rs.getDouble("balance_qty"));
+                    ind.setUom(rs.getString("UOM"));
+                    ind.setDepartment(rs.getString("department"));
+                    ind.setRequestedBy(rs.getString("requested_by"));
+                    ind.setPurpose(rs.getString("purpose"));
+                    ind.setIstatus(rs.getString("istatus"));
+                    ind.setApprovedBy(rs.getString("IstausApprove"));
+                    ind.setIapprovevdate(rs.getDate("Iapprovedate"));
+                    ind.setStatus(rs.getString("status"));
+                    ind.setFapprovevdate(rs.getDate("Fapprovedate"));
+                    ind.setIndentNext(rs.getString("Indentnext"));
+                    indentList.add(ind);
+                }
+            }
+
+        } catch (SQLException e) {
+            request.setAttribute("errorMsg", "DB Error (list): " + e.getMessage());
+        }
+
+        // ---------- 3️⃣ Forward data to JSP ----------
+        request.setAttribute("role", role);
+        request.setAttribute("indents", indentList);
+        request.setAttribute("pendingPerItem", pendingPerItem);
+        request.getRequestDispatcher("AIndentList.jsp").forward(request, response);
     }
 
-    // -------------------- PDF CREATION --------------------
-    private static void generatePDF(List<Map<String, Object>> data, String filePath) {
-        try {
-            Document document = new Document(PageSize.A4, 36, 36, 50, 50);
-            PdfWriter.getInstance(document, new FileOutputStream(filePath));
-            document.open();
+    // -------------------- POST --------------------
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-            Font schoolFont = new Font(Font.FontFamily.HELVETICA, 20, Font.BOLD, new BaseColor(0, 102, 204));
-            Font titleFont = new Font(Font.FontFamily.HELVETICA, 14, Font.BOLD, new BaseColor(33, 97, 140));
-            Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
-            Font textFont = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
-
-            Paragraph schoolName = new Paragraph("SANDUR RESIDENTIAL SCHOOL", schoolFont);
-            schoolName.setAlignment(Element.ALIGN_CENTER);
-            document.add(schoolName);
-
-            Paragraph title = new Paragraph("Pending Indents for Purchase Order", titleFont);
-            title.setAlignment(Element.ALIGN_CENTER);
-            title.setSpacingAfter(15f);
-            document.add(title);
-
-            PdfPTable table = new PdfPTable(7);
-            table.setWidthPercentage(100);
-            table.setSpacingBefore(10f);
-            table.setWidths(new int[]{1, 2, 2, 3, 1, 2, 3});
-
-            String[] headers = {"S.No", "Indent No", "Date", "Item", "Qty", "Department", "Requested By"};
-            for (String h : headers) {
-                PdfPCell cell = new PdfPCell(new Phrase(h, headerFont));
-                cell.setBackgroundColor(new BaseColor(52, 152, 219));
-                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
-                cell.setPadding(6);
-                table.addCell(cell);
-            }
-
-            int serial = 1;
-            for (Map<String, Object> row : data) {
-                table.addCell(new Phrase(String.valueOf(serial++), textFont));
-                table.addCell(new Phrase(row.get("indent_no").toString(), textFont));
-                table.addCell(new Phrase(row.get("indent_date").toString(), textFont));
-                table.addCell(new Phrase(row.get("item_name").toString(), textFont));
-                table.addCell(new Phrase(row.get("qty").toString(), textFont));
-                table.addCell(new Phrase(row.get("department").toString(), textFont));
-                table.addCell(new Phrase(row.get("requested_by").toString(), textFont));
-            }
-
-            document.add(table);
-
-            Paragraph note = new Paragraph(
-                    "\n📄 Management Note:\nThese indents are pending and require purchase order action.\n" +
-                    "Please review and process them at the earliest.",
-                    new Font(Font.FontFamily.HELVETICA, 11, Font.ITALIC, new BaseColor(90, 90, 90))
-            );
-            note.setSpacingBefore(15f);
-            document.add(note);
-
-            document.close();
-
-        } catch (Exception e) {
-            throw new RuntimeException("PDF generation failed: " + e.getMessage());
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
         }
-    }
 
-    // -------------------- BREVO EMAIL API --------------------
-    private static void sendBrevoEmailWithAttachment(String to, String pdfPath) {
-        try {
-            String apiKey = System.getenv("BREVO_API_KEY");
-            if (apiKey == null || apiKey.isEmpty()) {
-                throw new RuntimeException("⚠️ Brevo API key not found in environment variables!");
-            }
+        String user = (String) sess.getAttribute("username");
+        String action = request.getParameter("action");
+        String idStr = request.getParameter("id");
 
-            File pdfFile = new File(pdfPath);
-            byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
-            String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
-
-            String json = """
-            {
-              "sender": {"name":"SRS Central Admin","email":"udaykumarsamidala57@gmail.com"},
-              "to":[{"email":"%s"}],
-              "subject":"📦 Pending Indents Report - Purchase Order Required",
-              "htmlContent":"<div style='font-family:Poppins,Arial,sans-serif;color:#333;line-height:1.6;'><h2 style='color:#2563eb;'>Pending Indents Report</h2><p>Dear Management,</p><p>Please find attached the latest <b>Pending Indents Report</b> awaiting PO approval.</p><p>Generated by <b>Inventory Automation System</b> - Sandur Residential School.</p><br><p style='font-size:14px;color:#555;'>Regards,<br><b>SRS Central Admin</b></p></div>",
-              "attachment":[{"content":"%s","name":"PendingIndentsReport.pdf"}]
-            }
-            """.formatted(to, base64Pdf);
-
-            URL url = new URL("https://api.brevo.com/v3/smtp/email");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("accept", "application/json");
-            conn.setRequestProperty("api-key", apiKey);
-            conn.setRequestProperty("content-type", "application/json");
-            conn.setDoOutput(true);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                os.write(json.getBytes("UTF-8"));
-            }
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode != 201 && responseCode != 200) {
-                String error = new String(conn.getErrorStream().readAllBytes());
-                throw new RuntimeException("Brevo API error (" + responseCode + "): " + error);
-            }
-
-            System.out.println("[Manual Trigger] Brevo email sent successfully to: " + to);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Brevo email send failed: " + e.getMessage());
+        if (action == null) {
+            response.sendRedirect("AIndentListServlet");
+            return;
         }
+
+        java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
+
+        try (Connection con = DBUtil.getConnection()) {
+
+            // ---------- 🟢 EDIT ----------
+            if ("edit".equalsIgnoreCase(action)) {
+                String id = request.getParameter("id");
+                String qtyStr = request.getParameter("qty");
+                String purpose = request.getParameter("purpose");
+
+                double qty = 0;
+                try {
+                    qty = Double.parseDouble(qtyStr);
+                } catch (Exception e) {
+                    qty = 0;
+                }
+
+                // Check if editable
+                String checkSql = "SELECT Indentnext FROM indent WHERE indent_id=?";
+                boolean editable = false;
+                try (PreparedStatement ps = con.prepareStatement(checkSql)) {
+                    ps.setString(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            String nxt = rs.getString("Indentnext");
+                            editable = (nxt == null || nxt.trim().isEmpty());
+                        }
+                    }
+                }
+
+                if (editable) {
+                    String updateSql = "UPDATE indent SET qty=?, purpose=? WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+                        ps.setDouble(1, qty);
+                        ps.setString(2, purpose);
+                        ps.setString(3, id);
+                        ps.executeUpdate();
+                    }
+                } else {
+                    request.setAttribute("errorMsg", "Editing not allowed for approved/issued indents.");
+                }
+            }
+
+            // ---------- 🟢 FIRST-LEVEL APPROVAL ----------
+            else if ("Iapprove".equalsIgnoreCase(action)) {
+                String id = idStr;
+                String sql = "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setString(1, user);
+                    ps.setDate(2, today);
+                    ps.setInt(3, Integer.parseInt(id));
+                    ps.executeUpdate();
+                }
+            }
+
+            // ---------- 🟢 FINAL APPROVAL ----------
+            else if ("approve".equalsIgnoreCase(action)) {
+                int id = Integer.parseInt(idStr);
+                String indentNext = request.getParameter("indentnext");
+                if (indentNext == null || indentNext.trim().isEmpty()) indentNext = "Issue";
+
+                int itemId = 0;
+                double indentQty = 0, balanceQty = 0;
+
+                String itemSql =
+                        "SELECT i.item_id, i.qty, COALESCE(s.balance_qty,0) AS balance_qty " +
+                        "FROM indent i " +
+                        "LEFT JOIN stock s ON i.item_id = s.item_id " +
+                        "WHERE i.indent_id=?";
+
+                try (PreparedStatement ps = con.prepareStatement(itemSql)) {
+                    ps.setInt(1, id);
+                    try (ResultSet rs = ps.executeQuery()) {
+                        if (rs.next()) {
+                            itemId = rs.getInt("item_id");
+                            indentQty = rs.getDouble("qty");
+                            balanceQty = rs.getDouble("balance_qty");
+                        } else {
+                            request.setAttribute("errorMsg", "Indent not found.");
+                            doGet(request, response);
+                            return;
+                        }
+                    }
+                }
+
+                if ("Issue".equalsIgnoreCase(indentNext)) {
+                    double sumIssued = 0;
+                    String sumSql =
+                            "SELECT COALESCE(SUM(qty),0) FROM indent " +
+                            "WHERE item_id=? AND Indentnext='Issue' AND status='Approved' AND indent_id<>?";
+                    try (PreparedStatement ps = con.prepareStatement(sumSql)) {
+                        ps.setInt(1, itemId);
+                        ps.setInt(2, id);
+                        try (ResultSet rs = ps.executeQuery()) {
+                            if (rs.next()) sumIssued = rs.getDouble(1);
+                        }
+                    }
+
+                    double totalRequired = sumIssued + indentQty;
+                    if (totalRequired > balanceQty) {
+                        request.setAttribute("errorMsg",
+                                "❌ Stock insufficient. Available: " + balanceQty +
+                                ", Pending: " + sumIssued +
+                                ", Requested: " + indentQty);
+                        doGet(request, response);
+                        return;
+                    }
+
+                    String updateSql =
+                            "UPDATE indent SET status='Approved', Fapprovedate=?, Indentnext='Issue' WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+                        ps.setDate(1, today);
+                        ps.setInt(2, id);
+                        ps.executeUpdate();
+                    }
+                } else {
+                    String updateSql =
+                            "UPDATE indent SET Indentnext=?, Fapprovedate=? WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(updateSql)) {
+                        ps.setString(1, indentNext);
+                        ps.setDate(2, today);
+                        ps.setInt(3, id);
+                        ps.executeUpdate();
+                    }
+                }
+            }
+
+            // ---------- 🟡 CANCEL ----------
+            else if ("delete".equalsIgnoreCase(action)) {
+                int id = Integer.parseInt(idStr);
+                String sql = "UPDATE indent SET status='Cancelled', Fapprovedate=? WHERE indent_id=?";
+                try (PreparedStatement ps = con.prepareStatement(sql)) {
+                    ps.setDate(1, today);
+                    ps.setInt(2, id);
+                    ps.executeUpdate();
+                }
+            }
+
+        } catch (SQLException e) {
+            request.setAttribute("errorMsg", "Database Error: " + e.getMessage());
+        }
+
+        response.sendRedirect("AIndentListServlet");
     }
 }
