@@ -11,127 +11,109 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
-<html>
+<!-- HEADER -->
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="CSS/tablestyle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-    }
-
-    header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #fff;
-        padding: 10px 20px;
-        border-bottom: 2px solid #007bff;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 70px;
-        z-index: 1000;
-    }
-
     .user-info {
-        background: #007bff;
-        color: white;
+        display: inline-block;
+        background: #007bff !important;
+        color: white !important;
         padding: 10px 20px;
         border-radius: 8px;
-        font-size: 18px;
+        cursor: pointer;
+        font-size: 20px;
         font-weight: bold;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
     }
 
-    /* Sidebar */
-    .sidebar {
-        width: 260px;
-        background: #f8f9fa;
-        padding: 15px;
-        height: calc(100vh - 70px);
-        overflow-y: auto;
-        position: fixed;
-        top: 70px;
-        left: 0;
-        border-right: 2px solid #007bff;
-        z-index: 999;
-    }
-
-    .sidebar h2 {
-        color: #007bff;
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .sidebar a,
-    .sidebar button {
-        display: block;
-        color: #000;
-        text-decoration: none;
-        padding: 10px 15px;
+    .user-role {
+        color: white;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, opacity 0.4s ease;
         font-size: 16px;
-        border-radius: 6px;
-        transition: none;
+        font-weight: normal;
+        margin-top: 8px;
+    }
+
+    .user-info:hover .user-role,
+    .user-info:focus .user-role {
+        max-height: 100px;
+        opacity: 1;
+    }
+
+    /* Sidebar Dropdown Styling */
+    .sidebar .dropdown {
+        position: relative;
+    }
+
+    .sidebar .dropdown-btn {
+        display: block;
         width: 100%;
         text-align: left;
-        border: none;
         background: none;
+        border: none;
+        color: black;
+        font-size: 16px;
+        padding: 10px 15px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
     }
 
-    .sidebar a:hover,
-    .sidebar button:hover {
-        background: #007bff;
-        color: white;
+    .sidebar .dropdown-btn i {
+        margin-right: 8px;
     }
 
-    .dropdown-content {
+    .sidebar .dropdown-content {
         display: none;
-        background: #ffffff;
-        padding-left: 10px;
-        border-left: 3px solid #007bff;
-        border-radius: 4px;
-        margin-top: 5px;
+        background: #0a58ca;
+        padding-left: 15px;
     }
 
-    .dropdown-content a {
-        font-size: 14px;
+    .sidebar .dropdown-content a {
+        display: block;
+        color: #fff;
+        text-decoration: none;
         padding: 8px 15px;
-        display: block;
-        border-radius: 4px;
+        font-size: 14px;
     }
 
-    .dropdown.active .dropdown-content {
+    .sidebar .dropdown-content a:hover {
+        background: #0056b3;
+    }
+
+    .sidebar .dropdown.active .dropdown-content {
         display: block;
     }
 
+    /* Icon colors */
     .text-primary { color:#007bff; }
     .text-success { color:#28a745; }
     .text-danger { color:#dc3545; }
     .text-warning { color:#ffc107; }
     .text-info { color:#17a2b8; }
-    .text-secondary { color:#6c757d; }
     .text-purple { color:#6f42c1; }
     </style>
 </head>
 
-<body>
 <header>
     <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
-        <strong><%= users.toUpperCase() %></strong><br>
-        Role: <%= roles.toUpperCase() %>
+         <strong><%= users.toUpperCase() %></strong><br>
+       Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home text-success"></i> Home</a>
@@ -192,7 +174,9 @@
             <a href="AddStock"><i class="fas fa-plus-square text-success"></i> Add Stock</a>
         </div>
     </div>
-
+    <% } %>
+    
+    <% if ("Global".equalsIgnoreCase(roles)) { %>
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-tools text-warning"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
@@ -208,14 +192,11 @@
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
   btn.addEventListener("click", function() {
-    const current = this.parentElement;
-    document.querySelectorAll(".dropdown").forEach(d => {
-      if (d !== current) d.classList.remove("active");
+    const allDropdowns = document.querySelectorAll(".dropdown");
+    allDropdowns.forEach(d => {
+      if (d !== this.parentElement) d.classList.remove("active");
     });
-    current.classList.toggle("active");
+    this.parentElement.classList.toggle("active");
   });
 });
 </script>
-
-</body>
-</html>
