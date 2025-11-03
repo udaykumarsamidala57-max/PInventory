@@ -18,6 +18,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/Form.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  select {
+    width: 180px;
+    max-height: 180px;
+    overflow-y: auto;
+  }
+  table.main-table select {
+    padding: 4px;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
 
@@ -96,7 +107,7 @@
 <%@ include file="Footer.jsp" %>
 
 <script>
-const userRole = "<%= (role != null ? role : "") %>";
+const userRole = "<%= (role != null ? role : "") %>".toLowerCase();
 const userDept = "<%= (dept != null ? dept : "") %>";
 
 const categories = [];
@@ -124,7 +135,7 @@ const items = [];
 document.addEventListener("DOMContentLoaded", () => {
   restrictDateToToday();
 
-  if (userRole !== "Global" && userDept) {
+  if (userRole !== "global" && userDept) {
     const deptSelect = document.getElementById("departmentSelect");
     deptSelect.value = userDept;
     deptSelect.disabled = true;
@@ -136,7 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function addRow() {
   const deptSel = document.getElementById("departmentSelect");
   const selectedDept = deptSel.value || userDept;
-  if (!selectedDept) {
+  if (!selectedDept && userRole !== "global") {
     alert("Please select a Department first!");
     return;
   }
@@ -166,13 +177,14 @@ function addRow() {
 }
 
 function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
-  // ✅ FIXED: Load all categories if Global, else load department-specific + shared ones
   let filteredCats = [];
-  if (userRole === "Global" || !selectedDept) {
-    filteredCats = categories; // all categories
+
+  // ✅ Global user gets all categories
+  if (userRole === "global") {
+    filteredCats = categories;
   } else {
     filteredCats = categories.filter(c => 
-      c.departmentName === selectedDept || c.departmentName === 'Common'
+      c.departmentName === selectedDept || c.departmentName.toLowerCase() === 'common'
     );
   }
 
