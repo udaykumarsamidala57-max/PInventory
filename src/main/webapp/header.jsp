@@ -62,7 +62,7 @@
         text-align: left;
         background: none;
         border: none;
-        color: white;
+        color: black;
         font-size: 16px;
         padding: 10px 15px;
         cursor: pointer;
@@ -100,8 +100,8 @@
 <header>
     <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
-        <strong><%= users.toUpperCase() %></strong><br>
-        Role: <%= roles.toUpperCase() %>
+         <strong><%= users.toUpperCase() %></strong><br>
+       Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
