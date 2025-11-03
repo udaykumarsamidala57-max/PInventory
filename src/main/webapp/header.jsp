@@ -150,6 +150,7 @@
 
 <!-- SIDEBAR -->
 <br>
+<br><br><br><br>
 <br>
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
