@@ -176,7 +176,7 @@
     </div>
     <% } %>
     
-    <% if ("Global".equalsIgnoreCase(roles)) { %>
+    <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-tools text-warning"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
@@ -185,6 +185,18 @@
         </div>
     </div>
     <% } %>
+    
+    <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
+    <div class="dropdown">
+        <button class="dropdown-btn"><i class="fas fa-lightbulb text-warning"></i> Documentation <i class="fas fa-caret-down" style="float:right;"></i></button>
+        <div class="dropdown-content">
+            <a href="#"><i class="fas fa-info-circle text-primary"></i> About Software</a>
+            <a href="#"><i class="fas fa-bolt text-success"></i> New Updates</a>
+        </div>
+    </div>
+    <% } %>
+    
+    
 
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
