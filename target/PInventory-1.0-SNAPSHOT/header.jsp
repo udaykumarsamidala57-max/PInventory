@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
     .user-info {
         display: inline-block;
@@ -67,30 +68,42 @@
         padding: 10px 15px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
+        transition: background 0.3s, color 0.3s;
+    }
+
+    .sidebar .dropdown-btn:hover {
+        background: #007bff;
+        color: white;
     }
 
     .sidebar .dropdown-btn i {
         margin-right: 8px;
     }
 
+    /* Submenu Styling - Clean, White & Professional */
     .sidebar .dropdown-content {
         display: none;
-        background: #0a58ca; /* slightly darker blue for submenu */
-        padding-left: 15px;
+        background: #ffffff; /* white background */
+        padding-left: 10px;
+        border-left: 3px solid #007bff; /* subtle blue border */
     }
 
     .sidebar .dropdown-content a {
         display: block;
-        color: #fff;
+        color: #000; /* black text */
         text-decoration: none;
         padding: 8px 15px;
         font-size: 14px;
+        border-radius: 4px;
+        transition: background 0.3s, color 0.3s;
     }
 
     .sidebar .dropdown-content a:hover {
-        background: #0056b3;
+        background: #007bff;
+        color: white;
     }
 
+    /* Active dropdown (open state) */
     .sidebar .dropdown.active .dropdown-content {
         display: block;
     }
@@ -100,8 +113,8 @@
 <header>
     <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
-         <strong><%= users.toUpperCase() %></strong><br>
-       Role: <%= roles.toUpperCase() %>
+        <strong><%= users.toUpperCase() %></strong><br>
+        Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
@@ -164,6 +177,16 @@
         <div class="dropdown-content">
             <a href="ItemsMaster.jsp">Item Master</a>
             <a href="AddStock">Add Stock</a>
+        </div>
+    </div>
+    <% } %>
+
+    <% if ("Global".equalsIgnoreCase(roles)) { %>
+    <div class="dropdown">
+        <button class="dropdown-btn"><i class="fas fa-cog"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
+        <div class="dropdown-content">
+            <a href="">Fixed Assets</a>
+            <a href="">BarCode Generator</a>
         </div>
     </div>
     <% } %>
