@@ -11,7 +11,6 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
-<!-- HEADER -->
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
@@ -21,104 +20,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        background: #f8f9fa;
+        display: flex;
+    }
+
+    header {
+        position: fixed;
+        top: 0;
+        left: 240px;
+        width: calc(100% - 240px);
+        height: 70px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 25px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 10;
+    }
+
+    header img {
+        max-height: 50px;
+    }
+
     .user-info {
-        display: inline-block;
-        background: #007bff !important;
-        color: white !important;
+        background: #007bff;
+        color: white;
         padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 20px;
-        font-weight: bold;
-        overflow: hidden;
+        font-size: 18px;
+        font-weight: 600;
         transition: all 0.3s ease;
-        position: relative;
     }
 
-    .user-role {
-        color: white;
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease, opacity 0.4s ease;
-        font-size: 16px;
-        font-weight: normal;
-        margin-top: 8px;
+    .user-info:hover {
+        background: #0056b3;
     }
 
-    .user-info:hover .user-role,
-    .user-info:focus .user-role {
-        max-height: 100px;
-        opacity: 1;
+    /* Sidebar */
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 240px;
+        height: 100vh;
+        background: #ffffff;
+        box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        transition: width 0.3s;
     }
 
-    /* Sidebar Dropdown Styling */
-    .sidebar .dropdown {
-        position: relative;
+    .sidebar h2 {
+        text-align: center;
+        padding: 15px;
+        margin: 0;
+        font-size: 20px;
+        color: #007bff;
+        border-bottom: 1px solid #dee2e6;
     }
 
-    .sidebar .dropdown-btn {
+    .sidebar a, .sidebar .dropdown-btn {
         display: block;
         width: 100%;
         text-align: left;
         background: none;
         border: none;
-        color: black;
-        font-size: 16px;
-        padding: 10px 15px;
+        color: #343a40;
+        font-size: 15px;
+        padding: 12px 20px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
-        transition: background 0.3s, color 0.3s;
+        transition: all 0.3s ease;
     }
 
-    .sidebar .dropdown-btn:hover {
+    .sidebar a i, .sidebar .dropdown-btn i {
+        margin-right: 10px;
+    }
+
+    .sidebar a:hover, .sidebar .dropdown-btn:hover {
         background: #007bff;
         color: white;
     }
 
-    .sidebar .dropdown-btn i {
-        margin-right: 8px;
-    }
-
-    /* Submenu Styling - Clean, White & Professional */
+    /* Dropdown Content */
     .sidebar .dropdown-content {
         display: none;
-        background: #ffffff; /* white background */
-        padding-left: 10px;
-        border-left: 3px solid #007bff; /* subtle blue border */
+        background: #f1f3f5;
+        border-left: 3px solid #007bff;
+        margin-left: 5px;
+        border-radius: 0 4px 4px 0;
     }
 
     .sidebar .dropdown-content a {
-        display: block;
-        color: #000; /* black text */
-        text-decoration: none;
-        padding: 8px 15px;
+        padding: 8px 30px;
         font-size: 14px;
-        border-radius: 4px;
-        transition: background 0.3s, color 0.3s;
+        color: #212529;
+        transition: all 0.3s ease;
     }
 
     .sidebar .dropdown-content a:hover {
         background: #007bff;
-        color: white;
+        color: #fff;
     }
 
-    /* Active dropdown (open state) */
-    .sidebar .dropdown.active .dropdown-content {
+    /* Active Dropdown */
+    .sidebar .dropdown.active > .dropdown-content {
         display: block;
+        animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar */
+    .sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+        background-color: #ccc;
+        border-radius: 3px;
+    }
+
+    .sidebar a.logout {
+        color: #dc3545;
+        font-weight: 600;
     }
     </style>
 </head>
 
 <header>
-    <img src="logo.png" alt="Logo" style="max-height:60px;">
+    <img src="logo.png" alt="Logo">
     <div class="user-info">
         <strong><%= users.toUpperCase() %></strong><br>
         Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
     <h2>Navigation</h2>
     <a href="Home"><i class="fas fa-home"></i> Home</a>
@@ -179,25 +223,28 @@
             <a href="AddStock">Add Stock</a>
         </div>
     </div>
-    <% } %>
 
-    <% if ("Global".equalsIgnoreCase(roles)) { %>
     <div class="dropdown">
-        <button class="dropdown-btn"><i class="fas fa-cog"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
+        <button class="dropdown-btn"><i class="fas fa-laptop-house"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
-            <a href="">Fixed Assets</a>
-            <a href="">BarCode Generator</a>
+            <a href="#">Fixed Assets</a>
+            <a href="#">BarCode Generator</a>
         </div>
     </div>
     <% } %>
 
-    <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <a href="Logout.jsp" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
 
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
   btn.addEventListener("click", function() {
-    this.parentElement.classList.toggle("active");
+    const parent = this.parentElement;
+    const allDropdowns = document.querySelectorAll(".sidebar .dropdown");
+    allDropdowns.forEach(d => {
+      if (d !== parent) d.classList.remove("active");
+    });
+    parent.classList.toggle("active");
   });
 });
 </script>
