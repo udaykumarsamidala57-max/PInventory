@@ -167,6 +167,16 @@
         </div>
     </div>
     <% } %>
+    
+    <% if ("Global".equalsIgnoreCase(roles)) { %>
+    <div class="dropdown">
+        <button class="dropdown-btn"><i class="fas fa-cog"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
+        <div class="dropdown-content">
+            <a href="">Fixed Assets</a>
+            <a href="">BarCode Generator</a>
+        </div>
+    </div>
+    <% } %>
 
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
