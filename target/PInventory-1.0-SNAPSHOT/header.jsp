@@ -90,7 +90,7 @@
      <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
     <a href="IndentPO"><i class="fas fa-shopping-cart"></i>Create Purchase Order</a>
     <%} %>
-    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts) ) {%>
+    <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts) ) {%>
     <a href="POListServlet"><i class="fas fa-check-circle"></i> Approve PO</a>
     <%} %>
     <% if ("Global".equalsIgnoreCase(roles)||"Finance".equalsIgnoreCase(depts)||"Store".equalsIgnoreCase(depts) ) {%>
