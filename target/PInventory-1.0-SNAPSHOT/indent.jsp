@@ -227,17 +227,42 @@ function restrictDateToToday() {
   dateField.max = today;
 }
 
-document.getElementById('indentForm').addEventListener('submit', function() {
+document.getElementById('indentForm').addEventListener('submit', function(e) {
+  const indentType = document.querySelector('input[name="indentType"]:checked');
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
+
+  let issueError = false; // ✅ flag for Issue stock check
+
   document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
     const sel = tr.querySelector(".item");
     const opt = sel.options[sel.selectedIndex];
+    const stock = parseFloat(tr.querySelector(".stock").textContent || "0");
+    const qty = parseFloat(tr.querySelector(".qty").value || "0");
+
     ids.push(opt ? opt.dataset.id : "");
     names.push(opt ? opt.value : "");
-    qtys.push(tr.querySelector(".qty").value);
+    qtys.push(qty);
     purps.push(tr.querySelector(".purpose").value);
     uomsArr.push(tr.querySelector(".uom").textContent);
+
+    // ✅ Stock check for Issue type
+    if (indentType && indentType.value === "Issue") {
+      if (isNaN(stock) || stock <= 0 || qty > stock) {
+        issueError = true;
+        tr.style.backgroundColor = "#ffcccc";
+      } else {
+        tr.style.backgroundColor = "";
+      }
+    }
   });
+
+  // ✅ Stop submission if any Issue item lacks stock
+  if (issueError) {
+    e.preventDefault();
+    alert("❌ Some items do not have enough stock for Issue type.\nPlease adjust the quantities or check stock levels.");
+    return;
+  }
+
   this.itemIds.value = ids.join(",");
   this.itemNames.value = names.join(",");
   this.quantities.value = qtys.join(",");
