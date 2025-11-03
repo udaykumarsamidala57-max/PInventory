@@ -34,7 +34,8 @@ public class IndentServlet extends HttpServlet {
             String sqlNext = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 AS next_no FROM indent";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
                  ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) nextIndentNo = rs.getInt("next_no");
+                if (rs.next())
+                    nextIndentNo = rs.getInt("next_no");
             }
             request.setAttribute("nextIndentNo", nextIndentNo);
 
@@ -87,24 +88,23 @@ public class IndentServlet extends HttpServlet {
 
             // === Items ===
             List<Map<String, String>> items = new ArrayList<>();
-            String itemSql = 
-            	    "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
-            	    "COALESCE(s.balance_qty, 0) AS stock " +
-            	    "FROM item_master im " +
-            	    "LEFT JOIN stock s ON im.Item_id = s.item_id";
-            	try (PreparedStatement ps = con.prepareStatement(itemSql);
-            	     ResultSet rs = ps.executeQuery()) {
-            	    while (rs.next()) {
-            	        Map<String, String> i = new HashMap<>();
-            	        i.put("id", String.valueOf(rs.getInt("Item_id")));
-            	        i.put("name", rs.getString("Item_name"));
-            	        i.put("UOM", rs.getString("UOM"));
-            	        i.put("category", rs.getString("Category"));
-            	        i.put("subcategory", rs.getString("Sub_Category"));
-            	        i.put("stock", rs.getString("stock"));
-            	        items.add(i);
-            	    }
-            	}
+            String itemSql = "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, "
+                    + "COALESCE(s.balance_qty, 0) AS stock "
+                    + "FROM item_master im "
+                    + "LEFT JOIN stock s ON im.Item_id = s.item_id";
+            try (PreparedStatement ps = con.prepareStatement(itemSql);
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, String> i = new HashMap<>();
+                    i.put("id", String.valueOf(rs.getInt("Item_id")));
+                    i.put("name", rs.getString("Item_name"));
+                    i.put("UOM", rs.getString("UOM"));
+                    i.put("category", rs.getString("Category"));
+                    i.put("subcategory", rs.getString("Sub_Category"));
+                    i.put("stock", rs.getString("stock"));
+                    items.add(i);
+                }
+            }
 
             // === Attach Data ===
             masterData.put("departments", departments);
@@ -164,8 +164,10 @@ public class IndentServlet extends HttpServlet {
                 String uom = uoms.length > i && uoms[i] != null ? uoms[i].trim() : "";
 
                 if (name.isEmpty() || qty <= 0) continue;
+
                 items.add(new IndentItem(id, name, qty, purp, uom));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
 
         if (indentNumber == null || indentNumber.trim().isEmpty()) {
@@ -173,6 +175,7 @@ public class IndentServlet extends HttpServlet {
             doGet(request, response);
             return;
         }
+
         if (items.isEmpty()) {
             request.setAttribute("message", "At least one valid item is required.");
             doGet(request, response);
@@ -181,6 +184,7 @@ public class IndentServlet extends HttpServlet {
 
         try (Connection con = DBUtil.getConnection()) {
             con.setAutoCommit(false);
+
             try {
                 // Check duplicate indent number
                 String dupSql = "SELECT COUNT(*) FROM indent WHERE indent_no = ?";
@@ -199,7 +203,6 @@ public class IndentServlet extends HttpServlet {
                 // Insert indent items
                 String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom) "
                         + "VALUES(?,?,?,?,?,?,?,?,?,?)";
-
                 try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                     for (IndentItem it : items) {
                         ps.setString(1, indentNumber);
@@ -219,6 +222,7 @@ public class IndentServlet extends HttpServlet {
 
                 con.commit();
                 request.setAttribute("message", "✅ Indent saved successfully!");
+
             } catch (SQLException e) {
                 con.rollback();
                 request.setAttribute("message", "❌ Error while saving indent: " + e.getMessage());
