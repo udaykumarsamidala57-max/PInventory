@@ -52,7 +52,7 @@ public class SendPendingIndentPDF extends HttpServlet {
         String sql = """
                 SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
                 FROM indent
-                WHERE TRIM(status)='Pending' AND TRIM(Indentnext)='PO'
+                WHERE TRIM(status)='Pending'
                 ORDER BY indent_id DESC
                 """;
 
