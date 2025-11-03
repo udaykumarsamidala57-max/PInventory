@@ -11,6 +11,7 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
+<!-- HEADER -->
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
@@ -20,160 +21,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        margin: 0;
-        background: #f8f9fa;
-        display: flex;
-    }
-
-    header {
-        position: fixed;
-        top: 0;
-        left: 240px;
-        width: calc(100% - 240px);
-        height: 70px;
-        background: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 25px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        z-index: 10;
-    }
-
-    header img {
-        max-height: 50px;
-    }
-
     .user-info {
-        background: #007bff;
-        color: white;
+        display: inline-block;
+        background: #007bff !important;
+        color: white !important;
         padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 18px;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .user-info:hover {
-        background: #0056b3;
-    }
-
-    /* Sidebar */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 240px;
-        height: 100vh;
-        background: #ffffff;
-        box-shadow: 2px 0 8px rgba(0,0,0,0.1);
-        overflow-y: auto;
-        transition: width 0.3s;
-    }
-
-    .sidebar h2 {
-        text-align: center;
-        padding: 15px;
-        margin: 0;
         font-size: 20px;
-        color: #007bff;
-        border-bottom: 1px solid #dee2e6;
+        font-weight: bold;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
     }
 
-    .sidebar a, .sidebar .dropdown-btn {
+    .user-role {
+        color: white;
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease, opacity 0.4s ease;
+        font-size: 16px;
+        font-weight: normal;
+        margin-top: 8px;
+    }
+
+    .user-info:hover .user-role,
+    .user-info:focus .user-role {
+        max-height: 100px;
+        opacity: 1;
+    }
+
+    /* Sidebar Dropdown Styling */
+    .sidebar .dropdown {
+        position: relative;
+    }
+
+    .sidebar .dropdown-btn {
         display: block;
         width: 100%;
         text-align: left;
         background: none;
         border: none;
-        color: #343a40;
-        font-size: 15px;
-        padding: 12px 20px;
+        color: black;
+        font-size: 16px;
+        padding: 10px 15px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
-        transition: all 0.3s ease;
+        transition: background 0.3s, color 0.3s;
     }
 
-    .sidebar a i, .sidebar .dropdown-btn i {
-        margin-right: 10px;
-    }
-
-    .sidebar a:hover, .sidebar .dropdown-btn:hover {
+    .sidebar .dropdown-btn:hover {
         background: #007bff;
         color: white;
     }
 
-    /* Dropdown Content */
+    .sidebar .dropdown-btn i {
+        margin-right: 8px;
+    }
+
+    /* Submenu Styling */
     .sidebar .dropdown-content {
         display: none;
-        background: #f1f3f5;
+        background: #ffffff;
+        padding-left: 10px;
         border-left: 3px solid #007bff;
-        margin-left: 5px;
-        border-radius: 0 4px 4px 0;
     }
 
     .sidebar .dropdown-content a {
-        padding: 8px 30px;
+        display: block;
+        color: #000;
+        text-decoration: none;
+        padding: 8px 15px;
         font-size: 14px;
-        color: #212529;
-        transition: all 0.3s ease;
+        border-radius: 4px;
+        transition: background 0.3s, color 0.3s;
+    }
+
+    .sidebar .dropdown-content a i {
+        margin-right: 6px;
     }
 
     .sidebar .dropdown-content a:hover {
         background: #007bff;
-        color: #fff;
+        color: white;
     }
 
-    /* Active Dropdown */
-    .sidebar .dropdown.active > .dropdown-content {
+    /* Active dropdown */
+    .sidebar .dropdown.active .dropdown-content {
         display: block;
-        animation: slideDown 0.3s ease;
-    }
-
-    @keyframes slideDown {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Scrollbar */
-    .sidebar::-webkit-scrollbar {
-        width: 6px;
-    }
-
-    .sidebar::-webkit-scrollbar-thumb {
-        background-color: #ccc;
-        border-radius: 3px;
-    }
-
-    .sidebar a.logout {
-        color: #dc3545;
-        font-weight: 600;
     }
     </style>
 </head>
 
 <header>
-    <img src="logo.png" alt="Logo">
+    <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
         <strong><%= users.toUpperCase() %></strong><br>
         Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
-    <h2>Navigation</h2>
+    <h2><i class="fas fa-compass"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home"></i> Home</a>
 
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-file-alt"></i> Indent <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
-            <a href="IndentServlet">Item Requisition Form</a>
-            <a href="IndentlistServlet">Indent Report</a>
+            <a href="IndentServlet"><i class="fas fa-plus-circle"></i> Item Requisition Form</a>
+            <a href="IndentlistServlet"><i class="fas fa-list"></i> Indent Report</a>
             <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
-                <a href="AIndentListServlet">Approve Indent</a>
+                <a href="AIndentListServlet"><i class="fas fa-check-circle"></i> Approve Indent</a>
             <% } %>
         </div>
     </div>
@@ -182,9 +142,9 @@
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-box-open"></i> Issue <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
-            <a href="IssueApprove">Approve Issue</a>
-            <a href="IssueServlet">Issue Items</a>
-            <a href="Issuereport.jsp">Issue Report</a>
+            <a href="IssueApprove"><i class="fas fa-thumbs-up"></i> Approve Issue</a>
+            <a href="IssueServlet"><i class="fas fa-dolly"></i> Issue Items</a>
+            <a href="Issuereport.jsp"><i class="fas fa-file-invoice"></i> Issue Report</a>
         </div>
     </div>
     <% } %>
@@ -193,13 +153,13 @@
         <button class="dropdown-btn"><i class="fas fa-shopping-cart"></i> Purchase / PO <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
             <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-                <a href="IndentPO">Create Purchase Order</a>
-                <a href="GRNServlet">GRN Entry</a>
-                <a href="VendorMaster.jsp">Vendor Master</a>
+                <a href="IndentPO"><i class="fas fa-file-signature"></i> Create Purchase Order</a>
+                <a href="GRNServlet"><i class="fas fa-clipboard-check"></i> GRN Entry</a>
+                <a href="VendorMaster.jsp"><i class="fas fa-user-tie"></i> Vendor Master</a>
             <% } %>
             <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
-                <a href="POListServlet">Approve PO</a>
-                <a href="ListPO.jsp">PO Report</a>
+                <a href="POListServlet"><i class="fas fa-check-double"></i> Approve PO</a>
+                <a href="ListPO.jsp"><i class="fas fa-clipboard-list"></i> PO Report</a>
             <% } %>
         </div>
     </div>
@@ -207,10 +167,10 @@
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-chart-line"></i> Reports <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
-            <a href="Stock.jsp">Stock Report</a>
-            <a href="stockReport.jsp">Stock Ledger Report</a>
+            <a href="Stock.jsp"><i class="fas fa-boxes"></i> Stock Report</a>
+            <a href="stockReport.jsp"><i class="fas fa-book"></i> Stock Ledger Report</a>
             <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-                <a href="IssueValueReport.jsp">Consumption Dash Board</a>
+                <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie"></i> Consumption Dash Board</a>
             <% } %>
         </div>
     </div>
@@ -219,32 +179,29 @@
     <div class="dropdown">
         <button class="dropdown-btn"><i class="fas fa-cog"></i> Masters <i class="fas fa-caret-down" style="float:right;"></i></button>
         <div class="dropdown-content">
-            <a href="ItemsMaster.jsp">Item Master</a>
-            <a href="AddStock">Add Stock</a>
-        </div>
-    </div>
-
-    <div class="dropdown">
-        <button class="dropdown-btn"><i class="fas fa-laptop-house"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
-        <div class="dropdown-content">
-            <a href="#">Fixed Assets</a>
-            <a href="#">BarCode Generator</a>
+            <a href="ItemsMaster.jsp"><i class="fas fa-tags"></i> Item Master</a>
+            <a href="AddStock"><i class="fas fa-plus-square"></i> Add Stock</a>
         </div>
     </div>
     <% } %>
 
-    <a href="Logout.jsp" class="logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    <% if ("Global".equalsIgnoreCase(roles)) { %>
+    <div class="dropdown">
+        <button class="dropdown-btn"><i class="fas fa-tools"></i> Asset Management <i class="fas fa-caret-down" style="float:right;"></i></button>
+        <div class="dropdown-content">
+            <a href="#"><i class="fas fa-desktop"></i> Fixed Assets</a>
+            <a href="#"><i class="fas fa-barcode"></i> BarCode Generator</a>
+        </div>
+    </div>
+    <% } %>
+
+    <a href="Logout.jsp"><i class="fas fa-sign-out-alt"></i> Logout</a>
 </div>
 
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
   btn.addEventListener("click", function() {
-    const parent = this.parentElement;
-    const allDropdowns = document.querySelectorAll(".sidebar .dropdown");
-    allDropdowns.forEach(d => {
-      if (d !== parent) d.classList.remove("active");
-    });
-    parent.classList.toggle("active");
+    this.parentElement.classList.toggle("active");
   });
 });
 </script>
