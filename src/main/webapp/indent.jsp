@@ -166,23 +166,22 @@ function addRow() {
 }
 
 function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
-  let filteredCats = (userRole === "Global") 
-      ? categories 
-      : categories.filter(c => c.departmentName === selectedDept);
+  // ✅ FIXED: Load all categories if Global, else load department-specific + shared ones
+  let filteredCats = [];
+  if (userRole === "Global" || !selectedDept) {
+    filteredCats = categories; // all categories
+  } else {
+    filteredCats = categories.filter(c => 
+      c.departmentName === selectedDept || c.departmentName === 'Common'
+    );
+  }
 
-  const seen = new Set();
-  const uniqueCats = filteredCats.filter(c => {
-    const key = c.name;
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
-
+  const uniqueNames = [...new Set(filteredCats.map(c => c.name))];
   catSel.innerHTML = '<option value="">-- Select Category --</option>';
-  uniqueCats.forEach(c => {
+  uniqueNames.forEach(name => {
     const opt = document.createElement('option');
-    opt.value = c.name;
-    opt.text = c.name;
+    opt.value = name;
+    opt.text = name;
     catSel.add(opt);
   });
 
@@ -200,7 +199,9 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
 
   subSel.onchange = () => {
     itemSel.innerHTML = '<option value="">-- Select Item --</option>';
-    const relatedItems = items.filter(i => i.category === catSel.value && i.subcategory === subSel.value);
+    const relatedItems = items.filter(i => 
+      i.category === catSel.value && i.subcategory === subSel.value
+    );
     relatedItems.forEach(i => {
       const o = document.createElement('option');
       o.value = i.name;
@@ -230,8 +231,7 @@ function restrictDateToToday() {
 document.getElementById('indentForm').addEventListener('submit', function(e) {
   const indentType = document.querySelector('input[name="indentType"]:checked');
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
-
-  let issueError = false; // ✅ flag for Issue stock check
+  let issueError = false;
 
   document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
     const sel = tr.querySelector(".item");
@@ -245,7 +245,6 @@ document.getElementById('indentForm').addEventListener('submit', function(e) {
     purps.push(tr.querySelector(".purpose").value);
     uomsArr.push(tr.querySelector(".uom").textContent);
 
-    // ✅ Stock check for Issue type
     if (indentType && indentType.value === "Issue") {
       if (isNaN(stock) || stock <= 0 || qty > stock) {
         issueError = true;
@@ -256,7 +255,6 @@ document.getElementById('indentForm').addEventListener('submit', function(e) {
     }
   });
 
-  // ✅ Stop submission if any Issue item lacks stock
   if (issueError) {
     e.preventDefault();
     alert("❌ Some items do not have enough stock for Issue type.\nPlease adjust the quantities or check stock levels.");
