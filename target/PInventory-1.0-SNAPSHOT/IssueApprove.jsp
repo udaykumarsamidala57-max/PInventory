@@ -6,10 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
-    <!-- Page Styles -->
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -18,13 +16,12 @@
             margin: 0;
         }
         thead {
-    background: linear-gradient(135deg, #ff8c00, #8e2de2);
-
-}
+            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        }
 
         .page-content {
             padding: 30px;
-            margin-left: 240px; /* space for sidebar */
+            margin-left: 240px;
             min-height: 100vh;
         }
 
@@ -35,7 +32,6 @@
             margin-bottom: 25px;
         }
 
-        /* ===== Table Styling ===== */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -66,7 +62,6 @@
             transition: background 0.3s ease;
         }
 
-        /* ===== Buttons ===== */
         .btn {
             background: #16a34a;
             color: white;
@@ -88,14 +83,12 @@
             cursor: not-allowed;
         }
 
-        /* ===== Error Message ===== */
         .error-msg {
             color: #dc2626;
             font-weight: 500;
             margin-bottom: 15px;
         }
 
-        /* ===== Responsive ===== */
         @media (max-width: 768px) {
             .page-content {
                 margin-left: 0;
@@ -126,7 +119,8 @@
         %>
             <p class="error-msg"><%= errorMsg %></p>
         <% } %>
-<br><br><br>
+
+        <br><br><br>
         <table>
         <thead>
             <tr>
@@ -136,12 +130,15 @@
                 <th>Balance Qty</th>
                 <th>Required Qty</th>
                 <th>Department</th>
+                <th>Indent By</th>   <!-- ✅ NEW -->
+                <th>Purpose</th>     <!-- ✅ NEW -->
                 <th>Approved By</th>
                 <th>Status</th>
-                
                 <th>Action</th>
             </tr>
-</thead>
+        </thead>
+
+        <tbody>
             <%
                 List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
                 if (indents != null && !indents.isEmpty()) {
@@ -154,9 +151,11 @@
                 <td><%= ind.getBalanceQty() %></td>
                 <td><%= ind.getQty() %></td>
                 <td><%= ind.getDepartment() %></td>
+                <td><%= ind.getRequestedBy() %></td>  <!-- ✅ NEW -->
+                <td><%= ind.getPurpose() %></td>      <!-- ✅ NEW -->
                 <td><%= ind.getApprovedBy() %></td>
                 <td><%= ind.getStatus() %></td>
-                
+
                 <td>
                     <form method="post" action="IssueApprove">
                         <input type="hidden" name="id" value="<%= ind.getId() %>">
@@ -168,12 +167,14 @@
             </tr>
             <% } } else { %>
             <tr>
-                <td colspan="10" style="text-align:center; padding:20px;">No records found</td>
+                <td colspan="11" style="text-align:center; padding:20px;">No records found</td>
             </tr>
             <% } %>
+        </tbody>
         </table>
     </div>
 
+    <br><br>
     <%@ include file="Footer.jsp" %>
 </body>
 </html>

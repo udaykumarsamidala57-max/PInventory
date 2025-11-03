@@ -33,31 +33,23 @@ public class IssueApprove extends HttpServlet {
 
         List<IndentItemFull> indentList = new ArrayList<>();
 
-        // ✅ Corrected SQL to fetch indents ready for issue
+        // ✅ SQL with requested_by and purpose
         String sql = "SELECT i.*, s.balance_qty " +
-        	    "FROM indent i " +
-        	    "INNER JOIN stock s ON i.item_id = s.item_id " + // ✅ INNER JOIN (only items present in stock)
-        	    "WHERE TRIM(i.Istatus) = 'Approved' " +          // main approval
-        	    "AND TRIM(i.status) = 'Pending' " +              // still pending overall
-        	    "AND (i.Indentnext IS NULL OR TRIM(i.Indentnext) = '' OR TRIM(i.Indentnext) = 'PO') " +
-        	    "AND (i.PurchaseorIssue = 'Issue' OR i.PurchaseorIssue IS NULL) " +  // ✅ added condition
-        	    "AND s.balance_qty >= i.qty " +                  // ✅ stock must have enough quantity
-        	    "ORDER BY i.indent_id DESC";
-
+                     "FROM indent i " +
+                     "INNER JOIN stock s ON i.item_id = s.item_id " +
+                     "WHERE TRIM(i.Istatus) = 'Approved' " +
+                     "AND TRIM(i.status) = 'Pending' " +
+                     "AND (i.Indentnext IS NULL OR TRIM(i.Indentnext) = '' OR TRIM(i.Indentnext) = 'PO') " +
+                     "AND (i.PurchaseorIssue = 'Issue' OR i.PurchaseorIssue IS NULL) " +
+                     "AND s.balance_qty >= i.qty " +
+                     "ORDER BY i.indent_id DESC";
 
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
-                // Debug output for verification
-                System.out.println("[DEBUG] Fetched indent_id: " + rs.getInt("indent_id") +
-                        ", Item: " + rs.getString("item_name") +
-                        ", Qty: " + rs.getDouble("qty") +
-                        ", Balance: " + rs.getDouble("balance_qty") +
-                        ", Istatus: " + rs.getString("Istatus") +
-                        ", status: " + rs.getString("status") +
-                        ", Indentnext: " + rs.getString("Indentnext"));
+                System.out.println("[DEBUG] Fetched indent_id: " + rs.getInt("indent_id"));
 
                 IndentItemFull ind = new IndentItemFull();
                 ind.setId(rs.getInt("indent_id"));
@@ -71,6 +63,9 @@ public class IssueApprove extends HttpServlet {
                 ind.setApprovedBy(rs.getString("IstausApprove"));
                 ind.setStatus(rs.getString("status"));
                 ind.setIndentNext(rs.getString("Indentnext"));
+                ind.setRequestedBy(rs.getString("requested_by"));  // ✅ added
+                ind.setPurpose(rs.getString("purpose"));            // ✅ added
+
                 indentList.add(ind);
             }
 
@@ -123,7 +118,6 @@ public class IssueApprove extends HttpServlet {
             }
         }
 
-        // Redirect back to the servlet to refresh the list
         response.sendRedirect("IssueApprove");
     }
 }
