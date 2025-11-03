@@ -11,7 +11,6 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
-<!-- HEADER -->
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
@@ -25,8 +24,10 @@
         font-family: 'Poppins', sans-serif;
         margin: 0;
         padding: 0;
+        background: #f5f6fa;
     }
 
+    /* Header */
     header {
         display: flex;
         align-items: center;
@@ -34,18 +35,26 @@
         background: #fff;
         padding: 10px 20px;
         border-bottom: 2px solid #007bff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        z-index: 1000;
+    }
+
+    header img {
+        max-height: 60px;
     }
 
     .user-info {
-        display: inline-block;
-        background: #007bff !important;
-        color: white !important;
+        background: #007bff;
+        color: white;
         padding: 10px 20px;
         border-radius: 8px;
         cursor: pointer;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
-        overflow: hidden;
         transition: all 0.3s ease;
         position: relative;
     }
@@ -56,13 +65,11 @@
         opacity: 0;
         overflow: hidden;
         transition: max-height 0.4s ease, opacity 0.4s ease;
-        font-size: 16px;
-        font-weight: normal;
-        margin-top: 8px;
+        font-size: 15px;
+        margin-top: 5px;
     }
 
-    .user-info:hover .user-role,
-    .user-info:focus .user-role {
+    .user-info:hover .user-role {
         max-height: 100px;
         opacity: 1;
     }
@@ -72,10 +79,10 @@
         width: 260px;
         background: #f8f9fa;
         padding: 15px;
-        height: 100vh;
+        height: calc(100vh - 70px); /* leave space for header */
         overflow-y: auto;
         position: fixed;
-        top: 0;
+        top: 70px; /* exactly below header */
         left: 0;
         border-right: 2px solid #007bff;
     }
@@ -84,6 +91,7 @@
         color: #007bff;
         text-align: center;
         margin-bottom: 20px;
+        font-size: 20px;
     }
 
     .sidebar a,
@@ -140,18 +148,16 @@
     </style>
 </head>
 
+<body>
 <header>
-    <img src="logo.png" alt="Logo" style="max-height:60px;">
+    <img src="logo.png" alt="Logo">
     <div class="user-info">
         <strong><%= users.toUpperCase() %></strong><br>
         Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
-<!-- SIDEBAR -->
-<br>
-<br><br><br><br>
-<br>
+<!-- Sidebar -->
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home text-success"></i> Home</a>
@@ -199,7 +205,7 @@
             <a href="Stock.jsp"><i class="fas fa-boxes text-info"></i> Stock Report</a>
             <a href="stockReport.jsp"><i class="fas fa-book text-primary"></i> Stock Ledger Report</a>
             <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-                <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dash Board</a>
+                <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dashboard</a>
             <% } %>
         </div>
     </div>
@@ -232,3 +238,4 @@ document.querySelectorAll(".dropdown-btn").forEach(btn => {
   });
 });
 </script>
+</body>
