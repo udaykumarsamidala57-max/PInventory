@@ -216,7 +216,7 @@ if (poNumber != null) {
     Connection con = DBUtil.getConnection();
 
     PreparedStatement pst = con.prepareStatement(
-        "SELECT po_number, po_date, vendor_name, vendor_address, total_gst, total_dis, total_amount, terms_conditions, general_conditions " +
+        "SELECT po_number, po_date, vendor_name, vendor_address,GSTIN,contact, total_gst, total_dis, total_amount, terms_conditions, general_conditions " +
         "FROM po_master WHERE po_number=?");
     pst.setString(1, poNumber);
     ResultSet rsPO = pst.executeQuery();
@@ -237,9 +237,12 @@ if (poNumber != null) {
     <tr>
         <td><b>PO Number:</b> <%= rsPO.getString("po_number") %><br>
         <b>Date:</b> <%= rsPO.getString("po_date") %><br></td>
+        
     </tr>
     <tr><td>
         <b>Vendor Name:</b> <%= rsPO.getString("vendor_name") %><br>
+        <b>Phone Number:</b><%= rsPO.getString("contact") %><br>
+         <b>GSTIN:</b><%= rsPO.getString("GSTIN") %><br>
        <b>Vendor Address:</b> <%= rsPO.getString("vendor_address") %></td>
     </tr>
 </table>
