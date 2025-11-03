@@ -71,7 +71,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                                 </c:choose>
                             </td>
                             <td>${i.UOM}</td>
-                            <td><input type="text" name="unitPrice" value="${i.unit_price}" readonly style="width:80px;"></td>
+                            <td><input type="text" name="unitPrice" value="${i.unit_price}"  style="width:80px;"></td>
                             <td>${i.purpose}</td>
                             <td><input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required></td>
                             <td>
