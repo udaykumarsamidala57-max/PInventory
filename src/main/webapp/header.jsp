@@ -64,7 +64,7 @@
         border: none;
         color: black;
         font-size: 16px;
-        padding: 10px 15px;
+        padding: 15px 20px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
     }
