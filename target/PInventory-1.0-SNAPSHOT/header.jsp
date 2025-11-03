@@ -20,15 +20,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-    /* MENU WRAPPER – Isolated class to avoid interfering with other pages */
-    .menu-container {
+    body {
         font-family: 'Poppins', sans-serif;
-        position: relative;
-        z-index: 9999;
+        margin: 0;
+        padding: 0;
     }
 
-    /* HEADER */
-    .menu-container header {
+    header {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -43,30 +41,17 @@
         z-index: 1000;
     }
 
-    .menu-container header img {
-        max-height: 60px;
-    }
-
-    .menu-container .user-info {
+    .user-info {
         background: #007bff;
         color: white;
         padding: 10px 20px;
         border-radius: 8px;
         font-size: 18px;
         font-weight: bold;
-        position: relative;
-        cursor: default;
     }
 
-    .menu-container .user-role {
-        font-size: 15px;
-        color: white;
-        display: block;
-        margin-top: 5px;
-    }
-
-    /* SIDEBAR */
-    .menu-container .sidebar {
+    /* Sidebar */
+    .sidebar {
         width: 260px;
         background: #f8f9fa;
         padding: 15px;
@@ -76,24 +61,24 @@
         top: 70px;
         left: 0;
         border-right: 2px solid #007bff;
+        z-index: 999;
     }
 
-    .menu-container .sidebar h2 {
+    .sidebar h2 {
         color: #007bff;
         text-align: center;
         margin-bottom: 20px;
-        font-size: 20px;
     }
 
-    .menu-container .sidebar a,
-    .menu-container .sidebar button {
+    .sidebar a,
+    .sidebar button {
         display: block;
         color: #000;
         text-decoration: none;
         padding: 10px 15px;
         font-size: 16px;
         border-radius: 6px;
-        transition: background 0.3s, color 0.3s;
+        transition: none;
         width: 100%;
         text-align: left;
         border: none;
@@ -102,13 +87,13 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    .menu-container .sidebar a:hover,
-    .menu-container .sidebar button:hover {
+    .sidebar a:hover,
+    .sidebar button:hover {
         background: #007bff;
         color: white;
     }
 
-    .menu-container .dropdown-content {
+    .dropdown-content {
         display: none;
         background: #ffffff;
         padding-left: 10px;
@@ -117,48 +102,36 @@
         margin-top: 5px;
     }
 
-    .menu-container .dropdown-content a {
+    .dropdown-content a {
         font-size: 14px;
         padding: 8px 15px;
         display: block;
         border-radius: 4px;
     }
 
-    .menu-container .dropdown.active .dropdown-content {
+    .dropdown.active .dropdown-content {
         display: block;
     }
 
-    /* ICON COLORS */
-    .menu-container .text-primary { color:#007bff; }
-    .menu-container .text-success { color:#28a745; }
-    .menu-container .text-danger { color:#dc3545; }
-    .menu-container .text-warning { color:#ffc107; }
-    .menu-container .text-info { color:#17a2b8; }
-    .menu-container .text-secondary { color:#6c757d; }
-    .menu-container .text-purple { color:#6f42c1; }
-
-    /* MAIN CONTENT (pushes right of sidebar) */
-    .main-content {
-        margin-left: 260px;
-        padding: 90px 20px 20px;
-        background: #f5f6fa;
-        min-height: 100vh;
-    }
+    .text-primary { color:#007bff; }
+    .text-success { color:#28a745; }
+    .text-danger { color:#dc3545; }
+    .text-warning { color:#ffc107; }
+    .text-info { color:#17a2b8; }
+    .text-secondary { color:#6c757d; }
+    .text-purple { color:#6f42c1; }
     </style>
 </head>
 
 <body>
-
-<div class="menu-container">
 <header>
-    <img src="logo.png" alt="Logo">
+    <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
-        <strong><%= users.toUpperCase() %></strong>
-        <span class="user-role">Role: <%= roles.toUpperCase() %></span>
+        <strong><%= users.toUpperCase() %></strong><br>
+        Role: <%= roles.toUpperCase() %>
     </div>
 </header>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home text-success"></i> Home</a>
@@ -206,7 +179,7 @@
             <a href="Stock.jsp"><i class="fas fa-boxes text-info"></i> Stock Report</a>
             <a href="stockReport.jsp"><i class="fas fa-book text-primary"></i> Stock Ledger Report</a>
             <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-                <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dashboard</a>
+                <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dash Board</a>
             <% } %>
         </div>
     </div>
@@ -231,22 +204,16 @@
 
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
-</div>
-
-<!-- PAGE CONTENT -->
-<div class="main-content">
-    <h1>Welcome to Indent List Page</h1>
-</div>
 
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
-    btn.addEventListener("click", function() {
-        // Close all dropdowns except this one
-        document.querySelectorAll(".dropdown").forEach(drop => {
-            if (drop !== this.parentElement) drop.classList.remove("active");
-        });
-        this.parentElement.classList.toggle("active");
+  btn.addEventListener("click", function() {
+    const current = this.parentElement;
+    document.querySelectorAll(".dropdown").forEach(d => {
+      if (d !== current) d.classList.remove("active");
     });
+    current.classList.toggle("active");
+  });
 });
 </script>
 

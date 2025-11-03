@@ -11,13 +11,12 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
-<!-- HEADER -->
+<html>
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="CSS/tablestyle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
@@ -34,37 +33,21 @@
         background: #fff;
         padding: 10px 20px;
         border-bottom: 2px solid #007bff;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        z-index: 1000;
     }
 
     .user-info {
-        display: inline-block;
-        background: #007bff !important;
-        color: white !important;
+        background: #007bff;
+        color: white;
         padding: 10px 20px;
         border-radius: 8px;
-        cursor: pointer;
-        font-size: 20px;
+        font-size: 18px;
         font-weight: bold;
-        overflow: hidden;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .user-role {
-        color: white;
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease, opacity 0.4s ease;
-        font-size: 16px;
-        font-weight: normal;
-        margin-top: 8px;
-    }
-
-    .user-info:hover .user-role,
-    .user-info:focus .user-role {
-        max-height: 100px;
-        opacity: 1;
     }
 
     /* Sidebar */
@@ -72,12 +55,13 @@
         width: 260px;
         background: #f8f9fa;
         padding: 15px;
-        height: 100vh;
+        height: calc(100vh - 70px);
         overflow-y: auto;
         position: fixed;
-        top: 0;
+        top: 70px;
         left: 0;
         border-right: 2px solid #007bff;
+        z-index: 999;
     }
 
     .sidebar h2 {
@@ -94,7 +78,7 @@
         padding: 10px 15px;
         font-size: 16px;
         border-radius: 6px;
-        transition: background 0.3s, color 0.3s;
+        transition: none;
         width: 100%;
         text-align: left;
         border: none;
@@ -129,7 +113,6 @@
         display: block;
     }
 
-    /* Colorful icons */
     .text-primary { color:#007bff; }
     .text-success { color:#28a745; }
     .text-danger { color:#dc3545; }
@@ -140,6 +123,7 @@
     </style>
 </head>
 
+<body>
 <header>
     <img src="logo.png" alt="Logo" style="max-height:60px;">
     <div class="user-info">
@@ -148,10 +132,6 @@
     </div>
 </header>
 
-<!-- SIDEBAR -->
-<br>
-<br><br><br>
-<br>
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home text-success"></i> Home</a>
@@ -228,7 +208,14 @@
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
   btn.addEventListener("click", function() {
-    this.parentElement.classList.toggle("active");
+    const current = this.parentElement;
+    document.querySelectorAll(".dropdown").forEach(d => {
+      if (d !== current) d.classList.remove("active");
+    });
+    current.classList.toggle("active");
   });
 });
 </script>
+
+</body>
+</html>
