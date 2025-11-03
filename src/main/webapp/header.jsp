@@ -11,24 +11,24 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
+<html>
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="CSS/tablestyle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
-    body {
+    /* MENU WRAPPER – Isolated class to avoid interfering with other pages */
+    .menu-container {
         font-family: 'Poppins', sans-serif;
-        margin: 0;
-        padding: 0;
-        background: #f5f6fa;
+        position: relative;
+        z-index: 9999;
     }
 
-    /* Header */
-    header {
+    /* HEADER */
+    .menu-container header {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -43,59 +43,50 @@
         z-index: 1000;
     }
 
-    header img {
+    .menu-container header img {
         max-height: 60px;
     }
 
-    .user-info {
+    .menu-container .user-info {
         background: #007bff;
         color: white;
         padding: 10px 20px;
         border-radius: 8px;
-        cursor: pointer;
         font-size: 18px;
         font-weight: bold;
-        transition: all 0.3s ease;
         position: relative;
+        cursor: default;
     }
 
-    .user-role {
-        color: white;
-        max-height: 0;
-        opacity: 0;
-        overflow: hidden;
-        transition: max-height 0.4s ease, opacity 0.4s ease;
+    .menu-container .user-role {
         font-size: 15px;
+        color: white;
+        display: block;
         margin-top: 5px;
     }
 
-    .user-info:hover .user-role {
-        max-height: 100px;
-        opacity: 1;
-    }
-
-    /* Sidebar */
-    .sidebar {
+    /* SIDEBAR */
+    .menu-container .sidebar {
         width: 260px;
         background: #f8f9fa;
         padding: 15px;
-        height: calc(100vh - 70px); /* leave space for header */
+        height: calc(100vh - 70px);
         overflow-y: auto;
         position: fixed;
-        top: 70px; /* exactly below header */
+        top: 70px;
         left: 0;
         border-right: 2px solid #007bff;
     }
 
-    .sidebar h2 {
+    .menu-container .sidebar h2 {
         color: #007bff;
         text-align: center;
         margin-bottom: 20px;
         font-size: 20px;
     }
 
-    .sidebar a,
-    .sidebar button {
+    .menu-container .sidebar a,
+    .menu-container .sidebar button {
         display: block;
         color: #000;
         text-decoration: none;
@@ -111,13 +102,13 @@
         font-family: 'Poppins', sans-serif;
     }
 
-    .sidebar a:hover,
-    .sidebar button:hover {
+    .menu-container .sidebar a:hover,
+    .menu-container .sidebar button:hover {
         background: #007bff;
         color: white;
     }
 
-    .dropdown-content {
+    .menu-container .dropdown-content {
         display: none;
         background: #ffffff;
         padding-left: 10px;
@@ -126,38 +117,48 @@
         margin-top: 5px;
     }
 
-    .dropdown-content a {
+    .menu-container .dropdown-content a {
         font-size: 14px;
         padding: 8px 15px;
         display: block;
         border-radius: 4px;
     }
 
-    .dropdown.active .dropdown-content {
+    .menu-container .dropdown.active .dropdown-content {
         display: block;
     }
 
-    /* Colorful icons */
-    .text-primary { color:#007bff; }
-    .text-success { color:#28a745; }
-    .text-danger { color:#dc3545; }
-    .text-warning { color:#ffc107; }
-    .text-info { color:#17a2b8; }
-    .text-secondary { color:#6c757d; }
-    .text-purple { color:#6f42c1; }
+    /* ICON COLORS */
+    .menu-container .text-primary { color:#007bff; }
+    .menu-container .text-success { color:#28a745; }
+    .menu-container .text-danger { color:#dc3545; }
+    .menu-container .text-warning { color:#ffc107; }
+    .menu-container .text-info { color:#17a2b8; }
+    .menu-container .text-secondary { color:#6c757d; }
+    .menu-container .text-purple { color:#6f42c1; }
+
+    /* MAIN CONTENT (pushes right of sidebar) */
+    .main-content {
+        margin-left: 260px;
+        padding: 90px 20px 20px;
+        background: #f5f6fa;
+        min-height: 100vh;
+    }
     </style>
 </head>
 
 <body>
+
+<div class="menu-container">
 <header>
     <img src="logo.png" alt="Logo">
     <div class="user-info">
-        <strong><%= users.toUpperCase() %></strong><br>
-        Role: <%= roles.toUpperCase() %>
+        <strong><%= users.toUpperCase() %></strong>
+        <span class="user-role">Role: <%= roles.toUpperCase() %></span>
     </div>
 </header>
 
-<!-- Sidebar -->
+<!-- SIDEBAR -->
 <div class="sidebar">
     <h2><i class="fas fa-compass text-primary"></i> Navigation</h2>
     <a href="Home"><i class="fas fa-home text-success"></i> Home</a>
@@ -230,12 +231,24 @@
 
     <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
+</div>
+
+<!-- PAGE CONTENT -->
+<div class="main-content">
+    <h1>Welcome to Indent List Page</h1>
+</div>
 
 <script>
 document.querySelectorAll(".dropdown-btn").forEach(btn => {
-  btn.addEventListener("click", function() {
-    this.parentElement.classList.toggle("active");
-  });
+    btn.addEventListener("click", function() {
+        // Close all dropdowns except this one
+        document.querySelectorAll(".dropdown").forEach(drop => {
+            if (drop !== this.parentElement) drop.classList.remove("active");
+        });
+        this.parentElement.classList.toggle("active");
+    });
 });
 </script>
+
 </body>
+</html>
