@@ -51,6 +51,13 @@
             <% } %>
           </td>
         </tr>
+        <tr>
+          <td><label>Indent Type:</label></td>
+          <td>
+            <label><input type="radio" name="indentType" value="Purchase" required> Purchase</label>
+            <label style="margin-left:15px;"><input type="radio" name="indentType" value="Issue"> Issue</label>
+          </td>
+        </tr>
       </table>
 
       <br>
@@ -110,7 +117,7 @@ const items = [];
     UOM: '${i.UOM}', 
     category: '${i.category}', 
     subcategory: '${i.subcategory}', 
-    stock: '${i.stock}' // ✅ new stock info
+    stock: '${i.stock}'
   });
 </c:forEach>
 
@@ -163,7 +170,6 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
       ? categories 
       : categories.filter(c => c.departmentName === selectedDept);
 
-  // Unique categories
   const seen = new Set();
   const uniqueCats = filteredCats.filter(c => {
     const key = c.name;
