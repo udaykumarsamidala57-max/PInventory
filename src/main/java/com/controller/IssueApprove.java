@@ -35,13 +35,15 @@ public class IssueApprove extends HttpServlet {
 
         // ✅ Corrected SQL to fetch indents ready for issue
         String sql = "SELECT i.*, s.balance_qty " +
-                "FROM indent i " +
-                "INNER JOIN stock s ON i.item_id = s.item_id " + // ✅ INNER JOIN (only items present in stock)
-                "WHERE TRIM(i.Istatus) = 'Approved' " +          // main approval
-                "AND TRIM(i.status) = 'Pending' " +              // still pending overall
-                "AND (i.Indentnext IS NULL OR TRIM(i.Indentnext) = '' OR TRIM(i.Indentnext) = 'PO') " +
-                "AND s.balance_qty >= i.qty " +                  // ✅ stock must have enough quantity
-                "ORDER BY i.indent_id DESC";
+        	    "FROM indent i " +
+        	    "INNER JOIN stock s ON i.item_id = s.item_id " + // ✅ INNER JOIN (only items present in stock)
+        	    "WHERE TRIM(i.Istatus) = 'Approved' " +          // main approval
+        	    "AND TRIM(i.status) = 'Pending' " +              // still pending overall
+        	    "AND (i.Indentnext IS NULL OR TRIM(i.Indentnext) = '' OR TRIM(i.Indentnext) = 'PO') " +
+        	    "AND (i.PurchaseorIssue = 'Issue' OR i.PurchaseorIssue IS NULL) " +  // ✅ added condition
+        	    "AND s.balance_qty >= i.qty " +                  // ✅ stock must have enough quantity
+        	    "ORDER BY i.indent_id DESC";
+
 
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);

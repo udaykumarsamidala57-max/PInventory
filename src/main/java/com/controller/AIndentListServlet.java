@@ -67,6 +67,8 @@ public class AIndentListServlet extends HttpServlet {
         listSql.append("LEFT JOIN stock s ON i.item_id = s.item_id ");
         listSql.append("WHERE (TRIM(i.Indentnext) NOT IN ('Issued','Cancelled') OR i.Indentnext IS NULL) ");
         listSql.append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
+        listSql.append("AND (i.PurchaseorIssue = 'Purchase' OR i.PurchaseorIssue IS NULL) ");
+
 
         // Department filtering
         if (!"Global".equalsIgnoreCase(role)) {

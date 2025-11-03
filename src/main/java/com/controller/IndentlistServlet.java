@@ -58,9 +58,13 @@ public class IndentlistServlet extends HttpServlet {
             PreparedStatement ps = con.prepareStatement(listSql.toString());
 
             // Set department parameter if not Global/Admin
-            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role) && !"Finance".equalsIgnoreCase(dept) && !"Store".equalsIgnoreCase(dept)) {
-                ps.setString(1, dept);
-            }
+            if (
+            	    !"Global".equalsIgnoreCase(role) &&
+            	    !"Admin".equalsIgnoreCase(role) &&
+            	    ("Finance".equalsIgnoreCase(dept) || "Store".equalsIgnoreCase(dept))
+            	) {
+            	    ps.setString(1, dept);
+            	}
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
