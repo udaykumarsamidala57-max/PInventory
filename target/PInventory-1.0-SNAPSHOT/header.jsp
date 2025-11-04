@@ -37,7 +37,7 @@
 
     .user-info {
         display: inline-block;
-        background: #007bff;
+        background: #03489C;
         color: #fff !important;
         padding: 10px 20px;
         border-radius: 8px;
@@ -82,8 +82,8 @@
         background: none;
         border: none;
         color: #333;
-        font-size: 15px;
-        padding: 12px 20px;
+        font-size: 18px;
+        padding: 16px 25px;
         cursor: pointer;
         font-family: 'Poppins', sans-serif;
         text-decoration: none;
@@ -94,7 +94,7 @@
     .sidebar .dropdown-btn i {
         min-width: 20px;
         text-align: center;
-        font-size: 16px;
+        font-size: 18px;
     }
 
     .sidebar a:hover,
@@ -123,7 +123,7 @@
     }
 
     .sidebar .dropdown-content a:hover {
-        background: #007bff;
+        background: #03489C;
         color: white;
         transform: translateX(5px);
     }
