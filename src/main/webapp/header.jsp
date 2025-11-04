@@ -38,7 +38,7 @@
     .user-info {
         display: inline-block;
         background: #007bff;
-        color: white;
+        color: #fff !important;
         padding: 10px 20px;
         border-radius: 8px;
         font-size: 18px;
