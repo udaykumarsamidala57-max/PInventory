@@ -216,6 +216,19 @@
         </div>
     </div>
     <% } %>
+    
+    <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
+    <div class="dropdown">
+    <button class="dropdown-btn">
+        <i class="fas fa-utensils text-warning"></i> Dining Hall 
+        <i class="fas fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+        <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
+        <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+    </div>
+</div>
+    <% } %>
 
     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
     <div class="dropdown">

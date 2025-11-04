@@ -1,6 +1,7 @@
 com\bean\IndentItem.class
 com\controller\LoginServlet.class
 com\controller\IndentPO.class
+com\controller\DiningHallServlet.class
 com\bean\Indentlist.class
 com\controller\IndentlistServlet.class
 com\controller\PO$1MergedItem.class
@@ -14,6 +15,7 @@ com\controller\PurchaseOrderServlet.class
 com\bean\Indent.class
 com\controller\GRNServlet.class
 com\bean\GRNItem.class
+com\controller\MealSummaryServlet.class
 com\bean\POItems.class
 com\controller\AddStock.class
 com\bean\AggregatedItem.class
@@ -21,7 +23,6 @@ com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\bean\IndentItems.class
 com\controller\SendPendingIndentPDF.class
-com\controller\DHConsume.class
 com\bean\IndentItemFull.class
 com\controller\IssueApprove.class
 com\controller\Home.class
