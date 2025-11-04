@@ -75,13 +75,13 @@
 
     .sidebar .dropdown-content {
         display: none;
-        background: #0a58ca;
+        background: white;
         padding-left: 15px;
     }
 
     .sidebar .dropdown-content a {
         display: block;
-        color: #fff;
+        color: black;
         text-decoration: none;
         padding: 8px 15px;
         font-size: 14px;

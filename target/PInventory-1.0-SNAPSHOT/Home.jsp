@@ -36,14 +36,21 @@
         --shadow: 0 3px 8px rgba(0,0,0,0.1);
     }
 
-    
+    body {
+        
+        background: var(--light-bg);
+        margin: 0;
+        padding-bottom: 70px;
+        color: var(--text);
+    }
     body::before {
     font-family: 'Segoe UI', sans-serif;
     content: "";
     position: fixed;
     top: -20%;
     left: -20%;
-   
+    width: 140%;
+    height: 140%;
     background: radial-gradient(circle at 20% 30%, rgba(108, 92, 231, 0.25), transparent 60%),
                 radial-gradient(circle at 80% 70%, rgba(52, 152, 219, 0.25), transparent 60%),
                 radial-gradient(circle at 50% 100%, rgba(255, 159, 67, 0.25), transparent 70%);
@@ -51,7 +58,6 @@
     z-index: -1;
     filter: blur(90px);
     opacity: 0.9;
-    padding-bottom: 70px;
 }
 
     h1, h3 {
@@ -330,7 +336,8 @@
         </table>
     </div>
 <br><br><br><br><br><br><br><br>
-    <footer>© <%=java.time.Year.now()%> Inventory Dashboard | Built with JSP, Servlet & Chart.js</footer>
+    <footer>  <p> | SRS Inventory System | <i class="fas fa-leaf" style="color:green;"></i> Developed by <i class="fas fa-leaf" style="color:green;"></i> School IT Department
+</p></footer>
 </div>
 
 <!-- Chart Scripts -->
