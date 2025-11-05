@@ -240,10 +240,10 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
             <div class="indent-no">
                 #<%= indentNo %>
                 <% if (hasPendingNext) { %>
-                    <span class="pending-badge">🟡 Pending Action</span>
+                    <span class="pending-badge">🟡 No Action</span>
                 <% } %>
                 <% if (hasStockAvailable) { %>
-                    <span class="stock-badge">🟢 Stock Available</span>
+                    <span class="stock-badge">🟢 Stock</span>
                 <% } %>
             </div>
             <div><i class="fa-regular fa-calendar"></i> <%= first.getDate() %></div>
