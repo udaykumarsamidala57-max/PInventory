@@ -165,7 +165,7 @@ h2 {
     border-radius: 6px;
     padding: 4px 6px;
     margin: 3px 0;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: black;
     box-shadow: 0 2px 6px rgba(0,0,0,0.2);
@@ -174,7 +174,7 @@ h2 {
 .fc-event-title.breakfast { background: #74b9ff; }
 .fc-event-title.lunch { background: #ffa502; }
 .fc-event-title.dinner { background: #2ed573; }
-.fc-event-title.total { background: #6c5ce7; font-weight: 700; font-size: 14px; }
+.fc-event-title.total { background: #6c5ce7; font-weight: 700; font-size: 12px; }
 
 /* Filter */
 .filter-box {

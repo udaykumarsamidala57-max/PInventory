@@ -177,7 +177,7 @@ public class DiningHallServlet extends HttpServlet {
                 // ✅ Insert into stock_issues
                 int issueId = 0;
                 try (PreparedStatement ps2 = con.prepareStatement(
-                        "INSERT INTO stock_issues (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value) VALUES (?,?,?,?,?,?,?,?)",
+                        "INSERT INTO stock_issues (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value,issue_date) VALUES (?,?,?,?,?,?,?,?,?)",
                         Statement.RETURN_GENERATED_KEYS)) {
                     ps2.setString(1, issueno);
                     ps2.setInt(2, itemId);
@@ -187,6 +187,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps2.setString(6, remarks);
                     ps2.setDouble(7, unitPrice);
                     ps2.setDouble(8, totalValue);
+                    ps2.setString(10, issueDate);
                     ps2.executeUpdate();
 
                     try (ResultSet rs = ps2.getGeneratedKeys()) {

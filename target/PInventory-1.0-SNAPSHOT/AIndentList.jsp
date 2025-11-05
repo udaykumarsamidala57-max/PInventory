@@ -200,6 +200,21 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     to { opacity: 1; transform: scale(1); }
 }
 
+/* ---------- Gmail-style empty dot ---------- */
+.empty-next-cell {
+    width: 30px;
+    text-align: center;
+}
+.empty-next-cell::before {
+    content: "•";
+    color: #007bff;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+tr:hover .empty-next-cell::before {
+    opacity: 0.7;
+}
+
 /* ---------- Modals ---------- */
 .modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -279,6 +294,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
         <table class="inner-table">
             <thead>
                 <tr>
+                    <th></th> <!-- Empty first column like Gmail -->
                     <th>ID</th><th>Item</th><th>Avl.Qty</th><th>Req.Qty</th><th>UOM</th><th>Purpose</th>
                     <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th><th>Next</th>
                 </tr>
@@ -294,6 +310,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                     boolean editable = (next == null || next.isEmpty());
             %>
             <tr class="<%= "Cancelled".equalsIgnoreCase(status) ? "cancelled-row" : "" %>">
+                <td class="empty-next-cell"></td> <!-- Gmail-style empty column -->
                 <td><%= ind.getId() %></td>
                 <td><%= ind.getItemName() %></td>
                 <td><%= ind.getBalanceQty() %></td>
