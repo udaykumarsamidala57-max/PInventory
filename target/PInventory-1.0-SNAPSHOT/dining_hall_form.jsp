@@ -47,13 +47,9 @@
         <tr>
           <td><label>Department:</label></td>
           <td>
-            <select name="department" id="departmentSelect" required>
-              <option value="">-- Select Department --</option>
-              <c:forEach var="d" items="${masterData.departments}">
-                <option value="${d.name}" <c:if test="${d.name == selectedDept}">selected</c:if>>${d.name}</option>
-              </c:forEach>
-            </select>
-          </td>
+    <input type="hidden" name="department" value="Dining Hall" />
+    <span style="font-weight: 600;">Dining Hall</span>
+</td>
         </tr>
         <tr>
           <td><label>Issued To:</label></td>
