@@ -6,7 +6,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.sql.*;
 import java.util.*;
-import com.bean.DBUtil; // only DBUtil kept
+import com.bean.DBUtil;
 
 @WebServlet("/DiningHallServlet")
 public class DiningHallServlet extends HttpServlet {
@@ -22,13 +22,8 @@ public class DiningHallServlet extends HttpServlet {
             return;
         }
 
-        String role = (String) sess.getAttribute("role");
-        String deptSession = (String) sess.getAttribute("department");
-        String selectedDept = request.getParameter("selectedDept");
-
         try (Connection con = DBUtil.getConnection()) {
-
-            // Next issue number for display
+            // ✅ Next issue number
             int nextIssueNo = 1;
             String sqlNext = "SELECT COALESCE(MAX(CAST(SUBSTRING(issueno, 4) AS UNSIGNED)), 0) + 1 AS next_no FROM dining_hall_consumption";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
@@ -38,16 +33,14 @@ public class DiningHallServlet extends HttpServlet {
             String formattedIssueNo = "ISS" + nextIssueNo;
             request.setAttribute("nextIssueNo", formattedIssueNo);
 
-            // Prepare master data
+            // ✅ Fixed department list
             Map<String, Object> masterData = new HashMap<>();
-
-            // ✅ Only one fixed department: Dining Hall
             List<Map<String, String>> departments = new ArrayList<>();
             Map<String, String> singleDept = new HashMap<>();
             singleDept.put("name", "Dining Hall");
             departments.add(singleDept);
 
-            // ✅ Categories — restricted to Dining Hall
+            // ✅ Dining Hall Categories
             List<Map<String, String>> categories = new ArrayList<>();
             String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = 'Dining Hall'";
             try (PreparedStatement ps = con.prepareStatement(catSql);
@@ -60,7 +53,7 @@ public class DiningHallServlet extends HttpServlet {
                 }
             }
 
-            // ✅ Subcategories (keep all active)
+            // ✅ Active Subcategories
             List<Map<String, String>> subcats = new ArrayList<>();
             String subSql = "SELECT Sub_Category, Category FROM category WHERE Status='Active'";
             try (PreparedStatement ps = con.prepareStatement(subSql);
@@ -73,7 +66,7 @@ public class DiningHallServlet extends HttpServlet {
                 }
             }
 
-            // ✅ Items with stock details
+            // ✅ Items with stock
             List<Map<String, String>> items = new ArrayList<>();
             String itemSql = "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, COALESCE(s.balance_qty, 0) AS stock " +
                              "FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id";
@@ -98,6 +91,7 @@ public class DiningHallServlet extends HttpServlet {
 
             request.setAttribute("masterData", masterData);
             request.setAttribute("selectedDept", "Dining Hall");
+
             request.getRequestDispatcher("dining_hall_form.jsp").forward(request, response);
 
         } catch (SQLException e) {
@@ -111,8 +105,9 @@ public class DiningHallServlet extends HttpServlet {
 
         String issueno = request.getParameter("issueno");
         String issuedTo = request.getParameter("issued_to");
-        String department = "Dining Hall"; // ✅ Fixed department
+        String department = "Dining Hall";
         String session = request.getParameter("session");
+        String issueDate = request.getParameter("issue_date");
 
         String[] itemIds = request.getParameterValues("item_id");
         String[] qtys = request.getParameterValues("qty_issued");
@@ -132,9 +127,9 @@ public class DiningHallServlet extends HttpServlet {
                 String remarks = remarksArr[i];
 
                 double unitPrice = 0.0;
-                double availableStock = 0.0;
+                double currentBalance = 0.0;
 
-                // Get price from latest PO or stock
+                // ✅ Get latest price
                 try (PreparedStatement psPO = con.prepareStatement(
                         "SELECT net_amount, qty FROM po_items WHERE item_id=? AND qty>0 ORDER BY po_id DESC LIMIT 1")) {
                     psPO.setInt(1, itemId);
@@ -153,18 +148,19 @@ public class DiningHallServlet extends HttpServlet {
                         ps2.setInt(1, itemId);
                         try (ResultSet rs = ps2.executeQuery()) {
                             if (rs.next()) {
-                                availableStock = rs.getDouble(1);
-                                if (unitPrice == 0) unitPrice = rs.getDouble(2);
+                                currentBalance = rs.getDouble(1);
+                                unitPrice = rs.getDouble(2);
                             }
                         }
                     }
                 }
 
                 double totalValue = qtyIssued * unitPrice;
+                double newBalance = currentBalance - qtyIssued;
 
-                // Insert into dining_hall_consumption
+                // ✅ Insert into dining_hall_consumption
                 try (PreparedStatement ps1 = con.prepareStatement(
-                        "INSERT INTO dining_hall_consumption (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value,session) VALUES (?,?,?,?,?,?,?,?,?)")) {
+                        "INSERT INTO dining_hall_consumption (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value,session,issue_date) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
                     ps1.setString(1, issueno);
                     ps1.setInt(2, itemId);
                     ps1.setString(3, department);
@@ -174,10 +170,11 @@ public class DiningHallServlet extends HttpServlet {
                     ps1.setDouble(7, unitPrice);
                     ps1.setDouble(8, totalValue);
                     ps1.setString(9, session);
+                    ps1.setString(10, issueDate);
                     ps1.executeUpdate();
                 }
 
-                // Insert into stock_issues
+                // ✅ Insert into stock_issues
                 int issueId = 0;
                 try (PreparedStatement ps2 = con.prepareStatement(
                         "INSERT INTO stock_issues (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value) VALUES (?,?,?,?,?,?,?,?)",
@@ -197,17 +194,7 @@ public class DiningHallServlet extends HttpServlet {
                     }
                 }
 
-                // Update stock ledger
-                double currentBalance = 0;
-                try (PreparedStatement psBal = con.prepareStatement(
-                        "SELECT running_balance FROM stock_ledger WHERE item_id=? ORDER BY ledger_id DESC LIMIT 1")) {
-                    psBal.setInt(1, itemId);
-                    try (ResultSet rs = psBal.executeQuery()) {
-                        if (rs.next()) currentBalance = rs.getDouble(1);
-                    }
-                }
-
-                double newBalance = currentBalance - qtyIssued;
+                // ✅ Ledger
                 try (PreparedStatement ps3 = con.prepareStatement(
                         "INSERT INTO stock_ledger (item_id,trans_type,trans_id,trans_date,qty,running_balance,remarks) VALUES (?,?,?,CURRENT_DATE(),?,?,?)")) {
                     ps3.setInt(1, itemId);
@@ -219,7 +206,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps3.executeUpdate();
                 }
 
-                // Update stock
+                // ✅ Update stock
                 try (PreparedStatement psUpdate = con.prepareStatement(
                         "UPDATE stock SET balance_qty=? WHERE item_id=?")) {
                     psUpdate.setDouble(1, newBalance);
@@ -229,7 +216,7 @@ public class DiningHallServlet extends HttpServlet {
             }
 
             con.commit();
-            response.sendRedirect("success.jsp");
+            response.sendRedirect("DiningHallServlet");
 
         } catch (Exception e) {
             e.printStackTrace();
