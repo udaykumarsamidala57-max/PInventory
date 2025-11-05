@@ -41,22 +41,15 @@ public class DiningHallServlet extends HttpServlet {
             // Prepare master data
             Map<String, Object> masterData = new HashMap<>();
 
-         // Departments
+            // ✅ Only one fixed department: Dining Hall
             List<Map<String, String>> departments = new ArrayList<>();
+            Map<String, String> singleDept = new HashMap<>();
+            singleDept.put("name", "Dining Hall");
+            departments.add(singleDept);
 
-            String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department = 'Dining Hall'";
-            try (PreparedStatement ps = con.prepareStatement(deptSql);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, String> d = new HashMap<>();
-                    d.put("name", rs.getString("Department"));
-                    departments.add(d);
-                }
-            }
-
-            // Categories
+            // ✅ Categories — restricted to Dining Hall
             List<Map<String, String>> categories = new ArrayList<>();
-            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category = 'Dining Hall'";
+            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Department = 'Dining Hall'";
             try (PreparedStatement ps = con.prepareStatement(catSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -67,7 +60,7 @@ public class DiningHallServlet extends HttpServlet {
                 }
             }
 
-            // Subcategories
+            // ✅ Subcategories (keep all active)
             List<Map<String, String>> subcats = new ArrayList<>();
             String subSql = "SELECT Sub_Category, Category FROM category WHERE Status='Active'";
             try (PreparedStatement ps = con.prepareStatement(subSql);
@@ -80,9 +73,10 @@ public class DiningHallServlet extends HttpServlet {
                 }
             }
 
-            // Items
+            // ✅ Items with stock details
             List<Map<String, String>> items = new ArrayList<>();
-            String itemSql = "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, COALESCE(s.balance_qty, 0) AS stock FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id";
+            String itemSql = "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, COALESCE(s.balance_qty, 0) AS stock " +
+                             "FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id";
             try (PreparedStatement ps = con.prepareStatement(itemSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -103,7 +97,7 @@ public class DiningHallServlet extends HttpServlet {
             masterData.put("items", items);
 
             request.setAttribute("masterData", masterData);
-            request.setAttribute("selectedDept", selectedDept);
+            request.setAttribute("selectedDept", "Dining Hall");
             request.getRequestDispatcher("dining_hall_form.jsp").forward(request, response);
 
         } catch (SQLException e) {
@@ -117,7 +111,7 @@ public class DiningHallServlet extends HttpServlet {
 
         String issueno = request.getParameter("issueno");
         String issuedTo = request.getParameter("issued_to");
-        String department = request.getParameter("department");
+        String department = "Dining Hall"; // ✅ Fixed department
         String session = request.getParameter("session");
 
         String[] itemIds = request.getParameterValues("item_id");
@@ -140,7 +134,7 @@ public class DiningHallServlet extends HttpServlet {
                 double unitPrice = 0.0;
                 double availableStock = 0.0;
 
-                // get price from PO or stock
+                // Get price from latest PO or stock
                 try (PreparedStatement psPO = con.prepareStatement(
                         "SELECT net_amount, qty FROM po_items WHERE item_id=? AND qty>0 ORDER BY po_id DESC LIMIT 1")) {
                     psPO.setInt(1, itemId);
@@ -168,7 +162,7 @@ public class DiningHallServlet extends HttpServlet {
 
                 double totalValue = qtyIssued * unitPrice;
 
-                // insert into dining_hall_consumption
+                // Insert into dining_hall_consumption
                 try (PreparedStatement ps1 = con.prepareStatement(
                         "INSERT INTO dining_hall_consumption (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value,session) VALUES (?,?,?,?,?,?,?,?,?)")) {
                     ps1.setString(1, issueno);
@@ -183,7 +177,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps1.executeUpdate();
                 }
 
-                // insert into stock_issues
+                // Insert into stock_issues
                 int issueId = 0;
                 try (PreparedStatement ps2 = con.prepareStatement(
                         "INSERT INTO stock_issues (issueno,item_id,department,issued_to,qty_issued,remarks,unit_price,total_value) VALUES (?,?,?,?,?,?,?,?)",
@@ -203,7 +197,7 @@ public class DiningHallServlet extends HttpServlet {
                     }
                 }
 
-                // stock_ledger update
+                // Update stock ledger
                 double currentBalance = 0;
                 try (PreparedStatement psBal = con.prepareStatement(
                         "SELECT running_balance FROM stock_ledger WHERE item_id=? ORDER BY ledger_id DESC LIMIT 1")) {
@@ -225,7 +219,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps3.executeUpdate();
                 }
 
-                // update stock
+                // Update stock
                 try (PreparedStatement psUpdate = con.prepareStatement(
                         "UPDATE stock SET balance_qty=? WHERE item_id=?")) {
                     psUpdate.setDouble(1, newBalance);

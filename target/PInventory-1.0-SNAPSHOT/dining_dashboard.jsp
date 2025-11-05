@@ -1,150 +1,207 @@
-<%@ page import="java.sql.*, java.util.*" %>
+<%@ page import="java.sql.*, java.util.*, java.text.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
+ <%
+    HttpSession sess = request.getSession(false);
+    if (sess == null || sess.getAttribute("username") == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+    String user  = (String) sess.getAttribute("username");
+    String role  = (String) sess.getAttribute("role");
+    String dept  = (String) sess.getAttribute("department");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Dining Hall Dashboard</title>
+<title>Dining Hall Analytics Dashboard</title>
+
+<!-- Fonts & Icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+
 <style>
-    body {
-        font-family: 'Poppins', sans-serif;
-        background: #f5f6fa;
-        margin: 0;
-        padding: 0;
-        display: flex;
-    }
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+    margin: 0;
+    padding: 0;
+}
+.content {
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 90px 30px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    .content {
-        margin-left: 260px;
-        width: calc(100% - 260px);
-        padding: 30px;
-    }
+/* Heading */
+h2 {
+    text-align: center;
+    color: #2d3436;
+    margin-bottom: 30px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
 
-    h2 {
-        text-align: center;
-        color: #2d3436;
-        margin: 70px 0 30px;
-        font-weight: 600;
-        letter-spacing: 1px;
-    }
+/* Summary Cards */
+.summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    justify-content: center;
+    margin-bottom: 40px;
+}
+.card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    width: 220px;
+    padding: 25px;
+    text-align: center;
+    transition: 0.3s;
+}
+.card:hover { transform: scale(1.05); }
+.card h3 {
+    font-size: 15px;
+    color: #777;
+}
+.card p {
+    font-size: 22px;
+    font-weight: bold;
+    color: #007bff;
+    margin: 0;
+}
 
-    /* Filter Box */
-    .filter-box {
-        background: #fff;
-        border-radius: 15px;
-        padding: 20px 30px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 15px;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-    }
+/* Charts */
+.chart-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 60px;
+}
+.chart-box {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px 30px;
+    width: 500px;
+}
 
-    label {
-        font-weight: 500;
-        color: #333;
-    }
+/* Calendar Container */
+.calendar-container {
+    background: white;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 50px 40px;
+    width: 95%;
+    max-width: 1220px;
+    margin: 0 auto 80px;
+    border: 2px solid #007bff30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
-    input[type="date"], button {
-        padding: 10px 15px;
-        border-radius: 10px;
-        border: 1px solid #ccc;
-        font-size: 15px;
-        transition: all 0.3s;
-    }
+/* FullCalendar Table Improvements */
+.fc {
+    border-radius: 20px;
+    overflow: hidden;
+    width: 100%;
+    background-color: #fdfefe;
+    padding: 15px; /* ✅ New padding around table */
+}
+.fc .fc-scrollgrid {
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+.fc-daygrid-day-frame {
+    padding: 6px;
+}
+.fc-toolbar {
+    justify-content: center !important;
+}
+.fc-toolbar-title {
+    font-size: 22px !important;
+    color: #2d3436 !important;
+}
+.fc-button {
+    border-radius: 8px !important;
+    background: #007bff !important;
+    border: none !important;
+    transition: 0.3s;
+}
+.fc-button:hover { background: #0056b3 !important; }
+.fc-daygrid-day-number {
+    font-size: 18px !important;
+    font-weight: 700;
+    text-align: center !important;
+    color: #2d3436;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 25px;
+}
 
-    input[type="date"]:focus {
-        border-color: #007bff;
-        outline: none;
-        box-shadow: 0 0 4px rgba(0,123,255,0.2);
-    }
+/* Calendar Event Styling */
+.fc-event {
+    border: none !important;
+    background: transparent !important;
+    color: #2d3436 !important;
+    font-size: 13px !important;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.4em;
+}
+.fc-event-title {
+    display: block;
+    border-radius: 6px;
+    padding: 4px 6px;
+    margin: 3px 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: black;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    text-align: center;
+}
+.fc-event-title.breakfast { background: #74b9ff; }
+.fc-event-title.lunch { background: #ffa502; }
+.fc-event-title.dinner { background: #2ed573; }
+.fc-event-title.total { background: #6c5ce7; font-weight: 700; font-size: 14px; }
 
-    button {
-        background-color: #007bff;
-        color: #fff;
-        cursor: pointer;
-        border: none;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        transition: 0.3s;
-    }
+/* Filter */
+.filter-box {
+    text-align: center;
+    margin-bottom: 30px;
+}
+input[type="date"], button {
+    padding: 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    margin: 5px;
+}
+button {
+    background: #007bff;
+    color: white;
+    cursor: pointer;
+    border: none;
+    transition: 0.3s;
+}
+button:hover { background: #0056b3; }
 
-    button:hover {
-        background-color: #0056b3;
-        transform: translateY(-2px);
-    }
-
-    /* Dashboard Board */
-    .board {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 30px;
-        padding: 20px;
-    }
-
-    .note {
-        width: 250px;
-        height: 200px;
-        border-radius: 12px;
-        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
-        padding: 20px;
-        position: relative;
-        color: #333;
-        background: #fff3b0;
-        transform: rotate(-2deg);
-        transition: all 0.3s ease;
-    }
-
-    .note:nth-child(2) { background: #c9f2c7; transform: rotate(2deg); }
-    .note:nth-child(3) { background: #bde0fe; transform: rotate(-1deg); }
-
-    .note:hover {
-        transform: scale(1.05);
-        z-index: 2;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    .note .pin {
-        position: absolute;
-        width: 20px;
-        height: 20px;
-        background: crimson;
-        border-radius: 50%;
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
-    }
-
-    .note h3 {
-        text-align: center;
-        margin-top: 35px;
-        font-size: 20px;
-        font-weight: 600;
-    }
-
-    .note p {
-        margin: 10px 0;
-        font-size: 15px;
-        font-weight: 500;
-    }
-
-    .no-data {
-        text-align: center;
-        color: #888;
-        font-style: italic;
-        margin-top: 50px;
-    }
-
-    @media (max-width: 768px) {
-        .content { margin-left: 0; width: 100%; }
-    }
+/* Responsive */
+@media (max-width: 992px) {
+    .content { margin-left: 0; width: 100%; padding-top: 80px; }
+    .chart-box { width: 90%; }
+    .calendar-container { width: 95%; padding: 25px; }
+}
 </style>
 </head>
 <body>
@@ -152,76 +209,139 @@
 <%@ include file="header.jsp" %>
 
 <div class="content">
-    <h2><i class="fas fa-utensils"></i> Dining Hall Dashboard</h2>
-
-    <div class="filter-box">
-        <form method="post">
-            <label for="date">Select Date:</label>
-            <input type="date" name="date" required 
-                value="<%= request.getParameter("date") != null ? request.getParameter("date") : "" %>">
-            <button type="submit"><i class="fas fa-sync-alt"></i> Refresh</button>
-        </form>
-    </div>
+<h2><i class="fas fa-chart-line"></i> Dining Hall Analytics Dashboard</h2>
 
 <%
-    String selectedDate = request.getParameter("date");
-    if (selectedDate != null && !selectedDate.trim().isEmpty()) {
-        String[] sessions = {"Breakfast", "Lunch", "Dinner"};
-        boolean anyData = false;
-        Connection con = null;
+Connection con = null;
+double todayCost = 0, weekCost = 0, monthCost = 0, totalCost = 0;
+Map<String, Double> dayWise = new LinkedHashMap<>();
+Map<String, Map<String, Double>> sessionWise = new LinkedHashMap<>();
 
-        try {
-            con = DBUtil.getConnection();
-%>
-        <div class="board">
-<%
-            for (String sessionName : sessions) {
-                PreparedStatement ps = null;
-                ResultSet rs = null;
+try {
+    con = DBUtil.getConnection();
+    Statement st = con.createStatement();
 
-                try {
-                    String sql = "SELECT COUNT(DISTINCT item_id) AS total_items, " +
-                                 "SUM(qty_issued) AS total_qty, SUM(total_value) AS total_cost " +
-                                 "FROM dining_hall_consumption WHERE DATE(issue_date)=? AND session=?";
-                    ps = con.prepareStatement(sql);
-                    ps.setString(1, selectedDate);
-                    ps.setString(2, sessionName);
-                    rs = ps.executeQuery();
+    ResultSet rs = st.executeQuery("SELECT SUM(total_value) FROM dining_hall_consumption WHERE DATE(issue_date)=CURDATE()");
+    if (rs.next()) todayCost = rs.getDouble(1); rs.close();
 
-                    if (rs.next() && rs.getInt("total_items") > 0) {
-                        anyData = true;
-%>
-            <div class="note">
-                <div class="pin"></div>
-                <h3><i class="fas fa-sun"></i> <%= sessionName %></h3>
-                <p><i class="fas fa-bowl-food"></i> Total Items: <b><%= rs.getInt("total_items") %></b></p>
-                <p><i class="fas fa-weight-scale"></i> Total Qty: <b><%= rs.getDouble("total_qty") %></b></p>
-                <p><i class="fas fa-indian-rupee-sign"></i> Total Cost: <b>₹ <%= rs.getDouble("total_cost") %></b></p>
-            </div>
-<%
-                    }
-                } finally {
-                    if (rs != null) rs.close();
-                    if (ps != null) ps.close();
-                }
-            }
+    rs = st.executeQuery("SELECT SUM(total_value) FROM dining_hall_consumption WHERE YEARWEEK(issue_date)=YEARWEEK(CURDATE())");
+    if (rs.next()) weekCost = rs.getDouble(1); rs.close();
 
-            if (!anyData) {
-%>
-                <div class="no-data">No records found for the selected date.</div>
-<%
-            }
-%>
-        </div>
-<%
-        } catch (Exception e) {
-            out.println("<p style='color:red;text-align:center;'>Error: " + e.getMessage() + "</p>");
-        } finally {
-            if (con != null) con.close();
-        }
+    rs = st.executeQuery("SELECT SUM(total_value) FROM dining_hall_consumption WHERE MONTH(issue_date)=MONTH(CURDATE()) AND YEAR(issue_date)=YEAR(CURDATE())");
+    if (rs.next()) monthCost = rs.getDouble(1); rs.close();
+
+    rs = st.executeQuery("SELECT SUM(total_value) FROM dining_hall_consumption");
+    if (rs.next()) totalCost = rs.getDouble(1); rs.close();
+
+    String from = request.getParameter("fromDate");
+    String to = request.getParameter("toDate");
+    StringBuilder daySql = new StringBuilder("SELECT DATE(issue_date) AS day, SUM(total_value) AS total FROM dining_hall_consumption ");
+    if (from != null && !from.isEmpty() && to != null && !to.isEmpty())
+        daySql.append("WHERE DATE(issue_date) BETWEEN '").append(from).append("' AND '").append(to).append("' ");
+    daySql.append("GROUP BY DATE(issue_date) ORDER BY DATE(issue_date)");
+    rs = st.executeQuery(daySql.toString());
+    while (rs.next()) { dayWise.put(rs.getString("day"), rs.getDouble("total")); }
+    rs.close();
+
+    rs = st.executeQuery("SELECT DATE(issue_date) AS day, session, SUM(total_value) AS total_cost FROM dining_hall_consumption GROUP BY DATE(issue_date), session ORDER BY DATE(issue_date)");
+    while (rs.next()) {
+        String d = rs.getString("day");
+        String mealSession = rs.getString("session");
+        double val = rs.getDouble("total_cost");
+        sessionWise.putIfAbsent(d, new LinkedHashMap<>());
+        sessionWise.get(d).put(mealSession, val);
     }
+    rs.close(); st.close();
+} catch (Exception e) {
+    out.println("<p style='color:red;text-align:center;'>Error: "+e.getMessage()+"</p>");
+} finally { if (con != null) con.close(); }
 %>
 
+<!-- Filter -->
+<div class="filter-box">
+    <form method="post">
+        <label>From:</label>
+        <input type="date" name="fromDate" value="<%= request.getParameter("fromDate") != null ? request.getParameter("fromDate") : "" %>">
+        <label>To:</label>
+        <input type="date" name="toDate" value="<%= request.getParameter("toDate") != null ? request.getParameter("toDate") : "" %>">
+        <button type="submit"><i class="fas fa-filter"></i> Filter</button>
+    </form>
+</div>
+
+<!-- Summary Cards -->
+<div class="summary">
+    <div class="card"><h3>Today</h3><p>₹ <%= String.format("%.2f", todayCost) %></p></div>
+    <div class="card"><h3>This Week</h3><p>₹ <%= String.format("%.2f", weekCost) %></p></div>
+    <div class="card"><h3>This Month</h3><p>₹ <%= String.format("%.2f", monthCost) %></p></div>
+    <div class="card"><h3>Total</h3><p>₹ <%= String.format("%.2f", totalCost) %></p></div>
+</div>
+
+<!-- Charts -->
+<div class="chart-container">
+    <div class="chart-box">
+        <h4 style="text-align:center;">📅 Day-wise Cost</h4>
+        <canvas id="dayChart"></canvas>
+    </div>
+    <div class="chart-box">
+        <h4 style="text-align:center;">🍽 Session-wise Cost (Latest Day)</h4>
+        <canvas id="sessionChart"></canvas>
+    </div>
+</div>
+
+<!-- Calendar -->
+<div class="calendar-container">
+    <h4 style="text-align:center;">🗓 Dining Hall Calendar (Session-wise & Total Cost)</h4>
+    <div id="diningCalendar"></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dayLabels = [<% for(String d : dayWise.keySet()) { %>"<%= d %>", <% } %>];
+    const dayData = [<% for(Double val : dayWise.values()) { %><%= val %>, <% } %>];
+    new Chart(document.getElementById('dayChart'), {
+        type: 'bar',
+        data: { labels: dayLabels, datasets: [{ label: '₹ Cost', data: dayData, backgroundColor: '#74b9ff' }] },
+        options: { plugins: { legend: { display: false } } }
+    });
+
+    <% String lastDay = sessionWise.isEmpty() ? "" : new ArrayList<>(sessionWise.keySet()).get(sessionWise.size()-1);
+       Map<String, Double> latest = lastDay.isEmpty() ? new HashMap<>() : sessionWise.get(lastDay); %>
+    const sessionLabels = [<% for(String s : latest.keySet()) { %>"<%= s %>", <% } %>];
+    const sessionData = [<% for(Double v : latest.values()) { %><%= v %>, <% } %>];
+    new Chart(document.getElementById('sessionChart'), {
+        type: 'doughnut',
+        data: { labels: sessionLabels, datasets: [{ data: sessionData, backgroundColor: ['#74b9ff','#ffa502','#2ed573'] }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+    });
+
+    var calendarEl = document.getElementById('diningCalendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        height: 700,
+        expandRows: true,
+        events: [
+        <% for (Map.Entry<String, Map<String, Double>> entry : sessionWise.entrySet()) {
+               String date = entry.getKey();
+               Map<String, Double> meals = entry.getValue();
+               double totalDay = meals.values().stream().mapToDouble(Double::doubleValue).sum();
+               for (Map.Entry<String, Double> m : meals.entrySet()) {
+                   String meal = m.getKey();
+                   double val = m.getValue();
+                   String cls = meal.equalsIgnoreCase("Lunch") ? "lunch" :
+                                meal.equalsIgnoreCase("Dinner") ? "dinner" : "breakfast";
+        %>
+        { title: "<%= meal %>: ₹<%= String.format("%.0f", val) %>", start: "<%= date %>", display: "block", classNames: ["<%= cls %>"] },
+        <% } %>
+        { title: "Total: ₹<%= String.format("%.0f", totalDay) %>", start: "<%= date %>", display: "block", classNames: ["total"] },
+        <% } %>
+        ],
+        eventDidMount: function(info) {
+            info.el.classList.add('fc-event-title', ...info.event.classNames);
+        }
+    });
+    calendar.render();
+});
+</script>
 </div>
 </body>
 </html>
