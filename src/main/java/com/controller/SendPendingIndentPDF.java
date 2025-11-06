@@ -50,11 +50,12 @@ public class SendPendingIndentPDF extends HttpServlet {
         java.util.List<Map<String, Object>> pendingIndents = new ArrayList<>();
 
         String sql = """
-                SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
-                FROM indent
-                WHERE TRIM(status)='Pending'
-                ORDER BY indent_id DESC
-                """;
+        	    SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
+        	    FROM indent
+        	    WHERE TRIM(status) = 'Pending'
+        	      AND TRIM(Indentnext) = 'PO'
+        	    ORDER BY indent_id DESC
+        	    """;
 
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);

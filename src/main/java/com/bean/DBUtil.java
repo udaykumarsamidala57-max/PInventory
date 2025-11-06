@@ -8,9 +8,9 @@ public class DBUtil {
 
 
 	
-	//private static final String URL = System.getenv("MYSQLHOST");
-	//private static final String USER = "root";
-	//private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
+	private static final String URL = System.getenv("MYSQLHOST");
+	private static final String USER = "root";
+	private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
 	
 	
 	
