@@ -141,6 +141,14 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             <td><input type="text" name="billingAddress"></td>
         </tr>
         <tr>
+            <td><strong>Service Charge:</strong></td>
+            <td><input type="number" step="0.01" name="serviceCharge" placeholder="Enter service charge"></td>
+        </tr>
+        <tr>
+            <td><strong>Service GST %:</strong></td>
+            <td><input type="number" step="0.01" name="serviceGst" placeholder="Enter GST on service charge"></td>
+        </tr>
+        <tr>
             <td><strong>Terms:</strong></td>
             <td><textarea name="termsConditions"></textarea></td>
         </tr>

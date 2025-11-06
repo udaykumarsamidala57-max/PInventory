@@ -108,6 +108,17 @@ public class PurchaseOrderServlet extends HttpServlet {
         String terms = request.getParameter("termsConditions");
         String general = request.getParameter("generalConditions");
 
+        // ✅ new fields for service charge
+        double serviceCharge = 0.0;
+        double serviceGstPercent = 0.0;
+
+        try {
+            String s1 = request.getParameter("serviceCharge");
+            String s2 = request.getParameter("serviceGst");
+            if (s1 != null && !s1.trim().isEmpty()) serviceCharge = Double.parseDouble(s1);
+            if (s2 != null && !s2.trim().isEmpty()) serviceGstPercent = Double.parseDouble(s2);
+        } catch (Exception ignored) {}
+
         if (qtys == null || qtys.length == 0) {
             throw new ServletException("PO Creation Error: No items found to process.");
         }
@@ -158,11 +169,17 @@ public class PurchaseOrderServlet extends HttpServlet {
                 totalAmount += (net + gstVal);
             }
 
+            // ✅ STEP 2A: Add Service charge and GST
+            double serviceGstVal = (serviceGstPercent / 100.0) * serviceCharge;
+            double serviceTotal = serviceCharge + serviceGstVal;
+            totalGst += serviceGstVal;
+            totalAmount += serviceTotal;
+
             // STEP 3: Insert into po_master
             String insertMaster = "INSERT INTO po_master(vendor_name,vendor_gstin,vendor_address,po_number,"
                     + "quotation_number,po_date,billing_address,total_gst,total_dis,total_amount,"
-                    + "amount_in_words,terms_conditions,general_conditions,po_status,Approval) "
-                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'Open','Pending')";
+                    + "amount_in_words,terms_conditions,general_conditions,po_status,Approval,Servicecharge) "
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,'Open','Pending',?)";
 
             int poId = 0;
             try (PreparedStatement psPO = con.prepareStatement(insertMaster, Statement.RETURN_GENERATED_KEYS)) {
@@ -179,6 +196,7 @@ public class PurchaseOrderServlet extends HttpServlet {
                 psPO.setString(11, "");
                 psPO.setString(12, terms);
                 psPO.setString(13, general);
+                psPO.setDouble(14, serviceTotal); // ✅ store total service charge including GST
                 psPO.executeUpdate();
                 try (ResultSet rsKey = psPO.getGeneratedKeys()) {
                     if (rsKey.next()) {
@@ -219,13 +237,12 @@ public class PurchaseOrderServlet extends HttpServlet {
             }
 
             // STEP 5: Update indent table
-            String[] selectedIdS = request.getParameterValues("indentId");
-            if (selectedIdS != null && selectedIdS.length > 0) {
-                String placeholders = String.join(",", Collections.nCopies(selectedIdS.length, "?"));
+            if (selectedIds != null && selectedIds.length > 0) {
+                String placeholders = String.join(",", Collections.nCopies(selectedIds.length, "?"));
                 String sql = "UPDATE indent SET POStatus='Raised' WHERE indent_id IN (" + placeholders + ")";
                 try (PreparedStatement psUpdate = con.prepareStatement(sql)) {
-                    for (int i = 0; i < selectedIdS.length; i++) {
-                        psUpdate.setString(i + 1, selectedIdS[i]);
+                    for (int i = 0; i < selectedIds.length; i++) {
+                        psUpdate.setString(i + 1, selectedIds[i]);
                     }
                     psUpdate.executeUpdate();
                 }

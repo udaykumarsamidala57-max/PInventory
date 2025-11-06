@@ -7,7 +7,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
-    String poNumber = request.getParameter("poNumber");
+String poNumber = request.getParameter("poNumber");
 %>
 <html>
 <head>
@@ -20,192 +20,23 @@ if (sess == null || sess.getAttribute("username") == null) {
             color: #1a1a1a;
             line-height: 1.6;
         }
-
-        header {
-            text-align: center;
-            border-bottom: 3px solid #003366;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-
-        header img {
-            height: 100px;
-        }
-
-        header h2 {
-            color: #003366;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 10px 0 0;
-        }
-
-        header h6 {
-            font-weight: normal;
-            margin: 2px 0;
-            color: #444;
-        }
-
-        .contact-line {
-            text-align: center;
-            font-size: 13px;
-            color: #555;
-            border-bottom: 1px dashed #aaa;
-            margin-bottom: 20px;
-            padding-bottom: 5px;
-        }
-
-        h3 {
-            text-align: center;
-            color: #003366;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-top: 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 14px;
-            background: white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px 10px;
-        }
-
-        thead {
-            background: linear-gradient(90deg, #003366, #00509e);
-            color: #fff;
-            text-align: center;
-            font-weight: 600;
-        }
-
-        td {
-            text-align: left;
-        }
-
-        .summary {
-            margin-top: 20px;
-            width: 40%;
-            float: right;
-            border: 1px solid #ccc;
-            background: #fff;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-        }
-
-        .summary td {
-            font-weight: 600;
-            border: none;
-            padding: 6px 10px;
-        }
-
-        .summary tr td:first-child {
-            text-align: right;
-            width: 70%;
-            color: #003366;
-        }
-
-        .section-title {
-            margin-top: 40px;
-            font-weight: bold;
-            color: #003366;
-            text-decoration: underline;
-        }
-
-        p {
-            text-align: justify;
-            margin: 5px 0 12px 0;
-        }
-
-        .signature {
-            clear: both;
-            text-align: right;
-            margin-top: 80px;
-            color: #000;
-        }
-
-        .signature p {
-            margin: 3px 0;
-        }
-
-        footer {
-            margin-top: 60px;
-            text-align: center;
-            font-size: 12px;
-            color: #555;
-            border-top: 1px solid #ccc;
-            padding-top: 8px;
-            font-style: italic;
-        }
-
-        footer strong {
-            color: #003366;
-        }
-
-        .print-btn {
-            display: block;
-            margin: 40px auto 20px;
-            padding: 10px 30px;
-            background: linear-gradient(90deg, #003366, #00509e);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            cursor: pointer;
-            transition: 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .print-btn:hover {
-            background: #001f4d;
-        }
-
-        /* -------- PRINT STYLING -------- */
-        @media print {
-            body {
-                background: white !important;
-                color: black !important;
-                margin: 10mm;
-            }
-
-            header, footer {
-                border-color: #000;
-            }
-
-            th, td {
-                border: 1px solid #000 !important;
-                color: #000 !important;
-                background: #fff !important;
-                box-shadow: none !important;
-            }
-
-            .summary, table {
-                box-shadow: none !important;
-                border-color: #000 !important;
-            }
-
-            .section-title {
-                color: #000 !important;
-            }
-
-            .print-btn {
-                display: none !important;
-            }
-
-            a, footer strong {
-                color: #000 !important;
-            }
-
-            footer {
-                position: fixed;
-                bottom: 0;
-                width: 100%;
-                border-top: 1px solid #000;
-            }
-        }
+        header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-bottom: 20px; }
+        header img { height: 100px; }
+        header h6 { font-weight: normal; margin: 2px 0; color: #444; }
+        .contact-line { text-align: center; font-size: 13px; color: #555; border-bottom: 1px dashed #aaa; margin-bottom: 20px; padding-bottom: 5px; }
+        h3 { text-align: center; color: #003366; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        th, td { border: 1px solid #ccc; padding: 8px 10px; }
+        thead { background: linear-gradient(90deg, #003366, #00509e); color: #fff; text-align: center; font-weight: 600; }
+        td { text-align: left; }
+        .summary { margin-top: 20px; width: 40%; float: right; border: 1px solid #ccc; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .summary td { font-weight: 600; border: none; padding: 6px 10px; }
+        .summary tr td:first-child { text-align: right; width: 70%; color: #003366; }
+        .section-title { margin-top: 40px; font-weight: bold; color: #003366; text-decoration: underline; }
+        .signature { clear: both; text-align: right; margin-top: 80px; color: #000; }
+        .print-btn { display: block; margin: 40px auto 20px; padding: 10px 30px; background: linear-gradient(90deg, #003366, #00509e); color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .print-btn:hover { background: #001f4d; }
+        @media print { .print-btn { display: none !important; } }
     </style>
 </head>
 <body>
@@ -216,12 +47,13 @@ if (poNumber != null) {
     Connection con = DBUtil.getConnection();
 
     PreparedStatement pst = con.prepareStatement(
-        "SELECT po_number, po_date, vendor_name, vendor_address,vendor_gstin, total_gst, total_dis, total_amount, terms_conditions, general_conditions " +
+        "SELECT po_number, po_date, vendor_name, vendor_address, vendor_gstin, total_gst, total_dis, total_amount, terms_conditions, general_conditions, Servicecharge " +
         "FROM po_master WHERE po_number=?");
     pst.setString(1, poNumber);
     ResultSet rsPO = pst.executeQuery();
 
     if (rsPO.next()) {
+        String serviceCharge = rsPO.getString("Servicecharge");
 %>
 
 <header>
@@ -230,27 +62,28 @@ if (poNumber != null) {
 </header>
 
 <div class="contact-line"></div>
-
 <h3>Purchase Order</h3>
 
 <table>
     <tr>
         <td><b>PO Number:</b> <%= rsPO.getString("po_number") %><br>
-        <b>Date:</b> <%= rsPO.getString("po_date") %><br></td>
-        
+        <b>Date:</b> <%= rsPO.getString("po_date") %></td>
     </tr>
-    <tr><td>
-        <b>Vendor Name:</b> <%= rsPO.getString("vendor_name") %><br>
-      
-         <b>GSTIN:</b><%= rsPO.getString("vendor_gstin") %><br>
-       <b>Vendor Address:</b> <%= rsPO.getString("vendor_address") %></td>
+    <tr>
+        <td>
+            <b>Vendor Name:</b> <%= rsPO.getString("vendor_name") %><br>
+            <b>GSTIN:</b> <%= rsPO.getString("vendor_gstin") %><br>
+            <b>Vendor Address:</b> <%= rsPO.getString("vendor_address") %>
+        </td>
     </tr>
 </table>
-<p>We are pleased to place our order the supply of below items on the terms and conditions mentioned below :</p>
+
+<p>We are pleased to place our order for the supply of the below items on the terms and conditions mentioned below:</p>
+
 <%
     PreparedStatement pstItems = con.prepareStatement(
-        "SELECT description, qty, rate, amount, discount_percent, discount_value, gst_percent, gst_value, net_amount " +
-        "FROM po_items WHERE po_no=?");
+        "SELECT i.description, i.qty, i.rate, i.amount, i.discount_percent, i.discount_value, i.gst_percent, i.gst_value, i.net_amount, m.UOM " +
+        "FROM po_items i LEFT JOIN item_master m ON i.item_id = m.Item_id WHERE i.po_no=?");
     pstItems.setString(1, poNumber);
     ResultSet rsItems = pstItems.executeQuery();
 %>
@@ -260,6 +93,7 @@ if (poNumber != null) {
         <tr>
             <th>Sl.No</th>
             <th>Item Description</th>
+            <th>UOM</th>
             <th>Qty</th>
             <th>Rate</th>
             <th>Amount</th>
@@ -278,6 +112,7 @@ if (poNumber != null) {
         <tr>
             <td style="text-align:center;"><%= sl++ %></td>
             <td><%= rsItems.getString("description") %></td>
+            <td style="text-align:center;"><%= rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-" %></td>
             <td style="text-align:right;"><%= rsItems.getInt("qty") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("rate") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("amount") %></td>
@@ -285,8 +120,7 @@ if (poNumber != null) {
             <td style="text-align:right;"><%= rsItems.getDouble("discount_value") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("gst_percent") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("gst_value") %></td>
-            <td style="text-align:right;"><%= String.format("%.0f", rsItems.getDouble("net_amount")) %></td>
-
+            <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("net_amount")) %></td>
         </tr>
     <%
         }
@@ -300,16 +134,18 @@ if (poNumber != null) {
         <td style="text-align:right;"><%= rsPO.getString("total_dis") %></td>
     </tr>
     <tr>
-    <%String s1=  rsPO.getString("total_gst");
-       Double d = Double.parseDouble(s1);%>
         <td>Total GST:</td>
-        <td style="text-align:right;"><%= String.format("%.0f", d) %></td>
+        <td style="text-align:right;"><%= rsPO.getString("total_gst") %></td>
     </tr>
+    <% if (serviceCharge != null && !serviceCharge.trim().equals("") && !serviceCharge.trim().equals("0")) { %>
     <tr>
-    <%String s2=  rsPO.getString("total_amount");
-       Double d2 = Double.parseDouble(s2);%>
-        <td>Grand Total:</td>
-        <td style="text-align:right;"><%= String.format("%.0f", d2) %></td>
+        <td>Service Charges:</td>
+        <td style="text-align:right;"><%= serviceCharge %></td>
+    </tr>
+    <% } %>
+    <tr>
+        <td><b>Grand Total:</b></td>
+        <td style="text-align:right;"><b><%= rsPO.getString("total_amount") %></b></td>
     </tr>
 </table>
 
