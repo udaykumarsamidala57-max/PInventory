@@ -153,4 +153,13 @@ public class IndentItemFull {
 
     public String getFapprovevdateStr() { return fapprovevdateStr; }
     public void setFapprovevdateStr(String fapprovevdateStr) { this.fapprovevdateStr = fapprovevdateStr; }
+    private String purchaseorIssue;
+
+    public String getPurchaseorIssue() {
+        return purchaseorIssue;
+    }
+
+    public void setPurchaseorIssue(String purchaseorIssue) {
+        this.purchaseorIssue = purchaseorIssue;
+    }
 }

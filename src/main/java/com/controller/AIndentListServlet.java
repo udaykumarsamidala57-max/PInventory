@@ -105,6 +105,7 @@ public class AIndentListServlet extends HttpServlet {
                     ind.setStatus(rs.getString("status"));
                     ind.setFapprovevdate(rs.getDate("Fapprovedate"));
                     ind.setIndentNext(rs.getString("Indentnext"));
+                    ind.setPurchaseorIssue(rs.getString("PurchaseorIssue")); // ✅ Added line
                     indentList.add(ind);
                 }
             }

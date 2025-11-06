@@ -321,6 +321,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                     <% } %>
                 </td>
                 <td><%= next %></td>
+                <td><%= ind.getPurchaseorIssue() %></td>
             </tr>
             <% } %>
             </tbody>
