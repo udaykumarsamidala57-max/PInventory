@@ -157,23 +157,34 @@ public class PurchaseOrderServlet extends HttpServlet {
                 }
             }
 
-            // STEP 2: Calculate totals
+            // STEP 2: Calculate totals (2-decimal precision)
             double totalGst = 0, totalDis = 0, totalAmount = 0;
             for (MergedItem m : merged.values()) {
                 double amount = m.qty * m.rate;
                 double discVal = (m.discPercent / 100.0) * amount;
                 double net = amount - discVal;
                 double gstVal = (m.gstPercent / 100.0) * net;
+
+                amount = roundToTwo(amount);
+                discVal = roundToTwo(discVal);
+                gstVal = roundToTwo(gstVal);
+                net = roundToTwo(net);
+
                 totalGst += gstVal;
                 totalDis += discVal;
                 totalAmount += (net + gstVal);
             }
 
-            // ✅ STEP 2A: Add Service charge and GST
+            // ✅ STEP 2A: Add Service charge and GST (2-decimal)
             double serviceGstVal = (serviceGstPercent / 100.0) * serviceCharge;
-            double serviceTotal = serviceCharge + serviceGstVal;
+            serviceGstVal = roundToTwo(serviceGstVal);
+            double serviceTotal = roundToTwo(serviceCharge + serviceGstVal);
+
             totalGst += serviceGstVal;
             totalAmount += serviceTotal;
+
+            // ✅ STEP 2B: Round only totalAmount to nearest rupee
+            totalAmount = Math.round(totalAmount);
 
             // STEP 3: Insert into po_master
             String insertMaster = "INSERT INTO po_master(vendor_name,vendor_gstin,vendor_address,po_number,"
@@ -190,13 +201,13 @@ public class PurchaseOrderServlet extends HttpServlet {
                 psPO.setString(5, quotationNo);
                 psPO.setString(6, poDate);
                 psPO.setString(7, billingAddress);
-                psPO.setDouble(8, totalGst);
-                psPO.setDouble(9, totalDis);
-                psPO.setDouble(10, totalAmount);
+                psPO.setDouble(8, roundToTwo(totalGst));
+                psPO.setDouble(9, roundToTwo(totalDis));
+                psPO.setDouble(10, totalAmount); // ✅ Rounded to rupee
                 psPO.setString(11, "");
                 psPO.setString(12, terms);
                 psPO.setString(13, general);
-                psPO.setDouble(14, serviceTotal); // ✅ store total service charge including GST
+                psPO.setDouble(14, serviceTotal); // ✅ total service charge incl GST
                 psPO.executeUpdate();
                 try (ResultSet rsKey = psPO.getGeneratedKeys()) {
                     if (rsKey.next()) {
@@ -212,11 +223,11 @@ public class PurchaseOrderServlet extends HttpServlet {
             try (PreparedStatement psItems = con.prepareStatement(insertItems)) {
                 int slno = 1;
                 for (MergedItem m : merged.values()) {
-                    double amount = m.qty * m.rate;
-                    double discVal = (m.discPercent / 100.0) * amount;
-                    double net = amount - discVal;
-                    double gstVal = (m.gstPercent / 100.0) * net;
-                    double netAmt = net + gstVal;
+                    double amount = roundToTwo(m.qty * m.rate);
+                    double discVal = roundToTwo((m.discPercent / 100.0) * amount);
+                    double net = roundToTwo(amount - discVal);
+                    double gstVal = roundToTwo((m.gstPercent / 100.0) * net);
+                    double netAmt = roundToTwo(net + gstVal);
 
                     psItems.setInt(1, poId);
                     psItems.setString(2, poNo);
@@ -247,6 +258,7 @@ public class PurchaseOrderServlet extends HttpServlet {
                     psUpdate.executeUpdate();
                 }
             }
+
             con.commit(); // ✅ Transaction success
             response.sendRedirect("POListServlet");
 
@@ -260,5 +272,10 @@ public class PurchaseOrderServlet extends HttpServlet {
                 if (con != null) con.setAutoCommit(true);
             } catch (SQLException ignored) {}
         }
+    }
+
+    // ✅ Helper for rounding to 2 decimals
+    private double roundToTwo(double val) {
+        return Math.round(val * 100.0) / 100.0;
     }
 }

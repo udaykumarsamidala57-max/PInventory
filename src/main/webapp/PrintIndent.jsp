@@ -147,9 +147,11 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
 
         PreparedStatement pst = con.prepareStatement(
             "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +
-            "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty " +
+            "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty, " +
+            "m.UOM " +
             "FROM indent i " +
             "LEFT JOIN stock s ON i.item_id = s.item_id " +
+            "LEFT JOIN item_master m ON i.item_id = m.Item_id " +
             "WHERE i.indent_no = ?"
         );
         pst.setString(1, indentNumber);
@@ -186,6 +188,7 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
         <tr>
             <th>S.No</th>
             <th>Item Name</th>
+            <th>UOM</th>
             <th>Balance Qty</th>
             <th>Req. Quantity</th>
             <th>Status</th>
@@ -202,6 +205,7 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
         <tr>
             <td><%= count++ %></td>
             <td><%= rs.getString("item_name") %></td>
+            <td><%= rs.getString("UOM") != null ? rs.getString("UOM") : "-" %></td>
             <td><%= rs.getBigDecimal("balance_qty") %></td>
             <td><%= rs.getString("qty") %></td>
             <td><%= (indentNext != null && indentNext.equalsIgnoreCase("PO")) ? "Approved" : (itemStatus != null ? itemStatus : "Pending") %></td>
