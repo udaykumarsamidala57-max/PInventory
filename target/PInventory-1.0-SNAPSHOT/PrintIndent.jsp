@@ -141,36 +141,37 @@
 
 <%
 if (indentNumber != null && !indentNumber.trim().isEmpty()) {
-    Class.forName("com.mysql.cj.jdbc.Driver");
-    Connection con = DBUtil.getConnection();
+    try {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        Connection con = DBUtil.getConnection();
 
-    PreparedStatement pst = con.prepareStatement(
-        "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +
-        "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty " +
-        "FROM indent i " +
-        "LEFT JOIN stock s ON i.item_id = s.item_id " +
-        "WHERE i.indent_no = ?"
-    );
-    pst.setString(1, indentNumber);
-    ResultSet rs = pst.executeQuery();
+        PreparedStatement pst = con.prepareStatement(
+            "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +
+            "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty " +
+            "FROM indent i " +
+            "LEFT JOIN stock s ON i.item_id = s.item_id " +
+            "WHERE i.indent_no = ?"
+        );
+        pst.setString(1, indentNumber);
+        ResultSet rs = pst.executeQuery();
 
-    boolean hasRecords = false;
-    String indentDate = "", department = "", requestedBy = "", purpose = "", indentNext = "";
-    boolean allApproved = true;
-    int count = 1;
+        boolean hasRecords = false;
+        String indentDate = "", department = "", requestedBy = "", purpose = "", indentNext = "";
+        boolean allApproved = true;
+        int count = 1;
 
-    if (rs.next()) {
-        hasRecords = true;
-        indentDate = rs.getString("indent_date");
-        department = rs.getString("department");
-        requestedBy = rs.getString("requested_by");
-        purpose = rs.getString("purpose");
-        indentNext = rs.getString("Indentnext");
+        if (rs.next()) {
+            hasRecords = true;
+            indentDate = rs.getString("indent_date");
+            department = rs.getString("department");
+            requestedBy = rs.getString("requested_by");
+            purpose = rs.getString("purpose");
+            indentNext = rs.getString("Indentnext");
 
-        // If indentnext = PO, treat as approved
-        if (indentNext != null && indentNext.trim().equalsIgnoreCase("PO")) {
-            allApproved = true;
-        }
+            // Treat as approved if Indentnext = 'PO'
+            if (indentNext != null && indentNext.trim().equalsIgnoreCase("PO")) {
+                allApproved = true;
+            }
 %>
 
     <div class="indent-info">
@@ -191,22 +192,22 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
         </tr>
 
 <%
-        do {
-            String itemStatus = rs.getString("status");
-            if ((itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim()))
-                    && (indentNext == null || !indentNext.equalsIgnoreCase("PO"))) {
-                allApproved = false;
-            }
+            do {
+                String itemStatus = rs.getString("status");
+                if ((itemStatus == null || !"Approved".equalsIgnoreCase(itemStatus.trim()))
+                        && (indentNext == null || !indentNext.equalsIgnoreCase("PO"))) {
+                    allApproved = false;
+                }
 %>
         <tr>
             <td><%= count++ %></td>
             <td><%= rs.getString("item_name") %></td>
             <td><%= rs.getBigDecimal("balance_qty") %></td>
             <td><%= rs.getString("qty") %></td>
-            <td><%= (indentNext != null && indentNext.equalsIgnoreCase("PO")) ? "Approved" : itemStatus %></td>
+            <td><%= (indentNext != null && indentNext.equalsIgnoreCase("PO")) ? "Approved" : (itemStatus != null ? itemStatus : "Pending") %></td>
         </tr>
 <%
-        } while (rs.next());
+            } while (rs.next());
 %>
     </table>
 
@@ -228,13 +229,20 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
     <button class="print-btn" onclick="window.print()">Print Indent</button>
 
 <%
-    } else {
-        out.println("<p style='text-align:center;color:red;font-size:16px;'>No Indent Found!</p>");
-    }
+        } else {
+            out.println("<p style='text-align:center;color:red;font-size:16px;'>No Indent Found!</p>");
+        }
 
-    rs.close();
-    pst.close();
-    con.close();
+        rs.close();
+        pst.close();
+        con.close();
+
+    } catch (Exception e) {
+        out.println("<p style='color:red;text-align:center;'>Error: " + e.getMessage() + "</p>");
+        e.printStackTrace();
+    }
+} else {
+    out.println("<p style='text-align:center;color:red;font-size:16px;'>Invalid Indent Number!</p>");
 }
 %>
 

@@ -2,13 +2,15 @@
 <%@ page import="com.bean.DBUtil" %>
 
 <%
-HttpSession sess = request.getSession(false);
-if (sess == null || sess.getAttribute("username") == null) {
-    response.sendRedirect("login.jsp");
-    return;
-}
-String poNumber = request.getParameter("poNumber");
+    HttpSession sess = request.getSession(false);
+    if (sess == null || sess.getAttribute("username") == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+
+    String poNumber = request.getParameter("poNumber");
 %>
+<!DOCTYPE html>
 <html>
 <head>
     <title>Purchase Order - Sandur Residential School</title>
@@ -20,21 +22,98 @@ String poNumber = request.getParameter("poNumber");
             color: #1a1a1a;
             line-height: 1.6;
         }
-        header { text-align: center; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-bottom: 20px; }
+        header {
+            text-align: center;
+            border-bottom: 3px solid #003366;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
         header img { height: 100px; }
         header h6 { font-weight: normal; margin: 2px 0; color: #444; }
-        .contact-line { text-align: center; font-size: 13px; color: #555; border-bottom: 1px dashed #aaa; margin-bottom: 20px; padding-bottom: 5px; }
-        h3 { text-align: center; color: #003366; text-transform: uppercase; letter-spacing: 1px; margin-top: 0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+        .contact-line {
+            text-align: center;
+            font-size: 13px;
+            color: #555;
+            border-bottom: 1px dashed #aaa;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+        }
+        h3 {
+            text-align: center;
+            color: #003366;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 14px;
+            background: white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        }
         th, td { border: 1px solid #ccc; padding: 8px 10px; }
-        thead { background: linear-gradient(90deg, #003366, #00509e); color: #fff; text-align: center; font-weight: 600; }
+        thead {
+            background: linear-gradient(90deg, #003366, #00509e);
+            color: #fff;
+            text-align: center;
+            font-weight: 600;
+        }
         td { text-align: left; }
-        .summary { margin-top: 20px; width: 40%; float: right; border: 1px solid #ccc; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+        .summary {
+            margin-top: 20px;
+            width: 40%;
+            float: right;
+            border: 1px solid #ccc;
+            background: #fff;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+        }
         .summary td { font-weight: 600; border: none; padding: 6px 10px; }
-        .summary tr td:first-child { text-align: right; width: 70%; color: #003366; }
-        .section-title { margin-top: 40px; font-weight: bold; color: #003366; text-decoration: underline; }
-        .signature { clear: both; text-align: right; margin-top: 80px; color: #000; }
-        .print-btn { display: block; margin: 40px auto 20px; padding: 10px 30px; background: linear-gradient(90deg, #003366, #00509e); color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .summary tr td:first-child {
+            text-align: right;
+            width: 70%;
+            color: #003366;
+        }
+        .section-title {
+            margin-top: 40px;
+            font-weight: bold;
+            color: #003366;
+            text-decoration: underline;
+        }
+        .signature {
+            clear: both;
+            text-align: right;
+            margin-top: 80px;
+            color: #000;
+            position: relative;
+        }
+        .stamp {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 6px 14px;
+            border: 2px solid #28a745;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 20px;
+            text-transform: uppercase;
+            border-radius: 6px;
+            transform: rotate(-8deg);
+            box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
+            background: rgba(40,167,69,0.1);
+        }
+        .print-btn {
+            display: block;
+            margin: 40px auto 20px;
+            padding: 10px 30px;
+            background: linear-gradient(90deg, #003366, #00509e);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
         .print-btn:hover { background: #001f4d; }
         @media print { .print-btn { display: none !important; } }
     </style>
@@ -42,18 +121,28 @@ String poNumber = request.getParameter("poNumber");
 <body>
 
 <%
-if (poNumber != null) {
-    Class.forName("com.mysql.cj.jdbc.Driver");
-    Connection con = DBUtil.getConnection();
+if (poNumber != null && !poNumber.trim().isEmpty()) {
+    try (Connection con = DBUtil.getConnection()) {
 
-    PreparedStatement pst = con.prepareStatement(
-        "SELECT po_number, po_date, vendor_name, vendor_address, vendor_gstin, total_gst, total_dis, total_amount, terms_conditions, general_conditions, Servicecharge " +
-        "FROM po_master WHERE po_number=?");
-    pst.setString(1, poNumber);
-    ResultSet rsPO = pst.executeQuery();
+        // 🔹 Fetch PO Master details
+        PreparedStatement pst = con.prepareStatement(
+            "SELECT po_number, PO_date AS po_date, vendor_name, vendor_address, vendor_gstin, " +
+            "total_gst, total_dis, total_amount, terms_conditions, general_conditions, " +
+            "Servicecharge, Approval " +
+            "FROM po_master WHERE po_number=?"
+        );
+        pst.setString(1, poNumber);
+        ResultSet rsPO = pst.executeQuery();
 
-    if (rsPO.next()) {
-        String serviceCharge = rsPO.getString("Servicecharge");
+        if (rsPO.next()) {
+            String serviceCharge = rsPO.getString("Servicecharge");
+            String approvalStatus = rsPO.getString("Approval");
+
+            // 🔹 Update indent table safely (only those linked to PO)
+            PreparedStatement updateIndent = con.prepareStatement(
+                "UPDATE indent SET status = 'Approved' WHERE Indentnext = 'PO' AND status <> 'Approved'"
+            );
+            updateIndent.executeUpdate();
 %>
 
 <header>
@@ -81,9 +170,12 @@ if (poNumber != null) {
 <p>We are pleased to place our order for the supply of the below items on the terms and conditions mentioned below:</p>
 
 <%
+    // 🔹 Fetch PO items
     PreparedStatement pstItems = con.prepareStatement(
-        "SELECT i.description, i.qty, i.rate, i.amount, i.discount_percent, i.discount_value, i.gst_percent, i.gst_value, i.net_amount, m.UOM " +
-        "FROM po_items i LEFT JOIN item_master m ON i.item_id = m.Item_id WHERE i.po_no=?");
+        "SELECT i.description, i.qty, i.rate, i.amount, i.discount_percent, i.discount_value, " +
+        "i.gst_percent, i.gst_value, i.net_amount, m.UOM " +
+        "FROM po_items i LEFT JOIN item_master m ON i.item_id = m.Item_id WHERE i.po_no=?"
+    );
     pstItems.setString(1, poNumber);
     ResultSet rsItems = pstItems.executeQuery();
 %>
@@ -124,6 +216,8 @@ if (poNumber != null) {
         </tr>
     <%
         }
+        rsItems.close();
+        pstItems.close();
     %>
     </tbody>
 </table>
@@ -160,18 +254,22 @@ if (poNumber != null) {
 <div class="signature">
     <p><b>For Sandur Residential School</b></p>
     <br><br><br>
-    <p><b>Authorised Signatory</b></p>
+    <p><b>Authorized Signatory</b></p>
+
+    <% if ("Approved".equalsIgnoreCase(approvalStatus)) { %>
+        <p class="stamp">Approved</p>
+    <% } %>
 </div>
 
-<footer>
-    Developed by <strong>School IT Department</strong>
-</footer>
+
 
 <%
-    } else {
-        out.println("<p style='color:red;text-align:center;'>No Purchase Order Found!</p>");
+        } else {
+            out.println("<p style='color:red;text-align:center;'>No Purchase Order Found!</p>");
+        }
+    } catch (Exception e) {
+        out.println("<p style='color:red;'>Error: " + e.getMessage() + "</p>");
     }
-    con.close();
 }
 %>
 
