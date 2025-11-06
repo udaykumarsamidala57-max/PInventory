@@ -115,6 +115,36 @@ h1 {
 }
 .indent-header .indent-no { font-weight: 700; font-size: 18px; }
 
+/* Color Tags */
+/* Corner tags for Purchase / Issue */
+.purchase-tag, .issue-tag {
+    position: absolute;
+    top: 12px;
+    left: -36px;
+    transform: rotate(-45deg);
+    width: 120px;
+    text-align: center;
+    font-weight: 600;
+    color: white;
+    font-size: 12px;
+    padding: 4px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    letter-spacing: 0.5px;
+}
+
+.purchase-tag {
+    background: linear-gradient(90deg, #ff4d4d, #b30000);
+}
+
+.issue-tag {
+    background: linear-gradient(90deg, #00cc66, #006633);
+}
+
+/* Make sure card position is relative for absolute tags */
+.indent-card {
+    position: relative;
+}
+
 /* Badges */
 .pending-badge {
     background: #ffcc00;
@@ -233,11 +263,18 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                 Double qty = i.getQty();
                 return bal != null && qty != null && bal >= qty;
             });
+            boolean hasPurchase = items.stream().anyMatch(i -> "Purchase".equalsIgnoreCase(i.getPurchaseorIssue()));
+            boolean hasIssue = items.stream().anyMatch(i -> "Issue".equalsIgnoreCase(i.getPurchaseorIssue()));
     %>
 
     <div class="indent-card">
         <div class="indent-header">
             <div class="indent-no">
+                <% if (hasPurchase) { %>
+                    <span class="purchase-tag" title="Purchase"></span>
+                <% } else if (hasIssue) { %>
+                    <span class="issue-tag" title="Issue"></span>
+                <% } %>
                 #<%= indentNo %>
                 <% if (hasPendingNext) { %>
                     <span class="pending-badge">🟡 No Action</span>
@@ -252,12 +289,13 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
             <div><i class="fa-solid fa-circle-check"></i> <%= first.getStatus() %></div>
         </div>
 
+
         <!-- Table (unchanged) -->
         <table class="inner-table">
             <thead>
                 <tr>
                     <th>ID</th><th>Item</th><th>Avl.Qty</th><th>Req.Qty</th><th>UOM</th><th>Purpose</th>
-                    <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th><th>Next</th>
+                    <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th><th>Next</th><th>Purchase/Issue</th>
                 </tr>
             </thead>
             <tbody>
@@ -301,23 +339,35 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                     <% if ("Global".equalsIgnoreCase(role) && "Approved".equalsIgnoreCase(I_Status) && !"Approved".equalsIgnoreCase(status)) { %>
                         <button class="btn-orange" type="button" onclick="toggleDropdown(<%= ind.getId() %>)"><i class="fa-solid fa-arrow-right"></i> Final Approve</button>
                         <div class="dropdown-container" id="dropdown-<%= ind.getId() %>">
-                            <form action="AIndentListServlet" method="post"
-                                  data-qty="<%= ind.getQty() %>"
-                                  data-balance="<%= ind.getBalanceQty() %>"
-                                  data-pending="<%= pending %>"
-                                  onsubmit="return validateApprovalForm(this)">
-                                <input type="hidden" name="id" value="<%= ind.getId() %>">
-                                <input type="hidden" name="action" value="approve">
-                                <select name="indentnext" required>
-                                    <option value="">--Select Next Step--</option>
-                                    <option value="Issue">Issue</option>
-                                    <option value="PO">PO</option>
-                                    <option value="Cancelled">Cancel</option>
-                                    <option value="Management Note">Management Note</option>
-                                </select>
-                                <button class="btn-blue" type="submit">Confirm</button>
-                            </form>
-                        </div>
+    <form action="AIndentListServlet" method="post"
+          data-qty="<%= ind.getQty() %>"
+          data-balance="<%= ind.getBalanceQty() %>"
+          data-pending="<%= pending %>"
+          onsubmit="return validateApprovalForm(this)">
+        <input type="hidden" name="id" value="<%= ind.getId() %>">
+        <input type="hidden" name="action" value="approve">
+
+        <select name="indentnext" required>
+            <option value="">--Select Next Step--</option>
+            <% 
+                String poiType = ind.getPurchaseorIssue();
+                if ("Issue".equalsIgnoreCase(poiType)) { 
+            %>
+                <option value="Issue">Issue</option>
+            <% } %>
+            <% 
+                if ("Purchase".equalsIgnoreCase(poiType)) { 
+            %>
+                <option value="PO">PO</option>
+            <% } %>
+            <option value="Cancelled">Cancel</option>
+            <option value="Management Note">Management Note</option>
+        </select>
+
+        <button class="btn-blue" type="submit">Confirm</button>
+    </form>
+</div>
+
                     <% } %>
                 </td>
                 <td><%= next %></td>
