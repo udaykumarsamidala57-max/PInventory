@@ -298,83 +298,95 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                     <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th><th>Next</th><th>Purchase/Issue</th>
                 </tr>
             </thead>
-            <tbody>
-            <%
-                for (IndentItemFull ind : items) {
-                    String status = ind.getStatus() != null ? ind.getStatus().trim() : "";
-                    String I_Status = ind.getIstatus() != null ? ind.getIstatus().trim() : "";
-                    String next = ind.getIndentNext() != null ? ind.getIndentNext().trim() : "";
-                    Integer itemId = ind.getItemId();
-                    double pending = (itemId != null && pendingMap.get(itemId) != null) ? pendingMap.get(itemId) : 0.0;
-                    boolean editable = (next == null || next.isEmpty());
-            %>
-            <tr class="<%= "Cancelled".equalsIgnoreCase(status) ? "cancelled-row" : "" %>">
-                <td><%= ind.getId() %></td>
-                <td><%= ind.getItemName() %></td>
-                <td><%= ind.getBalanceQty() %></td>
-                <td><%= ind.getQty() %></td>
-                <td><%= ind.getUom() %></td>
-                <td><%= ind.getPurpose() %></td>
-                <td>
-                    <% if (("Incharge".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(role)) && !"Approved".equalsIgnoreCase(I_Status)) { %>
-                        <form action="AIndentListServlet" method="post">
-                            <input type="hidden" name="id" value="<%= ind.getId() %>">
-                            <input type="hidden" name="action" value="Iapprove">
-                            <button class="btn-green" type="submit"><i class="fa-solid fa-check"></i> Approve</button>
-                        </form>
-                    <% } %>
-                </td>
-                <td><%= I_Status %></td>
-                <td><%= ind.getApprovedBy() %></td>
-                <td><%= status %></td>
-                <td>
-                    <% if (editable) { %>
-                        <button class="btn-edit" type="button" onclick="openEditModal(<%= ind.getId() %>, '<%= ind.getQty() %>', '<%= ind.getPurpose().replace("'", "\\'") %>')"><i class="fa-solid fa-pen"></i> Edit</button>
-                        <form action="AIndentListServlet" method="post" style="display:inline;">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<%= ind.getId() %>">
-                            <button type="submit" class="btn-delete"><i class="fa-solid fa-trash"></i> Reject</button>
-                        </form>
-                    <% } %>
-                    <% if ("Global".equalsIgnoreCase(role) && "Approved".equalsIgnoreCase(I_Status) && !"Approved".equalsIgnoreCase(status)) { %>
-                        <button class="btn-orange" type="button" onclick="toggleDropdown(<%= ind.getId() %>)"><i class="fa-solid fa-arrow-right"></i> Final Approve</button>
-                        <div class="dropdown-container" id="dropdown-<%= ind.getId() %>">
-    <form action="AIndentListServlet" method="post"
-          data-qty="<%= ind.getQty() %>"
-          data-balance="<%= ind.getBalanceQty() %>"
-          data-pending="<%= pending %>"
-          onsubmit="return validateApprovalForm(this)">
-        <input type="hidden" name="id" value="<%= ind.getId() %>">
-        <input type="hidden" name="action" value="approve">
+           <tbody>
+<%
+    for (IndentItemFull ind : items) {
+        String status = ind.getStatus() != null ? ind.getStatus().trim() : "";
+        String I_Status = ind.getIstatus() != null ? ind.getIstatus().trim() : "";
+        String next = ind.getIndentNext() != null ? ind.getIndentNext().trim() : "";
+        Integer itemId = ind.getItemId();
+        double pending = (itemId != null && pendingMap.get(itemId) != null) ? pendingMap.get(itemId) : 0.0;
+        boolean editable = (next == null || next.isEmpty());
+%>
+<tr class="<%= "Cancelled".equalsIgnoreCase(status) ? "cancelled-row" : "" %>">
+    <td><%= ind.getId() %></td>
+    <td><%= ind.getItemName() %></td>
+    <td><%= ind.getBalanceQty() %></td>
+    <td><%= ind.getQty() %></td>
+    <td><%= ind.getUom() %></td>
+    <td><%= ind.getPurpose() %></td>
 
-        <select name="indentnext" required>
-            <option value="">--Select Next Step--</option>
-            <% 
-                String poiType = ind.getPurchaseorIssue();
-                if ("Issue".equalsIgnoreCase(poiType)) { 
-            %>
-                <option value="Issue">Issue</option>
-            <% } %>
-            <% 
-                if ("Purchase".equalsIgnoreCase(poiType)) { 
-            %>
-                <option value="PO">PO</option>
-            <% } %>
-            <option value="Cancelled">Cancel</option>
-            <option value="Management Note">Management Note</option>
-        </select>
+    <!-- Incharge/Admin/Global can approve (except when already approved) -->
+    <td>
+        <% if (("Incharge".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(role)) && !"Approved".equalsIgnoreCase(I_Status)) { %>
+            <form action="AIndentListServlet" method="post">
+                <input type="hidden" name="id" value="<%= ind.getId() %>">
+                <input type="hidden" name="action" value="Iapprove">
+                <button class="btn-green" type="submit"><i class="fa-solid fa-check"></i> Approve</button>
+            </form>
+        <% } %>
+    </td>
 
-        <button class="btn-blue" type="submit">Confirm</button>
-    </form>
-</div>
+    <td><%= I_Status %></td>
+    <td><%= ind.getApprovedBy() %></td>
+    <td><%= status %></td>
 
-                    <% } %>
-                </td>
-                <td><%= next %></td>
-                <td><%= ind.getPurchaseorIssue() %></td>
-            </tr>
-            <% } %>
-            </tbody>
+    <!-- Actions column -->
+    <td>
+        <% 
+            // ✅ Remove Edit option for Global users
+            if (editable && !"Global".equalsIgnoreCase(role)) { 
+        %>
+            <button class="btn-edit" type="button" 
+                    onclick="openEditModal(<%= ind.getId() %>, '<%= ind.getQty() %>', '<%= ind.getPurpose().replace("'", "\\'") %>')">
+                <i class="fa-solid fa-pen"></i> Edit
+            </button>
+        <% } %>
+
+       
+
+        <% if ("Global".equalsIgnoreCase(role) && "Approved".equalsIgnoreCase(I_Status) && !"Approved".equalsIgnoreCase(status)) { %>
+            <button class="btn-orange" type="button" onclick="toggleDropdown(<%= ind.getId() %>)">
+                <i class="fa-solid fa-arrow-right"></i> Final Approve
+            </button>
+            <div class="dropdown-container" id="dropdown-<%= ind.getId() %>">
+                <form action="AIndentListServlet" method="post"
+                      data-qty="<%= ind.getQty() %>"
+                      data-balance="<%= ind.getBalanceQty() %>"
+                      data-pending="<%= pending %>"
+                      onsubmit="return validateApprovalForm(this)">
+                    <input type="hidden" name="id" value="<%= ind.getId() %>">
+                    <input type="hidden" name="action" value="approve">
+
+                    <select name="indentnext" required>
+                        <option value="">--Select Next Step--</option>
+                        <% 
+                            String poiType = ind.getPurchaseorIssue();
+                            if ("Issue".equalsIgnoreCase(poiType)) { 
+                        %>
+                            <option value="Issue">Issue</option>
+                        <% } %>
+                        <% 
+                            if ("Purchase".equalsIgnoreCase(poiType)) { 
+                        %>
+                            <option value="PO">PO</option>
+                        <% } %>
+                        <option value="Cancelled">Cancel</option>
+                        <option value="Management Note">Management Note</option>
+                    </select>
+
+                    <button class="btn-blue" type="submit">Confirm</button>
+                </form>
+            </div>
+        <% } %>
+    </td>
+
+    <td><%= next %></td>
+    <td><%= ind.getPurchaseorIssue() %></td>
+</tr>
+<% } %>
+</tbody>
+
         </table>
     </div>
     <% } } else { %>
