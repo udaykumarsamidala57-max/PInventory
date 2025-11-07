@@ -187,7 +187,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps2.setString(6, remarks);
                     ps2.setDouble(7, unitPrice);
                     ps2.setDouble(8, totalValue);
-                    ps2.setString(10, issueDate);
+                    ps2.setString(9, issueDate);
                     ps2.executeUpdate();
 
                     try (ResultSet rs = ps2.getGeneratedKeys()) {
@@ -221,7 +221,7 @@ public class DiningHallServlet extends HttpServlet {
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("error.jsp");
+            response.sendRedirect("Home");
         }
     }
 }
