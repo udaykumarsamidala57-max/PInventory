@@ -16,7 +16,6 @@ public class DBUtil {
 	
 	
 	
-
 	
     static {
         try {

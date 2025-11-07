@@ -303,7 +303,14 @@
 
     <div class="report-summary">
         <div class="report-card"><h3>Total Departments</h3><p><%= totalRows %></p></div>
-        <div class="report-card"><h3>Total Issue Value (₹)</h3><p><%= String.format("%.2f", grandTotal) %></p></div>
+        <div class="report-card"><h3>Total Issue Value (₹)</h3>
+    <%
+    java.text.NumberFormat nf = java.text.NumberFormat.getNumberInstance(new java.util.Locale("en", "IN"));
+    nf.setMinimumFractionDigits(2);
+    nf.setMaximumFractionDigits(2);
+%>
+<p>₹<%= nf.format(grandTotal) %></p>
+</div>
     </div>
 
     <div class="report-table">

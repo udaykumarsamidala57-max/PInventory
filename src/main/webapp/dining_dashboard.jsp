@@ -151,6 +151,7 @@ h2 {
 }
 
 /* Calendar Event Styling */
+/* ===== FullCalendar Event Styling ===== */
 .fc-event {
     border: none !important;
     background: transparent !important;
@@ -159,22 +160,77 @@ h2 {
     font-weight: 600;
     text-align: center;
     line-height: 1.4em;
+    cursor: pointer;
 }
+
+/* Generic Event Title Box */
 .fc-event-title {
     display: block;
-    border-radius: 6px;
-    padding: 4px 6px;
-    margin: 3px 0;
+    border-radius: 10px;
+    padding: auto;
+    margin: 4px 0;
     font-size: 14px;
     font-weight: 600;
-    color: black;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     text-align: center;
+    letter-spacing: 0.3px;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(3px);
+    opacity: 0.95;
 }
-.fc-event-title.breakfast { background: #74b9ff; }
-.fc-event-title.lunch { background: #ffa502; }
-.fc-event-title.dinner { background: #2ed573; }
-.fc-event-title.total { background: #6c5ce7; font-weight: 700; font-size: 12px; }
+
+/* Hover animation */
+.fc-event-title:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 1;
+}
+
+/* ==== Color themes ==== */
+.fc-event-title.breakfast {
+    background: linear-gradient(135deg, #6ec6ff, #0984e3) !important;
+    border: 1px solid rgba(9,132,227,0.4) !important;
+}
+
+.fc-event-title.lunch {
+    background: linear-gradient(135deg, #ffb347, #ff7f50) !important;
+    border: 1px solid rgba(255,127,80,0.5)!important;
+}
+
+.fc-event-title.dinner {
+    background: linear-gradient(135deg, #00b894, #00cec9) !important;
+    border: 1px solid rgba(0,206,201,0.4)!important;
+}
+
+.fc-event-title.total {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe)!important;
+    border: 1px solid rgba(108,92,231,0.4)!important;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+}
+
+/* Small glowing border pulse effect */
+@keyframes pulseGlow {
+    0% { box-shadow: 0 0 6px rgba(255,255,255,0.2)!important; }
+    50% { box-shadow: 0 0 12px rgba(255,255,255,0.45)!important; }
+    100% { box-shadow: 0 0 6px rgba(255,255,255,0.2)!important; }
+}
+.fc-event-title.total:hover {
+    animation: pulseGlow 1.5s infinite;
+}
+
+/* Responsive fine-tune for smaller screens */
+@media (max-width: 768px) {
+    .fc-event-title {
+        font-size: 12px;
+        padding: 4px 6px;
+        margin: 2px 0;
+    }
+}
+
 
 /* Filter */
 .filter-box {
