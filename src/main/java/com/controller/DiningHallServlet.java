@@ -129,7 +129,7 @@ public class DiningHallServlet extends HttpServlet {
                 double unitPrice = 0.0;
                 double currentBalance = 0.0;
 
-                // ✅ Get latest price
+                // ✅ Get latest price from PO
                 try (PreparedStatement psPO = con.prepareStatement(
                         "SELECT net_amount, qty FROM po_items WHERE item_id=? AND qty>0 ORDER BY po_id DESC LIMIT 1")) {
                     psPO.setInt(1, itemId);
@@ -142,6 +142,7 @@ public class DiningHallServlet extends HttpServlet {
                     }
                 }
 
+                // ✅ If not found, take from stock
                 if (unitPrice == 0) {
                     try (PreparedStatement ps2 = con.prepareStatement(
                             "SELECT COALESCE(balance_qty,0), COALESCE(last_price,0) FROM stock WHERE item_id=?")) {
@@ -195,7 +196,7 @@ public class DiningHallServlet extends HttpServlet {
                     }
                 }
 
-                // ✅ Ledger
+                // ✅ Ledger entry
                 try (PreparedStatement ps3 = con.prepareStatement(
                         "INSERT INTO stock_ledger (item_id,trans_type,trans_id,trans_date,qty,running_balance,remarks) VALUES (?,?,?,CURRENT_DATE(),?,?,?)")) {
                     ps3.setInt(1, itemId);
@@ -207,11 +208,13 @@ public class DiningHallServlet extends HttpServlet {
                     ps3.executeUpdate();
                 }
 
-                // ✅ Update stock
+                // ✅ Update stock table properly
                 try (PreparedStatement psUpdate = con.prepareStatement(
-                        "UPDATE stock SET balance_qty=? WHERE item_id=?")) {
-                    psUpdate.setDouble(1, newBalance);
-                    psUpdate.setInt(2, itemId);
+                        "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ?, last_price = ? WHERE item_id = ?")) {
+                    psUpdate.setDouble(1, qtyIssued);
+                    psUpdate.setDouble(2, qtyIssued);
+                    psUpdate.setDouble(3, unitPrice);
+                    psUpdate.setInt(4, itemId);
                     psUpdate.executeUpdate();
                 }
             }

@@ -115,35 +115,52 @@ h1 {
 }
 .indent-header .indent-no { font-weight: 700; font-size: 18px; }
 
-/* Color Tags */
-/* Corner tags for Purchase / Issue */
-.purchase-tag, .issue-tag {
-    position: absolute;
-    top: 12px;
-    left: -36px;
-    transform: rotate(-45deg);
-    width: 120px;
-    text-align: center;
-    font-weight: 600;
-    color: white;
-    font-size: 12px;
-    padding: 4px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    letter-spacing: 0.5px;
+/* Card container */
+.indent-card {
+    position: relative;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.indent-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
+/* Purchase / Issue labels */
+.purchase-tag,
+.issue-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    background: #888; /* fallback */
+}
+
+/* Simple solid colors for distinction */
 .purchase-tag {
-    background: linear-gradient(90deg, #ff4d4d, #b30000);
+    background-color: #d9534f; /* soft red tone */
 }
 
 .issue-tag {
-    background: linear-gradient(90deg, #00cc66, #006633);
+    background-color: #5cb85c; /* soft green tone */
 }
 
-/* Make sure card position is relative for absolute tags */
-.indent-card {
-    position: relative;
+/* Icon styling */
+.purchase-tag i,
+.issue-tag i {
+    font-size: 14px;
+    color: #fff;
 }
+
 
 /* Badges */
 .pending-badge {
@@ -271,9 +288,9 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
         <div class="indent-header">
             <div class="indent-no">
                 <% if (hasPurchase) { %>
-                    <span class="purchase-tag" title="Purchase"></span>
+                    <div class="purchase-tag"><i class="fa-solid fa-cart-shopping"></i> Purchase</div>
                 <% } else if (hasIssue) { %>
-                    <span class="issue-tag" title="Issue"></span>
+                   <div class="issue-tag"><i class="fa-solid fa-box-open"></i> Issue</div>
                 <% } %>
                 #<%= indentNo %>
                 <% if (hasPendingNext) { %>
@@ -295,7 +312,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
             <thead>
                 <tr>
                     <th>ID</th><th>Item</th><th>Avl.Qty</th><th>Req.Qty</th><th>UOM</th><th>Purpose</th>
-                    <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th><th>Next</th><th>Purchase/Issue</th>
+                    <th>I/C Act</th><th>L1</th><th>L1 Approved By</th><th>L2</th><th>Actions</th>
                 </tr>
             </thead>
            <tbody>
@@ -381,8 +398,8 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
         <% } %>
     </td>
 
-    <td><%= next %></td>
-    <td><%= ind.getPurchaseorIssue() %></td>
+    <td style="display:none;"><%= next %></td>
+    <td style="display:none;"><%= ind.getPurchaseorIssue() %></td>
 </tr>
 <% } %>
 </tbody>

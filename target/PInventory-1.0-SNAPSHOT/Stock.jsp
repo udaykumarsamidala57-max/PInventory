@@ -94,11 +94,11 @@ if (sess == null || sess.getAttribute("username") == null) {
 <body>
 <jsp:include page="header.jsp" />
 
-<h2>📊 Stock Report</h2>
+
 
 <div class="main-content">
     <div class="card">
-
+<h1>📊 Stock Report</h1>
         <div class="filter-box">
             <label>Category:</label>
             <select id="categoryFilter">
