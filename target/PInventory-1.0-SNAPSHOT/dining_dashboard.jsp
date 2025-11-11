@@ -1,7 +1,7 @@
 <%@ page import="java.sql.*, java.util.*, java.text.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
- <%
+<%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
@@ -110,133 +110,56 @@ h2 {
     align-items: center;
 }
 
-/* FullCalendar Table Improvements */
+/* FullCalendar Styling */
 .fc {
     border-radius: 20px;
     overflow: hidden;
     width: 100%;
     background-color: #fdfefe;
-    padding: 15px; /* ✅ New padding around table */
+    padding: 15px;
 }
 .fc .fc-scrollgrid {
     border-radius: 16px;
     box-shadow: 0 3px 12px rgba(0,0,0,0.08);
 }
-.fc-daygrid-day-frame {
-    padding: 6px;
-}
-.fc-toolbar {
-    justify-content: center !important;
-}
-.fc-toolbar-title {
-    font-size: 22px !important;
-    color: #2d3436 !important;
-}
+.fc-toolbar { justify-content: center !important; }
+.fc-toolbar-title { font-size: 22px !important; color: #2d3436 !important; }
 .fc-button {
     border-radius: 8px !important;
     background: #007bff !important;
     border: none !important;
-    transition: 0.3s;
 }
 .fc-button:hover { background: #0056b3 !important; }
-.fc-daygrid-day-number {
-    font-size: 18px !important;
-    font-weight: 700;
-    text-align: center !important;
-    color: #2d3436;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 25px;
-}
 
-/* Calendar Event Styling */
-/* ===== FullCalendar Event Styling ===== */
-.fc-event {
-    border: none !important;
-    background: transparent !important;
-    color: #2d3436 !important;
-    font-size: 13px !important;
-    font-weight: 600;
-    text-align: center;
-    line-height: 1.4em;
-    cursor: pointer;
-}
-
-/* Generic Event Title Box */
+/* Calendar Events */
 .fc-event-title {
     display: block;
     border-radius: 10px;
-    padding: auto;
     margin: 4px 0;
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: #fff;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     text-align: center;
-    letter-spacing: 0.3px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     transition: all 0.25s ease;
-    backdrop-filter: blur(3px);
-    opacity: 0.95;
 }
-
-/* Hover animation */
-.fc-event-title:hover {
-    transform: scale(1.05);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    opacity: 1;
-}
-
-/* ==== Color themes ==== */
 .fc-event-title.breakfast {
-    background: linear-gradient(135deg, #6ec6ff, #0984e3) !important;
-    border: 1px solid rgba(9,132,227,0.4) !important;
+    background: linear-gradient(135deg, #6ec6ff, #0984e3);
 }
-
 .fc-event-title.lunch {
-    background: linear-gradient(135deg, #ffb347, #ff7f50) !important;
-    border: 1px solid rgba(255,127,80,0.5)!important;
+    background: linear-gradient(135deg, #ffb347, #ff7f50);
 }
-
 .fc-event-title.dinner {
-    background: linear-gradient(135deg, #00b894, #00cec9) !important;
-    border: 1px solid rgba(0,206,201,0.4)!important;
+    background: linear-gradient(135deg, #00b894, #00cec9);
 }
-
 .fc-event-title.total {
-    background: linear-gradient(135deg, #6c5ce7, #a29bfe)!important;
-    border: 1px solid rgba(108,92,231,0.4)!important;
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
     font-weight: 700;
     font-size: 13px;
-    letter-spacing: 0.5px;
 }
-
-/* Small glowing border pulse effect */
-@keyframes pulseGlow {
-    0% { box-shadow: 0 0 6px rgba(255,255,255,0.2)!important; }
-    50% { box-shadow: 0 0 12px rgba(255,255,255,0.45)!important; }
-    100% { box-shadow: 0 0 6px rgba(255,255,255,0.2)!important; }
-}
-.fc-event-title.total:hover {
-    animation: pulseGlow 1.5s infinite;
-}
-
-/* Responsive fine-tune for smaller screens */
-@media (max-width: 768px) {
-    .fc-event-title {
-        font-size: 12px;
-        padding: 4px 6px;
-        margin: 2px 0;
-    }
-}
-
 
 /* Filter */
-.filter-box {
-    text-align: center;
-    margin-bottom: 30px;
-}
+.filter-box { text-align: center; margin-bottom: 30px; }
 input[type="date"], button {
     padding: 10px 15px;
     border-radius: 8px;
@@ -252,11 +175,9 @@ button {
 }
 button:hover { background: #0056b3; }
 
-/* Responsive */
 @media (max-width: 992px) {
     .content { margin-left: 0; width: 100%; padding-top: 80px; }
     .chart-box { width: 90%; }
-    .calendar-container { width: 95%; padding: 25px; }
 }
 </style>
 </head>
@@ -299,13 +220,18 @@ try {
     while (rs.next()) { dayWise.put(rs.getString("day"), rs.getDouble("total")); }
     rs.close();
 
+    // 🥣 Session-wise cost (merge Morning Drink with Breakfast)
     rs = st.executeQuery("SELECT DATE(issue_date) AS day, session, SUM(total_value) AS total_cost FROM dining_hall_consumption GROUP BY DATE(issue_date), session ORDER BY DATE(issue_date)");
     while (rs.next()) {
         String d = rs.getString("day");
         String mealSession = rs.getString("session");
         double val = rs.getDouble("total_cost");
+
+        // Merge logic: Combine Morning Drink + Breakfast into one
+        if (mealSession.equalsIgnoreCase("Morning Drink")) mealSession = "Break Fast";
+
         sessionWise.putIfAbsent(d, new LinkedHashMap<>());
-        sessionWise.get(d).put(mealSession, val);
+        sessionWise.get(d).merge(mealSession, val, Double::sum);
     }
     rs.close(); st.close();
 } catch (Exception e) {

@@ -129,7 +129,31 @@ public class DiningHallServlet extends HttpServlet {
                 double unitPrice = 0.0;
                 double currentBalance = 0.0;
 
-                // ✅ Get latest price from PO
+                // ✅ Get current stock & price
+                try (PreparedStatement psStock = con.prepareStatement(
+                        "SELECT COALESCE(balance_qty,0), COALESCE(last_price,0) FROM stock WHERE item_id=?")) {
+                    psStock.setInt(1, itemId);
+                    try (ResultSet rs = psStock.executeQuery()) {
+                        if (rs.next()) {
+                            currentBalance = rs.getDouble(1);
+                            unitPrice = rs.getDouble(2);
+                        }
+                    }
+                }
+
+                // 🚫 If no stock, skip this item (do not insert anywhere)
+                if (currentBalance <= 0) {
+                    System.out.println("Skipping item ID " + itemId + " due to zero or negative stock.");
+                    continue;
+                }
+
+                // 🚫 If requested quantity exceeds available stock, skip
+                if (qtyIssued > currentBalance) {
+                    System.out.println("Skipping item ID " + itemId + " because issued qty (" + qtyIssued + ") exceeds stock (" + currentBalance + ").");
+                    continue;
+                }
+
+                // ✅ Get latest PO price if available
                 try (PreparedStatement psPO = con.prepareStatement(
                         "SELECT net_amount, qty FROM po_items WHERE item_id=? AND qty>0 ORDER BY po_id DESC LIMIT 1")) {
                     psPO.setInt(1, itemId);
@@ -138,20 +162,6 @@ public class DiningHallServlet extends HttpServlet {
                             double netAmt = rs.getDouble("net_amount");
                             double qty = rs.getDouble("qty");
                             if (qty > 0) unitPrice = netAmt / qty;
-                        }
-                    }
-                }
-
-                // ✅ If not found, take from stock
-                if (unitPrice == 0) {
-                    try (PreparedStatement ps2 = con.prepareStatement(
-                            "SELECT COALESCE(balance_qty,0), COALESCE(last_price,0) FROM stock WHERE item_id=?")) {
-                        ps2.setInt(1, itemId);
-                        try (ResultSet rs = ps2.executeQuery()) {
-                            if (rs.next()) {
-                                currentBalance = rs.getDouble(1);
-                                unitPrice = rs.getDouble(2);
-                            }
                         }
                     }
                 }
@@ -208,7 +218,7 @@ public class DiningHallServlet extends HttpServlet {
                     ps3.executeUpdate();
                 }
 
-                // ✅ Update stock table properly
+                // ✅ Update stock
                 try (PreparedStatement psUpdate = con.prepareStatement(
                         "UPDATE stock SET total_issued = total_issued + ?, balance_qty = balance_qty - ?, last_price = ? WHERE item_id = ?")) {
                     psUpdate.setDouble(1, qtyIssued);

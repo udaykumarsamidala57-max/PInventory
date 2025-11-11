@@ -21,6 +21,8 @@
 <style>
 select { width: 180px; max-height: 180px; overflow-y: auto; }
 table.main-table select { padding: 4px; font-size: 14px; }
+.stock-unavailable { color: red; font-weight: 600; }
+.qty[disabled] { background-color: #f8d7da; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -81,7 +83,6 @@ document.addEventListener("DOMContentLoaded", () => {
     items.push({ id: '${i.id}', name: '${i.name}', UOM: '${i.UOM}', category: '${i.category}', subcategory: '${i.subcategory}', stock: '${i.stock}' });
   </c:forEach>
 
-  // ✅ Add Item button
   document.getElementById("addItemBtn").addEventListener("click", () => addRow());
 
   function addRow() {
@@ -91,7 +92,8 @@ document.addEventListener("DOMContentLoaded", () => {
       <td><select class="cat"><option value="">-- Select Category --</option></select></td>
       <td><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
       <td><select class="item" name="item_id"><option value="">-- Select Item --</option></select></td>
-      <td class="uom"></td><td class="stock"></td>
+      <td class="uom"></td>
+      <td class="stock"></td>
       <td><input type="number" name="qty_issued" class="qty" min="0" step="any" required></td>
       <td><input type="text" name="remarks" class="remarks" required></td>
       <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>`;
@@ -102,36 +104,91 @@ document.addEventListener("DOMContentLoaded", () => {
     const itemSel = tr.querySelector(".item");
     const uomCell = tr.querySelector(".uom");
     const stockCell = tr.querySelector(".stock");
+    const qtyInput = tr.querySelector(".qty");
 
-    // Fill categories
     const uniqueCats = [...new Set(categories.map(c => c.name))];
     catSel.innerHTML = '<option value="">-- Select Category --</option>';
     uniqueCats.forEach(n => catSel.add(new Option(n, n)));
 
     catSel.onchange = () => {
       subSel.innerHTML = '<option value="">-- Select SubCategory --</option>';
-      subcategories.filter(s => s.categoryName === catSel.value).forEach(s => subSel.add(new Option(s.name, s.name)));
+      subcategories.filter(s => s.categoryName === catSel.value)
+        .forEach(s => subSel.add(new Option(s.name, s.name)));
       itemSel.innerHTML = '<option value="">-- Select Item --</option>';
+      uomCell.textContent = '';
+      stockCell.textContent = '';
+      qtyInput.value = '';
+      qtyInput.disabled = false;
+      stockCell.classList.remove("stock-unavailable");
     };
 
     subSel.onchange = () => {
       itemSel.innerHTML = '<option value="">-- Select Item --</option>';
-      items.filter(i => i.category === catSel.value && i.subcategory === subSel.value).forEach(i => {
-        const opt = new Option(i.name, i.id);
-        opt.dataset.uom = i.UOM;
-        opt.dataset.stock = i.stock;
-        itemSel.add(opt);
-      });
+      items.filter(i => i.category === catSel.value && i.subcategory === subSel.value)
+        .forEach(i => {
+          const opt = new Option(i.name, i.id);
+          opt.dataset.uom = i.UOM;
+          opt.dataset.stock = i.stock;
+          itemSel.add(opt);
+        });
+      uomCell.textContent = '';
+      stockCell.textContent = '';
+      qtyInput.value = '';
+      qtyInput.disabled = false;
+      stockCell.classList.remove("stock-unavailable");
     };
 
     itemSel.onchange = () => {
       const opt = itemSel.options[itemSel.selectedIndex];
+      const stock = parseFloat(opt?.dataset.stock || '0');
       uomCell.textContent = opt?.dataset.uom || '';
-      stockCell.textContent = opt?.dataset.stock || '0';
+      stockCell.textContent = stock > 0 ? stock : "Stock Not Available";
+
+      if (stock <= 0) {
+        stockCell.classList.add("stock-unavailable");
+        qtyInput.disabled = true;
+        qtyInput.value = '';
+        alert("⚠️ Stock not available for this item! Please remove or choose another item.");
+      } else {
+        stockCell.classList.remove("stock-unavailable");
+        qtyInput.disabled = false;
+      }
     };
+
+    // Check if entered quantity exceeds available stock
+    qtyInput.addEventListener("input", () => {
+      const opt = itemSel.options[itemSel.selectedIndex];
+      const stock = parseFloat(opt?.dataset.stock || '0');
+      const qty = parseFloat(qtyInput.value || '0');
+
+      if (qty > stock) {
+        alert("⚠️ Quantity issued cannot be greater than available stock!");
+        qtyInput.value = '';
+      }
+    });
 
     tr.querySelector(".removeBtn").onclick = () => tr.remove();
   }
+
+  // Prevent form submission if any invalid stock or qty
+  document.getElementById("diningForm").addEventListener("submit", (e) => {
+    let invalid = false;
+    document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
+      const stockText = tr.querySelector(".stock").textContent.trim();
+      const qtyInput = tr.querySelector(".qty");
+      const stock = parseFloat(stockText) || 0;
+      const qty = parseFloat(qtyInput.value) || 0;
+
+      if (stock <= 0 || qty > stock) {
+        invalid = true;
+      }
+    });
+
+    if (invalid) {
+      alert("⚠️ Some items have invalid stock or quantity values. Please fix or remove them before submitting.");
+      e.preventDefault();
+    }
+  });
 });
 </script>
 </body>
