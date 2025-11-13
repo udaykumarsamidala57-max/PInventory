@@ -62,6 +62,19 @@
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         padding-top: 80px;
         transition: all 0.3s ease;
+        border-right: 5px solid transparent;
+    }
+
+    /* Decorative gradient strip */
+    .sidebar::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        right: -6px;
+        width: 6px;
+        height: 100%;
+        background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        border-radius: 10px 0 0 10px;
     }
 
     .sidebar h2 {
@@ -219,15 +232,15 @@
     
     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
     <div class="dropdown">
-    <button class="dropdown-btn">
-        <i class="fas fa-utensils text-warning"></i> Dining Hall 
-        <i class="fas fa-caret-down"></i>
-    </button>
-    <div class="dropdown-content">
-        <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
-        <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+        <button class="dropdown-btn">
+            <i class="fas fa-utensils text-warning"></i> Dining Hall 
+            <i class="fas fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+            <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
+            <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+        </div>
     </div>
-</div>
     <% } %>
 
     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>

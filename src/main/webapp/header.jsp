@@ -11,7 +11,8 @@
     String depts = (String) sesso.getAttribute("department");
 %>
 
-<!-- HEADER -->
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>SRS System - Indent List</title>
@@ -19,23 +20,30 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
-    body {
+    /* Scoped styling only for this JSP using .srs-page */
+    .srs-page body {
         font-family: 'Poppins', sans-serif;
         margin: 0;
         background: #f4f6f9;
     }
 
-    header {
+    .srs-page header {
         background: #ffffff;
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 10px 25px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1000;
     }
 
-    .user-info {
+    .srs-page .user-info {
         display: inline-block;
         background: #03489C;
         color: #fff !important;
@@ -46,12 +54,12 @@
         transition: all 0.3s ease;
     }
 
-    .user-info:hover {
+    .srs-page .user-info:hover {
         background: #0056b3;
     }
 
     /* SIDEBAR */
-    .sidebar {
+    .srs-page .sidebar {
         width: 250px;
         height: 100vh;
         background: #ffffff;
@@ -62,9 +70,23 @@
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
         padding-top: 80px;
         transition: all 0.3s ease;
+        border-right: 5px solid transparent;
+        z-index: 999;
     }
 
-    .sidebar h2 {
+    .srs-page .sidebar::after {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 250px;
+        width: 6px;
+        height: 100vh;
+        background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        border-radius: 3px;
+        z-index: 1200 !important;
+    }
+
+    .srs-page .sidebar h2 {
         font-size: 20px;
         color: #333;
         text-align: center;
@@ -72,8 +94,8 @@
         font-weight: 600;
     }
 
-    .sidebar a,
-    .sidebar .dropdown-btn {
+    .srs-page .sidebar a,
+    .srs-page .sidebar .dropdown-btn {
         display: flex;
         align-items: center;
         gap: 10px;
@@ -90,29 +112,29 @@
         transition: all 0.3s ease;
     }
 
-    .sidebar a i,
-    .sidebar .dropdown-btn i {
+    .srs-page .sidebar a i,
+    .srs-page .sidebar .dropdown-btn i {
         min-width: 20px;
         text-align: center;
         font-size: 18px;
     }
 
-    .sidebar a:hover,
-    .sidebar .dropdown-btn:hover {
+    .srs-page .sidebar a:hover,
+    .srs-page .sidebar .dropdown-btn:hover {
         background: #007bff;
         color: white;
         border-radius: 6px;
         transform: translateX(5px);
     }
 
-    .sidebar .dropdown-content {
+    .srs-page .sidebar .dropdown-content {
         display: none;
         padding-left: 20px;
         border-left: 2px solid #007bff;
         background: #f9f9f9;
     }
 
-    .sidebar .dropdown-content a {
+    .srs-page .sidebar .dropdown-content a {
         display: block;
         padding: 8px 15px;
         color: #333;
@@ -122,29 +144,35 @@
         transition: all 0.3s ease;
     }
 
-    .sidebar .dropdown-content a:hover {
+    .srs-page .sidebar .dropdown-content a:hover {
         background: #03489C;
         color: white;
         transform: translateX(5px);
     }
 
-    .sidebar .dropdown.active .dropdown-content {
+    .srs-page .sidebar .dropdown.active .dropdown-content {
         display: block;
     }
 
-    .sidebar .fa-caret-down {
+    .srs-page .sidebar .fa-caret-down {
         margin-left: auto;
     }
 
-    /* Icon colors */
-    .text-primary { color:#007bff; }
-    .text-success { color:#28a745; }
-    .text-danger { color:#dc3545; }
-    .text-warning { color:#ffc107; }
-    .text-info { color:#17a2b8; }
-    .text-purple { color:#6f42c1; }
+    .srs-page .text-primary { color:#007bff; }
+    .srs-page .text-success { color:#28a745; }
+    .srs-page .text-danger { color:#dc3545; }
+    .srs-page .text-warning { color:#ffc107; }
+    .srs-page .text-info { color:#17a2b8; }
+    .srs-page .text-purple { color:#6f42c1; }
+
+    .srs-page main {
+        margin-left: 260px;
+        padding: 100px 30px;
+    }
     </style>
 </head>
+
+<body class="srs-page">
 
 <header>
     <img src="logo.png" alt="Logo" style="max-height:60px;">
@@ -219,15 +247,15 @@
     
     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
     <div class="dropdown">
-    <button class="dropdown-btn">
-        <i class="fas fa-utensils text-warning"></i> Dining Hall 
-        <i class="fas fa-caret-down"></i>
-    </button>
-    <div class="dropdown-content">
-        <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
-        <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+        <button class="dropdown-btn">
+            <i class="fas fa-utensils text-warning"></i> Dining Hall 
+            <i class="fas fa-caret-down"></i>
+        </button>
+        <div class="dropdown-content">
+            <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
+            <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+        </div>
     </div>
-</div>
     <% } %>
 
     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
@@ -254,13 +282,20 @@
 </div>
 
 <script>
-document.querySelectorAll(".dropdown-btn").forEach(btn => {
-  btn.addEventListener("click", function() {
-    const allDropdowns = document.querySelectorAll(".dropdown");
-    allDropdowns.forEach(d => {
-      if (d !== this.parentElement) d.classList.remove("active");
+(() => {
+  const sidebar = document.querySelector(".srs-page .sidebar");
+  if (!sidebar) return;
+  sidebar.querySelectorAll(".dropdown-btn").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const allDropdowns = sidebar.querySelectorAll(".dropdown");
+      allDropdowns.forEach(d => {
+        if (d !== this.parentElement) d.classList.remove("active");
+      });
+      this.parentElement.classList.toggle("active");
     });
-    this.parentElement.classList.toggle("active");
   });
-});
+})();
 </script>
+
+</body>
+</html>
