@@ -31,7 +31,7 @@
             text-align: center;
         }
 
-        /* Main Table */
+        /* --- Main Table --- */
         table.main-table {
             width: 98%;
             margin: 0 auto 40px auto;
@@ -40,6 +40,8 @@
             background: #fff;
             box-shadow: 0 3px 10px rgba(0,0,0,0.1);
             border-radius: 6px;
+            overflow-x: auto;
+            display: block;
         }
         table.main-table thead {
             background: linear-gradient(135deg, #ff8c00, #8e2de2);
@@ -52,12 +54,13 @@
             padding: 8px;
             text-align: center;
             font-size: 15px;
+            white-space: nowrap;
         }
 
         table.main-table tr:nth-child(even) td { background-color: #f2f6fa; }
         table.main-table tr:hover td { background-color: #eaf1fc; }
 
-        /* Expandable Items Block */
+        /* --- Expandable Items Block --- */
         .items-block {
             width: 94%;
             margin: 12px auto;
@@ -85,7 +88,7 @@
             padding-bottom: 6px;
         }
 
-        /* Items Table */
+        /* --- Items Table --- */
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -110,7 +113,7 @@
         .items-table tr:nth-child(even) { background: #eef5ff; }
         .items-table tr:hover { background: #e4efff; }
 
-        /* Action Buttons */
+        /* --- Action Buttons --- */
         .action-btn {
             margin: 3px 0;
             padding: 6px 10px;
@@ -149,6 +152,46 @@
             padding: 12px;
             font-weight: bold;
             background: #fff5f5;
+        }
+
+        /* --- RESPONSIVE DESIGN --- */
+        @media (max-width: 1024px) {
+            table.main-table th, table.main-table td {
+                font-size: 14px;
+                padding: 6px;
+            }
+            .action-btn {
+                padding: 5px 8px;
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            table.main-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+            .items-block {
+                width: 98%;
+                padding: 8px;
+            }
+            .items-table th, .items-table td {
+                font-size: 12px;
+                padding: 5px;
+            }
+            .action-btn {
+                display: block;
+                width: 100%;
+                margin: 4px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 { font-size: 18px; margin: 10px 0; }
+            .action-btn { font-size: 11px; padding: 6px; }
+            .items-block h4 { font-size: 13px; }
+            table.main-table td, table.main-table th { font-size: 12px; }
         }
     </style>
 
