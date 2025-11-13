@@ -274,7 +274,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-box-open text-warning"></i> Issue <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IssueApprove"><i class="fas fa-thumbs-up text-success"></i> Approve Issue</a>
+      
       <a href="IssueServlet"><i class="fas fa-dolly text-info"></i> Issue Items</a>
       <a href="Issuereport.jsp"><i class="fas fa-file-invoice text-danger"></i> Issue Report</a>
     </div>
@@ -284,17 +284,29 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-shopping-cart text-danger"></i> Purchase / PO <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
+    <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
+        <a href="POListServlet"><i class="fas fa-check-double text-success"></i> Approve PO</a>
+        <a href="ListPO.jsp"><i class="fas fa-clipboard-list text-warning"></i> PO Report</a>
+      <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
         <a href="IndentPO"><i class="fas fa-file-signature text-primary"></i> Create Purchase Order</a>
         <a href="GRNServlet"><i class="fas fa-clipboard-check text-success"></i> GRN Entry</a>
         <a href="VendorMaster.jsp"><i class="fas fa-user-tie text-info"></i> Vendor Master</a>
       <% } %>
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
-        <a href="POListServlet"><i class="fas fa-check-double text-success"></i> Approve PO</a>
-        <a href="ListPO.jsp"><i class="fas fa-clipboard-list text-warning"></i> PO Report</a>
-      <% } %>
+      
     </div>
   </div>
+  
+  
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
+      <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+    </div>
+  </div>
+  <% } %>
 
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-chart-line text-purple"></i> Reports <i class="fas fa-caret-down"></i></button>
@@ -307,6 +319,10 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
+  
+
+
+
   <% if ("Global".equalsIgnoreCase(roles)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-cog text-secondary"></i> Masters <i class="fas fa-caret-down"></i></button>
@@ -317,15 +333,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
   <% } %>
 
-  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
-  <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
-    <div class="dropdown-content">
-      <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
-      <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
-    </div>
-  </div>
-  <% } %>
+
 
   <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
