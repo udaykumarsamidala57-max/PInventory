@@ -8,145 +8,232 @@ if (sess == null || sess.getAttribute("username") == null) {
 }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Issue Stock</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- ✅ Makes responsive -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="CSS/Form.css">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            overflow-x: hidden; /* ✅ prevents unwanted horizontal scroll */
-        }
-        .low-stock { color: red; font-weight: bold; }
-        .ok-stock { color: green; font-weight: 600; }
+<meta charset="UTF-8">
+<title>Issue Stock</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/Form.css">
+<style>
+/* ---------- GLOBAL ---------- */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    background: #f7f9fc;
+}
 
-        .main-content {
-            padding: 0; /* ✅ removed left-side gap */
-            margin: 0;  /* ✅ ensures full width usage */
-            width: 100%;
-        }
+.low-stock { 
+    color: red; 
+    font-weight: bold; 
+}
 
-        .card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            width: 100%;
-        }
+.ok-stock { 
+    color: green; 
+    font-weight: 600; 
+}
 
-        h2, h3 {
-            text-align: center;
-            color: #333;
-            margin: 10px 0;
-        }
+.main-content {
+    width: 95%;
+    max-width: 2000px;
+    margin: 30px auto;
+    padding: 10px;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-        }
+.card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow-x: auto;
+}
 
-        th, td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-            vertical-align: middle;
-            word-wrap: break-word;
-        }
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
 
-        th {
-            background: #4e73df;
-            color: #fff;
-            font-weight: 600;
-        }
+h2, h3 {
+    text-align: center;
+    color: #333;
+    margin: 10px 0;
+}
 
-        input[type="number"],
-        input[type="text"] {
-            padding: 5px;
-            text-align: right;
-            width: 80px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
+/* ---------- TABLE ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px;
+    table-layout: auto;
+}
 
-        .btn-green {
-            background: #1cc88a;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .btn-green:hover {
-            background: #17a673;
-        }
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
 
-        .message {
-            text-align: center;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+th {
+    background: #4e73df;
+    color: #fff;
+    font-weight: 600;
+}
 
-        /* ✅ Responsive layout */
-        @media screen and (max-width: 1024px) {
-            table {
-                font-size: 13px;
-            }
-            th, td {
-                padding: 8px;
-            }
-        }
+input[type="number"],
+input[type="text"] {
+    padding: 6px;
+    text-align: right;
+    width: 90px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+}
 
-        @media screen and (max-width: 768px) {
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            thead tr {
-                display: none;
-            }
-            tr {
-                margin-bottom: 15px;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                background: #fff;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            td {
-                text-align: right;
-                padding: 8px 10px;
-                position: relative;
-                border: none;
-                border-bottom: 1px solid #eee;
-            }
-            td:before {
-                content: attr(data-label);
-                position: absolute;
-                left: 10px;
-                width: 50%;
-                font-weight: 600;
-                text-align: left;
-                color: #333;
-            }
-            input[type="number"],
-            input[type="text"] {
-                width: 100%;
-                text-align: right;
-            }
-            .btn-green {
-                width: 100%;
-                padding: 8px;
-            }
-        }
-    </style>
+.btn-green {
+    background: #1cc88a;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.btn-green:hover {
+    background: #17a673;
+}
+
+.message {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* ---------- RESPONSIVE DESIGN ---------- */
+
+/* Medium screens (tablets, small laptops) */
+@media (max-width: 1024px) {
+    .main-content {
+        width: 96%;
+        margin: 20px auto;
+    }
+
+    table {
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    input[type="number"], input[type="text"] {
+        width: 80px;
+    }
+}
+
+/* Small screens (mobiles) */
+@media (max-width: 768px) {
+    .card {
+        padding: 15px;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead tr {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 10px;
+    }
+
+    td {
+        text-align: right;
+        padding: 8px 10px;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 50%;
+        font-weight: 600;
+        text-align: left;
+        color: #333;
+        white-space: nowrap;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        width: 100%;
+        text-align: right;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .btn-green {
+        width: 100%;
+        padding: 10px;
+        font-size: 15px;
+        margin-top: 5px;
+    }
+
+    .message {
+        font-size: 14px;
+    }
+}
+
+/* Extra small devices (below 480px) */
+@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+
+    h2, h3 {
+        font-size: 16px;
+    }
+
+    td {
+        font-size: 13px;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        font-size: 13px;
+        padding: 5px;
+    }
+
+    .btn-green {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+</style>
 </head>
 <body>
+
 <%@ include file="header.jsp" %>
 
 <div class="main-content">
