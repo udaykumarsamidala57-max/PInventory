@@ -16,7 +16,6 @@ if (sess == null || sess.getAttribute("username") == null) {
     String toDate = request.getParameter("toDate");
     String category = request.getParameter("category");
 
-    // Default date = today
     if (toDate == null || toDate.trim().isEmpty()) {
         java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
         toDate = sdf.format(new java.util.Date());
@@ -25,12 +24,10 @@ if (sess == null || sess.getAttribute("username") == null) {
     try {
         conn = DBUtil.getConnection();
 
-        // ✅ Fetch category list
         String catSql = "SELECT DISTINCT Category FROM item_master WHERE Category IS NOT NULL AND Category <> '' ORDER BY Category";
         psCat = conn.prepareStatement(catSql);
         rsCat = psCat.executeQuery();
 
-        // ✅ Base SQL with optional category filter
         String sql = "SELECT im.Item_id, im.Item_name, im.Category, " +
                      "COALESCE(SUM(CASE WHEN sl.trans_type = 'RECEIPT' AND sl.trans_date <= ? THEN sl.qty END), 0) AS total_receipts, " +
                      "COALESCE(SUM(CASE WHEN sl.trans_type = 'ISSUE' AND sl.trans_date <= ? THEN sl.qty END), 0) AS total_issues, " +
@@ -60,41 +57,189 @@ if (sess == null || sess.getAttribute("username") == null) {
 <html>
 <head>
     <title>Stock Summary Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="CSS/tablestyle.css">
+
     <style>
-        body { font-family: 'Poppins', sans-serif; margin: 30px; background-color: #f7f9fc; }
-        h2 { text-align: center; color: #333; }
-        form { text-align: center; margin-bottom: 20px; }
-       
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ✅ Reset unwanted header spacing */
+        header, .header, #header, .topbar {
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin: 10px 0 20px 0;
+        }
+
+        /* ✅ Remove top & side gap, center perfectly */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            padding: 0;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+
+        /* ✅ Card full-width centered with no outer gap */
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 80%;
+            min-height: 75vh;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        form {
+            text-align: center;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 600;
+        }
+
+        input[type="date"], select {
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            background: #fff;
+        }
+
         input[type="submit"] {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 7px 14px;
+            border-radius: 6px;
             cursor: pointer;
+            transition: 0.3s;
         }
+
         input[type="submit"]:hover {
             background-color: #0056b3;
         }
-    </style>
-  
-     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="CSS/tablestyle.css">
-   
-</head>
-<body>
 
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+            flex-grow: 1;
+        }
+
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            min-width: 600px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: center;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            position: sticky;
+            top: 0;
+            z-index: 2;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* ✅ Responsive adjustments */
+        @media (max-width: 1024px) {
+            .card {
+                width: 90%;
+                padding: 12px;
+                min-height: 75vh;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 0;
+            }
+
+            .card {
+                width: 95%;
+                padding: 10px;
+                min-height: 75vh;
+            }
+
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            h2 {
+                font-size: 18px;
+            }
+
+            th, td {
+                font-size: 13px;
+                padding: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                width: 98%;
+                padding: 8px;
+                min-height: 75vh;
+            }
+
+            th, td {
+                font-size: 12px;
+                padding: 6px;
+            }
+        }
+    </style>
+</head>
+
+<body>
 <%@ include file="header.jsp" %>
+
 <div class="main-content">
   <div class="card">
-    <h2>Stock Summary Report</h2>
+    <h2>📊 Stock Summary Report</h2>
 
     <form method="get" action="stockReport.jsp">
-        <label for="toDate"><b>Up to Date:</b></label>
+        <label for="toDate">Up to Date:</label>
         <input type="date" id="toDate" name="toDate" value="<%=toDate%>">
 
-        <label for="category"><b>Category:</b></label>
+        <label for="category">Category:</label>
         <select name="category" id="category">
             <option value="ALL">All Categories</option>
             <%
@@ -111,17 +256,19 @@ if (sess == null || sess.getAttribute("username") == null) {
         <input type="submit" value="View Report">
     </form>
 
-    <table  class="main-table">
-        <tr>
+    <div class="table-container">
+    <table class="main-table">
         <thead>
-            <th>Category</th>
-            <th>Item ID</th>
-            <th>Item Name</th>
-            <th>Total Receipts</th>
-            <th>Total Issues</th>
-            <th>Closing Balance</th>
-            </thead>
-        </tr>
+            <tr>
+                <th>Category</th>
+                <th>Item ID</th>
+                <th>Item Name</th>
+                <th>Total Receipts</th>
+                <th>Total Issues</th>
+                <th>Closing Balance</th>
+            </tr>
+        </thead>
+        <tbody>
         <%
             boolean hasData = false;
             while (rs.next()) {
@@ -141,8 +288,10 @@ if (sess == null || sess.getAttribute("username") == null) {
                 out.println("<tr><td colspan='6' style='text-align:center;'>No records found for the selected filters.</td></tr>");
             }
         %>
+        </tbody>
     </table>
-      </div>
+    </div>
+  </div>
 </div>
 
 <jsp:include page="Footer.jsp" />
