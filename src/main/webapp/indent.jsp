@@ -19,11 +19,39 @@
 <link rel="stylesheet" href="CSS/Form.css">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+  body {
+    margin: 0; /* ✅ Removes left/right spacing */
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden; /* ✅ Prevents horizontal scroll */
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .main-content {
+    width: 100%;
+    margin: 0 auto; /* ✅ Centers content for large screens */
+    padding: 10px;
+    box-sizing: border-box;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto; /* ✅ Centers the card on large screens */
+    box-sizing: border-box;
+  }
+
+  table.main-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
   select {
     width: 180px;
     max-height: 180px;
     overflow-y: auto;
   }
+
   table.main-table select {
     padding: 4px;
     font-size: 14px;
@@ -73,6 +101,18 @@
     border-color: #007bff;
   }
 
+  /* ✅ Responsive Adjustments */
+  @media screen and (max-width: 768px) {
+    .main-content {
+      padding: 5px;
+    }
+    table.main-table {
+      font-size: 13px;
+    }
+    select {
+      width: 120px;
+    }
+  }
 </style>
 </head>
 <body>
@@ -157,8 +197,6 @@
   </div>
 </div>
 
-
-
 <script>
 const userRole = "<%= (role != null ? role : "") %>".toLowerCase();
 const userDept = "<%= (dept != null ? dept : "") %>";
@@ -232,7 +270,6 @@ function addRow() {
 function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
   let filteredCats = [];
 
-  // ✅ Global user gets all categories
   if (userRole === "global") {
     filteredCats = categories;
   } else {
