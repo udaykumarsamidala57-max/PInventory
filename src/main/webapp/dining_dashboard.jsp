@@ -31,16 +31,11 @@ body {
     background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
     margin: 0;
     padding: 0;
-    width: 100%;
-    overflow-x: hidden;
 }
-
-/* Main Content */
 .content {
-    width: 100%;
-    margin: 0 auto;
-    padding: 20px 15px;
-    box-sizing: border-box;
+    margin-left: 260px;
+    width: calc(100% - 260px);
+    padding: 90px 30px 30px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -50,7 +45,7 @@ body {
 h2 {
     text-align: center;
     color: #2d3436;
-    margin: 10px 0 25px;
+    margin-bottom: 30px;
     font-weight: 600;
     letter-spacing: 1px;
 }
@@ -59,23 +54,22 @@ h2 {
 .summary {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 25px;
     justify-content: center;
-    margin-bottom: 25px;
-    width: 100%;
+    margin-bottom: 40px;
 }
 .card {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    width: 210px;
-    padding: 20px;
+    border-radius: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    width: 220px;
+    padding: 25px;
     text-align: center;
     transition: 0.3s;
 }
 .card:hover { transform: scale(1.05); }
 .card h3 {
-    font-size: 14px;
+    font-size: 15px;
     color: #777;
 }
 .card p {
@@ -90,46 +84,48 @@ h2 {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 25px;
-    width: 100%;
-    margin-bottom: 50px;
+    gap: 40px;
+    margin-bottom: 60px;
 }
 .chart-box {
     background: white;
-    border-radius: 15px;
-    box-shadow: 0 3px 12px rgba(0,0,0,0.1);
-    padding: 15px 20px;
-    width: 480px;
-    max-width: 95%;
+    border-radius: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px 30px;
+    width: 500px;
 }
 
 /* Calendar Container */
 .calendar-container {
     background: white;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-    padding: 30px 15px;
-    width: 98%;
-    max-width: 1200px;
-    margin-bottom: 50px;
+    border-radius: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    padding: 50px 40px;
+    width: 95%;
+    max-width: 1220px;
+    margin: 0 auto 80px;
     border: 2px solid #007bff30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* FullCalendar Styling */
 .fc {
-    border-radius: 15px;
+    border-radius: 20px;
     overflow: hidden;
+    width: 100%;
     background-color: #fdfefe;
-    padding: 10px;
+    padding: 15px;
 }
 .fc .fc-scrollgrid {
-    border-radius: 10px;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.08);
 }
 .fc-toolbar { justify-content: center !important; }
-.fc-toolbar-title { font-size: 20px !important; color: #2d3436 !important; }
+.fc-toolbar-title { font-size: 22px !important; color: #2d3436 !important; }
 .fc-button {
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     background: #007bff !important;
     border: none !important;
 }
@@ -138,13 +134,13 @@ h2 {
 /* Calendar Events */
 .fc-event-title {
     display: block;
-    border-radius: 8px;
-    margin: 3px 0;
+    border-radius: 10px;
+    margin: 4px 0;
     font-size: 12px;
     font-weight: 600;
     color: #fff;
     text-align: center;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.25);
     transition: all 0.25s ease;
 }
 .fc-event-title.breakfast {
@@ -162,18 +158,13 @@ h2 {
     font-size: 13px;
 }
 
-/* Filter Box */
-.filter-box {
-    text-align: center;
-    margin-bottom: 25px;
-    width: 100%;
-}
+/* Filter */
+.filter-box { text-align: center; margin-bottom: 30px; }
 input[type="date"], button {
-    padding: 8px 12px;
-    border-radius: 6px;
+    padding: 10px 15px;
+    border-radius: 8px;
     border: 1px solid #ccc;
     margin: 5px;
-    font-size: 14px;
 }
 button {
     background: #007bff;
@@ -184,17 +175,9 @@ button {
 }
 button:hover { background: #0056b3; }
 
-/* Responsive Adjustments */
 @media (max-width: 992px) {
-    .chart-box { width: 100%; }
-    .summary { gap: 10px; }
-}
-@media (max-width: 600px) {
-    h2 { font-size: 18px; }
-    .card { width: 45%; padding: 15px; }
-    .card p { font-size: 18px; }
-    .chart-box { padding: 10px; }
-    .calendar-container { padding: 15px; }
+    .content { margin-left: 0; width: 100%; padding-top: 80px; }
+    .chart-box { width: 90%; }
 }
 </style>
 </head>
@@ -237,12 +220,16 @@ try {
     while (rs.next()) { dayWise.put(rs.getString("day"), rs.getDouble("total")); }
     rs.close();
 
+    // 🥣 Session-wise cost (merge Morning Drink with Breakfast)
     rs = st.executeQuery("SELECT DATE(issue_date) AS day, session, SUM(total_value) AS total_cost FROM dining_hall_consumption GROUP BY DATE(issue_date), session ORDER BY DATE(issue_date)");
     while (rs.next()) {
         String d = rs.getString("day");
         String mealSession = rs.getString("session");
         double val = rs.getDouble("total_cost");
+
+        // Merge logic: Combine Morning Drink + Breakfast into one
         if (mealSession.equalsIgnoreCase("Morning Drink")) mealSession = "Break Fast";
+
         sessionWise.putIfAbsent(d, new LinkedHashMap<>());
         sessionWise.get(d).merge(mealSession, val, Double::sum);
     }
@@ -296,7 +283,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('dayChart'), {
         type: 'bar',
         data: { labels: dayLabels, datasets: [{ label: '₹ Cost', data: dayData, backgroundColor: '#74b9ff' }] },
-        options: { responsive: true, plugins: { legend: { display: false } }, maintainAspectRatio: false }
+        options: { plugins: { legend: { display: false } } }
     });
 
     <% String lastDay = sessionWise.isEmpty() ? "" : new ArrayList<>(sessionWise.keySet()).get(sessionWise.size()-1);
@@ -306,13 +293,13 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(document.getElementById('sessionChart'), {
         type: 'doughnut',
         data: { labels: sessionLabels, datasets: [{ data: sessionData, backgroundColor: ['#74b9ff','#ffa502','#2ed573'] }] },
-        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        options: { plugins: { legend: { position: 'bottom' } } }
     });
 
     var calendarEl = document.getElementById('diningCalendar');
     var calendar = new FullCalendar.Calendar(calendarEl, {
         initialView: 'dayGridMonth',
-        height: 'auto',
+        height: 700,
         expandRows: true,
         events: [
         <% for (Map.Entry<String, Map<String, Double>> entry : sessionWise.entrySet()) {
