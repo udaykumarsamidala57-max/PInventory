@@ -28,6 +28,51 @@
     padding: 4px;
     font-size: 14px;
   }
+
+  /* -------- Indent Type Radio Buttons -------- */
+  .indent-type-group {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    padding: 5px 0;
+  }
+
+  .indent-type-option {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+    font-size: 15px;
+    color: #333;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+
+  .indent-type-option input[type="radio"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #888;
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .indent-type-option input[type="radio"]:checked {
+    border-color: #007bff;
+    background: radial-gradient(circle at center, #007bff 45%, white 46%);
+  }
+
+  .indent-type-option:hover {
+    color: #007bff;
+  }
+
+  .indent-type-option input[type="radio"]:hover {
+    border-color: #007bff;
+  }
+
 </style>
 </head>
 <body>
@@ -65,8 +110,16 @@
         <tr>
           <td><label>Indent Type:</label></td>
           <td>
-            <label><input type="radio" name="indentType" value="Purchase" required> Purchase</label>
-            <label style="margin-left:15px;"><input type="radio" name="indentType" value="Issue"> Issue</label>
+            <div class="indent-type-group">
+              <label class="indent-type-option">
+                <input type="radio" name="indentType" value="Purchase" required>
+                Purchase
+              </label>
+              <label class="indent-type-option">
+                <input type="radio" name="indentType" value="Issue">
+                Issue
+              </label>
+            </div>
           </td>
         </tr>
       </table>
@@ -104,7 +157,7 @@
   </div>
 </div>
 
-<%@ include file="Footer.jsp" %>
+
 
 <script>
 const userRole = "<%= (role != null ? role : "") %>".toLowerCase();

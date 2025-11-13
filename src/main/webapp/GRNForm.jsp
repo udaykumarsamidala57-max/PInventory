@@ -89,6 +89,6 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 </div>
 </div>
-<jsp:include page="Footer.jsp" />
+
 </body>
 </html>

@@ -80,6 +80,6 @@ if (indentList != null && !indentList.isEmpty()) {
 </form>
 </div>
 
-<jsp:include page="Footer.jsp" />
+
 </body>
 </html>

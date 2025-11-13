@@ -179,7 +179,7 @@ input[type="text"], input[type="date"] {
   </div>
 </div>
 
-<jsp:include page="Footer.jsp" />
+
 
 <!-- === SCRIPT BLOCK === -->
 <script>
