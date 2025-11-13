@@ -159,22 +159,26 @@
             text-align: center;
         }
 
+        /* ✅ Always-visible View Items button */
         .toggle-btn {
-            background: #3498db;
-            border: none;
+            background: #2176bd;
             color: white;
+            border: none;
             padding: 6px 10px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 13px;
+            display: inline-block;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
         .toggle-btn:hover {
-            background: #2176bd;
+            background: #1a5f99;
+            transform: scale(1.05);
         }
 
         .content {
-            margin-left: 240px;
+            margin: 0; /* ✅ removed left space */
             padding: 20px;
         }
 
@@ -183,13 +187,14 @@
             width: 98%;
             margin: 10px auto;
             text-align: right;
+            flex-wrap: wrap;
         }
 
         .toolbar input, .toolbar select, .toolbar button {
             padding: 6px 10px;
             border-radius: 5px;
             border: 1px solid #bbb;
-            margin-left: 5px;
+            margin: 5px;
             font-size: 13px;
         }
 
@@ -198,10 +203,35 @@
             color: white;
             border: none;
             cursor: pointer;
+            transition: background 0.3s ease;
         }
 
         .toolbar button:hover {
             background: #218838;
+        }
+
+        /* ✅ Responsive Design */
+        @media screen and (max-width: 1024px) {
+            .content { margin: 0; padding: 10px; }
+            table.main-table { font-size: 13px; width: 100%; }
+            table.main-table th, table.main-table td { padding: 6px; }
+            .toolbar { text-align: center; }
+        }
+
+        @media screen and (max-width: 768px) {
+            h2 { font-size: 18px; }
+            table.main-table, .items-table { font-size: 12px; }
+            .toolbar input, .toolbar select, .toolbar button { width: 100%; margin: 4px 0; }
+            .toggle-btn { padding: 5px 8px; font-size: 12px; display: block; margin: auto; }
+        }
+
+        @media screen and (max-width: 480px) {
+            h2 { font-size: 16px; }
+            table.main-table thead { font-size: 13px; }
+            table.main-table td, th { padding: 4px; font-size: 11px; }
+            .toolbar { display: block; }
+            .toolbar input, .toolbar select, .toolbar button { width: 100%; }
+            .items-block { font-size: 12px; padding: 8px; }
         }
     </style>
 
@@ -218,7 +248,6 @@
             }
         }
 
-        // ✅ Combined Search + Filters + Date Filter
         function filterTable() {
             let input = document.getElementById("searchInput").value.toLowerCase();
             let statusFilter = document.getElementById("statusFilter").value;
@@ -230,35 +259,26 @@
 
             rows.forEach((row) => {
                 let cells = row.querySelectorAll("td");
-                if (cells.length < 7) return; // skip item rows
+                if (cells.length < 7) return;
 
                 let poNum = cells[0].innerText.toLowerCase();
                 let date = cells[1].innerText.trim();
                 let vendor = cells[2].innerText.toLowerCase();
                 let approval = cells[4].innerText;
                 let status = cells[5].innerText;
-
                 let poDate = new Date(date);
                 let include = true;
 
                 if (input && !poNum.includes(input) && !vendor.includes(input)) include = false;
                 if (approvalFilter && approval !== approvalFilter) include = false;
                 if (statusFilter && status !== statusFilter) include = false;
-
-                if (fromDate) {
-                    let fDate = new Date(fromDate);
-                    if (poDate < fDate) include = false;
-                }
-                if (toDate) {
-                    let tDate = new Date(toDate);
-                    if (poDate > tDate) include = false;
-                }
+                if (fromDate && poDate < new Date(fromDate)) include = false;
+                if (toDate && poDate > new Date(toDate)) include = false;
 
                 row.style.display = include ? "" : "none";
             });
         }
 
-        // ✅ Clear all filters
         function clearFilters() {
             document.getElementById("searchInput").value = "";
             document.getElementById("statusFilter").value = "";
@@ -268,7 +288,6 @@
             filterTable();
         }
 
-        // ✅ Download as Excel
         function downloadExcel() {
             let table = document.querySelector(".main-table").outerHTML;
             let blob = new Blob(["\ufeff" + table], { type: "application/vnd.ms-excel" });
@@ -279,32 +298,29 @@
         }
     </script>
 </head>
+
 <body>
 <jsp:include page="header.jsp" />
 
 <h2>Purchase Orders</h2>
 <div class="content">
 
-    <!-- ✅ Toolbar -->
     <div class="toolbar">
         <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search PO No. or Vendor">
         <input type="date" id="fromDate" onchange="filterTable()">
         <input type="date" id="toDate" onchange="filterTable()">
-
         <select id="approvalFilter" onchange="filterTable()">
             <option value="">All Approvals</option>
             <option value="Approved">Approved</option>
             <option value="Pending">Pending</option>
             <option value="Rejected">Rejected</option>
         </select>
-
         <select id="statusFilter" onchange="filterTable()">
             <option value="">All Status</option>
             <option value="Open">Open</option>
             <option value="Closed">Closed</option>
             <option value="Cancelled">Cancelled</option>
         </select>
-
         <button onclick="filterTable()">Search</button>
         <button onclick="clearFilters()">Clear</button>
         <button onclick="downloadExcel()">Download</button>
@@ -334,7 +350,9 @@
                 <td><%= po.totalAmount %></td>
                 <td><%= po.approval %></td>
                 <td><%= po.status %></td>
-                <td><button class="toggle-btn" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button></td>
+                <td>
+                    <button class="toggle-btn" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
+                </td>
             </tr>
             <tr>
                 <td colspan="7">
