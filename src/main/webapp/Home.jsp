@@ -98,17 +98,20 @@
         font-size: 13.5px;
     }
 
-    th, td {
+     td,th {
         padding: 8px;
         text-align: center;
         border-bottom: 1px solid #eee;
     }
 
-    th {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: #fff;
-        font-weight: 600;
-    }
+    thead  {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #ff8c00, #8e2de2);
+    color: #fff;
+    font-weight: 600;
+}
 
     tr:hover { background: #f0f8ff; }
 
