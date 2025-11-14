@@ -8,59 +8,96 @@ if (sess == null || sess.getAttribute("username") == null) {
 }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Indent Full Report</title>
+
+<!-- Fonts & Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="CSS/tablestyle.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <style>
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #f5f7fa;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
 }
+
+/* Main Container */
 .main-content {
-  padding: 20px;
+  width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
 }
+
+/* Card Style */
 .card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: 12px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  padding: 20px;
+  padding: 15px;
+  width: 100%;
+  overflow-x: auto;
 }
+
+/* Table */
 .main-table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 15px;
+  table-layout: fixed;
+  word-wrap: break-word;
 }
 .main-table th, .main-table td {
-  padding: 7px;
+  padding: 8px;
   text-align: center;
   border: 1px solid #ddd;
+  vertical-align: middle;
+  white-space: normal;
+  word-break: break-word;
 }
+
+thead {
+  background: linear-gradient(135deg, #ff8c00, #8e2de2);  
+}
+
 .main-table th {
-  background-color: #007bff;
+  
   color: white;
   cursor: pointer;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 .main-table tr:nth-child(even) {
   background-color: #f9f9f9;
 }
-input[type="text"], input[type="date"] {
+
+/* Search Bar */
+.search-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+.search-bar input[type="text"], .search-bar input[type="date"] {
   padding: 6px 10px;
   border: 1px solid #ccc;
   border-radius: 6px;
+  flex: 1;
+  min-width: 120px;
 }
 .btn {
   padding: 6px 14px;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
+  transition: 0.3s;
 }
 .btn-info {
   background-color: #007bff;
@@ -69,13 +106,6 @@ input[type="text"], input[type="date"] {
 .btn-info:hover {
   background-color: #0056b3;
 }
-.search-bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 15px;
-  align-items: center;
-}
 #expandAll {
   background-color: #28a745;
   color: #fff;
@@ -83,8 +113,39 @@ input[type="text"], input[type="date"] {
 #expandAll:hover {
   background-color: #218838;
 }
-.hidden-row {
-  display: none;
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+  .card {
+    padding: 10px;
+  }
+  h1 {
+    font-size: 20px;
+  }
+  .search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .main-table th, .main-table td {
+    font-size: 12px;
+    padding: 6px;
+  }
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 10px;
+  margin-top: 30px;
+  font-size: 14px;
+  color: #666;
+  border-top: 1px solid #ddd;
+}
+footer i {
+  color: green;
 }
 </style>
 </head>
@@ -96,7 +157,8 @@ input[type="text"], input[type="date"] {
 <div class="main-content">
   <div class="card">
     <h1 style="text-align:center;">Indents Report</h1>
-<br>
+    <br>
+
     <div class="search-bar">
       <input type="text" id="keywordSearch" placeholder="Search by any field..." onkeyup="filterTable()">
       <label>From: <input type="date" id="fromDate"></label>
@@ -104,7 +166,7 @@ input[type="text"], input[type="date"] {
       <button class="btn btn-info" onclick="filterTable()">Filter</button>
       <button class="btn btn-info" onclick="resetFilters()">Reset</button>
       <button class="btn btn-info" onclick="downloadExcel()">Download Excel</button>
-      <button id="expandAll" class="btn" onclick="toggleExpand()">Expand/Collapse All</button>
+      <button id="expandAll" class="btn" onclick="toggleExpand()">Collapse All</button>
     </div>
 
     <table id="dataTable" class="main-table">
@@ -125,7 +187,6 @@ input[type="text"], input[type="date"] {
           <th>L2 Status</th>
           <th>FApproveDate</th>
           <th>Indent status</th>
-          
           <th>View / Print</th>
         </tr>
       </thead>
@@ -134,36 +195,28 @@ input[type="text"], input[type="date"] {
           List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
           if (indents != null && !indents.isEmpty()) {
             for (IndentItemFull ind : indents) {
-        %>
-        <%
-               String istatus = ind.getIstatus();
-               String status = ind.getStatus();
-
-               // Determine CSS styles
-                String istatusStyle = istatus.equalsIgnoreCase("Approved")? "color:Green;font-weight:bold;" : "color:red;font-weight:bold;";
-                
-               String statusStyle = (status == null || status.trim().isEmpty() || status.equalsIgnoreCase("pending"))
-               ? "color:red;font-weight:bold;" : "color:Green;font-weight:bold;";
+              String istatus = ind.getIstatus();
+              String status = ind.getStatus();
+              String istatusStyle = "Approved".equalsIgnoreCase(istatus) ? "color:green;font-weight:bold;" : "color:red;font-weight:bold;";
+              String statusStyle = (status == null || status.trim().isEmpty() || "pending".equalsIgnoreCase(status))
+                ? "color:red;font-weight:bold;" : "color:green;font-weight:bold;";
         %>
         <tr class="data-row">
           <td><%= ind.getId() %></td>
           <td><%= ind.getIndentNo() %></td>
           <td><%= ind.getDate() %></td>
           <td><%= ind.getItemName() %></td>
-           <td><%= ind.getBalanceQty() %></td>
+          <td><%= ind.getBalanceQty() %></td>
           <td><%= ind.getQty() %></td>
-         
           <td><%= ind.getUom() %></td>
           <td><%= ind.getDepartment() %></td>
           <td><%= ind.getRequestedBy() %></td>
           <td><%= ind.getPurpose() %></td>
-         <td style="<%= istatusStyle %>"><%= (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus %></td>
-         
+          <td style="<%= istatusStyle %>"><%= (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus %></td>
           <td><%= ind.getIapprovevdate() %></td>
-         <td style="<%= statusStyle %>"><%= (status == null || status.trim().isEmpty()) ? "Pending" : status %></td>
+          <td style="<%= statusStyle %>"><%= (status == null || status.trim().isEmpty()) ? "Pending" : status %></td>
           <td><%= ind.getFapprovevdate() %></td>
           <td><%= ind.getIndentNext() %></td>
-          
           <td>
             <form action="PrintIndent.jsp" method="get">
               <input type="hidden" name="IndentNumber" value="<%= ind.getIndentNo() %>">
@@ -172,16 +225,14 @@ input[type="text"], input[type="date"] {
           </td>
         </tr>
         <% } } else { %>
-        <tr><td colspan="17" style="text-align:center;color:red;">No records found</td></tr>
+        <tr><td colspan="16" style="text-align:center;color:red;">No records found</td></tr>
         <% } %>
       </tbody>
     </table>
   </div>
 </div>
 
-<jsp:include page="Footer.jsp" />
-
-<!-- === SCRIPT BLOCK === -->
+<!-- SCRIPT BLOCK -->
 <script>
 function sortTable(n) {
   let table = document.getElementById("dataTable"), switching = true, dir = "asc", switchcount = 0;
@@ -231,39 +282,29 @@ function resetFilters() {
 }
 
 function downloadExcel() {
-	  const table = document.getElementById('dataTable');
-	  let csv = [];
-	  
-	  // Get all rows (thead + tbody)
-	  const rows = table.querySelectorAll('tr');
-
-	  rows.forEach(row => {
-	    let cols = row.querySelectorAll('th, td');
-	    let rowData = [];
-
-	    cols.forEach(cell => {
-	      // Handle text content only, ignore inner buttons/forms
-	      let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
-	      rowData.push('"' + text + '"');
-	    });
-
-	    csv.push(rowData.join(','));
-	  });
-
-	  // Convert to Blob
-	  const csvString = csv.join('\n');
-	  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-	  const link = document.createElement('a');
-	  const url = URL.createObjectURL(blob);
-
-	  link.setAttribute('href', url);
-	  link.setAttribute('download', 'Indent_Full_Report.csv');
-	  link.style.visibility = 'hidden';
-
-	  document.body.appendChild(link);
-	  link.click();
-	  document.body.removeChild(link);
-	}
+  const table = document.getElementById('dataTable');
+  let csv = [];
+  const rows = table.querySelectorAll('tr');
+  rows.forEach(row => {
+    let cols = row.querySelectorAll('th, td');
+    let rowData = [];
+    cols.forEach(cell => {
+      let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+      rowData.push('"' + text + '"');
+    });
+    csv.push(rowData.join(','));
+  });
+  const csvString = csv.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  const url = URL.createObjectURL(blob);
+  link.setAttribute('href', url);
+  link.setAttribute('download', 'Indent_Full_Report.csv');
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
 
 // Expand/Collapse
 let expanded = true;
@@ -274,5 +315,6 @@ function toggleExpand() {
   document.getElementById("expandAll").innerText = expanded ? "Collapse All" : "Expand All";
 }
 </script>
+
 </body>
 </html>

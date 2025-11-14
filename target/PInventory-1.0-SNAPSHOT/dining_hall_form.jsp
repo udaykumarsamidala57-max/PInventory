@@ -61,7 +61,7 @@ table.main-table select { padding: 4px; font-size: 14px; }
   </div>
 </div>
 
-<%@ include file="Footer.jsp" %>
+
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {

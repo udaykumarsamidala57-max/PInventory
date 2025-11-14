@@ -98,43 +98,76 @@
         font-size: 13.5px;
     }
 
-    th, td {
+     td,th {
         padding: 8px;
         text-align: center;
         border-bottom: 1px solid #eee;
     }
 
-    th {
-        background: linear-gradient(135deg, var(--primary), var(--secondary));
-        color: #fff;
-        font-weight: 600;
-    }
+    thead  {
+    text-align: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #ff8c00, #8e2de2);
+    color: #fff;
+    font-weight: 600;
+}
 
     tr:hover { background: #f0f8ff; }
 
-    /* --- Stage Cards --- */
-    .stage-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
-        gap: 12px;
-    }
+   /* --- Stage Cards (Modern Colorful Version) --- */
+.stage-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 18px;
+    margin-top: 10px;
+}
 
-    .stage-card {
-        flex: 1 1 150px;
-        background: linear-gradient(120deg,#eaf3ff,#d7e7ff);
-        border-left: 5px solid var(--primary);
-        border-radius: 8px;
-        padding: 10px;
-        text-align: center;
-        box-shadow: var(--shadow);
-        transition: 0.3s;
-    }
+.stage-card {
+    flex: 1 1 170px;
+    padding: 18px 10px;
+    border-radius: 16px;
+    color: white;
+    text-align: center;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
+    transition: 0.35s ease;
+    transform: translateY(0px);
+    cursor: pointer;
+}
 
-    .stage-card:hover { background: #d9ecff; transform: scale(1.05); }
+/* Hover Effect */
+.stage-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 22px rgba(0,0,0,0.25);
+}
 
-    .stage-card h4 { font-size: 13px; color: var(--secondary); margin: 5px 0; }
-    .stage-card h2 { font-size: 22px; color: var(--primary); margin: 0; }
+/* Stage Heading */
+.stage-card h4 {
+    font-size: 14px;
+    margin: 8px 0;
+    font-weight: 600;
+}
+
+/* Stage Count */
+.stage-card h2 {
+    font-size: 28px;
+    margin: 0;
+    font-weight: 700;
+}
+
+/* Icons */
+.stage-icon {
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+
+/* Color Themes */
+.stage-approval  { background: linear-gradient(135deg, #ff7b00, #ffb84d); }
+.stage-po        { background: linear-gradient(135deg, #005eff, #4da3ff); }
+.stage-issue     { background: linear-gradient(135deg, #9b00ff, #d96cff); }
+.stage-issued    { background: linear-gradient(135deg, #02a858, #56e99a); }
+.stage-note      { background: linear-gradient(135deg, #ff3e6c, #ff85a1); }
 
     /* --- Filters --- */
     .filter-form {
@@ -252,23 +285,51 @@
         </div>
 
         <div class="card">
-            <h3>Stage Summary</h3>
-            <div class="stage-container">
-                <%
-                    if(nextStageCountMap!=null){
-                        String[][] stages={{"Approval Pending","approval-pending"},{"PO","po"},
-                                           {"Issue Pending","issue-pending"},{"Issued","issued"},
-                                           {"Management Note","management-note"}};
-                        for(String[] s:stages){
-                            int count=nextStageCountMap.getOrDefault(s[0],0);
-                %>
-                <div class="stage-card">
-                    <h4><%=s[0]%></h4><h2><%=count%></h2>
-                </div>
-                <% }} %>
+    <h3>Stage Summary</h3>
+    <div class="stage-container">
+
+        <% if(nextStageCountMap!=null){ %>
+
+            <!-- Approval Pending -->
+            <div class="stage-card stage-approval">
+                <div class="stage-icon">⏳</div>
+                <h4>Approval Pending</h4>
+                <h2><%= nextStageCountMap.getOrDefault("Approval Pending",0) %></h2>
             </div>
-        </div>
+
+            <!-- PO -->
+            <div class="stage-card stage-po">
+                <div class="stage-icon">📄</div>
+                <h4>PO</h4>
+                <h2><%= nextStageCountMap.getOrDefault("PO",0) %></h2>
+            </div>
+
+            <!-- Issue Pending -->
+            <div class="stage-card stage-issue">
+                <div class="stage-icon">📦</div>
+                <h4>Issue Pending</h4>
+                <h2><%= nextStageCountMap.getOrDefault("Issue Pending",0) %></h2>
+            </div>
+
+            <!-- Issued -->
+            <div class="stage-card stage-issued">
+                <div class="stage-icon">✔️</div>
+                <h4>Issued</h4>
+                <h2><%= nextStageCountMap.getOrDefault("Issued",0) %></h2>
+            </div>
+
+            <!-- Management Note -->
+            <div class="stage-card stage-note">
+                <div class="stage-icon">📝</div>
+                <h4>Management Note</h4>
+                <h2><%= nextStageCountMap.getOrDefault("Management Note",0) %></h2>
+            </div>
+
+        <% } %>
+
     </div>
+</div>
+
 
     <!-- Charts + Table Side by Side -->
     <div class="chart-table-grid">

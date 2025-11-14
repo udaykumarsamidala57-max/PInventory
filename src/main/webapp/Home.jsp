@@ -98,46 +98,129 @@
         font-size: 13.5px;
     }
 
-     td,th {
+    th, td {
         padding: 8px;
         text-align: center;
         border-bottom: 1px solid #eee;
     }
-
-    thead  {
-    text-align: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    thead {
     background: linear-gradient(135deg, #ff8c00, #8e2de2);
-    color: #fff;
-    font-weight: 600;
 }
+    
+
+    th {
+      
+        color: #fff;
+        font-weight: 600;
+    }
 
     tr:hover { background: #f0f8ff; }
 
     /* --- Stage Cards --- */
-    .stage-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-evenly;
-        gap: 12px;
-    }
+.stage-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    gap: 18px;
+}
 
-    .stage-card {
-        flex: 1 1 150px;
-        background: linear-gradient(120deg,#eaf3ff,#d7e7ff);
-        border-left: 5px solid var(--primary);
-        border-radius: 8px;
-        padding: 10px;
-        text-align: center;
-        box-shadow: var(--shadow);
-        transition: 0.3s;
-    }
+/* Base card style */
+.stage-card {
+    flex: 1 1 180px;
+    padding: 18px;
+    text-align: center;
+    border-radius: 16px;
+    background-size: 220% 220%;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.45);
 
-    .stage-card:hover { background: #d9ecff; transform: scale(1.05); }
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15),
+                0 0 22px rgba(255,255,255,0.3);
 
-    .stage-card h4 { font-size: 13px; color: var(--secondary); margin: 5px 0; }
-    .stage-card h2 { font-size: 22px; color: var(--primary); margin: 0; }
+    transition: 0.4s ease;
+    animation: gradientMove 6s ease infinite;
+}
+
+/* Hover Effect */
+.stage-card:hover {
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22),
+                0 0 30px rgba(255,255,255,0.4);
+}
+
+/* --------------------------
+   DIFFERENT COLORS PER CARD
+---------------------------*/
+
+/* Card 1 - Aqua Mint */
+.stage-card:nth-child(1) {
+    background: linear-gradient(135deg,
+        rgba(0, 255, 204, 0.35),
+        rgba(0, 140, 255, 0.35)
+    );
+}
+
+/* Card 2 - Peach Rose */
+.stage-card:nth-child(2) {
+    background: linear-gradient(135deg,
+        rgba(255, 183, 77, 0.35),
+        rgba(255, 99, 146, 0.35)
+    );
+}
+
+/* Card 3 - Purple Glam */
+.stage-card:nth-child(3) {
+    background: linear-gradient(135deg,
+        rgba(168, 105, 255, 0.35),
+        rgba(255, 105, 180, 0.35)
+    );
+}
+
+/* Card 4 - Lime Green */
+.stage-card:nth-child(4) {
+    background: linear-gradient(135deg,
+        rgba(183, 255, 106, 0.35),
+        rgba(64, 186, 70, 0.35)
+    );
+}
+
+/* Card 5 - Sky Blue */
+.stage-card:nth-child(5) {
+    background: linear-gradient(135deg,
+        rgba(136, 203, 255, 0.35),
+        rgba(0, 112, 243, 0.35)
+    );
+}
+
+/* Card 6 - Gold Champagne */
+.stage-card:nth-child(6) {
+    background: linear-gradient(135deg,
+        rgba(255, 230, 150, 0.35),
+        rgba(243, 158, 46, 0.35)
+    );
+}
+
+/* Text */
+.stage-card h4 {
+    font-size: 15px;
+    margin: 6px 0;
+    font-weight: 600;
+    color: #333;
+}
+
+.stage-card h2 {
+    font-size: 26px;
+    margin: 0;
+    font-weight: 700;
+    color: #222;
+}
+
+/* Gradient Motion Animation */
+@keyframes gradientMove {
+    0% { background-position: left top; }
+    50% { background-position: right bottom; }
+    100% { background-position: left top; }
+}
 
     /* --- Filters --- */
     .filter-form {

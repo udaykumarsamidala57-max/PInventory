@@ -15,50 +15,64 @@ if (sess == null || sess.getAttribute("username") == null) {
         body {
             font-family: "Segoe UI", Arial, sans-serif;
             background: linear-gradient(135deg, #dbe8ff 0%, #e6d7ff 25%, #ffd6e0 50%, #d9faff 100%);
-            margin: 20px;
+            margin: 0;
+            padding: 0;
             color: #333;
         }
+
         h2 {
             text-align: center;
             color: #2c3e50;
-            margin-bottom: 20px;
+            margin: 20px 0;
+            font-size: 1.8em;
         }
+
         form {
             background: #fff;
             padding: 20px 30px;
             border-radius: 12px;
             max-width: 1100px;
-            margin: auto;
+            margin: 10px auto 30px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+
         table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 25px;
         }
-        table td {
+
+        table td, table th {
             border: 1px solid #ddd;
             padding: 10px 12px;
             text-align: center;
+            vertical-align: middle;
         }
+
         thead {
             background: linear-gradient(135deg, #ff8c00, #8e2de2);
         }
+
         th {
             color: #fff;
             font-weight: 600;
             text-align: center;
-            padding: 8px 8px;
-            border: none;
-            background: transparent;
+            padding: 10px 8px;
         }
+
         table tr:nth-child(even) {
             background: #f9f9f9;
         }
+
         table tr:hover {
             background: #f1f7ff;
         }
-        input[type="text"], input[type="number"], input[type="date"], textarea, select {
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        textarea,
+        select {
             width: 95%;
             padding: 6px 8px;
             border: 1px solid #ccc;
@@ -66,16 +80,20 @@ if (sess == null || sess.getAttribute("username") == null) {
             font-size: 14px;
             box-sizing: border-box;
         }
+
         textarea {
             resize: vertical;
             min-height: 60px;
         }
+
         .form-section {
             margin-bottom: 15px;
         }
+
         .form-section td {
             padding: 8px 10px;
         }
+
         input[type="submit"] {
             background: #3498db;
             color: white;
@@ -87,8 +105,78 @@ if (sess == null || sess.getAttribute("username") == null) {
             cursor: pointer;
             transition: 0.3s;
         }
+
         input[type="submit"]:hover {
             background: #2c80b4;
+        }
+
+        /* ✅ Responsive Design */
+        @media (max-width: 1024px) {
+            form {
+                padding: 15px 20px;
+                width: 95%;
+            }
+            h2 {
+                font-size: 1.6em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            form {
+                padding: 15px;
+                width: 95%;
+                margin: 10px auto;
+            }
+
+            h2 {
+                font-size: 1.4em;
+            }
+
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                display: none;
+            }
+
+            table tr {
+                margin-bottom: 15px;
+                background: #fff;
+                border-radius: 10px;
+                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                overflow: hidden;
+            }
+
+            table td {
+                border: none;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+                padding: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 14px;
+            }
+
+            table td:before {
+                content: attr(data-label);
+                flex: 1;
+                font-weight: 600;
+                color: #333;
+                text-transform: capitalize;
+            }
+
+            input[type="text"], input[type="number"], input[type="date"], textarea, select {
+                width: 100%;
+                font-size: 13px;
+            }
+
+            input[type="submit"] {
+                width: 100%;
+                font-size: 16px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
@@ -178,20 +266,19 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             for(POItems item: indentList){
         %>
         <tr>
-            <td><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
+            <td data-label="Sl No"><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
 
-            <!-- ✅ Show indentNo but send hidden indentId -->
-            <td>
+            <td data-label="Indent No">
                 <input type="text" value="<%=item.getIndentNo()%>" readonly>
                 <input type="hidden" name="indentId" value="<%=item.getId()%>">
             </td>
 
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
-            <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
-            <td><input type="number" step="any" name="qty" value="<%=item.getQty()%>" readonly></td>
-            <td><input type="number" step="0.01" name="rate"></td>
-            <td><input type="number" step="0.01" name="discPercent"></td>
-            <td><input type="number" step="0.01" name="gstPercent"></td>
+            <td data-label="Item"><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
+            <td data-label="Qty"><input type="number" step="any" name="qty" value="<%=item.getQty()%>" readonly></td>
+            <td data-label="Rate"><input type="number" step="0.01" name="rate"></td>
+            <td data-label="Discount %"><input type="number" step="0.01" name="discPercent"></td>
+            <td data-label="GST %"><input type="number" step="0.01" name="gstPercent"></td>
         </tr>
         <%
             }

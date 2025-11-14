@@ -8,32 +8,240 @@ if (sess == null || sess.getAttribute("username") == null) {
 }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Issue Stock</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="CSS/Form.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; }
-        .low-stock { color: red; font-weight: bold; }
-        .ok-stock { color: green; font-weight: 600; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        th { background: #4e73df; color: #fff; }
-        input[type="number"], input[type="text"] { padding: 5px; text-align: right; }
-        .btn-green { background: #1cc88a; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
-        .btn-green:hover { background: #17a673; }
-        .message { text-align:center; font-weight:bold; margin-top:10px; }
-    </style>
+<meta charset="UTF-8">
+<title>Issue Stock</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="CSS/Form.css">
+<style>
+/* ---------- GLOBAL ---------- */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    background: #f7f9fc;
+}
+
+.low-stock { 
+    color: red; 
+    font-weight: bold; 
+}
+
+.ok-stock { 
+    color: green; 
+    font-weight: 600; 
+}
+
+.main-content {
+    width: 95%;
+    max-width: 2000px;
+    margin: 30px auto;
+    padding: 10px;
+}
+
+.card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    width: 100%;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow-x: auto;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
+h2, h3 {
+    text-align: center;
+    color: #333;
+    margin: 10px 0;
+}
+
+/* ---------- TABLE ---------- */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 14px;
+    table-layout: auto;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: center;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+thead{
+background: linear-gradient(135deg, #ff8c00, #8e2de2);
+}
+th {
+    
+    color: #fff;
+    font-weight: 600;
+}
+
+input[type="number"],
+input[type="text"] {
+    padding: 6px;
+    text-align: right;
+    width: 90px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+}
+
+.btn-green {
+    background: #1cc88a;
+    color: white;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+.btn-green:hover {
+    background: #17a673;
+}
+
+.message {
+    text-align: center;
+    font-weight: bold;
+    margin-top: 15px;
+}
+
+/* ---------- RESPONSIVE DESIGN ---------- */
+
+/* Medium screens (tablets, small laptops) */
+@media (max-width: 1024px) {
+    .main-content {
+        width: 96%;
+        margin: 20px auto;
+    }
+
+    table {
+        font-size: 13px;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    input[type="number"], input[type="text"] {
+        width: 80px;
+    }
+}
+
+/* Small screens (mobiles) */
+@media (max-width: 768px) {
+    .card {
+        padding: 15px;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead tr {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 10px;
+    }
+
+    td {
+        text-align: right;
+        padding: 8px 10px;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        width: 50%;
+        font-weight: 600;
+        text-align: left;
+        color: #333;
+        white-space: nowrap;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        width: 100%;
+        text-align: right;
+        padding: 6px;
+        font-size: 14px;
+    }
+
+    .btn-green {
+        width: 100%;
+        padding: 10px;
+        font-size: 15px;
+        margin-top: 5px;
+    }
+
+    .message {
+        font-size: 14px;
+    }
+}
+
+/* Extra small devices (below 480px) */
+@media (max-width: 480px) {
+    body {
+        font-size: 13px;
+    }
+
+    h2, h3 {
+        font-size: 16px;
+    }
+
+    td {
+        font-size: 13px;
+    }
+
+    input[type="number"],
+    input[type="text"] {
+        font-size: 13px;
+        padding: 5px;
+    }
+
+    .btn-green {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+</style>
 </head>
 <body>
+
 <%@ include file="header.jsp" %>
 
 <div class="main-content">
     <div class="card">
-        <h2 align="center">Issue Stock</h2>
-        <h3 align="center">Approved Indents Pending Issue</h3>
+        <h2>Issue Stock</h2>
+        <h3>Approved Indents Pending Issue</h3>
 
         <table>
             <thead>
@@ -55,12 +263,12 @@ if (sess == null || sess.getAttribute("username") == null) {
                 <c:forEach var="i" items="${indentList}">
                     <tr>
                         <form action="IssueServlet" method="post">
-                            <td>${i.indent_no}</td>
-                            <td>${i.requested_by}</td>
-                            <td>${i.department}</td>
-                            <td>${i.item_name}</td>
-                            <td>${i.qty_requested}</td>
-                            <td>
+                            <td data-label="Indent No">${i.indent_no}</td>
+                            <td data-label="Requested By">${i.requested_by}</td>
+                            <td data-label="Department">${i.department}</td>
+                            <td data-label="Item">${i.item_name}</td>
+                            <td data-label="Qty Requested">${i.qty_requested}</td>
+                            <td data-label="Available Stock">
                                 <c:choose>
                                     <c:when test="${i.available_stock lt i.qty_requested}">
                                         <span class="low-stock">${i.available_stock}</span>
@@ -70,11 +278,15 @@ if (sess == null || sess.getAttribute("username") == null) {
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td>${i.UOM}</td>
-                            <td><input type="text" name="unitPrice" value="${i.unit_price}"  style="width:80px;"></td>
-                            <td>${i.purpose}</td>
-                            <td><input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required></td>
-                            <td>
+                            <td data-label="UOM">${i.UOM}</td>
+                            <td data-label="Unit Price">
+                                <input type="text" name="unitPrice" value="${i.unit_price}">
+                            </td>
+                            <td data-label="Purpose">${i.purpose}</td>
+                            <td data-label="Qty To Issue">
+                                <input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required>
+                            </td>
+                            <td data-label="Action">
                                 <input type="hidden" name="indentId" value="${i.indent_id}">
                                 <input type="hidden" name="itemId" value="${i.item_id}">
                                 <input type="hidden" name="department" value="${i.department}">
@@ -92,6 +304,5 @@ if (sess == null || sess.getAttribute("username") == null) {
     </div>
 </div>
 
-<jsp:include page="Footer.jsp" />
 </body>
 </html>

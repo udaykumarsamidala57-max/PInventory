@@ -56,7 +56,7 @@
   </div>
 </div>
 
-<%@ include file="Footer.jsp" %>
+
 
 <script>
 const categories = [];
