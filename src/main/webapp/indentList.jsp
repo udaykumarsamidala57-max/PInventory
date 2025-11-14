@@ -59,8 +59,13 @@ body {
   white-space: normal;
   word-break: break-word;
 }
+
+thead {
+  background: linear-gradient(135deg, #ff8c00, #8e2de2);  
+}
+
 .main-table th {
-  background-color: #007bff;
+  
   color: white;
   cursor: pointer;
   position: sticky;

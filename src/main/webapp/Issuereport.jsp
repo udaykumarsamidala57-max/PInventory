@@ -111,8 +111,11 @@ if (sess == null || sess.getAttribute("username") == null) {
             font-size: 14px;
         }
 
+       thead{
+            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        }
         th {
-            background-color: #007bff;
+            
             color: white;
             padding: 10px;
             text-align: left;
@@ -170,7 +173,11 @@ if (sess == null || sess.getAttribute("username") == null) {
             table, thead, tbody, th, td, tr {
                 display: block;
                 width: 100%;
+                
             }
+            thead{
+background: linear-gradient(135deg, #ff8c00, #8e2de2);
+}
 
             thead tr {
                 display: none;

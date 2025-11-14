@@ -80,9 +80,11 @@ th, td {
     vertical-align: middle;
     word-wrap: break-word;
 }
-
+thead{
+background: linear-gradient(135deg, #ff8c00, #8e2de2);
+}
 th {
-    background: #4e73df;
+    
     color: #fff;
     font-weight: 600;
 }

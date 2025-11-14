@@ -55,6 +55,9 @@ if (sess == null || sess.getAttribute("username") == null) {
             border-collapse: collapse;
             background: white;
         }
+        thead{
+            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+        }
 
         th, td {
             text-align: center;
@@ -63,7 +66,7 @@ if (sess == null || sess.getAttribute("username") == null) {
         }
 
         th {
-            background-color: #007bff;
+            
             color: white;
         }
 
