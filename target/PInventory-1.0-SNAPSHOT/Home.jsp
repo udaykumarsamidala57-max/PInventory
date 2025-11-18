@@ -343,7 +343,7 @@
                 <%
                     if(nextStageCountMap!=null){
                         String[][] stages={{"Approval Pending","approval-pending"},{"PO","po"},
-                                           {"Issue Pending","issue-pending"},{"Issued","issued"},
+                                           {"Issue Pending","issue-pending"},
                                            {"Management Note","management-note"}};
                         for(String[] s:stages){
                             int count=nextStageCountMap.getOrDefault(s[0],0);

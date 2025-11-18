@@ -63,7 +63,7 @@ public class AIndentListServlet extends HttpServlet {
         listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ");
         listSql.append("FROM indent i ");
         listSql.append("LEFT JOIN stock s ON i.item_id = s.item_id ");
-        listSql.append("WHERE (TRIM(i.Indentnext) NOT IN ('Issue','PO','Issued','Cancelled') OR i.Indentnext IS NULL) ");
+        listSql.append("WHERE (TRIM(i.Indentnext) NOT IN ('Issue','PO','Issued','Cancelled','PO Raised') OR i.Indentnext IS NULL) ");
         listSql.append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
 
         // Department filtering
