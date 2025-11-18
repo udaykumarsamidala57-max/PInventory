@@ -55,16 +55,20 @@ public class Home extends HttpServlet {
             }
 
             // ✅ Indent Stage Counts
-            String stageQuery = "SELECT IFNULL(Indentnext,'') AS stage, COUNT(*) FROM indent GROUP BY Indentnext";
+            String stageQuery = "SELECT IFNULL(TRIM(Indentnext),'') AS stage, COUNT(*) " +
+                    "FROM indent GROUP BY IFNULL(TRIM(Indentnext),'')";
             try (PreparedStatement ps = con.prepareStatement(stageQuery);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     String stage = rs.getString(1).trim();
                     int cnt = rs.getInt(2);
+                    if (stage == null) {
+                        stage = "";
+                    }
 
                     switch (stage) {
                         case "":
-                            stage = "Approval-Pending";
+                            stage = "Approval Pending";
                             break;
                         case "PO":
                             stage = "PO";
@@ -72,9 +76,7 @@ public class Home extends HttpServlet {
                         case "Issue":
                             stage = "Issue Pending";
                             break;
-                        case "Issued":
-                            stage = "Issued";
-                            break;
+                        
                         case "Management Note":
                             stage = "Management Note";
                             break;

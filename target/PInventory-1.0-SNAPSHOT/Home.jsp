@@ -98,76 +98,129 @@
         font-size: 13.5px;
     }
 
-     td,th {
+    th, td {
         padding: 8px;
         text-align: center;
         border-bottom: 1px solid #eee;
     }
-
-    thead  {
-    text-align: center;
-    padding: 10px;
-    border-bottom: 1px solid #eee;
+    thead {
     background: linear-gradient(135deg, #ff8c00, #8e2de2);
-    color: #fff;
-    font-weight: 600;
 }
+    
+
+    th {
+      
+        color: #fff;
+        font-weight: 600;
+    }
 
     tr:hover { background: #f0f8ff; }
 
-   /* --- Stage Cards (Modern Colorful Version) --- */
+    /* --- Stage Cards --- */
 .stage-container {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
     gap: 18px;
-    margin-top: 10px;
 }
 
+/* Base card style */
 .stage-card {
-    flex: 1 1 170px;
-    padding: 18px 10px;
-    border-radius: 16px;
-    color: white;
+    flex: 1 1 180px;
+    padding: 18px;
     text-align: center;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.18);
-    transition: 0.35s ease;
-    transform: translateY(0px);
-    cursor: pointer;
+    border-radius: 16px;
+    background-size: 220% 220%;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.45);
+
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15),
+                0 0 22px rgba(255,255,255,0.3);
+
+    transition: 0.4s ease;
+    animation: gradientMove 6s ease infinite;
 }
 
 /* Hover Effect */
 .stage-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 22px rgba(0,0,0,0.25);
+    transform: translateY(-6px) scale(1.04);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.22),
+                0 0 30px rgba(255,255,255,0.4);
 }
 
-/* Stage Heading */
+/* --------------------------
+   DIFFERENT COLORS PER CARD
+---------------------------*/
+
+/* Card 1 - Aqua Mint */
+.stage-card:nth-child(1) {
+    background: linear-gradient(135deg,
+        rgba(0, 255, 204, 0.35),
+        rgba(0, 140, 255, 0.35)
+    );
+}
+
+/* Card 2 - Peach Rose */
+.stage-card:nth-child(2) {
+    background: linear-gradient(135deg,
+        rgba(255, 183, 77, 0.35),
+        rgba(255, 99, 146, 0.35)
+    );
+}
+
+/* Card 3 - Purple Glam */
+.stage-card:nth-child(3) {
+    background: linear-gradient(135deg,
+        rgba(168, 105, 255, 0.35),
+        rgba(255, 105, 180, 0.35)
+    );
+}
+
+/* Card 4 - Lime Green */
+.stage-card:nth-child(4) {
+    background: linear-gradient(135deg,
+        rgba(183, 255, 106, 0.35),
+        rgba(64, 186, 70, 0.35)
+    );
+}
+
+/* Card 5 - Sky Blue */
+.stage-card:nth-child(5) {
+    background: linear-gradient(135deg,
+        rgba(136, 203, 255, 0.35),
+        rgba(0, 112, 243, 0.35)
+    );
+}
+
+/* Card 6 - Gold Champagne */
+.stage-card:nth-child(6) {
+    background: linear-gradient(135deg,
+        rgba(255, 230, 150, 0.35),
+        rgba(243, 158, 46, 0.35)
+    );
+}
+
+/* Text */
 .stage-card h4 {
-    font-size: 14px;
-    margin: 8px 0;
+    font-size: 15px;
+    margin: 6px 0;
     font-weight: 600;
+    color: #333;
 }
 
-/* Stage Count */
 .stage-card h2 {
-    font-size: 28px;
+    font-size: 26px;
     margin: 0;
     font-weight: 700;
+    color: #222;
 }
 
-/* Icons */
-.stage-icon {
-    font-size: 30px;
-    margin-bottom: 8px;
+/* Gradient Motion Animation */
+@keyframes gradientMove {
+    0% { background-position: left top; }
+    50% { background-position: right bottom; }
+    100% { background-position: left top; }
 }
-
-/* Color Themes */
-.stage-approval  { background: linear-gradient(135deg, #ff7b00, #ffb84d); }
-.stage-po        { background: linear-gradient(135deg, #005eff, #4da3ff); }
-.stage-issue     { background: linear-gradient(135deg, #9b00ff, #d96cff); }
-.stage-issued    { background: linear-gradient(135deg, #02a858, #56e99a); }
-.stage-note      { background: linear-gradient(135deg, #ff3e6c, #ff85a1); }
 
     /* --- Filters --- */
     .filter-form {
@@ -285,51 +338,23 @@
         </div>
 
         <div class="card">
-    <h3>Stage Summary</h3>
-    <div class="stage-container">
-
-        <% if(nextStageCountMap!=null){ %>
-
-            <!-- Approval Pending -->
-            <div class="stage-card stage-approval">
-                <div class="stage-icon">⏳</div>
-                <h4>Approval Pending</h4>
-                <h2><%= nextStageCountMap.getOrDefault("Approval Pending",0) %></h2>
+            <h3>Stage Summary</h3>
+            <div class="stage-container">
+                <%
+                    if(nextStageCountMap!=null){
+                        String[][] stages={{"Approval Pending","approval-pending"},{"PO","po"},
+                                           {"Issue Pending","issue-pending"},{"Issued","issued"},
+                                           {"Management Note","management-note"}};
+                        for(String[] s:stages){
+                            int count=nextStageCountMap.getOrDefault(s[0],0);
+                %>
+                <div class="stage-card">
+                    <h4><%=s[0]%></h4><h2><%=count%></h2>
+                </div>
+                <% }} %>
             </div>
-
-            <!-- PO -->
-            <div class="stage-card stage-po">
-                <div class="stage-icon">📄</div>
-                <h4>PO</h4>
-                <h2><%= nextStageCountMap.getOrDefault("PO",0) %></h2>
-            </div>
-
-            <!-- Issue Pending -->
-            <div class="stage-card stage-issue">
-                <div class="stage-icon">📦</div>
-                <h4>Issue Pending</h4>
-                <h2><%= nextStageCountMap.getOrDefault("Issue Pending",0) %></h2>
-            </div>
-
-            <!-- Issued -->
-            <div class="stage-card stage-issued">
-                <div class="stage-icon">✔️</div>
-                <h4>Issued</h4>
-                <h2><%= nextStageCountMap.getOrDefault("Issued",0) %></h2>
-            </div>
-
-            <!-- Management Note -->
-            <div class="stage-card stage-note">
-                <div class="stage-icon">📝</div>
-                <h4>Management Note</h4>
-                <h2><%= nextStageCountMap.getOrDefault("Management Note",0) %></h2>
-            </div>
-
-        <% } %>
-
+        </div>
     </div>
-</div>
-
 
     <!-- Charts + Table Side by Side -->
     <div class="chart-table-grid">
