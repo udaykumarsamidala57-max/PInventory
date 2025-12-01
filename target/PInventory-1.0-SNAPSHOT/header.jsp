@@ -267,7 +267,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
         <a href="AIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Indent</a>
       <% } %>
-      <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
+      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
         <a href="DIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Dining Hall Indent</a>
       <% } %>
       

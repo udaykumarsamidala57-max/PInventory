@@ -168,7 +168,20 @@ footer i {
       <button class="btn btn-info" onclick="downloadExcel()">Download Excel</button>
       <button id="expandAll" class="btn" onclick="toggleExpand()">Collapse All</button>
     </div>
+<select id="deptFilter" style="padding:6px 10px; border:1px solid #ccc; border-radius:6px; min-width:160px;">
+    <option value="">All Departments</option>
+    <option value="Electrical">Electrical</option>
+    <option value="Housekeeping">Housekeeping</option>
+    <option value="Plumbing">Plumbing</option>
+    <option value="Dining Hall">Dining Hall</option>
+    <option value="RO Plant">RO Plant</option>
+    <option value="Store">Store</option>
+    <option value="Academics">Academics</option>
+    <option value="Finance">Finance</option>
+    
+</select>
 
+<button class="btn btn-info" onclick="filterDept()">Filter by Dept</button>
     <table id="dataTable" class="main-table">
       <thead>
         <tr>
@@ -231,7 +244,7 @@ footer i {
     </table>
   </div>
 </div>
-
+<a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
 <!-- SCRIPT BLOCK -->
 <script>
 function sortTable(n) {
@@ -305,7 +318,19 @@ function downloadExcel() {
   link.click();
   document.body.removeChild(link);
 }
+function filterDept() {
+	  const selectedDept = document.getElementById('deptFilter').value.toLowerCase();
+	  const rows = document.querySelectorAll('#dataTable tbody tr');
 
+	  rows.forEach(row => {
+	    const dept = row.cells[7]?.innerText.toLowerCase(); // 8th column Dept
+	    if (selectedDept === "" || dept === selectedDept) {
+	      row.style.display = "";
+	    } else {
+	      row.style.display = "none";
+	    }
+	  });
+	}
 // Expand/Collapse
 let expanded = true;
 function toggleExpand() {
