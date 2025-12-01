@@ -323,7 +323,7 @@ table td {
     </form>
   </div>
 </div>
-
+<a href="IndentlistServlet"><i class="fas fa-list text-info"></i> Indent Report</a>
 <script>
 const userRole = "<%= (role != null ? role : "") %>".toLowerCase();
 const userDept = "<%= (dept != null ? dept : "") %>";

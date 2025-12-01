@@ -10,8 +10,8 @@ import javax.servlet.http.*;
 import com.bean.DBUtil;
 import com.bean.IndentItemFull;
 
-@WebServlet("/AIndentListServlet")
-public class AIndentListServlet extends HttpServlet {
+@WebServlet("/DIndentListServlet")
+public class DIndentListServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     // -------------------- GET --------------------
@@ -67,16 +67,11 @@ public class AIndentListServlet extends HttpServlet {
         listSql.append("AND (TRIM(i.status) NOT IN ('Cancelled') OR i.status IS NULL) ");
 
         // Department filtering
-        if (!"Global".equalsIgnoreCase(role)) {
-            if ("Admin".equalsIgnoreCase(role)) {
-                listSql.append("AND i.department IN ('Electrical','Housekeeping','Plumbing','Dining Hall','RO Plant','Store') ");
-            } else {
-                listSql.append("AND i.department = ? ");
-            }
-        } else {
-            // Global → all except Dining Hall
-            listSql.append("AND i.department <> 'Dining Hall' ");
-        }
+       
+            if (true) {
+                listSql.append("AND i.department IN ('Dining Hall') ");
+            } 
+        
 
         // ✅ Order by oldest first
         listSql.append("ORDER BY i.indent_id ASC");
@@ -84,7 +79,7 @@ public class AIndentListServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection();
              PreparedStatement ps = con.prepareStatement(listSql.toString())) {
 
-            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
+            if (false) {
                 ps.setString(1, dept);
             }
 
@@ -121,8 +116,8 @@ public class AIndentListServlet extends HttpServlet {
         request.setAttribute("role", role);
         request.setAttribute("indents", indentList);
         request.setAttribute("pendingPerItem", pendingPerItem);
-        request.getRequestDispatcher("AIndentList.jsp").forward(request, response);
-       
+        
+        request.getRequestDispatcher("DIndents.jsp").forward(request, response);
     }
 
     // -------------------- POST --------------------
@@ -141,7 +136,7 @@ public class AIndentListServlet extends HttpServlet {
         String idStr = request.getParameter("id");
 
         if (action == null) {
-            response.sendRedirect("AIndentListServlet");
+            response.sendRedirect("DIndentListServlet");
             return;
         }
 
@@ -294,6 +289,6 @@ public class AIndentListServlet extends HttpServlet {
             request.setAttribute("errorMsg", "Database Error: " + e.getMessage());
         }
 
-        response.sendRedirect("AIndentListServlet");
+        response.sendRedirect("DIndentListServlet");
     }
 }

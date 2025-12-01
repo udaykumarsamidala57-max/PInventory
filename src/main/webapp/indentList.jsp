@@ -231,7 +231,7 @@ footer i {
     </table>
   </div>
 </div>
-
+<a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
 <!-- SCRIPT BLOCK -->
 <script>
 function sortTable(n) {

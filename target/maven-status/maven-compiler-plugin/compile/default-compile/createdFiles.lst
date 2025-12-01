@@ -1,5 +1,6 @@
 com\bean\IndentItem.class
 com\controller\LoginServlet.class
+com\controller\DIndentListServlet.class
 com\controller\IndentPO.class
 com\controller\DiningHallServlet.class
 com\bean\Indentlist.class
