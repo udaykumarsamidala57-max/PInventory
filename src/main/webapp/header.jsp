@@ -295,6 +295,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
         <a href="IndentPO"><i class="fas fa-file-signature text-primary"></i> Create Purchase Order</a>
         <a href="GRNServlet"><i class="fas fa-clipboard-check text-success"></i> GRN Entry</a>
+        <a href="viewGRN"><i class="fas fa-clipboard-check text-success"></i> GRN Report</a>
         <a href="VendorMaster.jsp"><i class="fas fa-user-tie text-info"></i> Vendor Master</a>
       <% } %>
       
