@@ -68,10 +68,16 @@ if (sess == null || sess.getAttribute("username") == null) {
     <td><%= item.getDescription() %></td>
     <td><%= item.getOrderedQty() %></td>
     <td><%= item.getAlreadyReceived() %></td>
-    <td><input type="number" step="any" name="qty_received_<%=i%>" required min="0"></td>
-<td><input type="number" step="any" name="qty_accepted_<%=i%>" required min="0"></td>
-<td><input type="number" step="any" name="qty_rejected_<%=i%>" required min="0"></td>
-    <td><input name="remarks_<%=i%>"></td>
+    <td>
+    <input type="number" name="qty_received_<%=i%>" required min="0" step="0.01" value="0.0" placeholder="Qty Received">
+</td>
+<td>
+    <input type="number" name="qty_accepted_<%=i%>" required min="0" step="0.01" value="0.0" placeholder="Qty Accepted">
+</td>
+<td>
+    <input type="number" name="qty_rejected_<%=i%>" required min="0" step="0.01" value="0.0" placeholder="Qty Rejected">
+</td>
+    <td><input name="remarks_<%=i%>" value="NA"></td>
 <input type="hidden" name="description_<%=i%>" value="<%= item.getDescription() %>">
 
     <input type="hidden" name="po_item_id<%=i%>" value="<%= item.getPoItemId() %>">

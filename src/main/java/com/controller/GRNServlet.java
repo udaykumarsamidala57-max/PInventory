@@ -44,7 +44,7 @@ public class GRNServlet extends HttpServlet {
             }
 
             // --- Already accepted qty per item ---
-            Map<Integer, Integer> receivedMap = new HashMap<>();
+            Map<Integer, Double> receivedMap = new HashMap<>();
             try (PreparedStatement psRec = con.prepareStatement(
                 "SELECT gi.po_item_id, SUM(gi.qty_accepted) AS rec " +
                 "FROM grn_items gi JOIN grn_master gm ON gi.grn_id=gm.grn_id " +
@@ -52,7 +52,7 @@ public class GRNServlet extends HttpServlet {
                 psRec.setInt(1, poId);
                 try (ResultSet rsRec = psRec.executeQuery()) {
                     while (rsRec.next()) {
-                        receivedMap.put(rsRec.getInt("po_item_id"), rsRec.getInt("rec"));
+                        receivedMap.put(rsRec.getInt("po_item_id"), rsRec.getDouble("rec"));
                     }
                 }
             }
@@ -73,7 +73,7 @@ public class GRNServlet extends HttpServlet {
                         item.setItemId(rsItems.getInt("item_id"));
                         item.setDescription(rsItems.getString("item_name"));
                         item.setOrderedQty(rsItems.getDouble("qty"));
-                        item.setAlreadyReceived(receivedMap.getOrDefault(poItemId, 0));
+                        item.setAlreadyReceived(receivedMap.getOrDefault(poItemId, 0.0));
                         itemList.add(item);
                     }
                 }
@@ -148,7 +148,7 @@ public class GRNServlet extends HttpServlet {
             // --- Validation: ensure accepted qty not more than remaining ---
             for (int i = 0; i < totalItems; i++) {
                 int poItemId   = Integer.parseInt(request.getParameter("po_item_id" + i));
-                int qtyAccepted = Integer.parseInt(request.getParameter("qty_accepted_" + i));
+                double qtyAccepted = Double.parseDouble(request.getParameter("qty_accepted_" + i));
 
                 double orderedQty = orderedMap.getOrDefault(poItemId, 0.0);
                 double alreadyRec = alreadyReceivedMap.getOrDefault(poItemId, 0.0);
@@ -193,8 +193,8 @@ public class GRNServlet extends HttpServlet {
 
             // --- Insert GRN Items + Update Stock & Ledger ---
             try (PreparedStatement psItems = con.prepareStatement(
-            	    "INSERT INTO grn_items(grn_id,po_item_id,item_id,item_description,qty_received,qty_accepted,qty_rejected,remarks) " +
-            	    "VALUES (?,?,?,?,?,?,?,?)");
+                    "INSERT INTO grn_items(grn_id,po_item_id,item_id,item_description,qty_received,qty_accepted,qty_rejected,remarks) " +
+                    "VALUES (?,?,?,?,?,?,?,?)");
                  PreparedStatement psStockSel = con.prepareStatement(
                     "SELECT stock_id, total_received, balance_qty FROM stock WHERE item_id=?");
                  PreparedStatement psStockIns = con.prepareStatement(
@@ -210,9 +210,12 @@ public class GRNServlet extends HttpServlet {
                     int poItemId   = Integer.parseInt(request.getParameter("po_item_id" + i));
                     int itemId     = Integer.parseInt(request.getParameter("item_id" + i));
                     String description = request.getParameter("description_" + i);
-                    int qtyReceived = Integer.parseInt(request.getParameter("qty_received_" + i));
-                    int qtyAccepted = Integer.parseInt(request.getParameter("qty_accepted_" + i));
-                    int qtyRejected = Integer.parseInt(request.getParameter("qty_rejected_" + i));
+
+                    // parse as double for decimals
+                    double qtyReceived = Double.parseDouble(request.getParameter("qty_received_" + i));
+                    double qtyAccepted = Double.parseDouble(request.getParameter("qty_accepted_" + i));
+                    double qtyRejected = Double.parseDouble(request.getParameter("qty_rejected_" + i));
+
                     String remarks  = request.getParameter("remarks_" + i);
 
                     // --- Insert GRN Item ---
@@ -220,9 +223,9 @@ public class GRNServlet extends HttpServlet {
                     psItems.setInt(2, poItemId);
                     psItems.setInt(3, itemId);
                     psItems.setString(4, description);
-                    psItems.setInt(5, qtyReceived);
-                    psItems.setInt(6, qtyAccepted);
-                    psItems.setInt(7, qtyRejected);
+                    psItems.setDouble(5, qtyReceived);
+                    psItems.setDouble(6, qtyAccepted);
+                    psItems.setDouble(7, qtyRejected);
                     psItems.setString(8, remarks);
                     psItems.executeUpdate();
 
@@ -313,4 +316,5 @@ public class GRNServlet extends HttpServlet {
 
         request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
     }
+
 }
