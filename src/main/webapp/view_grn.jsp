@@ -174,6 +174,16 @@ function collapseAll(){document.querySelectorAll('.grn-card .items-container').f
 function csvSafe(s){if(s===null||s===undefined)return'';var str=String(s);if(str.indexOf('"')!==-1) str=str.replace(/"/g,'""'); if(str.search(/("|,|\n)/g)!==-1) str='"'+str+'"'; return str;}
 function downloadCSV(){ var rows=[]; rows.push(['GRN No','GRN Date','Vendor Name','Vendor GSTIN','Address','PO Number','Invoice No','Invoice Date','Received By','GRN Remarks','Item Description','Qty Ordered','Qty Received','Qty Accepted','Qty Rejected','Item Remarks'].join(',')); var visibleCards=document.querySelectorAll('.grn-card:not(.hidden)'); if(visibleCards.length===0){ alert('No visible GRNs to download.'); return;} visibleCards.forEach(function(card){ var meta={ grnNo:card.getAttribute('data-grn')||'', grnDate:card.getAttribute('data-date')||'', vendor:card.getAttribute('data-vendor')||'', gstin:card.getAttribute('data-gstin')||'', address:card.getAttribute('data-address')||'', po:card.getAttribute('data-po')||'', invoiceNo:card.getAttribute('data-invoice')||'', invoiceDate:card.getAttribute('data-invdate')||'', receivedBy:card.getAttribute('data-receivedby')||'', grnRemarks:card.getAttribute('data-remarks')||'' }; var itemRows=card.querySelectorAll('.items-table tbody tr.item-row'); if(itemRows.length===0){ rows.push([csvSafe(meta.grnNo),csvSafe(meta.grnDate),csvSafe(meta.vendor),csvSafe(meta.gstin),csvSafe(meta.address),csvSafe(meta.po),csvSafe(meta.invoiceNo),csvSafe(meta.invoiceDate),csvSafe(meta.receivedBy),csvSafe(meta.grnRemarks),'','','','','',''].join(',')); }else{ itemRows.forEach(function(ir){ rows.push([csvSafe(meta.grnNo),csvSafe(meta.grnDate),csvSafe(meta.vendor),csvSafe(meta.gstin),csvSafe(meta.address),csvSafe(meta.po),csvSafe(meta.invoiceNo),csvSafe(meta.invoiceDate),csvSafe(meta.receivedBy),csvSafe(meta.grnRemarks),csvSafe(ir.getAttribute('data-desc')||ir.querySelector('.cell-desc')?.innerText||''),csvSafe(ir.getAttribute('data-qordered')||ir.querySelector('.cell-qordered')?.innerText||''),csvSafe(ir.getAttribute('data-qreceived')||ir.querySelector('.cell-qreceived')?.innerText||''),csvSafe(ir.getAttribute('data-qaccepted')||ir.querySelector('.cell-qaccepted')?.innerText||''),csvSafe(ir.getAttribute('data-qrejected')||ir.querySelector('.cell-qrejected')?.innerText||''),csvSafe(ir.getAttribute('data-remarks')||ir.querySelector('.cell-remarks')?.innerText||'')].join(',')); }); } }); var csvContent=rows.join('\n'); var blob=new Blob([csvContent], {type:'text/csv;charset=utf-8;'}); var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; var ts=new Date(); a.download='GRN_export_'+ts.getFullYear()+('0'+(ts.getMonth()+1)).slice(-2)+('0'+ts.getDate()).slice(-2)+'_'+('0'+ts.getHours()).slice(-2)+('0'+ts.getMinutes()).slice(-2)+'.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);}
 document.addEventListener('DOMContentLoaded', function(){ document.getElementById('filter_po').addEventListener('input',filterGRNs); document.getElementById('filter_from').addEventListener('change',filterGRNs); document.getElementById('filter_to').addEventListener('change',filterGRNs); document.getElementById('btn_expand_all').addEventListener('click',expandAll); document.getElementById('btn_collapse_all').addEventListener('click',collapseAll); document.getElementById('btn_download_csv').addEventListener('click',downloadCSV); filterGRNs();});
+function printGRN(grnNo){
+    if(!grnNo){
+        alert("Invalid GRN Number");
+        return;
+    }
+    window.open(
+        "PrintGRN.jsp?grnNo=" + encodeURIComponent(grnNo),
+        "_blank"
+    );
+}
 </script>
 </head>
 
@@ -233,9 +243,16 @@ for(Map<String,Object> grn:allGRNs){
             <span class="status-badge <%=status.equalsIgnoreCase("completed")?"status-completed":"status-pending"%>"><%=status.substring(0,1).toUpperCase()+status.substring(1)%></span>
             <div style="font-size:13px; color:var(--muted); margin-top:4px;"><%=vendor%> | PO: <b><%=poId%></b></div>
         </div>
-        <div class="controls-right">
-            <button class="toggle-btn" onclick="toggleItems('<%=index%>')">Show / Hide Items</button>
-        </div>
+       <div class="controls-right">
+    <button class="toggle-btn" onclick="toggleItems('<%=index%>')">
+        Show / Hide Items
+    </button>
+
+    <button class="btn small primary"
+            onclick="printGRN('<%=grnNo%>')">
+        🖨 Print
+    </button>
+</div>
     </div>
 
     <div class="info-grid">

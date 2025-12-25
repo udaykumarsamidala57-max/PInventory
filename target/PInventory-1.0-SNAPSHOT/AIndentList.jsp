@@ -392,7 +392,9 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
                         <option value="Management Note">Management Note</option>
                     </select>
 
-                    <button class="btn-blue" type="submit">Confirm</button>
+                    <button class="btn-blue" onclick="finalApprove(<%= ind.getId() %>, this.form)">
+    Confirm
+</button>
                 </form>
             </div>
         <% } %>
@@ -430,6 +432,20 @@ function filterTable(){const fromDate=document.getElementById("fromDate").value;
 const rows=document.querySelectorAll(".indent-card");rows.forEach(card=>{const headerText=card.innerText.toLowerCase();const dateText=card.querySelector(".indent-header div:nth-child(2)").innerText.split(":")[1]?.trim()||"";let visible=true;
 if(fromDate&&dateText<fromDate)visible=false;if(toDate&&dateText>toDate)visible=false;if(keyword&&!headerText.includes(keyword))visible=false;card.style.display=visible?"":"none";});}
 function resetFilters(){document.getElementById("fromDate").value="";document.getElementById("toDate").value="";document.getElementById("keywordSearch").value="";document.querySelectorAll(".indent-card").forEach(r=>r.style.display="");}
+function finalApprove(id, form) {
+    const formData = new FormData(form);
+
+    fetch("AIndentListServlet", {
+        method: "POST",
+        body: new URLSearchParams(formData)
+    })
+    .then(response => response.text())
+    .then(data => {
+        showPopup("✔ Updated Successfully!");
+        form.parentElement.style.background = "#d4edda"; 
+    });
+}
+
 </script>
 </body>
 </html>
