@@ -353,6 +353,12 @@
                 <td>
                     <button class="toggle-btn" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
                 </td>
+                <td>
+                        <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
+                            <input type="hidden" name="poNumber" value="<%= po.poNumber %>">
+                            <input type="submit" value="View / Print" class="action-btn print-btn" />
+                        </form>
+                    </td>
             </tr>
             <tr>
                 <td colspan="7">
