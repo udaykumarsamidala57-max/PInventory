@@ -137,6 +137,9 @@ if (grnNo != null && !grnNo.trim().isEmpty()) {
 
 <table class="info-table">
 <tr>
+    <td colspan="2"><b>PO No:</b> <%= rs.getString("po_no") %></td>
+   </tr>
+<tr>
     <td><b>PO No:</b> <%= rs.getString("po_no") %></td>
     <td><b>GRN No:</b> <%= rs.getString("grn_no") %></td>
     <td><b>GRN Date:</b> <%= rs.getDate("grn_date") %></td>
