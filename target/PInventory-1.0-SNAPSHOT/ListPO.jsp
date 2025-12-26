@@ -233,6 +233,21 @@
             .toolbar input, .toolbar select, .toolbar button { width: 100%; }
             .items-block { font-size: 12px; padding: 8px; }
         }
+        
+        button {
+            background: #2176bd;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            display: inline-block;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background: red;
+        }
     </style>
 
     <script>
@@ -352,13 +367,12 @@
                 <td><%= po.status %></td>
                 <td>
                     <button class="toggle-btn" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
-                </td>
-                <td>
-                        <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
+                    <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
                             <input type="hidden" name="poNumber" value="<%= po.poNumber %>">
-                            <input type="submit" value="View / Print" class="action-btn print-btn" />
+                            <button  />View/Print</button>
                         </form>
-                    </td>
+                </td>
+                
             </tr>
             <tr>
                 <td colspan="7">

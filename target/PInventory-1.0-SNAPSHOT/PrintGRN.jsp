@@ -114,8 +114,13 @@ h3{
 if (grnNo != null && !grnNo.trim().isEmpty()) {
     try (Connection con = DBUtil.getConnection()) {
 
+        // Fetch GRN details with PO number
         PreparedStatement pst = con.prepareStatement(
-            "SELECT * FROM grn_master WHERE grn_no=?"
+            "SELECT gm.*, pi.po_no " +
+            "FROM grn_master gm " +
+            "JOIN po_items pi ON gm.po_id = pi.PO_id " +
+            "WHERE gm.grn_no = ? " +
+            "LIMIT 1"
         );
         pst.setString(1, grnNo);
         ResultSet rs = pst.executeQuery();
@@ -132,6 +137,10 @@ if (grnNo != null && !grnNo.trim().isEmpty()) {
 
 <table class="info-table">
 <tr>
+    <td colspan="2"><b>PO No:</b> <%= rs.getString("po_no") %></td>
+   </tr>
+<tr>
+   
     <td><b>GRN No:</b> <%= rs.getString("grn_no") %></td>
     <td><b>GRN Date:</b> <%= rs.getDate("grn_date") %></td>
 </tr>
@@ -153,11 +162,12 @@ if (grnNo != null && !grnNo.trim().isEmpty()) {
 </table>
 
 <%
-PreparedStatement pstItems = con.prepareStatement(
-    "SELECT * FROM grn_items WHERE grn_id=?"
-);
-pstItems.setInt(1, rs.getInt("grn_id"));
-ResultSet ri = pstItems.executeQuery();
+        // Fetch GRN items
+        PreparedStatement pstItems = con.prepareStatement(
+            "SELECT * FROM grn_items WHERE grn_id=?"
+        );
+        pstItems.setInt(1, rs.getInt("grn_id"));
+        ResultSet ri = pstItems.executeQuery();
 %>
 
 <table class="items-table">
@@ -173,8 +183,8 @@ ResultSet ri = pstItems.executeQuery();
 </thead>
 <tbody>
 <%
-int sl=1;
-while(ri.next()){
+        int sl = 1;
+        while (ri.next()) {
 %>
 <tr>
     <td class="text-center"><%= sl++ %></td>
@@ -199,7 +209,7 @@ while(ri.next()){
         } else {
             out.println("<p style='color:red;text-align:center'>GRN Not Found</p>");
         }
-    } catch(Exception e){
+    } catch(Exception e) {
         out.println("<p style='color:red'>Error: "+e.getMessage()+"</p>");
     }
 }
