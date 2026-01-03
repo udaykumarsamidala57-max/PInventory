@@ -1,0 +1,268 @@
+/* ===== Global ===== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #e3f2fd, #f8fbff);
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    color: #003366;
+    text-align: center;
+    margin: 25px 0;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.5px;
+}
+
+.card {
+    background: transparent;
+    max-width: 96%;
+    margin: auto;
+}
+
+/* ===== Indent Card ===== */
+.indent-card {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.07);
+    margin-bottom: 25px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.3s ease;
+}
+
+.indent-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 22px rgba(0,0,0,0.12);
+}
+
+/* ===== Header ===== */
+.indent-header {
+    background: linear-gradient(90deg, #004080, #0073e6);
+    color: #fff;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    border-bottom: 4px solid #003366;
+}
+
+.indent-header div {
+    flex: 1;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.indent-header .indent-no {
+    font-weight: 700;
+    font-size: 18px;
+}
+
+/* ===== Table ===== */
+.inner-table {
+    width: 98%;
+    margin: 15px auto 20px;
+    border-collapse: collapse;
+    table-layout: fixed; /* 🔑 must */
+}
+
+/* Common cell rules */
+.inner-table th,
+.inner-table td {
+    padding: 9px 10px;
+    font-size: 13px;
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Header */
+.inner-table th {
+    background-color: #eaf3ff;
+    color: #003366;
+    font-weight: 600;
+    border-bottom: 2px solid #dce6f5;
+}
+
+/* Body */
+.inner-table td {
+    border-bottom: 1px solid #edf2f7;
+    background-color: #fff;
+}
+
+.inner-table tr:nth-child(even) td {
+    background-color: #f8fbff;
+}
+
+.inner-table tr:hover td {
+    background-color: #eaf3ff;
+}
+
+/* ===== Column Width Control (ALL 10 COLUMNS) ===== */
+.inner-table th:nth-child(1),
+.inner-table td:nth-child(1) { width: 60px; }    /* ID */
+
+.inner-table th:nth-child(2),
+.inner-table td:nth-child(2) {
+    width: 220px;                                /* ITEM */
+    text-align: left;
+    padding-left: 14px;
+}
+
+.inner-table th:nth-child(3),
+.inner-table td:nth-child(3) { width: 70px; }    /* Available */
+
+.inner-table th:nth-child(4),
+.inner-table td:nth-child(4) { width: 70px; }    /* Required */
+
+.inner-table th:nth-child(5),
+.inner-table td:nth-child(5) { width: 60px; }    /* UOM */
+
+.inner-table th:nth-child(6),
+.inner-table td:nth-child(6) {
+    width: 240px;                                /* PURPOSE */
+    text-align: left;
+    padding-left: 14px;
+    white-space: normal;
+}
+
+.inner-table th:nth-child(7),
+.inner-table td:nth-child(7) { width: 80px; }    /* I/C */
+
+.inner-table th:nth-child(8),
+.inner-table td:nth-child(8) {
+    width: 150px;                                /* L1 Approved By */
+    font-weight: 500;
+}
+
+.inner-table th:nth-child(9),
+.inner-table td:nth-child(9) { width: 90px; }    /* L2 */
+
+.inner-table th:nth-child(10),
+.inner-table td:nth-child(10) {
+    width: 190px;                                /* Actions */
+}
+
+/* ===== Status Alignment ===== */
+.ic-status,
+.l2-status,
+.approved-by {
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ===== Buttons ===== */
+button,
+.btn-blue,
+.btn-orange,
+.btn-edit,
+.btn-delete,
+.btn-green {
+    border: none;
+    border-radius: 6px;
+    padding: 7px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-blue {
+    background: #007bff;
+    color: #fff;
+}
+
+.btn-blue:hover {
+    background: #0056b3;
+}
+
+.btn-green {
+    background: #28a745;
+    color: #fff;
+}
+
+.btn-green:hover {
+    background: #218838;
+}
+
+/* ===== Final Approve Action ===== */
+.final-action {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: nowrap;
+}
+
+/* Dropdown */
+.final-action select {
+    padding: 7px 10px;
+    border-radius: 8px;
+    border: 1px solid #cfd8dc;
+    font-size: 13px;
+    font-weight: 500;
+    background: #fff;
+    color: #003366;
+    cursor: pointer;
+    min-width: 120px;
+    transition: all 0.2s ease;
+}
+
+.final-action select:hover {
+    border-color: #007bff;
+}
+
+.final-action select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.15);
+}
+
+/* Confirm button */
+.final-action .btn-blue {
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 3px 8px rgba(0,123,255,0.25);
+}
+
+.final-action .btn-blue:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(0,123,255,0.35);
+}
+
+/* ===== Purchase / Issue Badges ===== */
+.badge {
+    padding: 4px 10px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.badge-purchase {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+.badge-issue {
+    background: #e3fcef;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+/* ===== Approved Badge ===== */
+.approved-badge {
+    background: #e6fffa;
+    color: #065f46;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 12px;
+}
