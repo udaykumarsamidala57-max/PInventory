@@ -140,13 +140,25 @@ public class Home extends HttpServlet {
         String selectedDept = request.getParameter("department");
         if (selectedDept == null) selectedDept = "All";
 
-        String selectedYear = request.getParameter("year");
-        if (selectedYear == null) {
-            selectedYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
+        String selectedFY = request.getParameter("year");
+        if (selectedFY == null) {
+            int y = Calendar.getInstance().get(Calendar.YEAR);
+            selectedFY = (y - 1) + "-" + y;
         }
 
-        String[] monthNames = {"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        // Parse FY
+        String[] fyParts = selectedFY.split("-");
+        int fyStartYear = Integer.parseInt(fyParts[0]);
+        int fyEndYear = Integer.parseInt(fyParts[1]);
+
+        java.sql.Date fyStart = java.sql.Date.valueOf(fyStartYear + "-03-01");
+        java.sql.Date fyEnd = java.sql.Date.valueOf(fyEndYear + "-02-28");
+
+        // FY Month Order
+        String[] monthNames = {
+                "Mar","Apr","May","Jun","Jul","Aug",
+                "Sep","Oct","Nov","Dec","Jan","Feb"
+        };
 
         Map<String, double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
@@ -157,69 +169,84 @@ public class Home extends HttpServlet {
             List<String> departments = new ArrayList<>();
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT DISTINCT department FROM stock_issues " +
-                            "WHERE department IS NOT NULL AND department<>'' ORDER BY department");
+                    "WHERE department IS NOT NULL AND department<>'' ORDER BY department");
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    departments.add(rs.getString("department"));
+                    departments.add(rs.getString(1));
                 }
             }
 
-            // ✅ Years dropdown
+            // ✅ Financial Year dropdown
             List<String> years = new ArrayList<>();
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT DISTINCT YEAR(issue_date) AS y FROM stock_issues " +
-                            "WHERE issue_date IS NOT NULL ORDER BY y DESC");
+
+            String fyQuery =
+                "SELECT DISTINCT " +
+                "CASE " +
+                " WHEN MONTH(issue_date) >= 3 " +
+                " THEN CONCAT(YEAR(issue_date), '-', YEAR(issue_date)+1) " +
+                " ELSE CONCAT(YEAR(issue_date)-1, '-', YEAR(issue_date)) " +
+                "END AS fy " +
+                "FROM stock_issues " +
+                "ORDER BY fy DESC";
+
+            try (PreparedStatement ps = con.prepareStatement(fyQuery);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    years.add(rs.getString("y"));
+                    years.add(rs.getString("fy"));
                 }
             }
 
-            // ✅ Main Data Query
+            // ✅ Main FY Data Query
             StringBuilder sql = new StringBuilder(
-                    "SELECT department, MONTH(issue_date) AS m, SUM(IFNULL(total_value,0)) AS total_value " +
-                            "FROM stock_issues WHERE issue_date IS NOT NULL AND YEAR(issue_date)=? ");
+                "SELECT department, MONTH(issue_date) m, SUM(IFNULL(total_value,0)) v " +
+                "FROM stock_issues WHERE issue_date BETWEEN ? AND ? "
+            );
             if (!"All".equalsIgnoreCase(selectedDept)) {
                 sql.append("AND department=? ");
             }
-            sql.append("GROUP BY department, m ORDER BY department, m");
+            sql.append("GROUP BY department, m");
 
             try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
-                ps.setInt(1, Integer.parseInt(selectedYear));
+                ps.setDate(1, fyStart);
+                ps.setDate(2, fyEnd);
                 if (!"All".equalsIgnoreCase(selectedDept)) {
-                    ps.setString(2, selectedDept);
+                    ps.setString(3, selectedDept);
                 }
 
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String dept = rs.getString("department");
-                        int month = rs.getInt("m");
-                        double val = rs.getDouble("total_value");
+                        int dbMonth = rs.getInt("m");
+                        double val = rs.getDouble("v");
 
-                        if (dept == null || dept.trim().isEmpty()) continue;
+                        if (dept == null) continue;
+
+                        // Convert Calendar Month → FY Index
+                        int index = (dbMonth >= 3) ? (dbMonth - 3) : (dbMonth + 9);
+
                         dataMap.putIfAbsent(dept, new double[12]);
-                        dataMap.get(dept)[month - 1] = val;
+                        dataMap.get(dept)[index] += val;
                         grandTotal += val;
                     }
                 }
             }
 
-            // ✅ Set attributes for JSP
+            // Set Attributes
             request.setAttribute("departments", departments);
             request.setAttribute("years", years);
             request.setAttribute("dataMap", dataMap);
             request.setAttribute("monthNames", monthNames);
             request.setAttribute("selectedDept", selectedDept);
-            request.setAttribute("selectedYear", selectedYear);
+            request.setAttribute("selectedYear", selectedFY);
             request.setAttribute("grandTotal", grandTotal);
             request.setAttribute("totalRows", dataMap.size());
 
-            // ✅ Forward to Home.jsp
             RequestDispatcher rd = request.getRequestDispatcher("Home.jsp");
             rd.forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 }
