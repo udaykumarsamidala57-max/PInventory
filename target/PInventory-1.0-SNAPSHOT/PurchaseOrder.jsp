@@ -275,7 +275,7 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
 
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
             <td data-label="Item"><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
-            <td data-label="Qty"><input type="number" step="any" name="qty" value="<%=item.getQty()%>" ></td>
+            <td data-label="Qty"><input type="number" step="0.01" name="qty" value="<%=item.getQty()%>" ></td>
             <td data-label="Rate"><input type="number" step="0.01" name="rate"></td>
             <td data-label="Discount %"><input type="number" step="0.01" name="discPercent"></td>
             <td data-label="GST %"><input type="number" step="0.01" name="gstPercent"></td>
