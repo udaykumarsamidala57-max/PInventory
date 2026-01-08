@@ -328,7 +328,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
 
 
-  <% if ((!"Global".equalsIgnoreCase(roles)|| "Incharge".equalsIgnoreCase(roles))&& "Finance".equalsIgnoreCase(depts)  ){ %>
+  <% if (("Global".equalsIgnoreCase(roles)|| "Incharge".equalsIgnoreCase(roles))&& "Finance".equalsIgnoreCase(depts)  ){ %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-cog text-secondary"></i> Masters <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">

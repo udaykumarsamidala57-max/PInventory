@@ -11,7 +11,7 @@
     }
     String role = (String) sess.getAttribute("role");
     String dept = (String) sess.getAttribute("department");
-    if ((!"Global".equalsIgnoreCase(role)|| "Incharge".equalsIgnoreCase(role))&& "Finance".equalsIgnoreCase(dept)  ) {
+    if ((!"Global".equalsIgnoreCase(role) || !"Incharge".equalsIgnoreCase(role))&& !"Finance".equalsIgnoreCase(dept)) {
         out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");
         return;
     }
