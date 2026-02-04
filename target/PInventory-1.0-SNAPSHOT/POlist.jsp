@@ -31,7 +31,7 @@
             text-align: center;
         }
 
-        /* Main Table */
+       
         table.main-table {
             width: 98%;
             margin: 0 auto 40px auto;
@@ -57,7 +57,7 @@
         table.main-table tr:nth-child(even) td { background-color: #f2f6fa; }
         table.main-table tr:hover td { background-color: #eaf1fc; }
 
-        /* Expandable Items Block */
+     
         .items-block {
             width: 94%;
             margin: 12px auto;
@@ -85,7 +85,7 @@
             padding-bottom: 6px;
         }
 
-        /* Items Table */
+      
         .items-table {
             width: 100%;
             border-collapse: collapse;
@@ -110,7 +110,7 @@
         .items-table tr:nth-child(even) { background: #eef5ff; }
         .items-table tr:hover { background: #e4efff; }
 
-        /* Action Buttons */
+      
         .action-btn {
             margin: 3px 0;
             padding: 6px 10px;
@@ -204,7 +204,7 @@
                     <td><%= approval %></td>
 
                     <td>
-                        <!-- Delete -->
+                       
                         <form action="POListServlet" method="get" style="margin:0;">
                             <input type="hidden" name="delete_id" value="<%= po.getPoNumber() %>">
                             <input type="submit" value="Delete"
@@ -213,7 +213,7 @@
                                 onclick="return confirm('Are you sure you want to delete this record?');" />
                         </form>
 
-                        <!-- Approve -->
+                        
                         <% if ("Global".equalsIgnoreCase(role)) { %>
                         <form action="POListServlet" method="get" style="margin:0;">
                             <input type="hidden" name="Approve_id" value="<%= po.getPoNumber() %>">
@@ -225,7 +225,7 @@
                         <% } %>
                     </td>
 
-                    <!-- Print -->
+                    
                     <td>
                         <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
                             <input type="hidden" name="poNumber" value="<%= po.getPoNumber() %>">
@@ -233,7 +233,7 @@
                         </form>
                     </td>
 
-                    <!-- GRN -->
+                   
                     <td>
                         <form action="GRNServlet" method="get" style="margin:0;">
                             <input type="hidden" name="po_number" value="<%= po.getPoNumber() %>">
@@ -243,14 +243,14 @@
                         </form>
                     </td>
 
-                    <!-- Expand Items -->
+                   
                     <td>
                         <input type="button" id="btn-<%= poId %>" value="Show Items"
                             class="action-btn expand-btn" onclick="toggleItems('<%= poId %>')">
                     </td>
                 </tr>
 
-                <!-- Items Block -->
+                
                 <tr>
                     <td colspan="9" style="padding:0;">
                         <div class="items-block" id="items-<%= poId %>">

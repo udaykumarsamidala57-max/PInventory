@@ -16,7 +16,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="CSS/Form.css">
 <style>
-/* ---------- GLOBAL ---------- */
+
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
@@ -64,7 +64,7 @@ h2, h3 {
     margin: 10px 0;
 }
 
-/* ---------- TABLE ---------- */
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -121,9 +121,7 @@ input[type="text"] {
     margin-top: 15px;
 }
 
-/* ---------- RESPONSIVE DESIGN ---------- */
 
-/* Medium screens (tablets, small laptops) */
 @media (max-width: 1024px) {
     .main-content {
         width: 96%;
@@ -143,7 +141,7 @@ input[type="text"] {
     }
 }
 
-/* Small screens (mobiles) */
+
 @media (max-width: 768px) {
     .card {
         padding: 15px;
@@ -207,7 +205,7 @@ input[type="text"] {
     }
 }
 
-/* Extra small devices (below 480px) */
+
 @media (max-width: 480px) {
     body {
         font-size: 13px;

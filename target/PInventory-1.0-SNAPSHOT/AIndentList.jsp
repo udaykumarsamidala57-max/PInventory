@@ -13,12 +13,10 @@ if (sess == null || sess.getAttribute("username") == null) {
 String role = (String) sess.getAttribute("role");
 String loginUser = (String) sess.getAttribute("username");
 
-Map<Integer, Double> pendingMap =
-(Map<Integer, Double>) request.getAttribute("pendingPerItem");
+Map<Integer, Double> pendingMap = (Map<Integer, Double>) request.getAttribute("pendingPerItem");
 if (pendingMap == null) pendingMap = new HashMap<>();
 
-List<IndentItemFull> indents =
-(List<IndentItemFull>) request.getAttribute("indents");
+List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
 if (indents == null) indents = new ArrayList<>();
 
 Map<String, List<IndentItemFull>> grouped = new LinkedHashMap<>();
@@ -54,7 +52,6 @@ var LOGIN_USER = "<%= loginUser %>";
 
 <div class="indent-card">
 
-<!-- ===== HEADER WITH SINGLE BADGE ===== -->
 <div class="indent-header">
     <div class="indent-no">
         #<%= e.getKey() %>
@@ -70,7 +67,6 @@ var LOGIN_USER = "<%= loginUser %>";
     <div class="status-text"><%= first.getStatus() %></div>
 </div>
 
-<!-- ===== TABLE ===== -->
 <table class="inner-table">
 <thead>
 <tr>
@@ -100,7 +96,6 @@ var LOGIN_USER = "<%= loginUser %>";
 <td><%= ind.getUom() %></td>
 <td><%= ind.getPurpose() %></td>
 
-<!-- I/C -->
 <td class="ic-status">
 <% if (!"Approved".equalsIgnoreCase(ind.getIstatus())) { %>
 <button class="btn-green" onclick="ajaxApproveIC(<%= ind.getId() %>)">Approve</button>
@@ -109,15 +104,12 @@ var LOGIN_USER = "<%= loginUser %>";
 <% } %>
 </td>
 
-<!-- L1 APPROVED BY -->
 <td class="approved-by" id="approvedBy-<%= ind.getId() %>">
 <%= (ind.getApprovedBy()==null || ind.getApprovedBy().isEmpty()) ? "-" : ind.getApprovedBy() %>
 </td>
 
-<!-- L2 STATUS -->
 <td class="l2-status"><%= ind.getStatus() %></td>
 
-<!-- ACTIONS -->
 <td>
 <% if ("Global".equalsIgnoreCase(role)
    && "Approved".equalsIgnoreCase(ind.getIstatus())
@@ -157,8 +149,7 @@ method:"POST",
 headers:{'Content-Type':'application/x-www-form-urlencoded'},
 body:"action=Iapprove&id="+id
 }).then(()=>{
-document.querySelector("#row-"+id+" .ic-status").innerHTML =
-'<span class="approved-badge">✔ Approved</span>';
+document.querySelector("#row-"+id+" .ic-status").innerHTML = '<span class="approved-badge">✔ Approved</span>';	
 document.getElementById("approvedBy-"+id).innerText = LOGIN_USER;
 });
 }

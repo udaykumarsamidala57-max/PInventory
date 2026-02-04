@@ -3,7 +3,7 @@
 <%@ page import="com.bean.DBUtil" %>
 
 <%
-    // ---------------- SESSION & ROLE CHECK ----------------
+    
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
@@ -16,21 +16,18 @@
         return;
     }
 
-    // ---------------- DATABASE CONFIG ----------------
-
-
-    // ---------------- FETCH PARAMETERS ----------------
+   
     String action = request.getParameter("action");
     String selectedCategory = request.getParameter("category");
     String message = "";
 
-    // ---------------- CATEGORY & SUBCATEGORY LISTS ----------------
+  
     List<String> categories = new ArrayList<>();
     List<String> subcategories = new ArrayList<>();
 
     try (Connection con = DBUtil.getConnection()) {
 
-        // Load all active categories
+       
         PreparedStatement psCat = con.prepareStatement("SELECT DISTINCT Category FROM category WHERE status='Active'");
         ResultSet rsCat = psCat.executeQuery();
         while (rsCat.next()) {
@@ -39,7 +36,7 @@
         rsCat.close();
         psCat.close();
 
-        // If category selected, load subcategories
+       
         if (selectedCategory != null && !selectedCategory.isEmpty()) {
             PreparedStatement psSub = con.prepareStatement("SELECT DISTINCT Sub_Category FROM category WHERE Category=? AND status='Active'");
             psSub.setString(1, selectedCategory);
@@ -51,7 +48,7 @@
             psSub.close();
         }
 
-        // ---------------- SAVE ITEM (ON SUBMIT) ----------------
+        
         if ("save".equalsIgnoreCase(action)) {
             String category = request.getParameter("category");
             String subCategory = request.getParameter("subcategory");
@@ -154,7 +151,7 @@
 
 <div class="msg"><%= message %></div>
 
-<!-- Category Selection -->
+
 <div class="form-container">
     <form method="get" action="ItemsMaster.jsp">
         <label>Category:</label>
@@ -170,7 +167,7 @@
     </form>
 </div>
 
-<!-- Add Item Form -->
+
 <div class="form-container">
     <form method="post" action="ItemsMaster.jsp">
         <input type="hidden" name="category" value="<%=selectedCategory != null ? selectedCategory : ""%>">

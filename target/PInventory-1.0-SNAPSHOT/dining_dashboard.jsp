@@ -17,11 +17,11 @@
 <meta charset="UTF-8">
 <title>Dining Hall Analytics Dashboard</title>
 
-<!-- Fonts & Icons -->
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<!-- Chart.js -->
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- FullCalendar -->
+
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
 
@@ -41,7 +41,7 @@ body {
     align-items: center;
 }
 
-/* Heading */
+
 h2 {
     text-align: center;
     color: #2d3436;
@@ -50,7 +50,7 @@ h2 {
     letter-spacing: 1px;
 }
 
-/* Summary Cards */
+
 .summary {
     display: flex;
     flex-wrap: wrap;
@@ -79,7 +79,7 @@ h2 {
     margin: 0;
 }
 
-/* Charts */
+
 .chart-container {
     display: flex;
     flex-wrap: wrap;
@@ -95,7 +95,7 @@ h2 {
     width: 500px;
 }
 
-/* Calendar Container */
+
 .calendar-container {
     background: white;
     border-radius: 25px;
@@ -110,7 +110,7 @@ h2 {
     align-items: center;
 }
 
-/* FullCalendar Styling */
+
 .fc {
     border-radius: 20px;
     overflow: hidden;
@@ -131,7 +131,7 @@ h2 {
 }
 .fc-button:hover { background: #0056b3 !important; }
 
-/* Calendar Events */
+
 .fc-event-title {
     display: block;
     border-radius: 10px;
@@ -158,7 +158,7 @@ h2 {
     font-size: 13px;
 }
 
-/* Filter */
+
 .filter-box { text-align: center; margin-bottom: 30px; }
 input[type="date"], button {
     padding: 10px 15px;
@@ -239,7 +239,7 @@ try {
 } finally { if (con != null) con.close(); }
 %>
 
-<!-- Filter -->
+
 <div class="filter-box">
     <form method="post">
         <label>From:</label>
@@ -250,7 +250,7 @@ try {
     </form>
 </div>
 
-<!-- Summary Cards -->
+
 <div class="summary">
     <div class="card"><h3>Today</h3><p>₹ <%= String.format("%.2f", todayCost) %></p></div>
     <div class="card"><h3>This Week</h3><p>₹ <%= String.format("%.2f", weekCost) %></p></div>
@@ -258,7 +258,7 @@ try {
     <div class="card"><h3>Total</h3><p>₹ <%= String.format("%.2f", totalCost) %></p></div>
 </div>
 
-<!-- Charts -->
+
 <div class="chart-container">
     <div class="chart-box">
         <h4 style="text-align:center;">📅 Day-wise Cost</h4>
@@ -270,7 +270,7 @@ try {
     </div>
 </div>
 
-<!-- Calendar -->
+
 <div class="calendar-container">
     <h4 style="text-align:center;">🗓 Dining Hall Calendar (Session-wise & Total Cost)</h4>
     <div id="diningCalendar"></div>

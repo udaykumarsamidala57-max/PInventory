@@ -18,7 +18,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* ---------- Global ---------- */
+       
         body {
             font-family: 'Poppins', sans-serif;
             background: #f7f9fc;
@@ -48,7 +48,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             color: #333;
         }
 
-        /* ---------- Filter Section ---------- */
+      
         .filter-box {
             margin: 10px 0 20px 0;
             display: flex;
@@ -99,7 +99,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             background: #218838;
         }
 
-        /* ---------- Table ---------- */
+       
         .table-container {
             width: 100%;
             overflow-x: auto;
@@ -138,7 +138,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             background-color: #f1f1f1;
         }
 
-        /* ---------- Responsive Design ---------- */
+      
         @media (max-width: 1024px) {
             .card {
                 padding: 15px;

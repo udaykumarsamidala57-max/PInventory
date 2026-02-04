@@ -124,7 +124,7 @@
 if (poNumber != null && !poNumber.trim().isEmpty()) {
     try (Connection con = DBUtil.getConnection()) {
 
-        // 🔹 Fetch PO Master details
+       
         PreparedStatement pst = con.prepareStatement(
             "SELECT po_number, PO_date AS po_date, vendor_name, vendor_address, vendor_gstin, " +
             "total_gst, total_dis, total_amount, terms_conditions, general_conditions, " +
@@ -138,7 +138,7 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
             String serviceCharge = rsPO.getString("Servicecharge");
             String approvalStatus = rsPO.getString("Approval");
 
-            // 🔹 Update indent table safely (only those linked to PO)
+          
             PreparedStatement updateIndent = con.prepareStatement(
                 "UPDATE indent SET status = 'Approved' WHERE Indentnext = 'PO' AND status <> 'Approved'"
             );
@@ -170,7 +170,7 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
 <p>We are pleased to place our order for the supply of the below items on the terms and conditions mentioned below:</p>
 
 <%
-    // 🔹 Fetch PO items
+    
     PreparedStatement pstItems = con.prepareStatement(
         "SELECT i.description, i.qty, i.rate, i.amount, i.discount_percent, i.discount_value, " +
         "i.gst_percent, i.gst_value, i.net_amount, m.UOM " +

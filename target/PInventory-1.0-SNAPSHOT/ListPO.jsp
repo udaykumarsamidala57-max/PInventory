@@ -159,7 +159,7 @@
             text-align: center;
         }
 
-        /* ✅ Always-visible View Items button */
+     
         .toggle-btn {
             background: #2176bd;
             color: white;
@@ -182,7 +182,7 @@
             padding: 20px;
         }
 
-        /* ✅ Toolbar Styling */
+       
         .toolbar {
             width: 98%;
             margin: 10px auto;
@@ -210,7 +210,7 @@
             background: #218838;
         }
 
-        /* ✅ Responsive Design */
+       
         @media screen and (max-width: 1024px) {
             .content { margin: 0; padding: 10px; }
             table.main-table { font-size: 13px; width: 100%; }

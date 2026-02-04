@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-/* Modern Colorful Theme */
+
 :root {
     --bg: #f0f4f8;
     --card1: #ffffff;
     --card2: #e3f2fd;
-    --accent: #3f51b5; /* Indigo */
+    --accent: #3f51b5; 
     --accent-light: #7986cb;
     --accent-dark: #283593;
     --muted: #555555;
@@ -30,7 +30,7 @@ body {
     color: #111827;
 }
 
-/* Header & Controls */
+
 .header-row {
     display:flex;
     gap:12px;
@@ -69,7 +69,7 @@ h2 { margin:0 0 6px 0; font-weight:700; color: var(--accent-dark); text-shadow: 
 .btn.success { background: linear-gradient(45deg,#43a047,#66bb6a); color:#fff;}
 .small { padding:6px 10px; font-size:13px; }
 
-/* GRN Card */
+
 .container {
     padding:20px;
     margin-bottom:20px;
@@ -100,7 +100,7 @@ h2 { margin:0 0 6px 0; font-weight:700; color: var(--accent-dark); text-shadow: 
 }
 .toggle-btn:hover { color: var(--accent-light); }
 
-/* Info Grid */
+
 .info-grid {
     display:grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -118,7 +118,7 @@ h2 { margin:0 0 6px 0; font-weight:700; color: var(--accent-dark); text-shadow: 
 }
 .info-card:hover { background: linear-gradient(135deg,#e8f0fe,#bbdefb); transform:translateY(-2px); }
 
-/* Items Table */
+
 .items-table {
     width:100%;
     border-collapse:collapse;
@@ -137,20 +137,20 @@ h2 { margin:0 0 6px 0; font-weight:700; color: var(--accent-dark); text-shadow: 
 .items-table tbody tr:nth-child(even) { background:#e8f0fe; }
 .items-table tbody tr:hover { background:#d1c4e9; transform: scale(1.002); transition: all 0.2s ease; }
 
-/* Center numeric columns */
+
 .items-table td.cell-qordered,
 .items-table td.cell-qreceived,
 .items-table td.cell-qaccepted,
 .items-table td.cell-qrejected { text-align:center; }
 
-/* Responsive */
+
 @media (max-width:700px){
     .items-table th, .items-table td { padding:6px 6px; font-size:13px; }
     .header-row { flex-direction:column; align-items:flex-start; }
 }
 .hidden { display:none !important; }
 
-/* Status Badge */
+
 .status-badge {
     display:inline-block;
     padding:4px 8px;

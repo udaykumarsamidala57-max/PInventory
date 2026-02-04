@@ -49,7 +49,7 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Role & Department Management</h2>
 
-    <!-- Add New -->
+   
     <div class="card shadow p-4 mb-4">
         <h5>Add New Role & Department</h5>
         <form method="post" action="role_dept.jsp">
@@ -68,7 +68,7 @@
         </form>
     </div>
 
-    <!-- Display Table -->
+    
     <div class="card shadow p-3">
         <h5>Existing Roles & Departments</h5>
         <table class="table table-bordered table-striped text-center mt-3">

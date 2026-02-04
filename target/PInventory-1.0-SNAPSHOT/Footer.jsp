@@ -4,7 +4,7 @@
     String todayDate = sdf.format(Calendar.getInstance().getTime());
 %>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- FOOTER -->
+
 <footer>
     <p>©<%= todayDate %> | SRS Inventory System | 
    <i class="fas fa-leaf" style="color:green;"></i> Developed by 

@@ -30,13 +30,13 @@
 
     String errorMsg = (String) request.getAttribute("errorMsg");
 
-    // Group indents by indent number
+  
     Map<String, List<IndentItemFull>> groupedIndents = new LinkedHashMap<>();
     for (IndentItemFull i : indents) {
         groupedIndents.computeIfAbsent(i.getIndentNo(), k -> new ArrayList<>()).add(i);
     }
 
-    // Sort: Bring "Pending Next Step" indents to top
+   
     List<Map.Entry<String, List<IndentItemFull>>> sortedIndents = new ArrayList<>(groupedIndents.entrySet());
     Collections.sort(sortedIndents, (a, b) -> {
         boolean aPending = a.getValue().stream().anyMatch(i -> i.getIndentNext() == null || i.getIndentNext().trim().isEmpty());
@@ -333,7 +333,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     <td><%= ind.getUom() %></td>
     <td><%= ind.getPurpose() %></td>
 
-    <!-- Incharge/Admin/Global can approve (except when already approved) -->
+   
     <td>
         <% if (("Incharge".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Global".equalsIgnoreCase(role)) && !"Approved".equalsIgnoreCase(I_Status)) { %>
             <form action="DIndentListServlet" method="post">
@@ -348,7 +348,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
     <td><%= ind.getApprovedBy() %></td>
     <td><%= status %></td>
 
-    <!-- Actions column -->
+  
     <td>
         <% 
             // ✅ Remove Edit option for Global users
@@ -412,7 +412,7 @@ button, .btn-blue, .btn-orange, .btn-edit, .btn-delete, .btn-green {
 </div>
 </div>
 
-<!-- JS (unchanged) -->
+
 <script>
 let formToSubmit=null;
 function showPopup(msg,form=null){document.getElementById("popupMessage").innerText=msg;document.getElementById("popupOverlay").style.display="flex";formToSubmit=form;}
