@@ -25,14 +25,14 @@ if (sess == null || sess.getAttribute("username") == null) {
             padding: 0;
         }
 
-        /* 🔹 Removed top extra margin */
+      
         .main-content {
             width: 90%;
             margin: 0 auto;
             padding: 20px 20px 40px 20px;
         }
 
-        /* 🔹 Prevent extra gap from header include */
+      
         header, .header {
             margin: 0;
             padding: 0;
@@ -68,7 +68,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             text-decoration: underline;
         }
 
-        /* ---------- Filter Bar ---------- */
+       
         .filter-bar {
             margin-bottom: 15px;
             display: flex;
@@ -101,7 +101,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             background-color: #0056b3;
         }
 
-        /* ---------- Table ---------- */
+       
         table {
             width: 100%;
             border-collapse: collapse;
@@ -139,7 +139,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             text-align: left;
         }
 
-        /* ---------- Responsive Design ---------- */
+       
         @media (max-width: 1024px) {
             .main-content {
                 width: 95%;
@@ -234,7 +234,7 @@ background: linear-gradient(135deg, #ff8c00, #8e2de2);
     </style>
 
     <script>
-        // ✅ Client-side search filter
+      
         function filterTable() {
             const input = document.getElementById("searchInput").value.toLowerCase();
             const rows = document.querySelectorAll("#issueTable tbody tr");
@@ -244,7 +244,7 @@ background: linear-gradient(135deg, #ff8c00, #8e2de2);
             });
         }
 
-        // ✅ Excel download
+       
         function downloadExcel() {
             const table = document.getElementById("issueTable");
             const html = table.outerHTML.replace(/ /g, '%20');
@@ -265,7 +265,7 @@ background: linear-gradient(135deg, #ff8c00, #8e2de2);
             <a href="IssueValueReport.jsp"><i class="fa fa-chart-bar"></i> Consumption Dashboard</a>
         </h2>
 
-        <!-- 🔍 Filter Section -->
+       
         <div class="filter-bar">
             <form method="get" style="display:flex; flex-wrap:wrap; gap:10px; align-items:center;">
                 <label>From:</label>

@@ -110,7 +110,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             background: #2c80b4;
         }
 
-        /* ✅ Responsive Design */
+      
         @media (max-width: 1024px) {
             form {
                 padding: 15px 20px;
@@ -191,7 +191,7 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
 
 <form method="post" action="<%=request.getContextPath()%>/PurchaseOrderServlet">
 
-    <!-- Vendor & PO Details -->
+   
     <table class="form-section">
         <tr>
             <td><strong>Vendor:</strong></td>
@@ -246,7 +246,7 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
         </tr>
     </table>
 
-    <!-- Indent Items Table -->
+   
     <table>
         <thead>
             <tr>
@@ -295,7 +295,7 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
     </table>
 </form>
 
-<!-- Vendor Auto-fill JS -->
+
 <script type="text/javascript">
 var vendorData = {
 <%

@@ -57,7 +57,7 @@ h2 {
     padding-bottom: 8px;
 }
 
-/* ----- Form Layout ----- */
+
 .table-section {
     display: grid;
     grid-template-columns: 180px 1fr 180px 1fr;
@@ -88,7 +88,7 @@ select {
     overflow-wrap: anywhere;
 }
 
-/* ----- Table Styling & Inputs ----- */
+
 table.main-table {
     width: 100%;
     border-collapse: collapse;
@@ -112,7 +112,7 @@ th, td {
     word-wrap: break-word;
 }
 
-/* Make dropdown and inputs comfortable & flexible */
+
 table select, 
 table input[type="text"],
 table input[type="number"] {
@@ -133,7 +133,7 @@ table input[type="number"] {
     resize: vertical;
 }
 
-/* Dropdown behavior fix */
+
 table select {
     display: block;
     width: 100%;
@@ -145,7 +145,7 @@ table select {
     text-overflow: ellipsis;
 }
 
-/* Dropdown options text wrapping */
+
 table select option {
     white-space: normal !important;
     word-wrap: break-word !important;
@@ -155,7 +155,7 @@ table select option {
     padding: 6px 8px;
 }
 
-/* For long text inside table cells */
+
 table td {
     max-width: 260px;
     word-wrap: break-word;
@@ -163,7 +163,7 @@ table td {
     overflow-wrap: anywhere;
 }
 
-/* ----- Indent Type Buttons ----- */
+
 .indent-type-group {
     display: flex;
     flex-wrap: wrap;
@@ -192,7 +192,7 @@ table td {
     background: radial-gradient(circle at center, #007bff 50%, white 52%);
 }
 
-/* ----- Buttons ----- */
+
 .btn {
     padding: 8px 16px;
     border: none;
@@ -231,7 +231,7 @@ table td {
     gap: 10px;
 }
 
-/* ----- Responsive Design ----- */
+
 @media (max-width: 992px) {
     .card {
         padding: 22px;

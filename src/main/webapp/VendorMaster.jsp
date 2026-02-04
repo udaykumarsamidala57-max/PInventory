@@ -19,7 +19,7 @@
 <meta charset="UTF-8">
 <title>Vendor Master</title>
 <style>
-/* ---------- BASE ---------- */
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: #eef2f7;
@@ -34,7 +34,7 @@ body {
     padding: 20px 30px;
 }
 
-/* ---------- HEADINGS ---------- */
+
 h2 {
     text-align: center;
     font-size: 28px;
@@ -49,7 +49,7 @@ h3 {
     margin-bottom: 20px;
 }
 
-/* ---------- FORM ---------- */
+
 .form-card, .edit-box {
     background: #fff;
     padding: 25px 30px;
@@ -111,7 +111,7 @@ input[type=submit]:hover {
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
-/* ---------- SEARCH BOX ---------- */
+
 #searchInput {
     padding: 8px 12px; 
     border-radius: 8px; 
@@ -122,7 +122,7 @@ input[type=submit]:hover {
     float: right;
 }
 
-/* ---------- TABLE ---------- */
+
 .table-box {
     overflow-x: 85%;
     background: #fff;
@@ -168,7 +168,7 @@ a.action-link:hover {
     text-decoration: underline;
 }
 
-/* ---------- RESPONSIVE ---------- */
+
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
@@ -193,7 +193,7 @@ a.action-link:hover {
   try {
       con = DBUtil.getConnection();
 
-      // INSERT vendor
+     
       if (request.getParameter("add") != null) {
           String name = request.getParameter("vendorName");
           String gstin = request.getParameter("gstin");
@@ -213,7 +213,7 @@ a.action-link:hover {
           ps.close();
       }
 
-      // DELETE vendor
+      
       if (request.getParameter("deleteId") != null) {
           int id = Integer.parseInt(request.getParameter("deleteId"));
           PreparedStatement ps = con.prepareStatement("DELETE FROM vendors WHERE id=?");
@@ -222,7 +222,7 @@ a.action-link:hover {
           ps.close();
       }
 
-      // UPDATE vendor
+    
       if (request.getParameter("update") != null) {
           int id = Integer.parseInt(request.getParameter("id"));
           String name = request.getParameter("vendorName");
@@ -247,7 +247,7 @@ a.action-link:hover {
       }
   %>
 
-  <!-- Add Vendor Form -->
+  
   <div class="form-card">
   <br><br><br>
     <h3>Add New Vendor</h3>
@@ -278,10 +278,10 @@ a.action-link:hover {
     </form>
   </div>
 
-  <!-- Vendor List -->
+ 
   <h3>Vendor List</h3>
 
-  <!-- Search Box -->
+ 
   <input type="text" id="searchInput" placeholder="Search vendors...">
 <br>
 <br>
@@ -318,7 +318,7 @@ a.action-link:hover {
       rs.close();
       st.close();
 
-      // EDIT section
+     
       if (request.getParameter("editId") != null) {
           int editId = Integer.parseInt(request.getParameter("editId"));
           PreparedStatement ps = con.prepareStatement("SELECT * FROM vendors WHERE id=?");
@@ -371,7 +371,7 @@ a.action-link:hover {
   </div>
 </div>
 
-<!-- ---------- SEARCH SCRIPT ---------- -->
+
 <script>
 document.getElementById('searchInput').addEventListener('keyup', function() {
     let filter = this.value.toLowerCase();

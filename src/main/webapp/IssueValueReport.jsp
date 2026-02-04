@@ -196,7 +196,7 @@
     </form>
 
     <%
-        // ======= Data Fetch Logic =======
+        
         String[] monthNames = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
         Map<String,double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
@@ -235,7 +235,7 @@
         int totalRows = dataMap.size();
     %>
 
-    <!-- Dashboard Cards -->
+  
     <div class="dashboard">
         <div class="card">
             <h3>Total Departments</h3>
@@ -248,7 +248,7 @@
        
     </div>
 
-    <!-- Report Table -->
+ 
     <table>
         <thead>
             <tr>

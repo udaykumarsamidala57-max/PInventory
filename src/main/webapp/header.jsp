@@ -24,10 +24,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* RESET */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
-/* GLOBAL */
+
 body {
   font-family: 'Inter', 'Poppins', sans-serif;
   background-color: #f6f8fa;
@@ -39,7 +39,7 @@ body {
   padding-bottom: 60px;
 }
 
-/* SIDEBAR */
+
 .sidebar {
   position: fixed;
   top: 0;
@@ -94,7 +94,7 @@ body {
 .dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
 
-/* HEADER */
+
 header {
   position: fixed;
   top: 0;
@@ -113,7 +113,7 @@ header {
   transition: left 0.3s ease;
 }
 
-/* BRAND TITLE STYLE */
+
 .header-brand-title {
     text-align: left;
     color: #0f2a4d;
@@ -141,7 +141,7 @@ header {
   margin-right: 15px;
 }
 
-/* IMPROVISED USER CARD */
+
 .user-info-card {
   display: flex;
   align-items: center;
@@ -189,14 +189,14 @@ header {
   gap: 4px;
 }
 
-/* MAIN */
+
 main {
   margin-left: 250px;
   padding: 110px 30px 40px;
   transition: margin-left 0.3s ease;
 }
 
-/* FOOTER */
+
 footer {
   position: fixed;
   bottom: 0;
@@ -211,7 +211,7 @@ footer {
   transition: left 0.3s ease;
 }
 
-/* COLLAPSE STATE */
+
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
 body.sidebar-collapsed footer { left: 0; }

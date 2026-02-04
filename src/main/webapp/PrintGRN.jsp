@@ -162,7 +162,7 @@ if (grnNo != null && !grnNo.trim().isEmpty()) {
 </table>
 
 <%
-        // Fetch GRN items
+      
         PreparedStatement pstItems = con.prepareStatement(
             "SELECT * FROM grn_items WHERE grn_id=?"
         );

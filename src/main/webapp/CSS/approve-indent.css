@@ -1,7 +1,6 @@
-/* ===== Global Improvements ===== */
 body {
-    font-family: 'Inter', 'Poppins', sans-serif; /* Inter is cleaner for data */
-    background-color: #f1f5f9; /* Soft grey-blue background */
+    font-family: 'Inter', 'Poppins', sans-serif;
+    background-color: #f1f5f9;
     color: #1e293b;
     margin: 0;
     padding: 0;
@@ -25,7 +24,6 @@ h1 {
     padding-bottom: 40px;
 }
 
-/* ===== Indent Card Styling ===== */
 .indent-card {
     background: #fff;
     border-radius: 12px;
@@ -41,7 +39,6 @@ h1 {
     border-color: #cbd5e1;
 }
 
-/* ===== Professional Header (Matches Sidebar Theme) ===== */
 .indent-header {
     background: linear-gradient(90deg, #0f172a, #1e293b);
     color: #f8fafc;
@@ -50,7 +47,7 @@ h1 {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    border-bottom: 3px solid #fbbf24; /* Accent Gold from previous design */
+    border-bottom: 3px solid #fbbf24;
 }
 
 .indent-header div {
@@ -68,12 +65,11 @@ h1 {
     letter-spacing: 0.5px;
 }
 
-/* ===== Enhanced Table Layout ===== */
 .inner-table {
     width: 100%;
-    margin: 0; /* Full width inside card */
+    margin: 0;
     border-collapse: collapse;
-    table-layout: fixed; /* 🔑 10-column strict control */
+    table-layout: fixed;
 }
 
 .inner-table th {
@@ -112,19 +108,17 @@ h1 {
     background-color: #f1f5f9;
 }
 
-/* ===== Precise Column Widths (STRICT 10 COLUMNS) ===== */
-.inner-table th:nth-child(1), .inner-table td:nth-child(1) { width: 50px; }  /* ID */
-.inner-table th:nth-child(2), .inner-table td:nth-child(2) { width: 220px; text-align: left; padding-left: 15px; font-weight: 600; color: #0f172a; } /* ITEM */
-.inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 80px; }  /* Available */
-.inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 80px; color: #2563eb; font-weight: 600; } /* Required */
-.inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 60px; color: #64748b; } /* UOM */
-.inner-table th:nth-child(6), .inner-table td:nth-child(6) { width: 240px; text-align: left; padding-left: 15px; white-space: normal; color: #64748b; font-style: italic; } /* PURPOSE */
-.inner-table th:nth-child(7), .inner-table td:nth-child(7) { width: 90px; }  /* I/C Status */
-.inner-table th:nth-child(8), .inner-table td:nth-child(8) { width: 160px; font-weight: 500; } /* L1 Approved By */
-.inner-table th:nth-child(9), .inner-table td:nth-child(9) { width: 90px; }  /* L2 Status */
-.inner-table th:nth-child(10),.inner-table td:nth-child(10){ width: 200px; } /* Actions */
+.inner-table th:nth-child(1), .inner-table td:nth-child(1) { width: 50px; }
+.inner-table th:nth-child(2), .inner-table td:nth-child(2) { width: 220px; text-align: left; padding-left: 15px; font-weight: 600; color: #0f172a; }
+.inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 80px; }
+.inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 80px; color: #2563eb; font-weight: 600; }
+.inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 60px; color: #64748b; }
+.inner-table th:nth-child(6), .inner-table td:nth-child(6) { width: 240px; text-align: left; padding-left: 15px; white-space: normal; color: #64748b; font-style: italic; }
+.inner-table th:nth-child(7), .inner-table td:nth-child(7) { width: 90px; }
+.inner-table th:nth-child(8), .inner-table td:nth-child(8) { width: 160px; font-weight: 500; }
+.inner-table th:nth-child(9), .inner-table td:nth-child(9) { width: 90px; }
+.inner-table th:nth-child(10),.inner-table td:nth-child(10){ width: 200px; }
 
-/* ===== Interactive Elements ===== */
 .final-action {
     display: flex;
     gap: 8px;
@@ -148,7 +142,6 @@ h1 {
     ring: 2px rgba(59, 130, 246, 0.2);
 }
 
-/* ===== Modern Buttons ===== */
 .btn-blue, .btn-green, .btn-edit, .btn-delete {
     border: none;
     border-radius: 6px;
@@ -165,7 +158,6 @@ h1 {
 .btn-green { background: #10b981; color: #fff; }
 .btn-green:hover { background: #059669; }
 
-/* ===== Clean Status Badges ===== */
 .badge {
     padding: 3px 10px;
     border-radius: 6px;

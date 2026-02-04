@@ -27,14 +27,14 @@ body {
   overflow-x: hidden;
 }
 
-/* Main Container */
+
 .main-content {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
 }
 
-/* Card Style */
+
 .card {
   background: #fff;
   border-radius: 12px;
@@ -44,7 +44,7 @@ body {
   overflow-x: auto;
 }
 
-/* Table */
+
 .main-table {
   width: 100%;
   border-collapse: collapse;
@@ -76,7 +76,7 @@ thead {
   background-color: #f9f9f9;
 }
 
-/* Search Bar */
+
 .search-bar {
   display: flex;
   flex-wrap: wrap;
@@ -114,7 +114,7 @@ thead {
   background-color: #218838;
 }
 
-/* Responsive Adjustments */
+
 @media (max-width: 992px) {
   .card {
     padding: 10px;
@@ -135,7 +135,7 @@ thead {
   }
 }
 
-/* Footer */
+
 footer {
   text-align: center;
   padding: 10px;
@@ -245,7 +245,7 @@ footer i {
   </div>
 </div>
 <a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
-<!-- SCRIPT BLOCK -->
+
 <script>
 function sortTable(n) {
   let table = document.getElementById("dataTable"), switching = true, dir = "asc", switchcount = 0;
@@ -331,7 +331,7 @@ function filterDept() {
 	    }
 	  });
 	}
-// Expand/Collapse
+
 let expanded = true;
 function toggleExpand() {
   expanded = !expanded;

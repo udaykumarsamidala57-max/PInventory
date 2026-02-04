@@ -24,7 +24,7 @@ if (toDate == null || toDate.isEmpty()) {
     toDate = sdf.format(new java.util.Date());
 }
 
-// Excel export headers
+
 if ("excel".equals(export)) {
     response.setContentType("application/vnd.ms-excel");
     response.setHeader("Content-Disposition", "attachment; filename=Stock_Summary.xls");
@@ -37,7 +37,7 @@ ResultSet rs = null, rsCat = null;
 try {
     conn = DBUtil.getConnection();
 
-    // Category dropdown
+   
     psCat = conn.prepareStatement(
         "SELECT DISTINCT Category FROM item_master " +
         "WHERE Category IS NOT NULL AND Category<>'' ORDER BY Category");
@@ -92,7 +92,7 @@ try {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* Professional & Responsive Design */
+
 body {
     font-family:'Poppins',sans-serif;
     background:#f4f6f9;
@@ -159,7 +159,7 @@ button.btn-success:hover { background:#218838; }
 }
 .main-table tr:hover { background:#f1f3f6; }
 
-/* Responsive */
+
 @media(max-width:768px){
     .filter-form{ flex-direction:column; align-items:stretch; }
     .buttons{ justify-content:center; }

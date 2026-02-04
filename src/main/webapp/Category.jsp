@@ -2,7 +2,7 @@
 <%@ page import="com.bean.DBUtil" %>
 <%@ page session="true" %>
 <%
-    // ---------- Session & Role Check ----------
+    
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
@@ -12,7 +12,7 @@
     String role = (String) sess.getAttribute("role");
     String dept = (String) sess.getAttribute("department");
 
-    // Allow only admin and Global roles
+    
     if ("Global".equalsIgnoreCase(role)) {
         out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied! You are not authorized to view this page.</h3>");
         return;
@@ -28,7 +28,7 @@
         out.println("Database Connection Error: " + e);
     }
 
-    // ---------- Category CRUD ----------
+    
     String action = request.getParameter("action");
     if ("insert".equals(action)) {
         String category = request.getParameter("category");
@@ -60,7 +60,7 @@
         ps.executeUpdate();
     }
 
-    // ---------- Dept–Category Mapping CRUD ----------
+
     String mapAction = request.getParameter("mapAction");
     if ("insertMap".equals(mapAction)) {
         String deptName = request.getParameter("dept");
