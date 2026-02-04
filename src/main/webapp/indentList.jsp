@@ -61,7 +61,7 @@ body {
 }
 
 thead {
-  background: linear-gradient(135deg, #ff8c00, #8e2de2);  
+  background:  #0f2a4d;
 }
 
 .main-table th {
