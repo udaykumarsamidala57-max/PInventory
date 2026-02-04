@@ -155,7 +155,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     };
 
-    // Check if entered quantity exceeds available stock
+   
     qtyInput.addEventListener("input", () => {
       const opt = itemSel.options[itemSel.selectedIndex];
       const stock = parseFloat(opt?.dataset.stock || '0');
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     tr.querySelector(".removeBtn").onclick = () => tr.remove();
   }
 
-  // Prevent form submission if any invalid stock or qty
+  
   document.getElementById("diningForm").addEventListener("submit", (e) => {
     let invalid = false;
     document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {

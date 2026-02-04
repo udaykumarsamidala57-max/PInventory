@@ -17,7 +17,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="CSS/tablestyle.css">
     <style>
-        /* ✅ Remove unwanted spaces from top and sides */
+       
         body {
             margin: 0;
             padding: 0;
