@@ -24,7 +24,18 @@
 
     Calendar cal = Calendar.getInstance();
     int hour = cal.get(Calendar.HOUR_OF_DAY);
-    String greeting = (hour < 12) ? "Good Morning" : (hour < 17) ? "Good Afternoon" : "Good Evening";
+    String greeting;
+    String greetingIcon;
+    if (hour < 12) {
+        greeting = "Good Morning";
+        greetingIcon = "fa-sun"; 
+    } else if (hour < 17) {
+        greeting = "Good Afternoon";
+        greetingIcon = "fa-cloud-sun";
+    } else {
+        greeting = "Good Evening";
+        greetingIcon = "fa-moon"; 
+    }
 %>
 <!DOCTYPE html>
 <html>

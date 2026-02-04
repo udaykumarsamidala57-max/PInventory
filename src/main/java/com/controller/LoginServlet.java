@@ -57,7 +57,7 @@ public class LoginServlet extends HttpServlet {
                 } else if ("incharge".equalsIgnoreCase(role)||"Finance".equalsIgnoreCase(dept)) {
                     response.sendRedirect("Home");
                 } else {
-                    response.sendRedirect("IndentServlet");
+                    response.sendRedirect("Home");
                 }
             } else {
                 request.setAttribute("error", "Invalid Username or Password!");
