@@ -28,17 +28,26 @@ public class IndentServlet extends HttpServlet {
         String selectedDept = request.getParameter("selectedDept");
 
         try (Connection con = DBUtil.getConnection()) {
+            // UPDATED: Read next number from Sequence Table for display
             int nextIndentNo = 1;
-            String sqlNext = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 AS next_no FROM indent";
+            String sqlNext = "SELECT next_val + 1 AS next_no FROM id_sequences WHERE seq_name = 'indent_no'";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
                  ResultSet rs = ps.executeQuery()) {
-                if (rs.next())
+                if (rs.next()) {
                     nextIndentNo = rs.getInt("next_no");
+                } else {
+                    // Fallback to old method only if sequence table isn't initialized
+                    String sqlFallback = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 FROM indent";
+                    try(Statement st = con.createStatement(); ResultSet rs2 = st.executeQuery(sqlFallback)) {
+                        if(rs2.next()) nextIndentNo = rs2.getInt(1);
+                    }
+                }
             }
             request.setAttribute("nextIndentNo", nextIndentNo);
 
             Map<String, Object> masterData = new HashMap<>();
 
+            // --- ALL YOUR EXISTING FILTERING FEATURES PRESERVED BELOW ---
             List<Map<String, String>> departments = new ArrayList<>();
             if ("Global".equalsIgnoreCase(role)) {
                 String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
@@ -127,10 +136,9 @@ public class IndentServlet extends HttpServlet {
         String role = (String) sess.getAttribute("role");
         String deptSession = (String) sess.getAttribute("department");
 
-        String indentNumber = request.getParameter("indentNumber");
         String date = request.getParameter("date");
         String department = request.getParameter("department");
-        String indentType = request.getParameter("indentType"); // ✅ Purchase or Issue
+        String indentType = request.getParameter("indentType");
 
         if (!"Global".equalsIgnoreCase(role) && (department == null || department.trim().isEmpty())) {
             department = deptSession;
@@ -142,7 +150,7 @@ public class IndentServlet extends HttpServlet {
         String[] purposes = splitSafe(request.getParameter("purposes"));
         String[] uoms = splitSafe(request.getParameter("uoms"));
 
-        List<IndentItem> items = new ArrayList<>();
+        List<IndentItem> itemsList = new ArrayList<>();
         for (int i = 0; i < itemNames.length; i++) {
             try {
                 String idStr = itemIds.length > i ? itemIds[i].trim() : "";
@@ -156,55 +164,69 @@ public class IndentServlet extends HttpServlet {
                 String uom = uoms.length > i && uoms[i] != null ? uoms[i].trim() : "";
 
                 if (name.isEmpty() || qty <= 0) continue;
-
-                items.add(new IndentItem(id, name, qty, purp, uom));
+                itemsList.add(new IndentItem(id, name, qty, purp, uom));
             } catch (Exception ignored) {}
         }
 
-        if (items.isEmpty()) {
-            request.setAttribute("message", "At least one valid item is required.");
-            doGet(request, response);
+        if (itemsList.isEmpty()) {
+            sess.setAttribute("message", "❌ Error: At least one valid item is required.");
+            response.sendRedirect("IndentServlet"); // Redirect back to form
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        Connection con = null;
+        String finalIndentNo = "";
+        try {
+            con = DBUtil.getConnection();
             con.setAutoCommit(false);
 
-            try {
-                String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom, PurchaseorIssue) "
-                        + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
-                try (PreparedStatement ps = con.prepareStatement(insertSql)) {
-                    for (IndentItem it : items) {
-                        ps.setString(1, indentNumber);
-                        ps.setString(2, date);
-                        ps.setInt(3, it.getItemId());
-                        ps.setString(4, it.getName());
-                        ps.setDouble(5, it.getQty());
-                        ps.setString(6, department);
-                        ps.setString(7, user);
-                        ps.setString(8, it.getPurpose());
-                        ps.setString(9, "");
-                        ps.setString(10, it.getUom());
-                        ps.setString(11, indentType); // ✅ Save radio button value
-                        ps.addBatch();
-                    }
-                    ps.executeBatch();
-                }
-
-                con.commit();
-                request.setAttribute("message", "✅ Indent saved successfully as " + indentType + "!");
-            } catch (SQLException e) {
-                con.rollback();
-                request.setAttribute("message", "❌ Error while saving indent: " + e.getMessage());
-            } finally {
-                con.setAutoCommit(true);
+            // 1. ATOMIC ID GENERATION (Locks the row so others wait)
+            String updateSeq = "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name = 'indent_no'";
+            try (PreparedStatement psUpd = con.prepareStatement(updateSeq)) {
+                psUpd.executeUpdate();
             }
 
+            String selectSeq = "SELECT next_val FROM id_sequences WHERE seq_name = 'indent_no'";
+            try (PreparedStatement psSel = con.prepareStatement(selectSeq);
+                 ResultSet rs = psSel.executeQuery()) {
+                if (rs.next()) {
+                    finalIndentNo = String.valueOf(rs.getInt(1));
+                }
+            }
+
+            // 2. BATCH INSERT
+            String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom, PurchaseorIssue) "
+                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+            try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+                for (IndentItem it : itemsList) {
+                    ps.setString(1, finalIndentNo);
+                    ps.setString(2, date);
+                    ps.setInt(3, it.getItemId());
+                    ps.setString(4, it.getName());
+                    ps.setDouble(5, it.getQty());
+                    ps.setString(6, department);
+                    ps.setString(7, user);
+                    ps.setString(8, it.getPurpose());
+                    ps.setString(9, "");
+                    ps.setString(10, it.getUom());
+                    ps.setString(11, indentType);
+                    ps.addBatch();
+                }
+                ps.executeBatch();
+            }
+
+            con.commit();
+            sess.setAttribute("message", "✅ Indent #" + finalIndentNo + " saved successfully!");
+
         } catch (SQLException e) {
-            request.setAttribute("message", "❌ Database error: " + e.getMessage());
+            if (con != null) { try { con.rollback(); } catch (SQLException ex) {} }
+            sess.setAttribute("message", "❌ Database Error: " + e.getMessage());
+        } finally {
+            if (con != null) { try { con.close(); } catch (SQLException ex) {} }
         }
 
-        doGet(request, response);
+        // 3. POST-REDIRECT-GET: Prevents double entries on page refresh
+        response.sendRedirect("Home");
     }
 
     private String[] splitSafe(String s) {
