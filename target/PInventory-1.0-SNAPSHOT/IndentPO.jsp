@@ -56,7 +56,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             background: white;
         }
         thead{
-            background: linear-gradient(135deg, #ff8c00, #8e2de2);
+            background:   #0f2a4d; 
         }
 
         th, td {

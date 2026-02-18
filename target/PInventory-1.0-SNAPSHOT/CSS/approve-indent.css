@@ -40,7 +40,7 @@ h1 {
 }
 
 .indent-header {
-    background: linear-gradient(90deg, #0f172a, #1e293b);
+    background: #0f2a4d;
     color: #f8fafc;
     padding: 12px 20px;
     display: flex;
@@ -113,7 +113,7 @@ h1 {
 .inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 80px; }
 .inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 80px; color: #2563eb; font-weight: 600; }
 .inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 60px; color: #64748b; }
-.inner-table th:nth-child(6), .inner-table td:nth-child(6) { width: 240px; text-align: left; padding-left: 15px; white-space: normal; color: #64748b; font-style: italic; }
+.inner-table th:nth-child(6), .inner-table td:nth-child(6) { width: 240px; text-align: left; padding-left: 22px; white-space: normal; color: #0f172a; font-style: italic; }
 .inner-table th:nth-child(7), .inner-table td:nth-child(7) { width: 90px; }
 .inner-table th:nth-child(8), .inner-table td:nth-child(8) { width: 160px; font-weight: 500; }
 .inner-table th:nth-child(9), .inner-table td:nth-child(9) { width: 90px; }

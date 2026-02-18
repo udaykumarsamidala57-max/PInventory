@@ -50,7 +50,7 @@ if (sess == null || sess.getAttribute("username") == null) {
         }
 
         thead {
-            background: background: #0f2a4d; 
+            background:  #0f2a4d; 
         }
 
         th {

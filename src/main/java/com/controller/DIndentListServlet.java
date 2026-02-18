@@ -69,7 +69,7 @@ public class DIndentListServlet extends HttpServlet {
         // Department filtering
        
             if (true) {
-                listSql.append("AND i.department IN ('Dining Hall') ");
+            	listSql.append("AND i.department IN ('Dining Hall', 'RO Plant') ");
             } 
         
 

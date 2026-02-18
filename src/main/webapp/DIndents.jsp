@@ -66,7 +66,7 @@
 
 <div class="main-content">
 <div class="card">
-    <h1><i class="fa-solid fa-file-signature"></i> Approve Indent</h1>
+    <h1><i class="fa-solid fa-file-signature"></i> Approve Indent Dining Hall & RO Plant Indents</h1>
 
     <div class="filter-bar" style="background: #ffffff; padding: 15px 20px; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; gap: 10px; align-items: center;">
