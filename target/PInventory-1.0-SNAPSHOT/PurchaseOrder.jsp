@@ -94,7 +94,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             padding: 8px 10px;
         }
 
-        input[type="submit"] {
+        input[type="submit"], .submit-btn {
             background: #3498db;
             color: white;
             border: none;
@@ -106,11 +106,35 @@ if (sess == null || sess.getAttribute("username") == null) {
             transition: 0.3s;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, .submit-btn:hover {
             background: #2c80b4;
         }
 
-      
+        /* Calculation Summary Styling */
+        .summary-container {
+            margin-top: 20px;
+            background: #fcfcfc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            width: 350px;
+            margin-left: auto;
+        }
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 15px;
+        }
+        .grand-total-line {
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #e67e22;
+        }
+
         @media (max-width: 1024px) {
             form {
                 padding: 15px 20px;
@@ -219,9 +243,17 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
             <td><strong>PO Date:</strong></td>
             <td><input type="date" name="poDate" value="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"></td>
         </tr>
-        </table>
+        <tr>
+            <td><strong>Service Charge:</strong></td>
+            <td><input type="number" step="0.01" id="serviceCharge" name="serviceCharge" value="0" oninput="calculateTotals()"></td>
+        </tr>
+        <tr>
+            <td><strong>Service GST %:</strong></td>
+            <td><input type="number" step="0.01" id="serviceGst" name="serviceGst" value="18" oninput="calculateTotals()"></td>
+        </tr>
+    </table>
 
-    <table>
+    <table id="poItemsTable">
         <thead>
             <tr>
                 <th>Sl No</th>
@@ -240,15 +272,15 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
         if(indentList != null && !indentList.isEmpty()){
             for(POItems item : indentList){
         %>
-        <tr>
+        <tr class="item-row">
             <td><%=sl++%></td>
             <td><%=item.getIndentNo()%><input type="hidden" name="indentId" value="<%=item.getId()%>"></td>
             <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
-            <td><input type="number" step="0.01" name="qty" value="<%=item.getQty()%>"></td>
+            <td><input type="number" step="0.01" name="qty" value="<%=item.getQty()%>" oninput="calculateTotals()"></td>
             <td><input type="text" name="UOM" value="<%=item.getUOM()%>" readonly></td>
-            <td><input type="number" step="0.01" name="rate" required></td>
-            <td><input type="number" step="0.01" name="discPercent" value="0"></td>
-            <td><input type="number" step="0.01" name="gstPercent" value="18"></td>
+            <td><input type="number" step="0.01" name="rate" value="0" oninput="calculateTotals()" required></td>
+            <td><input type="number" step="0.01" name="discPercent" value="0" oninput="calculateTotals()"></td>
+            <td><input type="number" step="0.01" name="gstPercent" value="18" oninput="calculateTotals()"></td>
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
         </tr>
         <%
@@ -259,7 +291,27 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
         <% } %>
         </tbody>
     </table>
-    <div style="text-align:center;">
+
+    <div class="summary-container">
+        <div class="summary-line">
+            <span>Total Price (Base):</span>
+            <span id="totalPrice">0.00</span>
+        </div>
+        <div class="summary-line">
+            <span>Total GST Amount:</span>
+            <span id="totalGst">0.00</span>
+        </div>
+        <div class="summary-line">
+            <span>Service Total (With GST):</span>
+            <span id="totalService">0.00</span>
+        </div>
+        <div class="summary-line grand-total-line">
+            <span>Grand Total:</span>
+            <span id="grandTotal">0.00</span>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
         <input type="submit" class="submit-btn" value="Submit Purchase Order">
     </div>
 </form>
@@ -279,7 +331,6 @@ for (Map.Entry<String, String[]> e : vendorMap.entrySet()) {
     String addr = (details[1] != null) ? details[1] : "";
 
     // 2. Clean the data for JavaScript
-    // Remove new lines (\n, \r) and escape single quotes (')
     name = name.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
     gst = gst.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
     addr = addr.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
@@ -290,7 +341,6 @@ for (Map.Entry<String, String[]> e : vendorMap.entrySet()) {
 
 function loadVendorDetails() {
     var selected = document.getElementById("vendorDropdown").value;
-    // We use bracket notation to handle keys with special characters safely
     if (vendorData[selected]) {
         document.getElementById("vendorGSTIN").value = vendorData[selected][0];
         document.getElementById("vendorAddress").value = vendorData[selected][1];
@@ -299,7 +349,45 @@ function loadVendorDetails() {
         document.getElementById("vendorAddress").value = "";
     }
 }
-</script>
+
+function calculateTotals() {
+    let totalPriceBase = 0;
+    let totalGstAmt = 0;
+
+    // Calculate Items
+    const rows = document.querySelectorAll('.item-row');
+    rows.forEach(row => {
+        const qty = parseFloat(row.querySelector('[name="qty"]').value) || 0;
+        const rate = parseFloat(row.querySelector('[name="rate"]').value) || 0;
+        const discP = parseFloat(row.querySelector('[name="discPercent"]').value) || 0;
+        const gstP = parseFloat(row.querySelector('[name="gstPercent"]').value) || 0;
+
+        const baseValue = qty * rate;
+        const discountedValue = baseValue - (baseValue * (discP / 100));
+        const gstValue = discountedValue * (gstP / 100);
+
+        totalPriceBase += discountedValue;
+        totalGstAmt += gstValue;
+    });
+
+    // Calculate Service Charge
+    const svcCharge = parseFloat(document.getElementById('serviceCharge').value) || 0;
+    const svcGstP = parseFloat(document.getElementById('serviceGst').value) || 0;
+    const svcGstAmt = svcCharge * (svcGstP / 100);
+    const svcTotalWithGst = svcCharge + svcGstAmt;
+
+    const finalGrandTotal = totalPriceBase + totalGstAmt + svcTotalWithGst;
+
+    // Update Display
+    document.getElementById('totalPrice').innerText = totalPriceBase.toFixed(2);
+    document.getElementById('totalGst').innerText = (totalGstAmt + svcGstAmt).toFixed(2);
+    document.getElementById('totalService').innerText = svcTotalWithGst.toFixed(2);
+    document.getElementById('grandTotal').innerText = finalGrandTotal.toFixed(2);
+}
+
+// Initial calculation on load
+window.onload = calculateTotals;
+
 </script>
 </body>
 </html>
