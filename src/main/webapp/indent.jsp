@@ -19,14 +19,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #dbe8ff, #e6d7ff, #ffd6e0, #d9faff);
+    background: #f8f9fa; /* Slightly off-white for better contrast */
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     font-size: 0.95rem;
-    color: #333;
+    color: #334155; /* Modern slate-gray */
 }
 
 /* ----- Card Layout ----- */
@@ -34,226 +36,219 @@ body {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 50px 10px;
+    padding: 40px 15px;
 }
 
 .card {
-    background: #fff;
-    border-radius: 14px;
-    padding: 28px;
-    width: 95%;
-    max-width: 1000px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 32px;
+    width: 100%;
+    max-width: 1100px;
     min-width: 340px;
-    box-shadow: 0 6px 22px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eef2f6;
+    transition: transform 0.2s ease;
 }
 
 h2 {
     text-align: center;
-    font-size: 1.45rem;
-    margin: 0 0 18px 0;
-    color: #2d3436;
-    border-bottom: 2px solid #8e2de2;
-    padding-bottom: 8px;
+    font-size: 1.6rem;
+    margin: 0 0 24px 0;
+    color: #0f2a4d; /* Using your table header color for consistency */
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    position: relative;
+    padding-bottom: 12px;
 }
 
+h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: #8e2de2;
+    border-radius: 10px;
+}
 
 .table-section {
     display: grid;
-    grid-template-columns: 180px 1fr 180px 1fr;
-    gap: 14px 20px;
-    margin-bottom: 20px;
+    grid-template-columns: 160px 1fr 160px 1fr;
+    gap: 16px 24px;
+    margin-bottom: 24px;
     align-items: center;
 }
 
 label {
-    font-weight: 500;
-    color: #222;
-    font-size: 0.95rem;
-    white-space: nowrap;
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
 }
 
 input[type="text"],
 input[type="date"],
 select {
     width: 100%;
-    padding: 8px 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    padding: 10px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
     box-sizing: border-box;
     font-size: 0.95rem;
-    background-color: #fafafa;
-    min-height: 38px;
-    white-space: normal;
-    overflow-wrap: anywhere;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+    color: #1e293b;
 }
 
+input:focus, select:focus {
+    outline: none;
+    border-color: #8e2de2;
+    box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
+    background-color: #fff;
+}
 
+/* ----- Table Styling ----- */
 table.main-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 16px;
-    font-size: 0.95rem;
-    table-layout: auto;
-    word-wrap: break-word;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
 thead {
-    background: linear-gradient(135deg, #ff8c00, #8e2de2);
-    color: #fff;
-    font-size: 0.95rem;
+    background: #0f2a4d;
+    color: #ffffff;
+}
+
+thead th {
+    font-weight: 500;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    padding: 14px 10px;
+    border: none;
 }
 
 th, td {
     text-align: center;
-    padding: 10px 6px;
-    border: 1px solid #ddd;
-    vertical-align: middle;
-    word-wrap: break-word;
+    padding: 12px 8px;
+    border-bottom: 1px solid #e2e8f0;
+    border-right: 1px solid #e2e8f0;
 }
 
+td:last-child, th:last-child {
+    border-right: none;
+}
 
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr {
+    transition: background 0.2s ease;
+}
+
+tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* ----- Table Inputs ----- */
 table select, 
 table input[type="text"],
 table input[type="number"] {
-    width: 100%;
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    padding: 8px;
     border-radius: 6px;
-    border: 1px solid #ccc;
-    font-size: 0.9rem;
-    padding: 7px 8px;
-    background-color: #fafafa;
-    box-sizing: border-box;
-    line-height: 1.4;
-    height: auto;
-    min-height: 36px;
-    max-height: 100px;
-    white-space: normal !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
-    resize: vertical;
 }
 
-
-table select {
-    display: block;
-    width: 100%;
-    appearance: none;
-    background-color: #fafafa;
-    overflow-y: auto;
-    white-space: normal !important;
-    word-wrap: break-word;
-    text-overflow: ellipsis;
-}
-
-
-table select option {
-    white-space: normal !important;
-    word-wrap: break-word !important;
-    overflow-wrap: anywhere !important;
-    line-height: 1.4;
-    font-size: 0.9rem;
-    padding: 6px 8px;
-}
-
-
-table td {
-    max-width: 260px;
-    word-wrap: break-word;
-    white-space: normal;
-    overflow-wrap: anywhere;
-}
-
-
+/* ----- Indent Type Radio Buttons ----- */
 .indent-type-group {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
-    align-items: center;
+    gap: 20px;
+    padding: 5px 0;
 }
 
 .indent-type-option {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     font-weight: 500;
-    cursor: pointer;
+    color: #334155;
+    transition: color 0.2s ease;
 }
 
-.indent-type-option input[type="radio"] {
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 2px solid #777;
-    border-radius: 50%;
+.indent-type-option:hover {
+    color: #8e2de2;
 }
 
-.indent-type-option input[type="radio"]:checked {
-    border-color: #007bff;
-    background: radial-gradient(circle at center, #007bff 50%, white 52%);
-}
-
-
+/* ----- Buttons ----- */
 .btn {
-    padding: 8px 16px;
+    padding: 10px 24px;
     border: none;
-    border-radius: 8px;
+    border-radius: 10px;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s ease;
-    white-space: nowrap;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn:active {
+    transform: translateY(1px);
 }
 
 .btn-green {
-    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    background: #27ae60;
     color: #fff;
 }
-.btn-green:hover { background: linear-gradient(135deg, #219150, #27ae60); }
+.btn-green:hover { 
+    background: #219150; 
+    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+}
 
 .btn-info {
-    background: linear-gradient(135deg, #3498db, #2980b9);
+    background: #3498db;
     color: #fff;
 }
-.btn-info:hover { background: linear-gradient(135deg, #217dbb, #3498db); }
+.btn-info:hover { 
+    background: #2980b9; 
+    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+}
 
 .btn-red {
-    background: linear-gradient(135deg, #e74c3c, #ff7675);
+    background: #e74c3c;
     color: #fff;
 }
-.btn-red:hover { background: linear-gradient(135deg, #c0392b, #e74c3c); }
-
-.center-buttons {
-    text-align: center;
-    margin-top: 18px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
+.btn-red:hover { 
+    background: #c0392b; 
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
 }
 
+.center-buttons {
+    margin-top: 32px;
+    gap: 16px;
+}
 
+/* ----- Responsive Adjustments ----- */
 @media (max-width: 992px) {
-    .card {
-        padding: 22px;
-        max-width: 95%;
-    }
     .table-section {
         grid-template-columns: 1fr 1fr;
-        gap: 12px 16px;
     }
-    label { font-size: 0.9rem; }
-    input, select { font-size: 0.9rem; }
-    th, td { font-size: 0.85rem; padding: 6px 4px; }
 }
 
 @media (max-width: 600px) {
-    body { font-size: 0.9rem; }
-    .main-content { padding: 30px 10px; }
-    .table-section { grid-template-columns: 1fr; gap: 10px; }
-    .card { padding: 18px; width: 98%; }
-    h2 { font-size: 1.1rem; }
-    table.main-table { font-size: 0.85rem; display: block; overflow-x: auto; }
-    table select, table input { font-size: 0.85rem; }
+    .card { padding: 20px; }
+    .table-section { grid-template-columns: 1fr; }
+    label { margin-bottom: -5px; }
 }
 </style>
 
