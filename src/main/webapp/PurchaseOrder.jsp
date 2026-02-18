@@ -94,7 +94,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             padding: 8px 10px;
         }
 
-        input[type="submit"] {
+        input[type="submit"], .submit-btn {
             background: #3498db;
             color: white;
             border: none;
@@ -106,11 +106,35 @@ if (sess == null || sess.getAttribute("username") == null) {
             transition: 0.3s;
         }
 
-        input[type="submit"]:hover {
+        input[type="submit"]:hover, .submit-btn:hover {
             background: #2c80b4;
         }
 
-      
+        /* Calculation Summary Styling */
+        .summary-container {
+            margin-top: 20px;
+            background: #fcfcfc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            width: 350px;
+            margin-left: auto;
+        }
+        .summary-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 15px;
+        }
+        .grand-total-line {
+            border-top: 2px solid #333;
+            margin-top: 10px;
+            padding-top: 10px;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #e67e22;
+        }
+
         @media (max-width: 1024px) {
             form {
                 padding: 15px 20px;
@@ -187,18 +211,17 @@ if (sess == null || sess.getAttribute("username") == null) {
 List<POItems> indentList = (List<POItems>) request.getAttribute("indentList");
 Map<String,String[]> vendorMap = (Map<String,String[]>) request.getAttribute("vendorMap");
 String nextPONumber = (String) request.getAttribute("nextPONumber");
+if(vendorMap == null) vendorMap = new LinkedHashMap<>();
 %>
 
 <form method="post" action="<%=request.getContextPath()%>/PurchaseOrderServlet">
-
-   
     <table class="form-section">
         <tr>
             <td><strong>Vendor:</strong></td>
             <td>
-                <select id="vendorDropdown" name="vendorName" onchange="loadVendorDetails()">
+                <select id="vendorDropdown" name="vendorName" onchange="loadVendorDetails()" required>
                     <option value="">-- Select Vendor --</option>
-                    <% for(String v: vendorMap.keySet()){ %>
+                    <% for(String v : vendorMap.keySet()){ %>
                     <option value="<%=v%>"><%=v%></option>
                     <% } %>
                 </select>
@@ -213,10 +236,6 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             <td><input type="text" name="vendorAddress" id="vendorAddress" readonly></td>
         </tr>
         <tr>
-            <td><strong>Quotation No:</strong></td>
-            <td><input type="text" name="quotationNo"></td>
-        </tr>
-        <tr>
             <td><strong>PO Number:</strong></td>
             <td><input type="text" name="poNumber" value="<%=nextPONumber%>" readonly></td>
         </tr>
@@ -225,93 +244,104 @@ String nextPONumber = (String) request.getAttribute("nextPONumber");
             <td><input type="date" name="poDate" value="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>"></td>
         </tr>
         <tr>
-            <td><strong>Billing Address:</strong></td>
-            <td><input type="text" name="billingAddress"></td>
-        </tr>
-        <tr>
             <td><strong>Service Charge:</strong></td>
-            <td><input type="number" step="0.01" name="serviceCharge" placeholder="Enter service charge"></td>
+            <td><input type="number" step="0.01" id="serviceCharge" name="serviceCharge" value="0" oninput="calculateTotals()"></td>
         </tr>
         <tr>
             <td><strong>Service GST %:</strong></td>
-            <td><input type="number" step="0.01" name="serviceGst" placeholder="Enter GST on service charge"></td>
-        </tr>
-        <tr>
-            <td><strong>Terms:</strong></td>
-            <td><textarea name="termsConditions"></textarea></td>
-        </tr>
-        <tr>
-            <td><strong>General Conditions:</strong></td>
-            <td><textarea name="generalConditions"></textarea></td>
+            <td><input type="number" step="0.01" id="serviceGst" name="serviceGst" value="18" oninput="calculateTotals()"></td>
         </tr>
     </table>
 
-   
-    <table>
+    <table id="poItemsTable">
         <thead>
             <tr>
                 <th>Sl No</th>
                 <th>Indent No</th>
                 <th>Item</th>
                 <th>Qty</th>
+                <th>UOM</th>
                 <th>Rate</th>
                 <th>Discount %</th>
                 <th>GST %</th>
             </tr>
         </thead>
-
+        <tbody>
         <%
         int sl = 1;
         if(indentList != null && !indentList.isEmpty()){
-            for(POItems item: indentList){
+            for(POItems item : indentList){
         %>
-        <tr>
-            <td data-label="Sl No"><input type="text" name="slNo" value="<%=sl++%>" readonly></td>
-
-            <td data-label="Indent No">
-                <input type="text" value="<%=item.getIndentNo()%>" readonly>
-                <input type="hidden" name="indentId" value="<%=item.getId()%>">
-            </td>
-
+        <tr class="item-row">
+            <td><%=sl++%></td>
+            <td><%=item.getIndentNo()%><input type="hidden" name="indentId" value="<%=item.getId()%>"></td>
+            <td><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
+            <td><input type="number" step="0.01" name="qty" value="<%=item.getQty()%>" oninput="calculateTotals()"></td>
+            <td><input type="text" name="UOM" value="<%=item.getUOM()%>" readonly></td>
+            <td><input type="number" step="0.01" name="rate" value="0" oninput="calculateTotals()" required></td>
+            <td><input type="number" step="0.01" name="discPercent" value="0" oninput="calculateTotals()"></td>
+            <td><input type="number" step="0.01" name="gstPercent" value="18" oninput="calculateTotals()"></td>
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
-            <td data-label="Item"><input type="text" name="itemName" value="<%=item.getItemName()%>" readonly></td>
-            <td data-label="Qty"><input type="number" step="0.01" name="qty" value="<%=item.getQty()%>" ></td>
-            <td data-label="Rate"><input type="number" step="0.01" name="rate"></td>
-            <td data-label="Discount %"><input type="number" step="0.01" name="discPercent"></td>
-            <td data-label="GST %"><input type="number" step="0.01" name="gstPercent"></td>
         </tr>
         <%
             }
         } else {
         %>
-        <tr><td colspan="7" style="text-align:center; color:red;">No Indent Items Found</td></tr>
+        <tr><td colspan="8" style="color:red;">No Items Found</td></tr>
         <% } %>
-
-        <tr>
-            <td colspan="7" style="text-align:center;">
-                <input type="submit" value="Submit PO">
-            </td>
-        </tr>
+        </tbody>
     </table>
+
+    <div class="summary-container">
+        <div class="summary-line">
+            <span>Total Price (Base):</span>
+            <span id="totalPrice">0.00</span>
+        </div>
+        <div class="summary-line">
+            <span>Total GST Amount:</span>
+            <span id="totalGst">0.00</span>
+        </div>
+        <div class="summary-line">
+            <span>Service Total (With GST):</span>
+            <span id="totalService">0.00</span>
+        </div>
+        <div class="summary-line grand-total-line">
+            <span>Grand Total:</span>
+            <span id="grandTotal">0.00</span>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:20px;">
+        <input type="submit" class="submit-btn" value="Submit Purchase Order">
+    </div>
 </form>
 
-
 <script type="text/javascript">
+
 var vendorData = {
 <%
-int count=0, size=vendorMap.size();
-for(Map.Entry<String,String[]> e: vendorMap.entrySet()){
-String name = e.getKey().replace("\"","\\\"");
-String gst = e.getValue()[0].replace("\"","\\\"");
-String addr = e.getValue()[1].replace("\"","\\\"");
+int count = 0;
+int size = vendorMap.size();
+for (Map.Entry<String, String[]> e : vendorMap.entrySet()) {
+    String name = e.getKey();
+    String[] details = e.getValue();
+    
+    // 1. Handle Nulls
+    String gst = (details[0] != null) ? details[0] : "";
+    String addr = (details[1] != null) ? details[1] : "";
+
+    // 2. Clean the data for JavaScript
+    name = name.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
+    gst = gst.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
+    addr = addr.replace("'", "\\'").replaceAll("[\\n\\r]", " ");
 %>
-"<%=name%>":["<%=gst%>","<%=addr%>"]<%= (++count<size)?",":""%>
+    '<%=name%>': ['<%=gst%>', '<%=addr%>']<%= (++count < size) ? "," : "" %>
 <% } %>
 };
 
-function loadVendorDetails(){
+function loadVendorDetails() {
     var selected = document.getElementById("vendorDropdown").value;
-    if(vendorData[selected]){
+    if (vendorData[selected]) {
         document.getElementById("vendorGSTIN").value = vendorData[selected][0];
         document.getElementById("vendorAddress").value = vendorData[selected][1];
     } else {
@@ -319,6 +349,45 @@ function loadVendorDetails(){
         document.getElementById("vendorAddress").value = "";
     }
 }
+
+function calculateTotals() {
+    let totalPriceBase = 0;
+    let totalGstAmt = 0;
+
+    // Calculate Items
+    const rows = document.querySelectorAll('.item-row');
+    rows.forEach(row => {
+        const qty = parseFloat(row.querySelector('[name="qty"]').value) || 0;
+        const rate = parseFloat(row.querySelector('[name="rate"]').value) || 0;
+        const discP = parseFloat(row.querySelector('[name="discPercent"]').value) || 0;
+        const gstP = parseFloat(row.querySelector('[name="gstPercent"]').value) || 0;
+
+        const baseValue = qty * rate;
+        const discountedValue = baseValue - (baseValue * (discP / 100));
+        const gstValue = discountedValue * (gstP / 100);
+
+        totalPriceBase += discountedValue;
+        totalGstAmt += gstValue;
+    });
+
+    // Calculate Service Charge
+    const svcCharge = parseFloat(document.getElementById('serviceCharge').value) || 0;
+    const svcGstP = parseFloat(document.getElementById('serviceGst').value) || 0;
+    const svcGstAmt = svcCharge * (svcGstP / 100);
+    const svcTotalWithGst = svcCharge + svcGstAmt;
+
+    const finalGrandTotal = totalPriceBase + totalGstAmt + svcTotalWithGst;
+
+    // Update Display
+    document.getElementById('totalPrice').innerText = totalPriceBase.toFixed(2);
+    document.getElementById('totalGst').innerText = (totalGstAmt + svcGstAmt).toFixed(2);
+    document.getElementById('totalService').innerText = svcTotalWithGst.toFixed(2);
+    document.getElementById('grandTotal').innerText = finalGrandTotal.toFixed(2);
+}
+
+// Initial calculation on load
+window.onload = calculateTotals;
+
 </script>
 </body>
 </html>

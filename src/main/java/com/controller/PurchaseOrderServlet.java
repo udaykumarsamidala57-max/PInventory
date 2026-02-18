@@ -31,7 +31,7 @@ public class PurchaseOrderServlet extends HttpServlet {
 
         try (Connection con = DBUtil.getConnection()) {
 
-            // --- Generate next PO number ---
+            // --- 1. Generate next PO number ---
             try (Statement stNext = con.createStatement();
                  ResultSet rsNext = stNext.executeQuery("SELECT po_number FROM po_master ORDER BY po_id DESC LIMIT 1")) {
                 if (rsNext.next()) {
@@ -42,11 +42,11 @@ public class PurchaseOrderServlet extends HttpServlet {
                 }
             }
 
-            // --- Load selected indents ---
+            // --- 2. Load selected indents ---
             if (selectedIds != null && selectedIds.length > 0) {
                 String placeholders = String.join(",", Collections.nCopies(selectedIds.length, "?"));
-                String sql = "SELECT indent_id, indent_no, item_id, item_name, qty FROM indent "
-                        + "WHERE Indentnext='PO' AND indent_id IN (" + placeholders + ") ORDER BY indent_id DESC";
+                String sql = "SELECT indent_id, indent_no, item_id, item_name, UOM, qty FROM indent "
+                        + "WHERE indent_id IN (" + placeholders + ") ORDER BY indent_id DESC";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     for (int i = 0; i < selectedIds.length; i++) {
                         ps.setString(i + 1, selectedIds[i]);
@@ -58,6 +58,7 @@ public class PurchaseOrderServlet extends HttpServlet {
                             item.setIndentNo(rs.getString("indent_no"));
                             item.setItemId(rs.getInt("item_id"));
                             item.setItemName(rs.getString("item_name"));
+                            item.setUOM(rs.getString("UOM"));
                             item.setQty(rs.getDouble("qty"));
                             indentList.add(item);
                         }
@@ -65,16 +66,20 @@ public class PurchaseOrderServlet extends HttpServlet {
                 }
             }
 
-            // --- Load vendor list ---
+            // --- 3. Load vendor list (Fixed Column Names) ---
             try (Statement st2 = con.createStatement();
-                 ResultSet rs2 = st2.executeQuery("SELECT name, gstin, address FROM vendors ORDER BY name")) {
+                 ResultSet rs2 = st2.executeQuery("SELECT name, GSTIN, address FROM vendors ORDER BY name")) {
                 while (rs2.next()) {
-                    vendorMap.put(rs2.getString("name"),
-                            new String[]{rs2.getString("gstin"), rs2.getString("address")});
+                    // Using Column Names exactly as per your DB schema
+                    String name = rs2.getString("name");
+                    String gstin = (rs2.getString("GSTIN") != null) ? rs2.getString("GSTIN") : "";
+                    String addr = (rs2.getString("address") != null) ? rs2.getString("address") : "";
+                    vendorMap.put(name, new String[]{gstin, addr});
                 }
             }
 
         } catch (Exception e) {
+            e.printStackTrace();
             throw new ServletException("DB Error: " + e.getMessage(), e);
         }
 

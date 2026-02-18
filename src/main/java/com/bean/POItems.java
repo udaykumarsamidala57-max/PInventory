@@ -47,4 +47,8 @@ public class POItems {
     private double tobereceived;
     public double gettobeReceivedQty() {  return qty - receivedQty;  }
     public void settobeReceivedQty(double tobereceived) { this.tobereceived = tobereceived; }
+    
+    private String UOM;
+    public String getUOM() {  return UOM ;  }
+    public void setUOM(String UOM) { this.UOM = UOM; }
 }
