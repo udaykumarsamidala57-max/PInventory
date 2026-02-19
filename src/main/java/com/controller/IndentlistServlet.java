@@ -33,21 +33,24 @@ public class IndentlistServlet extends HttpServlet {
         try (Connection con = DBUtil.getConnection()) {
 
             StringBuilder listSql = new StringBuilder();
-            listSql.append("SELECT i.*, COALESCE(s.balance_qty,0) AS balance_qty ")
+            listSql.append("SELECT i.*, i.stock AS balance_qty ")
                    .append("FROM indent i ")
-                   .append("LEFT JOIN stock s ON i.item_id = s.item_id ")
-                   .append("WHERE 1=1 "); // Show all records (no exclusion)
+                   .append("WHERE 1=1 ");
 
-            // Department-based filter
-            if (!"Global".equalsIgnoreCase(role)&& !"Finance".equalsIgnoreCase(dept)&& !"Store".equalsIgnoreCase(dept)) {
+            // ---------- Department-based filter ----------
+            if (!"Global".equalsIgnoreCase(role)
+                    && !"Finance".equalsIgnoreCase(dept)
+                    && !"Store".equalsIgnoreCase(dept)) {
+
                 if ("Admin".equalsIgnoreCase(role)) {
-                    listSql.append(" AND i.department IN ('Electrical','Housekeeping','Plumbing','Dininghall') ");
+                    listSql.append(" AND i.department IN ")
+                           .append("('Electrical','Housekeeping','Plumbing','Dininghall') ");
                 } else {
                     listSql.append(" AND i.department = ? ");
                 }
             }
 
-            // Order — Pending first, then Approved, then Cancelled
+            // ---------- Ordering ----------
             listSql.append("ORDER BY CASE ")
                    .append("WHEN (i.Istatus IS NULL OR TRIM(i.Istatus) = '' OR TRIM(i.Istatus) = 'Pending') THEN 0 ")
                    .append("WHEN TRIM(i.Istatus) = 'Approved' THEN 1 ")
@@ -57,12 +60,15 @@ public class IndentlistServlet extends HttpServlet {
 
             PreparedStatement ps = con.prepareStatement(listSql.toString());
 
-            // Set department parameter if not Global/Admin
-            if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)&&!"Finance".equalsIgnoreCase(dept) && !"Store".equalsIgnoreCase(dept)) {
+            if (!"Global".equalsIgnoreCase(role)
+                    && !"Admin".equalsIgnoreCase(role)
+                    && !"Finance".equalsIgnoreCase(dept)
+                    && !"Store".equalsIgnoreCase(dept)) {
                 ps.setString(1, dept);
             }
 
             ResultSet rs = ps.executeQuery();
+
             while (rs.next()) {
                 IndentItemFull ind = new IndentItemFull();
 
@@ -81,11 +87,12 @@ public class IndentlistServlet extends HttpServlet {
                 ind.setStatus(rs.getString("status"));
                 ind.setIndentNext(rs.getString("Indentnext"));
 
-                // Optional columns — handle safely
+                // ---------- Dates ----------
                 try { ind.setIapprovevdate(rs.getDate("Iapprovedate")); } catch (SQLException ignored) {}
                 try { ind.setFapprovevdate(rs.getDate("Fapprovedate")); } catch (SQLException ignored) {}
 
-                try { ind.setBalanceQty(rs.getDouble("balance_qty")); } catch (SQLException ignored) {}
+                // ---------- Stock snapshot from indent ----------
+                ind.setBalanceQty(rs.getDouble("balance_qty"));
 
                 list.add(ind);
             }
@@ -97,7 +104,7 @@ public class IndentlistServlet extends HttpServlet {
             throw new ServletException("DB error: " + e.getMessage(), e);
         }
 
-        // ---------- Forward to JSP ----------
+        // ---------- Forward ----------
         request.setAttribute("indents", list);
         RequestDispatcher rd = request.getRequestDispatcher("indentList.jsp");
         rd.forward(request, response);

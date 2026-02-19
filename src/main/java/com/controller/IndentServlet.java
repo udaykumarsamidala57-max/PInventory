@@ -28,7 +28,7 @@ public class IndentServlet extends HttpServlet {
         String selectedDept = request.getParameter("selectedDept");
 
         try (Connection con = DBUtil.getConnection()) {
-            // UPDATED: Read next number from Sequence Table for display
+
             int nextIndentNo = 1;
             String sqlNext = "SELECT next_val + 1 AS next_no FROM id_sequences WHERE seq_name = 'indent_no'";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
@@ -36,10 +36,10 @@ public class IndentServlet extends HttpServlet {
                 if (rs.next()) {
                     nextIndentNo = rs.getInt("next_no");
                 } else {
-                    // Fallback to old method only if sequence table isn't initialized
                     String sqlFallback = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 FROM indent";
-                    try(Statement st = con.createStatement(); ResultSet rs2 = st.executeQuery(sqlFallback)) {
-                        if(rs2.next()) nextIndentNo = rs2.getInt(1);
+                    try (Statement st = con.createStatement();
+                         ResultSet rs2 = st.executeQuery(sqlFallback)) {
+                        if (rs2.next()) nextIndentNo = rs2.getInt(1);
                     }
                 }
             }
@@ -47,10 +47,9 @@ public class IndentServlet extends HttpServlet {
 
             Map<String, Object> masterData = new HashMap<>();
 
-            // --- ALL YOUR EXISTING FILTERING FEATURES PRESERVED BELOW ---
             List<Map<String, String>> departments = new ArrayList<>();
             if ("Global".equalsIgnoreCase(role)) {
-                String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>'' ORDER BY Department";
+                String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>''";
                 try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -90,15 +89,16 @@ public class IndentServlet extends HttpServlet {
             }
 
             List<Map<String, String>> items = new ArrayList<>();
-            String itemSql = "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, "
-                    + "COALESCE(s.balance_qty, 0) AS stock "
-                    + "FROM item_master im "
-                    + "LEFT JOIN stock s ON im.Item_id = s.item_id";
+            String itemSql =
+                    "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
+                    "COALESCE(s.balance_qty,0) AS stock " +
+                    "FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id";
+
             try (PreparedStatement ps = con.prepareStatement(itemSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, String> i = new HashMap<>();
-                    i.put("id", String.valueOf(rs.getInt("Item_id")));
+                    i.put("id", rs.getString("Item_id"));
                     i.put("name", rs.getString("Item_name"));
                     i.put("UOM", rs.getString("UOM"));
                     i.put("category", rs.getString("Category"));
@@ -153,50 +153,50 @@ public class IndentServlet extends HttpServlet {
         List<IndentItem> itemsList = new ArrayList<>();
         for (int i = 0; i < itemNames.length; i++) {
             try {
-                String idStr = itemIds.length > i ? itemIds[i].trim() : "";
-                String qtyStr = quantities.length > i ? quantities[i].trim() : "";
-                if (idStr.isEmpty() || qtyStr.isEmpty()) continue;
+                int id = Integer.parseInt(itemIds[i]);
+                double qty = Double.parseDouble(quantities[i]);
+                if (qty <= 0) continue;
 
-                int id = Integer.parseInt(idStr);
-                double qty = Double.parseDouble(qtyStr);
-                String name = itemNames[i] != null ? itemNames[i].trim() : "";
-                String purp = purposes.length > i && purposes[i] != null ? purposes[i].trim() : "";
-                String uom = uoms.length > i && uoms[i] != null ? uoms[i].trim() : "";
-
-                if (name.isEmpty() || qty <= 0) continue;
-                itemsList.add(new IndentItem(id, name, qty, purp, uom));
+                itemsList.add(new IndentItem(
+                        id,
+                        itemNames[i],
+                        qty,
+                        purposes.length > i ? purposes[i] : "",
+                        uoms.length > i ? uoms[i] : ""
+                ));
             } catch (Exception ignored) {}
         }
 
         if (itemsList.isEmpty()) {
             sess.setAttribute("message", "❌ Error: At least one valid item is required.");
-            response.sendRedirect("IndentServlet"); // Redirect back to form
+            response.sendRedirect("IndentServlet");
             return;
         }
 
         Connection con = null;
         String finalIndentNo = "";
+
         try {
             con = DBUtil.getConnection();
             con.setAutoCommit(false);
 
-            // 1. ATOMIC ID GENERATION (Locks the row so others wait)
-            String updateSeq = "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name = 'indent_no'";
-            try (PreparedStatement psUpd = con.prepareStatement(updateSeq)) {
-                psUpd.executeUpdate();
-            }
+            con.prepareStatement(
+                    "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name='indent_no'"
+            ).executeUpdate();
 
-            String selectSeq = "SELECT next_val FROM id_sequences WHERE seq_name = 'indent_no'";
-            try (PreparedStatement psSel = con.prepareStatement(selectSeq);
-                 ResultSet rs = psSel.executeQuery()) {
-                if (rs.next()) {
-                    finalIndentNo = String.valueOf(rs.getInt(1));
-                }
-            }
+            ResultSet rs = con.prepareStatement(
+                    "SELECT next_val FROM id_sequences WHERE seq_name='indent_no'"
+            ).executeQuery();
 
-            // 2. BATCH INSERT
-            String insertSql = "INSERT INTO indent(indent_no, indent_date, item_id, item_name, qty, department, requested_by, purpose, remarks, uom, PurchaseorIssue) "
-                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?)";
+            if (rs.next()) finalIndentNo = rs.getString(1);
+
+            String insertSql =
+                "INSERT INTO indent (" +
+                "indent_no, indent_date, item_id, item_name, qty, department, requested_by," +
+                "purpose, remarks, uom, PurchaseorIssue, stock" +
+                ") VALUES (?,?,?,?,?,?,?,?,?,?,?, " +
+                "(SELECT COALESCE(balance_qty,0) FROM stock WHERE stock.item_id = ?))";
+
             try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                 for (IndentItem it : itemsList) {
                     ps.setString(1, finalIndentNo);
@@ -210,6 +210,7 @@ public class IndentServlet extends HttpServlet {
                     ps.setString(9, "");
                     ps.setString(10, it.getUom());
                     ps.setString(11, indentType);
+                    ps.setInt(12, it.getItemId()); // for stock subquery
                     ps.addBatch();
                 }
                 ps.executeBatch();
@@ -218,14 +219,13 @@ public class IndentServlet extends HttpServlet {
             con.commit();
             sess.setAttribute("message", "✅ Indent #" + finalIndentNo + " saved successfully!");
 
-        } catch (SQLException e) {
-            if (con != null) { try { con.rollback(); } catch (SQLException ex) {} }
+        } catch (Exception e) {
+            if (con != null) try { con.rollback(); } catch (SQLException ignored) {}
             sess.setAttribute("message", "❌ Database Error: " + e.getMessage());
         } finally {
-            if (con != null) { try { con.close(); } catch (SQLException ex) {} }
+            if (con != null) try { con.close(); } catch (SQLException ignored) {}
         }
 
-        // 3. POST-REDIRECT-GET: Prevents double entries on page refresh
         response.sendRedirect("Home");
     }
 
