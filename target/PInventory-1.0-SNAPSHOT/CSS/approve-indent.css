@@ -1,0 +1,180 @@
+body {
+    font-family: 'Inter', 'Poppins', sans-serif;
+    background-color: #f1f5f9;
+    color: #1e293b;
+    margin: 0;
+    padding: 0;
+    line-height: 1.5;
+}
+
+h1 {
+    color: #0f172a;
+    text-align: center;
+    margin: 30px 0;
+    font-weight: 800;
+    font-size: 26px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card {
+    background: transparent;
+    max-width: 98%;
+    margin: auto;
+    padding-bottom: 40px;
+}
+
+.indent-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    margin-bottom: 25px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease-in-out;
+}
+
+.indent-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+    border-color: #cbd5e1;
+}
+
+.indent-header {
+    background: #0f2a4d;
+    color: #f8fafc;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    border-bottom: 3px solid #fbbf24;
+}
+
+.indent-header div {
+    flex: 1;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: #cbd5e1;
+}
+
+.indent-header .indent-no {
+    font-weight: 700;
+    font-size: 16px;
+    color: #fff;
+    letter-spacing: 0.5px;
+}
+
+.inner-table {
+    width: 100%;
+    margin: 0;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.inner-table th {
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 10px;
+    border-bottom: 2px solid #e2e8f0;
+    text-align: center;
+}
+
+.inner-table td {
+    padding: 12px 10px;
+    font-size: 13px;
+    color: #334155;
+    text-align: center;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.inner-table tr:last-child td {
+    border-bottom: none;
+}
+
+.inner-table tr:nth-child(even) td {
+    background-color: #fcfdfe;
+}
+
+.inner-table tr:hover td {
+    background-color: #f1f5f9;
+}
+
+.inner-table th:nth-child(1), .inner-table td:nth-child(1) { width: 50px; }
+.inner-table th:nth-child(2), .inner-table td:nth-child(2) { width: 220px; text-align: left; padding-left: 15px; font-weight: 600; color: #0f172a; }
+.inner-table th:nth-child(3), .inner-table td:nth-child(3) { width: 80px; }
+.inner-table th:nth-child(4), .inner-table td:nth-child(4) { width: 80px; color: #2563eb; font-weight: 600; }
+.inner-table th:nth-child(5), .inner-table td:nth-child(5) { width: 60px; color: #64748b; }
+.inner-table th:nth-child(6), .inner-table td:nth-child(6) { width: 240px; text-align: left; padding-left: 22px; white-space: normal; color: #0f172a; font-style: italic; }
+.inner-table th:nth-child(7), .inner-table td:nth-child(7) { width: 90px; }
+.inner-table th:nth-child(8), .inner-table td:nth-child(8) { width: 160px; font-weight: 500; }
+.inner-table th:nth-child(9), .inner-table td:nth-child(9) { width: 90px; }
+.inner-table th:nth-child(10),.inner-table td:nth-child(10){ width: 200px; }
+
+.final-action {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.final-action select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 13px;
+    background: #fff;
+    color: #1e293b;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.final-action select:focus {
+    border-color: #3b82f6;
+    ring: 2px rgba(59, 130, 246, 0.2);
+}
+
+.btn-blue, .btn-green, .btn-edit, .btn-delete {
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-blue { background: #2563eb; color: #fff; }
+.btn-blue:hover { background: #1d4ed8; }
+
+.btn-green { background: #10b981; color: #fff; }
+.btn-green:hover { background: #059669; }
+
+.badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge-purchase { background: #fef3c7; color: #92400e; }
+.badge-issue { background: #dcfce7; color: #166534; }
+
+.approved-badge {
+    background: #f1f5f9;
+    color: #475569;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 11px;
+    border: 1px solid #e2e8f0;
+}
