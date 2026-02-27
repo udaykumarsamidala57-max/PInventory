@@ -85,7 +85,7 @@ public class SaveMarksServlet extends HttpServlet {
             psUpdateStudent.executeBatch();
 
             con.commit();
-            response.sendRedirect("Admissions/enter_marks.jsp?msg=success");
+            response.sendRedirect("enter_marks.jsp?msg=success");
 
         } catch (Exception e) {
             try { if (con != null) con.rollback(); } catch (Exception ex) {}
