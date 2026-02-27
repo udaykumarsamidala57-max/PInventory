@@ -1,23 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="javax.servlet.http.HttpSession,java.util.*" %>
 
-<%
-/* ========= AUTH ========= */
-HttpSession sess = request.getSession(false);
-if (sess == null || sess.getAttribute("username") == null) {
-    response.sendRedirect("login.jsp");
-    return;
-}
 
-String USER = (String) sess.getAttribute("username");
-String ROLE = (String) sess.getAttribute("role");
-String DEPT = (String) sess.getAttribute("department");
-
-/* ========= MODULE SWITCH ========= */
-/* SET THIS PER PAGE */
-String MODULE = request.getParameter("module");
-if (MODULE == null) MODULE = "INVENTORY"; // default
-%>
 
 <!DOCTYPE html>
 <html>
