@@ -5,6 +5,6 @@
 </head>
 <body>
     <h1>Welcome to Inventory!</h1>
-    <p>This page was loaded from a Servlet forward.</p>
+    <a href="Home.jsp"><i class="fas fa-check-circle text-warning"></i> Inventory</a>
 </body>
 </html>
