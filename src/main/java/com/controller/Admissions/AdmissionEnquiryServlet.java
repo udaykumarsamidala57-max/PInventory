@@ -92,7 +92,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
             }
 
             // ================= FORWARD =================
-            req.getRequestDispatcher("admission_enquirys.jsp").forward(req, resp);
+            req.getRequestDispatcher("Admissions/admission_enquirys.jsp").forward(req, resp);
 
         } catch (Exception e) {
             e.printStackTrace();

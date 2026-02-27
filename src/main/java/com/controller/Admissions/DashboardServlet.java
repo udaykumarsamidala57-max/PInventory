@@ -94,7 +94,7 @@ public class DashboardServlet extends HttpServlet {
             request.setAttribute("semi", semiTotal);
             request.setAttribute("dashboardMatrix", dashboardMatrix);
             request.setAttribute("capacityMap", capacityMap);
-            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("Admissions/dashboard.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

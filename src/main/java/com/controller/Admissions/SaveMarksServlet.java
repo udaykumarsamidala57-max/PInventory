@@ -85,12 +85,12 @@ public class SaveMarksServlet extends HttpServlet {
             psUpdateStudent.executeBatch();
 
             con.commit();
-            response.sendRedirect("enter_marks.jsp?msg=success");
+            response.sendRedirect("Admissions/enter_marks.jsp?msg=success");
 
         } catch (Exception e) {
             try { if (con != null) con.rollback(); } catch (Exception ex) {}
             e.printStackTrace();
-            response.sendRedirect("enter_marks.jsp?msg=error");
+            response.sendRedirect("Admissions/enter_marks.jsp?msg=error");
 
         } finally {
             try { if (psUpsertMarks != null) psUpsertMarks.close(); } catch (Exception e) {}
