@@ -2,7 +2,6 @@
 <%@ page session="true" %>
 <%@ page import="java.util.Calendar, java.text.SimpleDateFormat" %>
 <%
-    // --- UNIFIED AUTHENTICATION (Inventory Based) ---
     HttpSession sesso = request.getSession(false);
     if (sesso == null || sesso.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
@@ -19,14 +18,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SRS | Unified Management System</title>
+<title>SRS | Inventory System</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* --- INVENTORY SYSTEM STYLES (Existing) --- */
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
+
 body {
   font-family: 'Inter', 'Poppins', sans-serif;
   background-color: #f6f8fa;
@@ -37,80 +38,289 @@ body {
   position: relative;
   padding-bottom: 60px;
 }
+
+
 .sidebar {
-  position: fixed; top: 0; left: 0; height: 100vh; width: 250px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100vh;
+  width: 250px;
   background: linear-gradient(180deg, #0f172a, #1e293b);
-  color: #fff; display: flex; flex-direction: column; padding-top: 20px;
-  box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001; transition: transform 0.3s ease;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  z-index: 1001;
+  transition: transform 0.3s ease;
+}
+.sidebar h2 {
+  text-align: center;
+  font-weight: 600;
+  font-size: 20px;
+  margin-bottom: 25px;
+  color: #f1f5f9;
 }
 .sidebar a, .sidebar .dropdown-btn {
-  display: flex; align-items: center; gap: 12px; color: #d1d5db;
-  text-decoration: none; padding: 12px 20px; font-size: 15px; border-radius: 8px;
-  transition: all 0.25s ease; background: none; border: none; width: 100%; cursor: pointer; text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d1d5db;
+  text-decoration: none;
+  padding: 12px 20px;
+  font-size: 15px;
+  border-radius: 8px;
+  transition: all 0.25s ease;
+  background: none;
+  border: none;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
 }
-.sidebar a:hover, .sidebar .dropdown-btn:hover { background: linear-gradient(90deg, #2563eb, #3b82f6); color: #fff; transform: translateX(5px); }
-.dropdown-content { display: none; flex-direction: column; background: #1e293b; border-left: 3px solid #2563eb; margin-left: 10px; border-radius: 8px; }
+.sidebar a:hover, .sidebar .dropdown-btn:hover {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: #fff;
+  transform: translateX(5px);
+}
+.dropdown-content {
+  display: none;
+  flex-direction: column;
+  background: #1e293b;
+  border-left: 3px solid #2563eb;
+  margin-left: 10px;
+  border-radius: 8px;
+}
+.dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
 
-/* Adjusted Header to make room for AMS bar below it if needed */
-header.inventory-header {
-  position: fixed; top: 0; left: 250px; right: 0; height: 75px;
-  background: #ffffff; color: #333; display: flex; align-items: center;
-  justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #e2e8f0;
-  z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); transition: left 0.3s ease;
+
+header {
+  position: fixed;
+  top: 0;
+  left: 250px;
+  right: 0;
+  height: 75px;
+  background: #ffffff;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+  border-bottom: 1px solid #e2e8f0;
+  z-index: 1000;
+  box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+  transition: left 0.3s ease;
 }
 
-/* --- AMS SYSTEM STYLES (Existing) --- */
-header.ams-header {
-    background: #0f2a4d !important;
-    border-bottom: 3px solid #38bdf8 !important;
-    margin: 0 !important;
-    width: 100% !important;
-    display: block !important;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    position: relative;
-    z-index: 999;
-}
-.ams-header .nav-container {
-    max-width: 1400px; margin: 0 auto !important; padding: 12px 25px !important;
-    display: flex !important; align-items: center !important; justify-content: space-between !important; min-height: 70px !important;
-}
-.ams-header .brand-box { border-left: 4px solid #fbbf24 !important; padding-left: 15px !important; }
-.ams-header .school-name { color: #fbbf24 !important; font-size: 1.3rem !important; font-weight: 800 !important; text-transform: uppercase !important; }
-.ams-header nav.ams-nav ul { list-style: none !important; display: flex !important; gap: 8px !important; }
-.ams-header nav.ams-nav ul li a { text-decoration: none !important; color: #e5e7eb !important; font-size: 14px !important; font-weight: 600 !important; padding: 8px 14px !important; border-radius: 6px !important; }
-.ams-header nav.ams-nav ul li a:hover { background: rgba(255,255,255,0.15) !important; color: #38bdf8 !important; }
 
-/* Layout adjustments */
-main { margin-left: 250px; padding: 20px; transition: margin-left 0.3s ease; }
-body.sidebar-collapsed .inventory-header { left: 0; }
+.header-brand-title {
+    text-align: left;
+    color: #0f2a4d;
+    font-weight: 800;
+    font-size: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-left: 5px solid #fbbf24;
+    padding-left: 15px;
+    font-family: 'Inter', sans-serif;
+}
+
+.toggle-btn {
+  background: #f1f5f9;
+  border: none;
+  color: #0f2a4d;
+  font-size: 20px;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 15px;
+}
+
+
+.user-info-card {
+  display: flex;
+  align-items: center;
+  padding: 8px 15px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+.user-info-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-color: #3b82f6;
+}
+.user-initials {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0f2a4d, #1e40af);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+  margin-right: 12px;
+}
+.user-meta {
+  display: flex;
+  flex-direction: column;
+}
+.user-meta .u-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f2a4d;
+  text-transform: capitalize;
+}
+.user-meta .u-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3b82f6;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+
+main {
+  margin-left: 250px;
+  padding: 110px 30px 40px;
+  transition: margin-left 0.3s ease;
+}
+
+
+footer {
+  position: fixed;
+  bottom: 0;
+  left: 250px;
+  right: 0;
+  background: #ffffff;
+  color: #64748b;
+  text-align: center;
+  padding: 12px 10px;
+  font-size: 13px;
+  border-top: 1px solid #e2e8f0;
+  transition: left 0.3s ease;
+}
+
+
+body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
+body.sidebar-collapsed footer { left: 0; }
 body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
-.content-wrapper { padding-top: 85px; } /* Offset for fixed inventory header */
+.text-primary { color:#3b82f6; }
+.text-success { color:#22c55e; }
+.text-danger { color:#ef4444; }
+.text-warning { color:#facc15; }
+.text-info { color:#06b6d4; }
+.text-purple { color:#8b5cf6; }
+.text-secondary { color:#9ca3af; }
 </style>
 </head>
 
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2 style="padding: 10px;"><i class="fas fa-box text-primary"></i> SRS Inventory</h2>
+  <h2><i class="fas fa-box text-primary"></i> Sandur residential School</h2>
+
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
-  
+
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-file-alt text-primary"></i> Indent <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IndentServlet">Item Requisition</a>
-      <a href="IndentlistServlet">Indent Report</a>
+      <a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
+      <a href="IndentlistServlet"><i class="fas fa-list text-info"></i> Indent Report</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
+        <a href="AIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Indent</a>
+      <% } %>
+      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
+        <a href="DIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Dining Hall Indent</a>
+      <% } %>
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)) { %>
+  <% if ("Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-box-open text-warning"></i> Issue <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IssueServlet">Issue Items</a>
-      <a href="Issuereport.jsp">Issue Report</a>
+      <a href="IssueServlet"><i class="fas fa-dolly text-info"></i> Issue Items</a>
+      <a href="Issuereport.jsp"><i class="fas fa-file-invoice text-danger"></i> Issue Report</a>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-shopping-cart text-danger"></i> Purchase / PO <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+    <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
+        <a href="POListServlet"><i class="fas fa-check-double text-success"></i> Approve PO</a>
+        <a href="ListPO.jsp"><i class="fas fa-clipboard-list text-warning"></i> PO Report</a>
+      <% } %>
+      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+        <a href="IndentPO"><i class="fas fa-file-signature text-primary"></i> Create Purchase Order</a>
+        <a href="GRNServlet"><i class="fas fa-clipboard-check text-success"></i> GRN Entry</a>
+        <a href="viewGRN"><i class="fas fa-clipboard-check text-success"></i> GRN Report</a>
+        <a href="VendorMaster.jsp"><i class="fas fa-user-tie text-info"></i> Vendor Master</a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
+      <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+    </div>
+  </div>
+  <% } %>
+
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-chart-line text-purple"></i> Reports <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="Stock.jsp"><i class="fas fa-boxes text-info"></i> Stock Report</a>
+      <a href="stockReport.jsp"><i class="fas fa-book text-primary"></i> Stock Ledger Report</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+        <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dashboard</a>
+      <% } %>
+    </div>
+  </div>
+
+  <% if (("Global".equalsIgnoreCase(roles)|| "Incharge".equalsIgnoreCase(roles))&& "Finance".equalsIgnoreCase(depts)  ){ %>
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-cog text-secondary"></i> Masters <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="ItemsMaster.jsp"><i class="fas fa-tags text-primary"></i> Item Master</a>
+      <a href="AddStock"><i class="fas fa-plus-square text-success"></i> Add Stock</a>
+    </div>
+  </div>
+  <% } %>
+
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-tools text-warning"></i> Asset Management <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="#"><i class="fas fa-desktop text-info"></i> Fixed Assets</a>
+      <a href="#"><i class="fas fa-barcode text-danger"></i> Barcode Generator</a>
+    </div>
+  </div>
+  <% } %>
+
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)) { %>
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fas fa-lightbulb text-warning"></i> Documentation <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="#"><i class="fas fa-info-circle text-primary"></i> About Software</a>
+      <a href="#"><i class="fas fa-bolt text-success"></i> New Updates</a>
     </div>
   </div>
   <% } %>
@@ -118,81 +328,45 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
 
-<header class="inventory-header">
+<header>
   <div style="display: flex; align-items: center;">
-    <button class="toggle-btn" id="menu-toggle" style="background:#f1f5f9; border:none; padding:10px; cursor:pointer; border-radius:8px; margin-right:15px;"><i class="fas fa-bars"></i></button>
-    <div style="font-weight:800; font-size:18px; color:#0f2a4d; border-left:4px solid #fbbf24; padding-left:15px;">INVENTORY SYSTEM</div>
+    <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
+    <div class="header-brand-title">Inventory Management System</div>
   </div>
 
-  <div style="display:flex; align-items:center; background:#f8fafc; padding:8px 15px; border-radius:12px; border:1px solid #e2e8f0;">
-    <div style="width:35px; height:35px; background:#0f2a4d; color:white; border-radius:8px; display:flex; align-items:center; justify-content:center; margin-right:10px; font-weight:bold;"><%= users.substring(0,1).toUpperCase() %></div>
-    <div style="display:flex; flex-direction:column;">
-      <span style="font-size:12px; font-weight:700;"><%= users.toLowerCase() %></span>
-      <span style="font-size:10px; color:#3b82f6; text-transform:uppercase;"><%= roles %></span>
+  <div class="user-info-card">
+    <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>
+    <div class="user-meta">
+      <span class="u-name"><%= users.toLowerCase() %></span>
+      <span class="u-role"><i class="fas fa-shield-alt"></i> <%= roles %></span>
     </div>
   </div>
 </header>
 
-<div class="content-wrapper">
-    <header class="ams-header">
-        <div class="nav-container">
-            <div class="brand-box">
-                <span class="school-name" style="display:block;">Sandur Residential School</span>
-                <span class="system-name" style="color:white; font-size:12px; opacity:0.8;">Admissions Management System</span>
-            </div>
-            <nav class="ams-nav">
-                <ul>
-                    <li><a href="admission">Enquiries</a></li>
-                    <li><a href="admission_report.jsp">Dashboard</a></li>
-                    <li><a href="enter_marks.jsp">Exam</a></li>
-                    <li><a href="ApproveAdmission.jsp">Approval</a></li>
-                    <li><a href="Home">Inventory Home</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+<main>
+  <h2>Welcome back, <%= users.toUpperCase() %></h2>
+  <p style="color: #64748b; font-size: 14px;">Current Session: <%= todayDate %></p>
+</main>
 
-    <main>
-      <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-          <h2>Welcome to the Unified Portal, <%= users.toUpperCase() %></h2>
-          <p style="color: #64748b; margin-top: 10px;">Authenticated via Inventory System | Date: <%= todayDate %></p>
-          <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-          
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-              <div style="border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px;">
-                  <h4 style="color:#2563eb;"><i class="fas fa-boxes"></i> Inventory Quick Actions</h4>
-                  <ul style="list-style:none; margin-top:10px;">
-                      <li><a href="IndentServlet" style="color:#64748b; text-decoration:none;">• Create New Indent</a></li>
-                      <li><a href="Stock.jsp" style="color:#64748b; text-decoration:none;">• View Stock Report</a></li>
-                  </ul>
-              </div>
-              <div style="border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px;">
-                  <h4 style="color:#0f2a4d;"><i class="fas fa-user-grad"></i> Admission Quick Actions</h4>
-                  <ul style="list-style:none; margin-top:10px;">
-                      <li><a href="admission" style="color:#64748b; text-decoration:none;">• Student Enquiries</a></li>
-                      <li><a href="Capcity.jsp" style="color:#64748b; text-decoration:none;">• Check Vacancy</a></li>
-                  </ul>
-              </div>
-          </div>
-      </div>
-    </main>
-</div>
-
-<footer style="text-align:center; padding:20px; color:#64748b; font-size:13px; border-top:1px solid #e2e8f0;">
-  © <%= Calendar.getInstance().get(Calendar.YEAR) %> | SRS Unified Systems | School IT Department
+<footer>
+  <p>© <%= todayDate %> | SRS Inventory System |
+  <i class="fas fa-leaf" style="color:green;"></i> Developed by
+  <i class="fas fa-leaf" style="color:green;"></i> School IT Department</p>
 </footer>
 
 <script>
-// Sidebar Toggle
-document.getElementById('menu-toggle').addEventListener('click', () => {
-  document.body.classList.toggle('sidebar-collapsed');
-});
-
-// Dropdown Logic
 document.querySelectorAll('.dropdown-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown').forEach(drop => {
+      if (drop !== btn.parentElement) drop.classList.remove('active');
+    });
     btn.parentElement.classList.toggle('active');
   });
+});
+
+const toggleBtn = document.getElementById('menu-toggle');
+toggleBtn.addEventListener('click', () => {
+  document.body.classList.toggle('sidebar-collapsed');
 });
 </script>
 
