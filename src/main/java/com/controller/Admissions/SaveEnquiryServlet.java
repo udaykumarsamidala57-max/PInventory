@@ -94,7 +94,7 @@ public class SaveEnquiryServlet extends HttpServlet {
 
         try {
             // 2. Get DB connection
-            con = DBUtil.getConnection();
+            con = DBUtil3.getConnection();
 
             // ===============================
             // 🛡️ SERVER-SIDE MOBILE LIMIT CHECK
