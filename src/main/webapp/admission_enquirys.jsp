@@ -219,7 +219,7 @@ window.onload = function(){ calculateAges(); applyFilters(); }
 </head>
 
 <body>
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="filters">
     <b>Total:</b> <span id="countTotal">0</span>
