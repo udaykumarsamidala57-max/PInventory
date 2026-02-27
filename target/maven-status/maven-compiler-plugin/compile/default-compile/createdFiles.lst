@@ -22,6 +22,7 @@ com\bean\DBUtil2.class
 com\bean\POItems.class
 com\controller\AddStock.class
 com\bean\AggregatedItem.class
+com\example\HomeServlet.class
 com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\bean\IndentItems.class
