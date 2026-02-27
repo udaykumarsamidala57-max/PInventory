@@ -60,7 +60,7 @@ public class resume extends HttpServlet {
             "total_experience=?, present_salary=?, expected_salary=?, remarks=?, call_status=?, " +
             "demo_status=?, interview_status=? WHERE sl_no=?";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
             ps.setString(1, request.getParameter("name"));

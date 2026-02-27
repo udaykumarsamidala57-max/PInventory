@@ -1,4 +1,5 @@
 com\bean\IndentItem.class
+com\controller\LoginServlet.class
 com\controller\ViewGRNServlet.class
 com\controller\DIndentListServlet.class
 com\controller\IndentPO.class
@@ -32,5 +33,6 @@ com\controller\Home.class
 com\controller\PO.class
 com\bean\Addstock.class
 com\bean\PO.class
+com\controller\HRA\resume.class
 com\controller\SendOTPServlet.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
