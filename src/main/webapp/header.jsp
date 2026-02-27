@@ -18,7 +18,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>SRS | Office Central | Maintained by IT Dept.</title>
+<title>Office Central </title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -349,7 +349,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </main>
 
 <footer>
-  <p>© <%= todayDate %> | SRS Inventory System |
+  <p>© <%= todayDate %> | SRS | Office Central | Maintained by IT Dept. |
   <i class="fas fa-leaf" style="color:green;"></i> Developed by
   <i class="fas fa-leaf" style="color:green;"></i> School IT Department</p>
 </footer>
