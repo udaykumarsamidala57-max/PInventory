@@ -137,12 +137,12 @@ header.ams-header {
             <ul>
                 <li><a href="dashboard">Home</a></li>
                 <li><a href="admission">Enquiries</a></li>
-                <li><a href="Admissions/admission_report.jsp">Dashboard</a></li>
+                <li><a href="admission_report.jsp">Dashboard</a></li>
                 <li><a href="enter_marks.jsp">Exam</a></li>
-                <li><a href="Admissions/marks_report.jsp">Tabulation</a></li>
-                <li><a href="Admissions/ApproveAdmission.jsp">Approval</a></li>
-                <li><a href="Admissions/Capcity.jsp">Vacancy</a></li>
-                <li><a href="Admissions/student_tc_update.jsp">TC Update</a></li>
+                <li><a href="marks_report.jsp">Tabulation</a></li>
+                <li><a href="ApproveAdmission.jsp">Approval</a></li>
+                <li><a href="Capcity.jsp">Vacancy</a></li>
+                <li><a href="student_tc_update.jsp">TC Update</a></li>
             </ul>
         </nav>
 
