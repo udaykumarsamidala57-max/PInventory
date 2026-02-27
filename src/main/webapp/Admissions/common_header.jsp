@@ -138,7 +138,7 @@ header.ams-header {
                 <li><a href="dashboard">Home</a></li>
                 <li><a href="admission">Enquiries</a></li>
                 <li><a href="Admissions/admission_report.jsp">Dashboard</a></li>
-                <li><a href="Admissions/enter_marks.jsp">Exam</a></li>
+                <li><a href="enter_marks.jsp">Exam</a></li>
                 <li><a href="Admissions/marks_report.jsp">Tabulation</a></li>
                 <li><a href="Admissions/ApproveAdmission.jsp">Approval</a></li>
                 <li><a href="Admissions/Capcity.jsp">Vacancy</a></li>
