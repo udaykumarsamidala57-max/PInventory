@@ -15,7 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.bean.DBUtil;
+import com.bean.DBUtil2;
 
 @WebServlet("/resume")
 public class resume extends HttpServlet {
@@ -26,7 +26,7 @@ public class resume extends HttpServlet {
         List<Map<String, String>> resumeList = new ArrayList<>();
         String sql = "SELECT * FROM candidate_recruitment ORDER BY sl_no DESC";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
         	
