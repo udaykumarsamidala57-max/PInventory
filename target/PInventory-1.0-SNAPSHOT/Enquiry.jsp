@@ -124,7 +124,7 @@ button:hover {
 
 <div class="form-box">
 <div class="logo-box">
-    <img src="Logo.png" alt="School Logo">
+   <h1>Sandur Residential School</h1>
 </div>
 <h2>📘 Admission Enquiry Form (2026-27)</h2>
 

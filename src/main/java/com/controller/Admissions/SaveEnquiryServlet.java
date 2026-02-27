@@ -154,7 +154,7 @@ public class SaveEnquiryServlet extends HttpServlet {
             int result = ps.executeUpdate();
 
             if (result > 0) {
-                response.sendRedirect("Admissions/enquiry_success.jsp");
+                response.sendRedirect("enquiry_success.jsp");
             } else {
                 response.setContentType("text/html;charset=UTF-8");
                 PrintWriter out = response.getWriter();
