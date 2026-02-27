@@ -331,7 +331,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title">Inventory Management System</div>
+    <div class="header-brand-title"> SRS | Office Central | Developed & Maintained by IT Dept. </div>
   </div>
 
   <div class="user-info-card">
@@ -349,7 +349,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </main>
 
 <footer>
-  <p>© <%= todayDate %> | SRS | Office Central | Maintained by IT Dept. |
+  <p>© <%= todayDate %> | SRS | Office Central |  
   <i class="fas fa-leaf" style="color:green;"></i> Developed by
   <i class="fas fa-leaf" style="color:green;"></i> School IT Department</p>
 </footer>
