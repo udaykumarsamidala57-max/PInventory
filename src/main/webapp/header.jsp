@@ -363,16 +363,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="header-brand-title"> SRS | Office Central </div>
   </div>
 
-  <div class="header-nav">
-      <a href="dashboard" class="header-nav-link" title="Admission Home"><i class="fas fa-home text-success"></i> Home</a>
-      <a href="admission" class="header-nav-link" title="Enquiries"><i class="fas fa-search text-info"></i> Enquiries</a>
-      <a href="admission_report.jsp" class="header-nav-link" title="Dashboard"><i class="fas fa-chart-bar text-primary"></i> Dashboard</a>
-      <a href="enter_marks.jsp" class="header-nav-link" title="Exam Entry"><i class="fas fa-edit text-warning"></i> Exam</a>
-      <a href="marks_report.jsp" class="header-nav-link" title="Tabulation"><i class="fas fa-file-alt text-purple"></i> Tabulation</a>
-      <a href="ApproveAdmission.jsp" class="header-nav-link" title="Approval"><i class="fas fa-check-circle text-success"></i> Approval</a>
-      <a href="Capcity.jsp" class="header-nav-link" title="Vacancy"><i class="fas fa-users text-danger"></i> Vacancy</a>
-      <a href="resume" class="header-nav-link" title="Resumes"><i class="fas fa-id-card text-info"></i> Resumes</a>
-  </div>
+  
 
   <div class="user-info-card">
     <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>
