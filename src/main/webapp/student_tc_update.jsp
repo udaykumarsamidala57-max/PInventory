@@ -205,7 +205,7 @@ function downloadExcel(){
 </head>
 <body>
 
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 
 <div class="filters">
