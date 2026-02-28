@@ -350,8 +350,12 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% } %>
       <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
       <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
+     <%  if ("Global".equalsIgnoreCase(roles)){ %>
       <a href="Capcity.jsp"><i class="fas fa-door-open"></i> Vacancy</a>
+      <% } %>
+      <%  if ("Tejkumar".equalsIgnoreCase(users)){ %>
       <a href="student_tc_update.jsp"><i class="fas fa-user-minus"></i> TC Update</a>
+       <% } %>
     </div>
   </div>
 
