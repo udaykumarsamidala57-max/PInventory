@@ -338,7 +338,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
   <% } %>
   
-  <% if ("Global".equalsIgnoreCase(roles)) { %>
+  
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
@@ -352,7 +352,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="student_tc_update.jsp"><i class="fas fa-user-minus"></i> TC Update</a>
     </div>
   </div>
-  <% } %>
+
    
   <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
