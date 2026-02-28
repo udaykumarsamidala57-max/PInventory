@@ -24,9 +24,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 
 body {
   font-family: 'Inter', 'Poppins', sans-serif;
@@ -38,7 +36,6 @@ body {
   position: relative;
   padding-bottom: 60px;
 }
-
 
 .sidebar {
   position: fixed;
@@ -94,7 +91,6 @@ body {
 .dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
 
-
 header {
   position: fixed;
   top: 0;
@@ -113,17 +109,40 @@ header {
   transition: left 0.3s ease;
 }
 
-
 .header-brand-title {
     text-align: left;
     color: #0f2a4d;
     font-weight: 800;
-    font-size: 20px;
+    font-size: 18px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-left: 5px solid #fbbf24;
     padding-left: 15px;
     font-family: 'Inter', sans-serif;
+}
+
+/* Updated Header Navigation Styling */
+.header-nav {
+    display: flex;
+    gap: 20px;
+    margin-left: auto;
+    margin-right: 30px;
+}
+.header-nav-link {
+    text-decoration: none;
+    color: #475569;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.header-nav-link:hover {
+    background-color: #f1f5f9;
+    color: #2563eb;
 }
 
 .toggle-btn {
@@ -140,7 +159,6 @@ header {
   justify-content: center;
   margin-right: 15px;
 }
-
 
 .user-info-card {
   display: flex;
@@ -189,13 +207,11 @@ header {
   gap: 4px;
 }
 
-
 main {
   margin-left: 250px;
   padding: 110px 30px 40px;
   transition: margin-left 0.3s ease;
 }
-
 
 footer {
   position: fixed;
@@ -210,7 +226,6 @@ footer {
   border-top: 1px solid #e2e8f0;
   transition: left 0.3s ease;
 }
-
 
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
@@ -341,14 +356,18 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title"> SRS | Office Central | Developed & Maintained by IT Dept. </div>
+    <div class="header-brand-title"> SRS | Office Central </div>
   </div>
-         <div>
-         <div><a href="dashboard">Admissions</a></div>
-         </div>
-         <div>
-         <div><a href="resume">Admissions</a></div>
-         </div>
+
+  <div class="header-nav">
+      <a href="dashboard" class="header-nav-link">
+          <i class="fas fa-user-graduate"></i> Admissions
+      </a>
+      <a href="resume" class="header-nav-link">
+          <i class="fas fa-file-alt"></i> Resumes
+      </a>
+  </div>
+
   <div class="user-info-card">
     <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>
     <div class="user-meta">
