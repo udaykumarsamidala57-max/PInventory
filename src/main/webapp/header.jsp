@@ -345,7 +345,9 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="dashboard"><i class="fas fa-home"></i> Home</a>
       <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
       <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
-      <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Exam</a>
+      <% if ("Academics".equalsIgnoreCase(depts)){ %>
+      <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
+      <% } %>
       <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
       <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
       <a href="Capcity.jsp"><i class="fas fa-door-open"></i> Vacancy</a>
