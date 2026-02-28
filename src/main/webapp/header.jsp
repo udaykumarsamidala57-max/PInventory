@@ -113,36 +113,43 @@ header {
     text-align: left;
     color: #0f2a4d;
     font-weight: 800;
-    font-size: 18px;
+    font-size: 16px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-left: 5px solid #fbbf24;
     padding-left: 15px;
     font-family: 'Inter', sans-serif;
+    white-space: nowrap;
 }
 
-/* Updated Header Navigation Styling */
+/* Reorganized Header Navigation Styling */
 .header-nav {
     display: flex;
-    gap: 20px;
-    margin-left: auto;
-    margin-right: 30px;
+    gap: 5px;
+    margin-left: 20px;
+    margin-right: auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 .header-nav-link {
     text-decoration: none;
     color: #475569;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
+    gap: 5px;
+    padding: 6px 10px;
     border-radius: 6px;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 .header-nav-link:hover {
     background-color: #f1f5f9;
     color: #2563eb;
+}
+.header-nav-link i {
+    font-size: 14px;
 }
 
 .toggle-btn {
@@ -168,14 +175,15 @@ header {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   transition: all 0.3s ease;
+  margin-left: 15px;
 }
 .user-info-card:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   border-color: #3b82f6;
 }
 .user-initials {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background: linear-gradient(135deg, #0f2a4d, #1e40af);
   color: white;
@@ -183,28 +191,18 @@ header {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 18px;
-  margin-right: 12px;
-}
-.user-meta {
-  display: flex;
-  flex-direction: column;
+  font-size: 16px;
+  margin-right: 10px;
 }
 .user-meta .u-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #0f2a4d;
-  text-transform: capitalize;
 }
 .user-meta .u-role {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #3b82f6;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
 
 main {
@@ -342,10 +340,16 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   
   <% if ("Global".equalsIgnoreCase(roles)) { %>
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-lightbulb text-warning"></i> Admissions <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="#"><i class="fas fa-info-circle text-primary"></i> About Software</a>
-      <a href="#"><i class="fas fa-bolt text-success"></i> New Updates</a>
+      <a href="dashboard"><i class="fas fa-home"></i> Home</a>
+      <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
+      <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Exam</a>
+      <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
+      <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
+      <a href="Capcity.jsp"><i class="fas fa-door-open"></i> Vacancy</a>
+      <a href="student_tc_update.jsp"><i class="fas fa-user-minus"></i> TC Update</a>
     </div>
   </div>
   <% } %>
@@ -360,12 +364,14 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
 
   <div class="header-nav">
-      <a href="dashboard" class="header-nav-link">
-          <i class="fas fa-user-graduate"></i> Admissions
-      </a>
-      <a href="resume" class="header-nav-link">
-          <i class="fas fa-file-alt"></i> Resumes
-      </a>
+      <a href="dashboard" class="header-nav-link" title="Admission Home"><i class="fas fa-home text-success"></i> Home</a>
+      <a href="admission" class="header-nav-link" title="Enquiries"><i class="fas fa-search text-info"></i> Enquiries</a>
+      <a href="admission_report.jsp" class="header-nav-link" title="Dashboard"><i class="fas fa-chart-bar text-primary"></i> Dashboard</a>
+      <a href="enter_marks.jsp" class="header-nav-link" title="Exam Entry"><i class="fas fa-edit text-warning"></i> Exam</a>
+      <a href="marks_report.jsp" class="header-nav-link" title="Tabulation"><i class="fas fa-file-alt text-purple"></i> Tabulation</a>
+      <a href="ApproveAdmission.jsp" class="header-nav-link" title="Approval"><i class="fas fa-check-circle text-success"></i> Approval</a>
+      <a href="Capcity.jsp" class="header-nav-link" title="Vacancy"><i class="fas fa-users text-danger"></i> Vacancy</a>
+      <a href="resume" class="header-nav-link" title="Resumes"><i class="fas fa-id-card text-info"></i> Resumes</a>
   </div>
 
   <div class="user-info-card">

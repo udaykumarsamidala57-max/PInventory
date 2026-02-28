@@ -143,7 +143,7 @@ header.ams-header {
                 <li><a href="ApproveAdmission.jsp">Approval</a></li>
                 <li><a href="Capcity.jsp">Vacancy</a></li>
                 <li><a href="student_tc_update.jsp">TC Update</a></li>
-                <li><a href="Home">Inventory</a>
+                
             </ul>
         </nav>
 
