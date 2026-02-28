@@ -343,7 +343,9 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
     <div class="header-brand-title"> SRS | Office Central | Developed & Maintained by IT Dept. </div>
   </div>
-
+         <div>
+         <div> <a href="Admission">Admissions</a></div>
+         </div>
   <div class="user-info-card">
     <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>
     <div class="user-meta">
