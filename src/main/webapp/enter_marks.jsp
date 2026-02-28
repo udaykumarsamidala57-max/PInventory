@@ -174,7 +174,7 @@ function beforeSubmit() {
 </head>
 <body>
 
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="container">
     <div class="page-title">📘 Exam Marks Entry</div>

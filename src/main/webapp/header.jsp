@@ -113,7 +113,7 @@ header {
     text-align: left;
     color: #0f2a4d;
     font-weight: 800;
-    font-size: 16px;
+    font-size: 28px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-left: 5px solid #fbbf24;
@@ -360,7 +360,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title"> SRS | Office Central </div>
+    <div class="header-brand-title">SRS | Office Central </div>
   </div>
 
   
