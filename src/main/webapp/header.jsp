@@ -344,7 +344,10 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="header-brand-title"> SRS | Office Central | Developed & Maintained by IT Dept. </div>
   </div>
          <div>
-         <div> <a href="dashboard">Admissions</a></div>
+         <div><a href="dashboard">Admissions</a></div>
+         </div>
+         <div>
+         <div><a href="resume">Admissions</a></div>
          </div>
   <div class="user-info-card">
     <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>

@@ -109,7 +109,7 @@
     </style>
 </head>
 <body>
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="approved-bubble" id="approvedBubble">
     <div class="count" id="approvedCount">0</div>

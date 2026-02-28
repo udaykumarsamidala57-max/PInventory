@@ -111,7 +111,7 @@
 </head>
 <body>
 
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 <h2 align="center">Class Capacity Management</h2>
 
 <div class="table-responsive">
