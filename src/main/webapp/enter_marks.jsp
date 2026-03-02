@@ -9,6 +9,12 @@
         response.sendRedirect("login.jsp");
         return;
     }
+    String user = (String) sess.getAttribute("username");
+    String dept = (String) sess.getAttribute("department");
+    if (!"Academics".equalsIgnoreCase(dept)||!"Global".equalsIgnoreCase(dept)) {
+        out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied! You are not authorized to view this page.</h3>");
+        return;
+    }
 %>
 
 <!DOCTYPE html>
