@@ -36,7 +36,7 @@ body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; c
 .sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 250px; background: linear-gradient(180deg, #0f172a, #1e293b); color: #fff; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001; transition: transform 0.3s ease; overflow-y: auto; }
 .sidebar h2 { text-align: center; font-weight: 600; font-size: 20px; margin-bottom: 25px; color: #f1f5f9; }
 
-/* New: Sidebar Label Separator */
+/* Sidebar Label Separator */
 .sidebar-label {
     font-size: 11px;
     font-weight: 700;
@@ -51,7 +51,7 @@ body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; c
 .sidebar a, .sidebar .dropdown-btn { display: flex; align-items: center; gap: 12px; color: #d1d5db; text-decoration: none; padding: 12px 20px; font-size: 15px; border-radius: 8px; transition: all 0.25s ease; background: none; border: none; width: 100%; cursor: pointer; text-align: left; }
 .sidebar a:hover, .sidebar .dropdown-btn:hover { background: linear-gradient(90deg, #2563eb, #3b82f6); color: #fff; transform: translateX(5px); }
 
-/* New: Admission-specific Visual Difference */
+/* Admission-specific Visual Difference */
 .admission-menu {
     background: rgba(14, 165, 233, 0.1); 
     border-left: 4px solid #0ea5e9 !important;
@@ -59,6 +59,15 @@ body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; c
     border-radius: 8px;
 }
 .admission-menu .dropdown-btn { color: #7dd3fc; font-weight: 600; }
+
+/* Recruitment-specific Visual Difference */
+.recruitment-menu {
+    background: rgba(139, 92, 246, 0.1); 
+    border-left: 4px solid #8b5cf6 !important;
+    margin: 5px 10px;
+    border-radius: 8px;
+}
+.recruitment-menu .dropdown-btn { color: #c4b5fd; font-weight: 600; }
 
 .dropdown-content { display: none; flex-direction: column; background: #1e293b; border-left: 3px solid #2563eb; margin-left: 10px; border-radius: 8px; }
 .dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
@@ -94,7 +103,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <div class="sidebar" id="sidebar">
   <h2><i class="fas fa-box text-primary"></i> Sandur Residential School</h2>
 
-  <div class="sidebar-label">Main Operations</div>
+  <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
 
   <div class="dropdown">
@@ -191,6 +200,17 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% } %>
     </div>
   </div>
+
+  <div class="sidebar-label">HR & Recruitment</div>
+
+   <div class="dropdown recruitment-menu">
+     <button class="dropdown-btn"><i class="fas fa-user-tie text-purple"></i> Recruitment <i class="fas fa-caret-down"></i></button>
+     <div class="dropdown-content">
+       <a href="#"><i class="fas fa-file-signature"></i> Recruitment Form</a>
+       <a href="#"><i class="fas fa-users-viewfinder"></i> Applications</a>
+     </div>
+   </div>
+  
   <a href="Logout.jsp" style="margin-top: auto;"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
 
