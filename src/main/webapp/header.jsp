@@ -182,9 +182,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
+     <% if ("Global".equalsIgnoreCase(roles)|| "Tejkumar".equalsIgnoreCase(users)||"Academics".equalsIgnoreCase(depts)){ %>
       <a href="dashboard"><i class="fas fa-home"></i> Home</a>
       <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
       <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
+       <% } %>
       <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
         <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
       <% } %>
