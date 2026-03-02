@@ -20,7 +20,7 @@ public class HomeServlet extends HttpServlet {
             throws ServletException, IOException {
         
         // This looks for index.jsp inside your src/main/webapp folder
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/Home.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/Home");
         
         // Internal forward: The URL in the browser stays the same, 
         // but the content of the JSP is displayed.
