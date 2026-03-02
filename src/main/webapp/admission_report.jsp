@@ -11,6 +11,12 @@
         return;
     }
     String user = (String) sess.getAttribute("username");
+    String role = (String) sess.getAttribute("role");
+    if (!"Finance".equalsIgnoreCase(role)||!"Academics".equalsIgnoreCase(role)||!"Global".equalsIgnoreCase(role)) {
+        out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied! You are not authorized to view this page.</h3>");
+        return;
+    }
+
 %>
 
 <!DOCTYPE html>
