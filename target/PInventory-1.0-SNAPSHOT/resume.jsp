@@ -8,7 +8,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 %>
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head>																																																					
     <meta charset="UTF-8">
     <title>Admin Dashboard | Candidate Management</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">

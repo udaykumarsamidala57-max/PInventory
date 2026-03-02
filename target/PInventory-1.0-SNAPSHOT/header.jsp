@@ -24,9 +24,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
 
 body {
   font-family: 'Inter', 'Poppins', sans-serif;
@@ -38,7 +36,6 @@ body {
   position: relative;
   padding-bottom: 60px;
 }
-
 
 .sidebar {
   position: fixed;
@@ -94,7 +91,6 @@ body {
 .dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
 
-
 header {
   position: fixed;
   top: 0;
@@ -113,17 +109,47 @@ header {
   transition: left 0.3s ease;
 }
 
-
 .header-brand-title {
     text-align: left;
     color: #0f2a4d;
     font-weight: 800;
-    font-size: 20px;
+    font-size: 28px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-left: 5px solid #fbbf24;
     padding-left: 15px;
     font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+}
+
+/* Reorganized Header Navigation Styling */
+.header-nav {
+    display: flex;
+    gap: 5px;
+    margin-left: 20px;
+    margin-right: auto;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+.header-nav-link {
+    text-decoration: none;
+    color: #475569;
+    font-weight: 600;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+.header-nav-link:hover {
+    background-color: #f1f5f9;
+    color: #2563eb;
+}
+.header-nav-link i {
+    font-size: 14px;
 }
 
 .toggle-btn {
@@ -141,7 +167,6 @@ header {
   margin-right: 15px;
 }
 
-
 .user-info-card {
   display: flex;
   align-items: center;
@@ -150,14 +175,15 @@ header {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   transition: all 0.3s ease;
+  margin-left: 15px;
 }
 .user-info-card:hover {
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   border-color: #3b82f6;
 }
 .user-initials {
-  width: 42px;
-  height: 42px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
   background: linear-gradient(135deg, #0f2a4d, #1e40af);
   color: white;
@@ -165,37 +191,25 @@ header {
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 18px;
-  margin-right: 12px;
-}
-.user-meta {
-  display: flex;
-  flex-direction: column;
+  font-size: 16px;
+  margin-right: 10px;
 }
 .user-meta .u-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #0f2a4d;
-  text-transform: capitalize;
 }
 .user-meta .u-role {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: #3b82f6;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
 }
-
 
 main {
   margin-left: 250px;
   padding: 110px 30px 40px;
   transition: margin-left 0.3s ease;
 }
-
 
 footer {
   position: fixed;
@@ -210,7 +224,6 @@ footer {
   border-top: 1px solid #e2e8f0;
   transition: left 0.3s ease;
 }
-
 
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
@@ -325,15 +338,28 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
   <% } %>
   
-  <% if ("Global".equalsIgnoreCase(roles)) { %>
+  
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-lightbulb text-warning"></i> Admissions <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="#"><i class="fas fa-info-circle text-primary"></i> About Software</a>
-      <a href="#"><i class="fas fa-bolt text-success"></i> New Updates</a>
+      <a href="dashboard"><i class="fas fa-home"></i> Home</a>
+      <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
+      <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
+      <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
+      <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
+      <% } %>
+      <%  if ("Global".equalsIgnoreCase(roles)|| "Tejkumar".equalsIgnoreCase(users)||"Academics".equalsIgnoreCase(depts)){ %>
+      <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
+      <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
+     <%  if ("Global".equalsIgnoreCase(roles)){ %>
+      <a href="Capcity.jsp"><i class="fas fa-door-open"></i> Vacancy</a>
+      <% } %>
+      <%  if ("Tejkumar".equalsIgnoreCase(users)){ %>
+      <a href="student_tc_update.jsp"><i class="fas fa-user-minus"></i> TC Update</a>
+       <% } %>
     </div>
   </div>
-  <% } %>
+
    
   <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
@@ -341,8 +367,10 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title"> SRS | Office Central | Developed & Maintained by IT Dept. </div>
+    <div class="header-brand-title">SRS | Office Central </div>
   </div>
+
+  
 
   <div class="user-info-card">
     <div class="user-initials"><%= users.substring(0,1).toUpperCase() %></div>

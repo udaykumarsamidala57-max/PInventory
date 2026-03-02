@@ -39,7 +39,7 @@ String[] classOrder = {"Nursery","LKG","UKG","Class 1","Class 2","Class 3","Clas
 </head>
 <body>
 
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="container">
     <h2>Sandur Residential School - Admission Dashboard 2026-27</h2>

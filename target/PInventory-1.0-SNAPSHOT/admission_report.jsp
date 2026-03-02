@@ -182,7 +182,7 @@ td {
 
 <body>
 
-<jsp:include page="common_header.jsp" />
+<%@ include file="header.jsp" %>
 
 <main class="main-content">
     <%

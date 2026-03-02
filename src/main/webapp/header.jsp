@@ -345,9 +345,10 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="dashboard"><i class="fas fa-home"></i> Home</a>
       <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
       <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
-      <% if ("Academics".equalsIgnoreCase(depts)){ %>
+      <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
       <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
       <% } %>
+      <%  if ("Global".equalsIgnoreCase(roles)|| "Tejkumar".equalsIgnoreCase(users)||"Academics".equalsIgnoreCase(depts)){ %>
       <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
       <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
      <%  if ("Global".equalsIgnoreCase(roles)){ %>
