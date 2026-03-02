@@ -37,7 +37,7 @@
         .approved-bubble:hover { transform: scale(1.05); }
         .approved-bubble .count-container { display: flex; align-items: baseline; gap: 4px; }
         .approved-bubble .count { font-size: 24px; font-weight: 800; color: var(--success); }
-        .approved-bubble .total-denominator { font-size: 14px; font-weight: 600; color: var(--text-muted); }
+        .approved-bubble .total-denominator { font-size: 24px; font-weight: 600; color: var(--text-muted); }
         .approved-bubble .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
 
         .search-bar {
