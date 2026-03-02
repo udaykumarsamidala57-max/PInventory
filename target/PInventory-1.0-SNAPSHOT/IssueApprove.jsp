@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.util.*, com.bean.IndentItemFull" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" import="java.util.*, com.bean.IndentItemFull" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -130,8 +130,8 @@
                 <th>Balance Qty</th>
                 <th>Required Qty</th>
                 <th>Department</th>
-                <th>Indent By</th>   <!-- ✅ NEW -->
-                <th>Purpose</th>     <!-- ✅ NEW -->
+                <th>Indent By</th>
+                <th>Purpose</th>
                 <th>Approved By</th>
                 <th>Status</th>
                 <th>Action</th>
@@ -145,16 +145,16 @@
                     for (IndentItemFull ind : indents) {
             %>
             <tr>
-                <td><%= ind.getIndentNo() %></td>
-                <td><%= ind.getDateStr() %></td>
-                <td><%= ind.getItemName() %></td>
+                <td><%= (ind.getIndentNo() != null) ? ind.getIndentNo() : "" %></td>
+                <td><%= (ind.getDateStr() != null) ? ind.getDateStr() : "" %></td>
+                <td><%= (ind.getItemName() != null) ? ind.getItemName() : "" %></td>
                 <td><%= ind.getBalanceQty() %></td>
                 <td><%= ind.getQty() %></td>
-                <td><%= ind.getDepartment() %></td>
-                <td><%= ind.getRequestedBy() %></td>  <!-- ✅ NEW -->
-                <td><%= ind.getPurpose() %></td>      <!-- ✅ NEW -->
-                <td><%= ind.getApprovedBy() %></td>
-                <td><%= ind.getStatus() %></td>
+                <td><%= (ind.getDepartment() != null) ? ind.getDepartment() : "" %></td>
+                <td><%= (ind.getRequestedBy() != null) ? ind.getRequestedBy() : "" %></td>
+                <td><%= (ind.getPurpose() != null) ? ind.getPurpose() : "" %></td>
+                <td><%= (ind.getApprovedBy() != null) ? ind.getApprovedBy() : "" %></td>
+                <td><%= (ind.getStatus() != null) ? ind.getStatus() : "" %></td>
 
                 <td>
                     <form method="post" action="IssueApprove">
@@ -169,7 +169,7 @@
             <tr>
                 <td colspan="11" style="text-align:center; padding:20px;">No records found</td>
             </tr>
-            <% } %>
+            <% }} %>
         </tbody>
         </table>
     </div>
