@@ -19,11 +19,13 @@
    String User = (String) sess.getAttribute("username");
    String dept = (String) sess.getAttribute("department");
    
-   if (!"Finance".equalsIgnoreCase(dept)||!"Academics".equalsIgnoreCase(dept)||!"Global".equalsIgnoreCase(dept)) {
-       out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied! You are not authorized to view this page.</h3>");
-       return;
-   }
-
+   if (!"Finance".equalsIgnoreCase(dept) && 
+		    !"Academics".equalsIgnoreCase(dept) && 
+		    !"Global".equalsIgnoreCase(role)) {
+		    
+		    out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied! You are not authorized to view this page.</h3>");
+		    return;
+		}
    CachedRowSet rs = (CachedRowSet)request.getAttribute("list");
    List<Map<String, Object>> dataList = new ArrayList<>();
    
