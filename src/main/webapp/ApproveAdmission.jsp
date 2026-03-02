@@ -35,7 +35,9 @@
             border: 2px solid var(--success); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .approved-bubble:hover { transform: scale(1.05); }
+        .approved-bubble .count-container { display: flex; align-items: baseline; gap: 4px; }
         .approved-bubble .count { font-size: 24px; font-weight: 800; color: var(--success); }
+        .approved-bubble .total-denominator { font-size: 14px; font-weight: 600; color: var(--text-muted); }
         .approved-bubble .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
 
         .search-bar {
@@ -112,8 +114,11 @@
 <%@ include file="header.jsp" %>
 
 <div class="approved-bubble" id="approvedBubble">
-    <div class="count" id="approvedCount">0</div>
-    <div class="label">Students<br>Approved</div>
+    <div class="count-container">
+        <div class="count" id="approvedCount">0</div>
+        <div class="total-denominator" id="totalCount">/ 0</div>
+    </div>
+    <div class="label">Approved<br>Selection</div>
 </div>
 
 <div class="container">
@@ -174,17 +179,24 @@ function getAgeString(dobString) {
     } catch(e) { return "N/A"; }
 }
 
-// Logic to update the floating count
+// Logic to update the floating count (Approved / Total)
 function updateApprovedCount() {
-    const cards = document.querySelectorAll('.student-card');
-    let count = 0;
-    cards.forEach(card => {
-        // Only count if the card is visible AND has the selected class
-        if (card.style.display !== 'none' && card.classList.contains('card-selected')) {
-            count++;
+    const allCards = document.querySelectorAll('.student-card');
+    let approved = 0;
+    let visibleTotal = 0;
+
+    allCards.forEach(card => {
+        // We only count cards that are currently visible (not hidden by search)
+        if (card.style.display !== 'none') {
+            visibleTotal++;
+            if (card.classList.contains('card-selected')) {
+                approved++;
+            }
         }
     });
-    document.getElementById('approvedCount').innerText = count;
+
+    document.getElementById('approvedCount').innerText = approved;
+    document.getElementById('totalCount').innerText = `/ \${visibleTotal}`;
 }
 
 async function loadData() {
@@ -195,6 +207,7 @@ async function loadData() {
     if(!classId) {
         document.getElementById("dataArea").innerHTML = '<div class="no-data">Please select a grade to view data.</div>';
         document.getElementById('approvedCount').innerText = "0";
+        document.getElementById('totalCount').innerText = "/ 0";
         return;
     }
 
@@ -212,7 +225,7 @@ async function loadData() {
         }).sort((a, b) => b.percentage - a.percentage);
 
         renderCards(data.exams, processed);
-        updateApprovedCount(); // Update count after load
+        updateApprovedCount(); 
     } catch (e) { 
         console.error(e); 
         document.getElementById("dataArea").innerHTML = '<div class="no-data">Error loading data. Check console.</div>';
@@ -308,7 +321,7 @@ function filterCards() {
     document.querySelectorAll('.student-card').forEach(c => {
         c.style.display = c.dataset.search.includes(q) ? "flex" : "none";
     });
-    updateApprovedCount(); // Update count while searching
+    updateApprovedCount(); 
 }
 </script>
 </body>
