@@ -69,7 +69,7 @@ public class SendOTPServlet extends HttpServlet {
     // ✅ Brevo (Sendinblue) API method — Works in Railway
     private boolean sendEmailViaBrevo(String to, int otp) {
         try {
-            String apiKey = System.getenv("BREVO_API_KEY"); // 🔑 Replace this with your real Brevo API key
+            String apiKey = System.getenv("BREVO_API_KEY"); 
             if (apiKey == null || apiKey.isEmpty()) {
                 throw new RuntimeException("⚠️ Brevo API key not found in environment variables!");
             }
