@@ -30,30 +30,64 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-/* ... (Your CSS remains exactly the same) ... */
+/* ... (Existing CSS) ... */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; color: #333; transition: margin-left 0.3s ease; overflow-x: hidden; min-height: 100vh; position: relative; padding-bottom: 60px; }
-.sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 250px; background: linear-gradient(180deg, #0f172a, #1e293b); color: #fff; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001; transition: transform 0.3s ease; }
+.sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 250px; background: linear-gradient(180deg, #0f172a, #1e293b); color: #fff; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001; transition: transform 0.3s ease; overflow-y: auto; }
 .sidebar h2 { text-align: center; font-weight: 600; font-size: 20px; margin-bottom: 25px; color: #f1f5f9; }
+
+/* Sidebar Label Separator */
+.sidebar-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    padding: 20px 20px 10px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    margin-top: 5px;
+}
+
 .sidebar a, .sidebar .dropdown-btn { display: flex; align-items: center; gap: 12px; color: #d1d5db; text-decoration: none; padding: 12px 20px; font-size: 15px; border-radius: 8px; transition: all 0.25s ease; background: none; border: none; width: 100%; cursor: pointer; text-align: left; }
 .sidebar a:hover, .sidebar .dropdown-btn:hover { background: linear-gradient(90deg, #2563eb, #3b82f6); color: #fff; transform: translateX(5px); }
+
+/* Admission-specific Visual Difference */
+.admission-menu {
+    background: rgba(14, 165, 233, 0.1); 
+    border-left: 4px solid #0ea5e9 !important;
+    margin: 5px 10px;
+    border-radius: 8px;
+}
+.admission-menu .dropdown-btn { color: #7dd3fc; font-weight: 600; }
+
+/* Recruitment-specific Visual Difference */
+.recruitment-menu {
+    background: rgba(139, 92, 246, 0.1); 
+    border-left: 4px solid #8b5cf6 !important;
+    margin: 5px 10px;
+    border-radius: 8px;
+}
+.recruitment-menu .dropdown-btn { color: #c4b5fd; font-weight: 600; }
+
 .dropdown-content { display: none; flex-direction: column; background: #1e293b; border-left: 3px solid #2563eb; margin-left: 10px; border-radius: 8px; }
 .dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
+
 header { position: fixed; top: 0; left: 250px; right: 0; height: 75px; background: #ffffff; color: #333; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #e2e8f0; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); transition: left 0.3s ease; }
 .header-brand-title { text-align: left; color: #0f2a4d; font-weight: 800; font-size: 28px; text-transform: uppercase; letter-spacing: 0.5px; border-left: 5px solid #fbbf24; padding-left: 15px; font-family: 'Inter', sans-serif; white-space: nowrap; }
 .toggle-btn { background: #f1f5f9; border: none; color: #0f2a4d; font-size: 20px; cursor: pointer; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
 .user-info-card { display: flex; align-items: center; padding: 8px 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; transition: all 0.3s ease; margin-left: 15px; }
-.user-info-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); border-color: #3b82f6; }
 .user-initials { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #0f2a4d, #1e40af); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; margin-right: 10px; }
 .user-meta .u-name { font-size: 13px; font-weight: 700; color: #0f2a4d; }
 .user-meta .u-role { font-size: 10px; font-weight: 600; color: #3b82f6; }
+
 main { margin-left: 250px; padding: 110px 30px 40px; transition: margin-left 0.3s ease; }
 footer { position: fixed; bottom: 0; left: 250px; right: 0; background: #ffffff; color: #64748b; text-align: center; padding: 12px 10px; font-size: 13px; border-top: 1px solid #e2e8f0; transition: left 0.3s ease; z-index: 1000; }
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
 body.sidebar-collapsed footer { left: 0; }
 body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
+
 .text-primary { color:#3b82f6; }
 .text-success { color:#22c55e; }
 .text-danger { color:#ef4444; }
@@ -69,6 +103,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <div class="sidebar" id="sidebar">
   <h2><i class="fas fa-box text-primary"></i> Sandur Residential School</h2>
 
+  <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
 
   <div class="dropdown">
@@ -142,12 +177,16 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
   <% } %>
 
-  <div class="dropdown">
+  <div class="sidebar-label">Academic & Students</div>
+  
+  <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
+     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)||"Academics".equalsIgnoreCase(depts)){ %>
       <a href="dashboard"><i class="fas fa-home"></i> Home</a>
       <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
       <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
+       <% } %>
       <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
         <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
       <% } %>
@@ -164,7 +203,17 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
-  <a href="Logout.jsp"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
+  <div class="sidebar-label">HR & Recruitment</div>
+
+   <div class="dropdown recruitment-menu">
+     <button class="dropdown-btn"><i class="fas fa-user-tie text-purple"></i> Recruitment <i class="fas fa-caret-down"></i></button>
+     <div class="dropdown-content">
+       <a href="#"><i class="fas fa-file-signature"></i> Recruitment Form</a>
+       <a href="#"><i class="fas fa-users-viewfinder"></i> Applications</a>
+     </div>
+   </div>
+  
+  <a href="Logout.jsp" style="margin-top: auto;"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
 
 <header>

@@ -13,10 +13,23 @@
       response.sendRedirect("login.jsp");
        return;
    }
+   
 
    String role = (String) sess.getAttribute("role");
    String User = (String) sess.getAttribute("username");
+   String dept = (String) sess.getAttribute("department");
+   
+// Sanitize the input before checking
+String cleanDept = (dept != null) ? dept.trim() : "";
+String cleanRole = (role != null) ? role.trim() : "";
 
+if (!"Finance".equalsIgnoreCase(cleanDept) && 
+    !"Academics".equalsIgnoreCase(cleanDept) && 
+    !"Global".equalsIgnoreCase(cleanRole)) {
+    
+    out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied!</h3>");
+    return;
+}
    CachedRowSet rs = (CachedRowSet)request.getAttribute("list");
    List<Map<String, Object>> dataList = new ArrayList<>();
    
