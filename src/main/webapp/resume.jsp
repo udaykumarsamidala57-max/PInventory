@@ -18,253 +18,13 @@ if (sess == null || sess.getAttribute("username") == null) {
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-:root {
-    --primary: #2563eb;
-    --primary-dark: #1e40af;
-    --success: #16a34a;
-    --danger: #ef4444;
-    --dark: #0f172a;
-    --text: #1e293b;
-    --muted: #64748b;
-    --bg: #f1f5f9;
-    --card: #ffffff;
-    --border: #e2e8f0;
-}
-
-/* ===============================
-   Base Layout
-================================ */
-body {
-    font-family: 'Inter', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    margin: 0;
-    padding: 40px 60px;
-    line-height: 1.5;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* ===============================
-   Header Section
-================================ */
-.header-hero {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    padding: 40px 50px;
-    border-radius: 16px;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
-}
-
-.header-left {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.header-hero h1 {
-    margin: 0;
-    font-size: 26px;
-    font-weight: 700;
-    color: white;
-}
-
-.header-hero p {
-    margin: 0;
-    font-size: 14px;
-    color: #cbd5e1;
-}
-
-/* ===============================
-   Card / Table Wrapper
-================================ */
-.modern-card {
-    background: var(--card);
-    border-radius: 14px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-    overflow: hidden;
-    margin-bottom: 35px;
-}
-
-/* ===============================
-   Table Alignment
-================================ */
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: #f8fafc;
-    padding: 16px 20px;
-    font-size: 12px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--muted);
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-}
-
-td {
-    padding: 16px 20px;
-    font-size: 14px;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-}
-
-tr:hover {
-    background: #f9fafb;
-}
-
-/* Serial Column */
-.sl-col {
-    width: 60px;
-    text-align: center;
-    color: var(--muted);
-    font-weight: 600;
-}
-
-/* Align action column center */
-.action-col {
-    text-align: center;
-    width: 140px;
-}
-
-/* ===============================
-   Status Badges
-================================ */
-.status-badge {
-    display: inline-block;
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-}
-
-.status-yes {
-    background: #dcfce7;
-    color: var(--success);
-}
-
-.status-no {
-    background: #fee2e2;
-    color: var(--danger);
-}
-
-/* ===============================
-   Buttons
-================================ */
-.btn-action {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.btn-action:hover {
-    background: var(--primary-dark);
-}
-
-/* ===============================
-   Modal Styling
-================================ */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(4px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-}
-
-.modal-window {
-    background: white;
-    width: 100%;
-    max-width: 1000px;
-    border-radius: 14px;
-    display: flex;
-    flex-direction: column;
-    max-height: 90vh;
-    overflow: hidden;
-    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
-}
-
-.modal-header {
-    padding: 20px 30px;
-    background: #f8fafc;
-    border-bottom: 1px solid var(--border);
-    font-weight: 700;
-    font-size: 15px;
-}
-
-.modal-body {
-    padding: 30px;
-    overflow-y: auto;
-}
-
-/* ===============================
-   Form Grid Alignment
-================================ */
-.input-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px 30px;
-}
-
-.section-tag {
-    grid-column: span 3;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--primary);
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-    margin-top: 20px;
-}
-
-/* Form Fields */
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: var(--muted);
-}
-
-.form-input {
-    padding: 10px 12px;
-    border-radius: 6px;
-    border: 1px solid var(--border);
-    font-size: 14px;
-}
-
-.form-input:focus {
-    border-color: var(--primary);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-</style>
+<meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RecruitPro | High-Impact HR Dashboard</title>
+    
+    <link rel="stylesheet" href="CSS/Recruitment.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
 <body>
@@ -272,12 +32,12 @@ tr:hover {
 <div class="container">
     <div class="header-hero">
         <div>
-            <h1 style="margin:0; font-size: 32px; font-weight: 800;">RecruitPro HQ</h1>
+            <h1 style="margin:0; font-size: 32px; font-weight: 800;">Recruitment 2026 -27</h1>
             <p style="opacity:0.7; margin: 5px 0 0;">Managing Excellence at Sandur Residential School</p>
         </div>
         <div style="text-align: right;">
             <div style="font-size: 14px; opacity:0.6;">System Status</div>
-            <div style="font-weight: 800; color: #4ade80;"><i class="fas fa-circle"></i> LIVE & SECURE</div>
+            <div style="font-weight: 800; color: #4ade80;"><i class="fas fa-circle"></i> LIVE & ACCURATE</div>
         </div>
     </div>
 
@@ -315,12 +75,28 @@ tr:hover {
                 </thead>
                 <tbody>
                 <% for(Map<String,String> c : candidates){ 
-                    String isYes = c.get("shortlisted");
-                    String demo = c.get("demo_status");
-                    String gender = c.get("gender");
-                    String rowHighlight = isYes.equalsIgnoreCase("Yes") ? "highlight-row-yes" : "";
+                	String isYes = c.get("shortlisted") == null ? "" : c.get("shortlisted");
+                	String demo = c.get("demo_status") == null ? "" : c.get("demo_status");
+                	String gender = c.get("gender") == null ? "" : c.get("gender");
+
+                	String rowClass = "";
+
+           
+                	// 1️⃣ If Shortlisted = No → Always Red
+                	if(isYes.equalsIgnoreCase("No")){
+                	    rowClass = "demo-rejected-row";
+                	}
+                	// 2️⃣ Demo Selected → Green
+                	else if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
+                	    rowClass = "demo-selected-row";
+                	}
+                	// 3️⃣ Demo Rejected → Red
+                	else if(demo.equalsIgnoreCase("Rejected") || demo.equalsIgnoreCase("Rejected in Demo")){
+                	    rowClass = "demo-rejected-row";
+                	}
+                	
                 %>
-                    <tr class="<%=rowHighlight%>">
+                    <tr class="<%=rowClass%>">
                         <td>
                             <div style="font-weight: 800; font-size: 16px;"><%=c.get("name")%></div>
                             <div style="display:flex; gap:8px; margin-top:5px; align-items:center;">
