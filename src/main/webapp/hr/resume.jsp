@@ -16,85 +16,253 @@ if (sess == null || sess.getAttribute("username") == null) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RecruitPro | High-Impact HR Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-    --primary: #6366f1;
-    --accent: #f43f5e;
-    --success: #10b981;
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --success: #16a34a;
     --warning: #f59e0b;
-    --demo-color: #8b5cf6;
+    --danger: #ef4444;
     --dark: #0f172a;
-    --bg: #f8fafc;
+    --text: #1e293b;
+    --muted: #64748b;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --border: #e2e8f0;
 }
 
 body {
-    font-family: 'Outfit', sans-serif;
-    background-color: var(--bg);
-    color: var(--dark);
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
     margin: 0;
-    padding: 30px;
+    padding: 40px;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Dashboard Animations */
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+/* Layout */
+.container {
+    max-width: 1500px;
+    margin: auto;
+}
 
-.container { max-width: 1500px; margin: auto; animation: slideUp 0.5s ease-out; }
-
-/* Bold Header */
+/* Header */
 .header-hero {
-    background: linear-gradient(135deg, var(--dark) 0%, #1e293b 100%);
-    padding: 40px;
-    border-radius: 30px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 45px;
+    border-radius: 18px;
     color: white;
-    margin-bottom: 40px;
+    margin-bottom: 45px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
 }
 
-/* Status Highlights */
-.highlight-row-yes { border-left: 8px solid var(--success) !important; background: #f0fdf4 !important; }
-.demo-active { background: #f5f3ff; border: 1px solid #ddd6fe; color: var(--demo-color); font-weight: 800; padding: 8px 15px; border-radius: 12px; display: inline-block; }
+.header-hero h1 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
 
-/* Gender Styles */
-.gender-pill { padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 11px; text-transform: uppercase; }
-.male { background: #e0f2fe; color: #0369a1; }
-.female { background: #fdf2f8; color: #be185d; }
+.header-hero p {
+    margin: 8px 0 0;
+    color: #cbd5e1;
+    font-weight: 400;
+}
 
-/* Table Overhaul */
-.modern-card { background: white; border-radius: 25px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0; }
-table { width: 100%; border-collapse: collapse; }
-th { background: #f1f5f9; padding: 20px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #64748b; text-align: left; }
-td { padding: 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+/* Cards */
+.modern-card {
+    background: var(--card);
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-bottom: 35px;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #f8fafc;
+    padding: 18px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    font-weight: 600;
+    border-bottom: 2px solid var(--border);
+}
+
+td {
+    padding: 18px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+tr:hover {
+    background: #f9fafb;
+}
+
+/* Serial Number Column */
+.sl-col {
+    width: 60px;
+    text-align: center;
+    font-weight: 600;
+    color: var(--muted);
+    background: #f8fafc;
+}
+
+/* Status Badge */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+.status-yes {
+    background: #dcfce7;
+    color: var(--success);
+}
+
+.status-no {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+.status-demo {
+    background: #ede9fe;
+    color: #6d28d9;
+}
+
+/* Gender */
+.gender-pill {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.male {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.female {
+    background: #fdf2f8;
+    color: #be185d;
+}
 
 /* Buttons */
 .btn-action {
-    background: var(--dark);
+    background: var(--primary);
     color: white;
     border: none;
-    padding: 12px 25px;
-    border-radius: 15px;
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 600;
+    font-size: 13px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s ease;
 }
-.btn-action:hover { background: var(--primary); transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4); }
 
-/* Modal Skin */
-.modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); display: none; align-items: center; justify-content: center; z-index: 9999; }
-.modal-window { background: white; width: 95%; max-width: 1100px; border-radius: 35px; height: 85vh; overflow: hidden; display: flex; flex-direction: column; }
-.modal-header { padding: 30px 40px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; }
-.modal-body { padding: 40px; overflow-y: auto; flex: 1; }
+.btn-action:hover {
+    background: var(--primary-dark);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.3);
+    transform: translateY(-2px);
+}
 
-.input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; }
-.form-group label { display: block; font-weight: 700; font-size: 13px; margin-bottom: 8px; color: #475569; }
-.form-input { width: 100%; padding: 14px; border-radius: 15px; border: 2px solid #e2e8f0; box-sizing: border-box; font-family: inherit; font-weight: 600; }
-.form-input:focus { border-color: var(--primary); outline: none; background: #f5f3ff; }
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
 
-.section-tag { grid-column: span 3; color: var(--primary); font-weight: 800; border-bottom: 2px solid #eef2ff; padding-bottom: 10px; margin: 20px 0 10px; font-size: 14px; text-transform: uppercase; }
+.modal-window {
+    background: white;
+    width: 95%;
+    max-width: 1100px;
+    border-radius: 18px;
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 25px 35px;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.modal-body {
+    padding: 35px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+/* Form Layout */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.form-input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* Section Divider */
+.section-tag {
+    grid-column: span 3;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    margin-top: 25px;
+}
 </style>
 </head>
 
