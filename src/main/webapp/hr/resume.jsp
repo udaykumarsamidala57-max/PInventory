@@ -19,155 +19,250 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
 :root {
-    --primary: #6366f1; /* Indigo - more modern than standard blue */
-    --primary-glow: rgba(99, 102, 241, 0.4);
-    --success: #10b981;
-    --danger: #f43f5e;
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --success: #16a34a;
+    --danger: #ef4444;
     --dark: #0f172a;
-    --text-main: #1e293b;
-    --text-muted: #64748b;
-    --bg-gradient: radial-gradient(at 0% 0%, #f8fafc 0, #f1f5f9 100%);
+    --text: #1e293b;
+    --muted: #64748b;
+    --bg: #f1f5f9;
     --card: #ffffff;
     --border: #e2e8f0;
-    --glass: rgba(255, 255, 255, 0.7);
-}
-
-body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: var(--bg-gradient);
-    color: var(--text-main);
-    margin: 0;
-    padding: 40px;
-    min-height: 100vh;
 }
 
 /* ===============================
-   Header: The "Glassmorphism" Look
+   Base Layout
+================================ */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    margin: 0;
+    padding: 40px 60px;
+    line-height: 1.5;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ===============================
+   Header Section
 ================================ */
 .header-hero {
-    background: #0f172a;
-    background-image: 
-        radial-gradient(circle at 20% 35%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 80% 65%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
-    padding: 50px;
-    border-radius: 24px;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 40px 50px;
+    border-radius: 16px;
     margin-bottom: 40px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    position: relative;
-    overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
 .header-hero h1 {
-    font-size: 32px;
-    letter-spacing: -0.02em;
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
     color: white;
 }
 
+.header-hero p {
+    margin: 0;
+    font-size: 14px;
+    color: #cbd5e1;
+}
+
 /* ===============================
-   Cards: Depth & Softness
+   Card / Table Wrapper
 ================================ */
 .modern-card {
     background: var(--card);
-    border-radius: 20px;
+    border-radius: 14px;
     border: 1px solid var(--border);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-    transition: transform 0.3s ease;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+    overflow: hidden;
+    margin-bottom: 35px;
 }
 
 /* ===============================
-   The Interactive Table
+   Table Alignment
 ================================ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
 th {
-    background: #fcfdfe;
-    padding: 20px;
-    font-size: 11px;
-    font-weight: 800;
-    color: var(--text-muted);
-    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+    padding: 16px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-align: left;
+    border-bottom: 2px solid var(--border);
 }
 
 td {
-    padding: 18px 20px;
-    transition: all 0.2s ease;
+    padding: 16px 20px;
+    font-size: 14px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
 }
 
-tr:hover td {
-    background: #f8faff;
-    color: var(--primary);
+tr:hover {
+    background: #f9fafb;
+}
+
+/* Serial Column */
+.sl-col {
+    width: 60px;
+    text-align: center;
+    color: var(--muted);
+    font-weight: 600;
+}
+
+/* Align action column center */
+.action-col {
+    text-align: center;
+    width: 140px;
 }
 
 /* ===============================
-   Fancy Status Badges
+   Status Badges
 ================================ */
 .status-badge {
-    padding: 6px 14px;
-    border-radius: 100px; /* Pill shape */
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 6px;
     font-size: 11px;
     font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    text-transform: uppercase;
 }
 
-.status-badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
+.status-yes {
+    background: #dcfce7;
+    color: var(--success);
 }
 
-.status-yes { 
-    background: #ecfdf5; 
-    color: #065f46; 
+.status-no {
+    background: #fee2e2;
+    color: var(--danger);
 }
-.status-yes::before { background: var(--success); }
-
-.status-no { 
-    background: #fff1f2; 
-    color: #9f1239; 
-}
-.status-no::before { background: var(--danger); }
 
 /* ===============================
-   Buttons: Neon Glow Effect
+   Buttons
 ================================ */
 .btn-action {
     background: var(--primary);
-    box-shadow: 0 4px 14px 0 var(--primary-glow);
-    padding: 10px 22px;
-    border-radius: 10px;
-    border: none;
     color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
     font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn-action:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px 0 var(--primary-glow);
-    filter: brightness(1.1);
-}
-
-/* ===============================
-   Form Inputs: Modern Focus
-================================ */
-.form-input {
-    background: #f8fafc;
-    border: 2px solid transparent;
-    padding: 12px 16px;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.form-input:focus {
+.btn-action:hover {
+    background: var(--primary-dark);
+}
+
+/* ===============================
+   Modal Styling
+================================ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.modal-window {
     background: white;
+    width: 100%;
+    max-width: 1000px;
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 20px 30px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border);
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.modal-body {
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* ===============================
+   Form Grid Alignment
+================================ */
+.input-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px 30px;
+}
+
+.section-tag {
+    grid-column: span 3;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--primary);
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-top: 20px;
+}
+
+/* Form Fields */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--muted);
+}
+
+.form-input {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    font-size: 14px;
+}
+
+.form-input:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 </style>
 </head>
