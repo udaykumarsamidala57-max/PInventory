@@ -62,11 +62,12 @@ public class resume extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+        // Added shortlisted=? to the query
         String sql = "UPDATE candidate_recruitment SET " +
             "name=?, mobile_no=?, address=?, post_applied_for=?, gender=?, date_of_birth=?, " +
             "marital_status=?, qualification=?, specialization=?, percentage_marks=?, year_of_passing=?, " +
             "reference_by=?, other_skills_certifications=?, experience=?, relevant_experience=?, " +
-            "total_experience=?, present_salary=?, expected_salary=?, remarks=?, call_status=?, " +
+            "total_experience=?, present_salary=?, expected_salary=?, remarks=?, shortlisted=?, call_status=?, " +
             "demo_status=?, interview_status=? WHERE sl_no=?";
 
         try (Connection con = DBUtil2.getConnection();
@@ -91,10 +92,11 @@ public class resume extends HttpServlet {
             ps.setString(17, request.getParameter("present_salary"));
             ps.setString(18, request.getParameter("expected_salary"));
             ps.setString(19, request.getParameter("remarks"));
-            ps.setString(20, request.getParameter("call_status"));
-            ps.setString(21, request.getParameter("demo_status"));
-            ps.setString(22, request.getParameter("interview_status"));
-            ps.setInt(23, Integer.parseInt(request.getParameter("sl_no")));
+            ps.setString(20, request.getParameter("shortlisted")); // New Field
+            ps.setString(21, request.getParameter("call_status"));
+            ps.setString(22, request.getParameter("demo_status"));
+            ps.setString(23, request.getParameter("interview_status"));
+            ps.setInt(24, Integer.parseInt(request.getParameter("sl_no")));
 
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }

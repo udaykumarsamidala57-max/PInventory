@@ -25,6 +25,8 @@ if (sess == null || sess.getAttribute("username") == null) {
 --text:#1e293b;
 --border:#e2e8f0;
 --success:#10b981;
+--warning:#f59e0b;
+--danger:#ef4444;
 }
 
 body{
@@ -85,6 +87,7 @@ font-weight:700;
 color:#94a3b8;
 }
 
+/* Dynamic Status Badges */
 .badge{
 padding:4px 8px;
 border-radius:4px;
@@ -93,11 +96,10 @@ font-weight:700;
 text-transform:uppercase;
 }
 
-.badge-blue{
-background:#eff6ff;
-color:#2563eb;
-border:1px solid #bfdbfe;
-}
+.badge-blue{ background:#eff6ff; color:#2563eb; border:1px solid #bfdbfe; }
+.badge-success{ background:#ecfdf5; color:var(--success); border:1px solid #d1fae5; }
+.badge-danger{ background:#fef2f2; color:var(--danger); border:1px solid #fee2e2; }
+.badge-warning{ background:#fffbeb; color:var(--warning); border:1px solid #fef3c7; }
 
 .btn{
 padding:8px 14px;
@@ -114,10 +116,7 @@ border:1px solid var(--border);
 transition: all 0.2s;
 }
 
-.btn-edit:hover{
-background: var(--bg);
-border-color: #cbd5e1;
-}
+.btn-edit:hover{ background: var(--bg); border-color: #cbd5e1; }
 
 .modal-overlay{
 position:fixed;
@@ -213,22 +212,20 @@ border-top:1px solid var(--border);
 
 <%
 List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
-Set<String> uniquePosts = new TreeSet<>(); // To store unique posts for the dropdown
+Set<String> uniquePosts = new TreeSet<>(); 
 
 if(rawList!=null && !rawList.isEmpty()){
+    Map<String,List<Map<String,String>>> groupedData = new LinkedHashMap<>();
 
-Map<String,List<Map<String,String>>> groupedData = new LinkedHashMap<>();
+    for(Map<String,String> row : rawList){
+        String post=row.get("post_applied_for");
+        if(post==null||post.trim().isEmpty()) post="General / Unspecified";
+        uniquePosts.add(post); 
+        groupedData.computeIfAbsent(post,k->new ArrayList<>()).add(row);
+    }
 
-for(Map<String,String> row : rawList){
-String post=row.get("post_applied_for");
-if(post==null||post.trim().isEmpty()) post="General / Unspecified";
-
-uniquePosts.add(post); // Build the set of unique posts
-groupedData.computeIfAbsent(post,k->new ArrayList<>()).add(row);
-}
-
-for(String postName:groupedData.keySet()){
-List<Map<String,String>> candidates=groupedData.get(postName);
+    for(String postName:groupedData.keySet()){
+        List<Map<String,String>> candidates=groupedData.get(postName);
 %>
 
 <div class="post-container">
@@ -249,7 +246,8 @@ List<Map<String,String>> candidates=groupedData.get(postName);
 <th>Mobile</th>
 <th>Qualification</th>
 <th>Experience</th>
-<th>Status</th>
+<th>Shortlisted</th>
+<th>Call Status</th>
 <th style="text-align:center;">Action</th>
 </tr>
 </thead>
@@ -259,6 +257,10 @@ List<Map<String,String>> candidates=groupedData.get(postName);
 <%
 int serial=1;
 for(Map<String,String> candidate:candidates){
+    String shStatus = String.valueOf(candidate.get("shortlisted"));
+    String shClass = "badge-warning";
+    if(shStatus.equalsIgnoreCase("Yes")) shClass = "badge-success";
+    else if(shStatus.equalsIgnoreCase("No")) shClass = "badge-danger";
 %>
 
 <tr>
@@ -267,6 +269,11 @@ for(Map<String,String> candidate:candidates){
 <td><%=String.valueOf(candidate.get("mobile_no"))%></td>
 <td><%=String.valueOf(candidate.get("qualification"))%></td>
 <td><%=String.valueOf(candidate.get("total_experience"))%> Years</td>
+<td>
+    <span class="badge <%=shClass%>">
+        <%=shStatus.isEmpty() || shStatus.equals("null") ? "Pending" : shStatus%>
+    </span>
+</td>
 <td>
 <span class="badge badge-blue">
 <%=String.valueOf(candidate.get("call_status"))%>
@@ -368,6 +375,16 @@ style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;"
 <div class="section-divider">Process Status</div>
 
 <div class="form-group">
+<label>Shortlisted Status</label>
+<select name="shortlisted" id="f_shortlisted" class="form-control">
+    <option value="Pending">Pending</option>
+    <option value="Yes">Yes</option>
+    <option value="No">No</option>
+    <option value="On Hold">On Hold</option>
+</select>
+</div>
+
+<div class="form-group">
 <label>Call Status</label>
 <input type="text" name="call_status" id="f_call_status" class="form-control">
 </div>
@@ -375,6 +392,11 @@ style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;"
 <div class="form-group">
 <label>Demo Status</label>
 <input type="text" name="demo_status" id="f_demo_status" class="form-control">
+</div>
+
+<div class="form-group">
+<label>Interview Status</label>
+<input type="text" name="interview_status" id="f_interview_status" class="form-control">
 </div>
 
 <div class="footer-actions full">
@@ -396,7 +418,6 @@ Update Record
 
 <script>
 function openModal(data){
-// Dynamically fill all fields
 for(let key in data){
 let element=document.getElementById('f_'+key);
 if(element) element.value=data[key]||'';
@@ -410,7 +431,6 @@ document.getElementById('editModal').style.display='none';
 document.body.style.overflow='auto';
 }
 
-// Close modal when clicking outside content
 window.onclick = function(event) {
     let modal = document.getElementById('editModal');
     if (event.target == modal) {
