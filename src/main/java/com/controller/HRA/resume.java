@@ -50,7 +50,6 @@ public class resume extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Comprehensive SQL matching your table structure
         String sql = "UPDATE candidate_recruitment SET " +
             "name=?, mobile_no=?, address=?, post_applied_for=?, gender=?, " +
             "date_of_birth=?, marital_status=?, qualification=?, specialization=?, percentage_marks=?, " +
