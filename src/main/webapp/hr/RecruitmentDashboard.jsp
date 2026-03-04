@@ -207,21 +207,21 @@ List<Map<String,String>> candidates = grouped.get(post);
 <input type="text" name="expected_salary" id="f_expected_salary" placeholder="Expected Salary">
 </div>
 
-<h4>HR Status</h4>
+<h4>Shortlisting Status</h4>
 <div class="form-row">
 <select name="shortlisted" id="f_shortlisted">
 <option value="Pending">Pending</option>
 <option value="Yes">Shortlist</option>
 <option value="No">Reject</option>
 </select>
-
+<h4>Calling Status</h4>
 <select name="call_status" id="f_call_status">
 <option value="Pending">Pending</option>
 <option value="Called">Called</option>
 <option value="Not Reachable">Not Reachable</option>
 </select>
 </div>
-
+<h4>Demo Status</h4>
 <div class="form-row">
 <select name="demo_status" id="f_demo_status">
 <option value="Pending">Pending</option>
@@ -229,20 +229,20 @@ List<Map<String,String>> candidates = grouped.get(post);
 <option value="Selected">Selected</option>
 <option value="Rejected">Rejected</option>
 </select>
-
+<h4>Demo Taken By</h4>
 <input type="text" name="demo_taken_by" id="f_demo_taken_by" placeholder="Demo Taken By">
 </div>
-
+<h4>Interview Status</h4>
 <div class="form-row">
 <select name="interview_status" id="f_interview_status">
 <option value="Pending">Pending</option>
 <option value="Selected">Selected</option>
 <option value="Rejected">Rejected</option>
 </select>
-
+<h4>Interview Taken by</h4>
 <input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By">
 </div>
-
+<h4>Remarks</h4>
 <textarea name="remarks" id="f_remarks" placeholder="Remarks"></textarea>
 
 <div class="modal-buttons">
