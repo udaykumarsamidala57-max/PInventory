@@ -179,15 +179,15 @@ td{
     gap:10px;
 }
 tr.row-selected {
-    background-color: #ecfdf5 !important;   /* light green */
+    background-color: #ecfdf5;
 }
 
 tr.row-rejected {
-    background-color: #fef2f2 !important;   /* light red */
+    background-color: #fef2f2;
 }
 
 tr.row-shortlisted {
-    background-color: #fffbeb !important;   /* light yellow */
+    background-color: #fffbeb;
 }
 
 tr.row-selected:hover,

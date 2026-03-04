@@ -107,7 +107,7 @@ List<Map<String,String>> candidates = grouped.get(post);
                     <th>Action</th>
                 </tr>
             </thead>
-            <tbody>
+          <tbody>
 <% for(Map<String,String> c : candidates){ 
 
     String shortlist = c.get("shortlisted");
@@ -116,47 +116,49 @@ List<Map<String,String>> candidates = grouped.get(post);
 
     String rowClass = "";
 
-    if("Yes".equalsIgnoreCase(shortlist) && 
-       demoStatus != null && demoStatus.equalsIgnoreCase("Selected")){
+    if("Selected".equalsIgnoreCase(demoStatus) || 
+        "Selected".equalsIgnoreCase(interviewStatus)){
         rowClass = "row-selected";
     }
     else if("No".equalsIgnoreCase(shortlist) || 
-            (demoStatus != null && demoStatus.equalsIgnoreCase("Rejected")) ||
-            (interviewStatus != null && interviewStatus.equalsIgnoreCase("Rejected"))){
+            "Rejected".equalsIgnoreCase(demoStatus) || 
+            "Rejected".equalsIgnoreCase(interviewStatus)){
         rowClass = "row-rejected";
+    }
+    else if("Yes".equalsIgnoreCase(shortlist)){
+        rowClass = "row-shortlisted";
     }
 %>
 
 <tr class="<%=rowClass%>">
 
     <td>
-        <b><%=c.get("name")%></b><br>
-        <small><%=c.get("mobile_no")%></small><br>
-        <small><%=c.get("address")%></small>
+        <strong><%=c.get("name")%></strong><br>
+        <%=c.get("mobile_no")%><br>
+        <%=c.get("address")%>
     </td>
 
     <td>
         <%=c.get("qualification")%><br>
-        <small><%=c.get("specialization")%></small><br>
-        <small><%=c.get("percentage_marks")%>% | <%=c.get("year_of_passing")%></small>
+        <%=c.get("specialization")%><br>
+        <%=c.get("year_of_passing")%>
     </td>
 
     <td>
-        Total: <%=c.get("total_experience")%> Yrs<br>
-        Relevant: <%=c.get("relevant_experience")%><br>
-        <small><%=c.get("experience")%></small>
+        <%=c.get("total_experience")%><br>
+        <%=c.get("relevant_experience")%>
     </td>
 
     <td>
-        Present: ₹<%=c.get("present_salary")%><br>
-        Expected: ₹<%=c.get("expected_salary")%>
+        <%=c.get("present_salary")%><br>
+        <%=c.get("expected_salary")%>
     </td>
 
     <td>
-        Shortlist: <b><%=shortlist%></b><br>
-        Call: <%=c.get("call_status")%><br>
-        Demo: <%=demoStatus%><br>
-        Interview: <%=interviewStatus%>
+        <%=shortlist%><br>
+        <%=c.get("call_status")%><br>
+        <%=demoStatus%><br>
+        <%=interviewStatus%>
     </td>
 
     <td>
