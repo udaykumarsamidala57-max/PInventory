@@ -210,7 +210,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
      <button class="dropdown-btn"><i class="fas fa-user-tie text-purple"></i> Recruitment <i class="fas fa-caret-down"></i></button>
      <div class="dropdown-content">
        <a href="#"><i class="fas fa-file-signature"></i> Recruitment Form</a>
-       <a href="#"><i class="fas fa-users-viewfinder"></i> Applications</a>
+       <a href="resume"><i class="fas fa-users-viewfinder"></i> Applications</a>
      </div>
    </div>
   

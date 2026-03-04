@@ -43,7 +43,7 @@ public class resume extends HttpServlet {
         } catch (Exception e) { e.printStackTrace(); }
 
         request.setAttribute("resumeList", resumeList);
-        request.getRequestDispatcher("hr/resume.jsp").forward(request, response);
+        request.getRequestDispatcher("hr/RecruitmentDashboard.jsp").forward(request, response);
     }
 
     @Override
