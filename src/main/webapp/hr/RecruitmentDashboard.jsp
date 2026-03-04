@@ -16,23 +16,28 @@ if (sess == null || sess.getAttribute("username") == null) {
 <title>RecruitPro | Recruitment Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="CSS/Recruitment.css?v=6">
 
-<link rel="stylesheet" href="CSS/Recruitment.css?v=5">
+<style>
+.modal-content{
+    width:900px;
+    max-height:90vh;
+    overflow-y:auto;
+}
+.modal-form h4{
+    margin-top:20px;
+    margin-bottom:10px;
+    font-size:14px;
+    color:#4f46e5;
+}
+</style>
+
 </head>
-
 <body>
 
-<!-- ================= NAVBAR ================= -->
 <div class="navbar">
-    <div class="logo">
-        <i class="fas fa-briefcase"></i>
-        RecruitPro 2026–27
-    </div>
-    <div class="nav-right">
-        <span class="status-dot"></span>
-        System Active
-    </div>
+    <div class="logo">RecruitPro 2026–27</div>
+    <div><span class="status-dot"></span>System Active</div>
 </div>
 
 <div class="main-container">
@@ -54,7 +59,6 @@ if(rawList != null){
 }
 %>
 
-<!-- ================= KPI CARDS ================= -->
 <div class="kpi-grid">
     <div class="kpi-card">
         <h3>Total Applications</h3>
@@ -107,7 +111,7 @@ List<Map<String,String>> candidates = grouped.get(post);
             <% for(Map<String,String> c : candidates){ %>
                 <tr>
                     <td>
-                        <div class="candidate-name"><%=c.get("name")%></div>
+                        <b><%=c.get("name")%></b><br>
                         <small><%=c.get("mobile_no")%></small>
                     </td>
                     <td>
@@ -130,7 +134,7 @@ List<Map<String,String>> candidates = grouped.get(post);
                         </span>
                     </td>
                     <td>
-                        <button class="btn-primary" 
+                        <button class="btn-primary"
                         onclick='openModal(<%=new Gson().toJson(c)%>)'>
                         Review
                         </button>
@@ -146,45 +150,108 @@ List<Map<String,String>> candidates = grouped.get(post);
 
 </div>
 
-<!-- ================= MODAL ================= -->
+<!-- ================= FULL EDIT MODAL ================= -->
+
 <div class="modal" id="editModal">
-    <div class="modal-content">
-        <div class="modal-title">Update Candidate</div>
+<div class="modal-content">
 
-        <form action="resume" method="post" class="modal-form">
+<div class="modal-title">Update Candidate Full Details</div>
 
-            <input type="hidden" name="sl_no" id="f_sl_no">
+<form action="resume" method="post" class="modal-form">
 
-            <div class="form-row">
-                <input type="text" name="name" id="f_name" placeholder="Full Name">
-                <input type="text" name="mobile_no" id="f_mobile_no" placeholder="Mobile">
-            </div>
+<input type="hidden" name="sl_no" id="f_sl_no">
 
-            <div class="form-row">
-                <select name="shortlisted" id="f_shortlisted">
-                    <option value="Pending">Pending</option>
-                    <option value="Yes">Shortlist</option>
-                    <option value="No">Reject</option>
-                </select>
+<h4>Basic Information</h4>
+<div class="form-row">
+<input type="text" name="name" id="f_name" placeholder="Full Name">
+<input type="text" name="mobile_no" id="f_mobile_no" placeholder="Mobile">
+</div>
 
-                <select name="demo_status" id="f_demo_status">
-                    <option value="Pending">Pending</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Selected">Selected</option>
-                    <option value="Rejected">Rejected</option>
-                </select>
-            </div>
+<div class="form-row">
+<input type="text" name="address" id="f_address" placeholder="Address">
+<input type="text" name="post_applied_for" id="f_post_applied_for" placeholder="Post Applied">
+</div>
 
-            <textarea name="remarks" id="f_remarks" 
-            placeholder="Administrative Notes"></textarea>
+<div class="form-row">
+<input type="text" name="gender" id="f_gender" placeholder="Gender">
+<input type="text" name="date_of_birth" id="f_date_of_birth" placeholder="Date of Birth">
+</div>
 
-            <div class="modal-buttons">
-                <button type="button" onclick="closeModal()" class="btn-light">Cancel</button>
-                <button type="submit" class="btn-primary">Update</button>
-            </div>
+<div class="form-row">
+<input type="text" name="marital_status" id="f_marital_status" placeholder="Marital Status">
+<input type="text" name="reference_by" id="f_reference_by" placeholder="Reference By">
+</div>
 
-        </form>
-    </div>
+<h4>Education</h4>
+<div class="form-row">
+<input type="text" name="qualification" id="f_qualification" placeholder="Qualification">
+<input type="text" name="specialization" id="f_specialization" placeholder="Specialization">
+</div>
+
+<div class="form-row">
+<input type="text" name="percentage_marks" id="f_percentage_marks" placeholder="Percentage">
+<input type="text" name="year_of_passing" id="f_year_of_passing" placeholder="Year of Passing">
+</div>
+
+<h4>Experience</h4>
+<textarea name="experience" id="f_experience" placeholder="Experience Details"></textarea>
+
+<div class="form-row">
+<input type="text" name="relevant_experience" id="f_relevant_experience" placeholder="Relevant Experience">
+<input type="text" name="total_experience" id="f_total_experience" placeholder="Total Experience">
+</div>
+
+<h4>Salary</h4>
+<div class="form-row">
+<input type="text" name="present_salary" id="f_present_salary" placeholder="Present Salary">
+<input type="text" name="expected_salary" id="f_expected_salary" placeholder="Expected Salary">
+</div>
+
+<h4>HR Status</h4>
+<div class="form-row">
+<select name="shortlisted" id="f_shortlisted">
+<option value="Pending">Pending</option>
+<option value="Yes">Shortlist</option>
+<option value="No">Reject</option>
+</select>
+
+<select name="call_status" id="f_call_status">
+<option value="Pending">Pending</option>
+<option value="Called">Called</option>
+<option value="Not Reachable">Not Reachable</option>
+</select>
+</div>
+
+<div class="form-row">
+<select name="demo_status" id="f_demo_status">
+<option value="Pending">Pending</option>
+<option value="Scheduled">Scheduled</option>
+<option value="Selected">Selected</option>
+<option value="Rejected">Rejected</option>
+</select>
+
+<input type="text" name="demo_taken_by" id="f_demo_taken_by" placeholder="Demo Taken By">
+</div>
+
+<div class="form-row">
+<select name="interview_status" id="f_interview_status">
+<option value="Pending">Pending</option>
+<option value="Selected">Selected</option>
+<option value="Rejected">Rejected</option>
+</select>
+
+<input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By">
+</div>
+
+<textarea name="remarks" id="f_remarks" placeholder="Remarks"></textarea>
+
+<div class="modal-buttons">
+<button type="button" onclick="closeModal()" class="btn-light">Cancel</button>
+<button type="submit" class="btn-primary">Update Full Details</button>
+</div>
+
+</form>
+</div>
 </div>
 
 <script>
