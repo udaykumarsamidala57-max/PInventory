@@ -272,6 +272,14 @@ tr:hover {
 .demo-selected-row td {
     font-weight: 600;
 }
+.demo-rejected-row {
+    background: #red !important;
+    border-left: 6px solid var(--success);
+}
+
+.demo-rejected-row td {
+    font-weight: 600;
+}
 </style>
 </head>
 
@@ -333,6 +341,10 @@ tr:hover {
                 	if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
                 	    rowClass = "demo-selected-row";
                 	}
+                	if(demo.equalsIgnoreCase("REJECTED") || demo.equalsIgnoreCase("Selected in Demo")){
+                	    rowClass = "demo-rejected-row";
+                	}
+                	
                 %>
                     <tr class="<%=rowClass%>">
                         <td>
