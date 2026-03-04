@@ -1,4 +1,4 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html; charset=UTF-8" language="java" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil3" %>
 
@@ -49,69 +49,39 @@
             response.sendRedirect(request.getRequestURI());
             return;
         }
-    } catch (Exception e) { e.printStackTrace(); }
+    } catch (Exception e) { 
+        e.printStackTrace(); 
+    }
+    // Connection stays open for the table render below
 %>
 
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Class Capacity Management</title>
     <style>
         body { font-family: "Inter", "Segoe UI", sans-serif; background: #f4f7fa; padding: 10px; color: #333; margin: 0; }
-        
-        /* Container to allow horizontal scroll on small screens */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin-bottom: 20px;
-        }
-
-        table { 
-            width: 100%; 
-            max-width: 1100px; /* Limits size on ultra-wide screens */
-            margin: 0 auto; 
-            background: #fff; 
-            border-radius: 8px; 
-            border-collapse: collapse; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            font-size: 13px; /* Slightly smaller font for better fit */
-        }
-
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: 20px; }
+        table { width: 100%; max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; border-collapse: collapse; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-size: 13px; }
         th { background: #0f2a4d; color: white; padding: 10px 5px; white-space: nowrap; }
         td { padding: 8px 5px; border-bottom: 1px solid #edf2f7; text-align: center; }
-        
-        /* Compact inputs */
-        input { 
-            width: 55px; 
-            padding: 5px; 
-            border-radius: 4px; 
-            border: 1px solid #cbd5e1; 
-            text-align: center; 
-        }
-
+        input { width: 55px; padding: 5px; border-radius: 4px; border: 1px solid #cbd5e1; text-align: center; }
         .btn { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; font-size: 12px; white-space: nowrap; }
         .add { background: #10b981; color: white; }
         .edit { background: #3b82f6; color: white; }
-
         .footer-row { background: #f8fafc; font-weight: bold; border-top: 2px solid #cbd5e1; }
-        
-        /* Highlight labels */
         .sum-label { font-weight: bold; color: #64748b; }
         .capacity-label { font-weight: bold; color: #2563eb; }
-
         h2 { font-size: 1.5rem; margin: 15px 0; }
-
-        @media screen and (max-width: 600px) {
-            input { width: 45px; }
-            h2 { font-size: 1.2rem; }
-        }
+        @media screen and (max-width: 600px) { input { width: 45px; } h2 { font-size: 1.2rem; } }
     </style>
 </head>
 <body>
 
 <%@ include file="header.jsp" %>
+
 <h2 align="center">Class Capacity Management</h2>
 
 <div class="table-responsive">
@@ -157,18 +127,19 @@
         <tbody>
         <%
             try {
-                ps = con.prepareStatement("SELECT * FROM class_capacity ORDER BY id");
-                rs = ps.executeQuery();
-                while (rs.next()) {
-                    int id = rs.getInt("id");
-                    int g = rs.getInt("boarders_girls");
-                    int b = rs.getInt("boarders_boys");
-                    int ds = rs.getInt("day_scholars");
-                    int tb = g + b;
-                    int tc = rs.getInt("total_capacity");
+                if(con != null) {
+                    ps = con.prepareStatement("SELECT * FROM class_capacity ORDER BY id");
+                    rs = ps.executeQuery();
+                    while (rs.next()) {
+                        int id = rs.getInt("id");
+                        int g = rs.getInt("boarders_girls");
+                        int b = rs.getInt("boarders_boys");
+                        int ds = rs.getInt("day_scholars");
+                        int tb = g + b;
+                        int tc = rs.getInt("total_capacity");
 
-                    grandGirls += g; grandBoys += b; grandBoarders += tb;
-                    grandDayScholars += ds; grandCapacity += tc;
+                        grandGirls += g; grandBoys += b; grandBoarders += tb;
+                        grandDayScholars += ds; grandCapacity += tc;
         %>
             <form method="post">
             <tr>
@@ -183,8 +154,15 @@
             </tr>
             </form>
         <% 
+                    }
                 }
-            } catch(Exception e) {} 
+            } catch(Exception e) {
+                e.printStackTrace();
+            } finally {
+                if(rs != null) rs.close();
+                if(ps != null) ps.close();
+                if(con != null) con.close();
+            }
         %>
         </tbody>
         <tfoot>
