@@ -36,7 +36,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <body>
 
 <div class="navbar">
-    <div class="logo">RecruitPro 2026–27</div>
+    <div class="logo">Recruitment 2026–27</div>
     <div><span class="status-dot"></span>System Active</div>
 </div>
 

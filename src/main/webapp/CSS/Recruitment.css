@@ -77,31 +77,58 @@ body{
     font-size:13px;
 }
 
-/* TABLE */
 .table-wrapper{
     background:white;
-    border-radius:14px;
+    border-radius:10px;
     overflow:hidden;
-    box-shadow:0 10px 25px rgba(0,0,0,0.05);
+    box-shadow:0 6px 18px rgba(0,0,0,0.05);
 }
 
 table{
     width:100%;
     border-collapse:collapse;
+    font-size:13px; /* slightly smaller text */
 }
 
+/* Header */
 th{
     background:#f8fafc;
-    padding:16px;
+    padding:10px 12px;      /* reduced */
     text-align:left;
-    font-size:12px;
+    font-size:11px;
     text-transform:uppercase;
     color:#64748b;
+    border-bottom:1px solid #e5e7eb;
 }
 
+/* Cells */
 td{
-    padding:16px;
-    border-top:1px solid #f1f5f9;
+    padding:8px 12px;       /* reduced from 16px */
+    border-bottom:1px solid #f1f5f9;
+    vertical-align:top;
+}
+
+/* Remove last row border */
+tbody tr:last-child td{
+    border-bottom:none;
+}
+
+/* Row hover */
+tbody tr:hover{
+    background:#f9fafb;
+}
+
+/* Make content tighter inside cells */
+td small{
+    font-size:11px;
+    color:#6b7280;
+}
+
+/* Compact buttons */
+.btn-primary{
+    padding:6px 12px;
+    font-size:12px;
+    border-radius:6px;
 }
 
 .candidate-name{
