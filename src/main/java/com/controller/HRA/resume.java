@@ -1,22 +1,11 @@
 package com.controller.HRA;
 
-
-
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
+import javax.servlet.http.*;
 import com.bean.DBUtil2;
 
 @WebServlet("/resume")
@@ -25,8 +14,8 @@ public class resume extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-    	
-    	HttpSession sess = request.getSession(false);
+        
+        HttpSession sess = request.getSession(false);
         if (sess == null || sess.getAttribute("username") == null) {
             response.sendRedirect("login.jsp");
             return;
@@ -38,9 +27,8 @@ public class resume extends HttpServlet {
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
-        	
             
-            java.sql.ResultSetMetaData metaData = rs.getMetaData();
+            ResultSetMetaData metaData = rs.getMetaData();
             int columnCount = metaData.getColumnCount();
 
             while (rs.next()) {
@@ -62,13 +50,14 @@ public class resume extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Added shortlisted=? to the query
+        // Comprehensive SQL matching your table structure
         String sql = "UPDATE candidate_recruitment SET " +
-            "name=?, mobile_no=?, address=?, post_applied_for=?, gender=?, date_of_birth=?, " +
-            "marital_status=?, qualification=?, specialization=?, percentage_marks=?, year_of_passing=?, " +
-            "reference_by=?, other_skills_certifications=?, experience=?, relevant_experience=?, " +
-            "total_experience=?, present_salary=?, expected_salary=?, remarks=?, shortlisted=?, call_status=?, " +
-            "demo_status=?, interview_status=? WHERE sl_no=?";
+            "name=?, mobile_no=?, address=?, post_applied_for=?, gender=?, " +
+            "date_of_birth=?, marital_status=?, qualification=?, specialization=?, percentage_marks=?, " +
+            "year_of_passing=?, reference_by=?, other_skills_certifications=?, experience=?, relevant_experience=?, " +
+            "total_experience=?, present_salary=?, expected_salary=?, remarks=?, shortlisted=?, " +
+            "call_status=?, demo_status=?, interview_status=?, interview_taken_by=?, demo_taken_by=? " +
+            "WHERE sl_no=?";
 
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -92,11 +81,13 @@ public class resume extends HttpServlet {
             ps.setString(17, request.getParameter("present_salary"));
             ps.setString(18, request.getParameter("expected_salary"));
             ps.setString(19, request.getParameter("remarks"));
-            ps.setString(20, request.getParameter("shortlisted")); // New Field
+            ps.setString(20, request.getParameter("shortlisted"));
             ps.setString(21, request.getParameter("call_status"));
             ps.setString(22, request.getParameter("demo_status"));
             ps.setString(23, request.getParameter("interview_status"));
-            ps.setInt(24, Integer.parseInt(request.getParameter("sl_no")));
+            ps.setString(24, request.getParameter("interview_taken_by"));
+            ps.setString(25, request.getParameter("demo_taken_by"));
+            ps.setInt(26, Integer.parseInt(request.getParameter("sl_no")));
 
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }
