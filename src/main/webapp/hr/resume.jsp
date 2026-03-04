@@ -264,6 +264,7 @@ tr:hover {
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
+/* Demo Selected */
 .demo-selected-row {
     background: #ecfdf5 !important;
     border-left: 6px solid var(--success);
@@ -272,9 +273,11 @@ tr:hover {
 .demo-selected-row td {
     font-weight: 600;
 }
+
+/* Demo Rejected */
 .demo-rejected-row {
-    background: #red !important;
-    border-left: 6px solid var(--success);
+    background: #fef2f2 !important;
+    border-left: 6px solid var(--danger);
 }
 
 .demo-rejected-row td {
@@ -337,11 +340,12 @@ tr:hover {
 
                 	String rowClass = "";
 
-                	// Priority highlight: Demo Selected
+                	// Highlight Demo Selected (highest priority)
                 	if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
                 	    rowClass = "demo-selected-row";
                 	}
-                	if(demo.equalsIgnoreCase("REJECTED") || demo.equalsIgnoreCase("Selected in Demo")){
+                	// Highlight Demo Rejected
+                	else if(demo.equalsIgnoreCase("Rejected") || demo.equalsIgnoreCase("Rejected in Demo")){
                 	    rowClass = "demo-rejected-row";
                 	}
                 	
