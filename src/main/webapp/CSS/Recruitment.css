@@ -1,204 +1,106 @@
-/* Import Modern Typography */
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-
-:root {
-    --primary: #6366f1; /* Modern Indigo */
-    --primary-glow: rgba(99, 102, 241, 0.2);
-    --success: #10b981;
-    --danger: #f43f5e;
-    --warning: #f59e0b;
-    --dark: #0f172a;
-    --text: #1e293b;
-    --muted: #64748b;
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --border: #e2e8f0;
-}
-
 /* ===============================
-   Base Layout
+   MODAL REFINEMENT
 ================================ */
-body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background: radial-gradient(at 0% 0%, #f8fafc 0, #f1f5f9 100%);
-    color: var(--text);
-    margin: 0;
-    padding: 40px;
-    line-height: 1.6;
-}
-
-.container {
-    max-width: 1400px;
-    margin: 0 auto;
-}
-
-/* ===============================
-   Header: Cinematic Gradient
-================================ */
-.header-hero {
-    background: #0f172a;
-    background-image: 
-        radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
-        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1) 0%, transparent 40%);
-    padding: 40px 50px;
-    border-radius: 24px;
-    margin-bottom: 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255,255,255,0.05);
-}
-
-/* ===============================
-   Tables & Cards
-================================ */
-.modern-card {
-    background: var(--card);
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    overflow: hidden;
-    margin-bottom: 35px;
-    transition: transform 0.2s ease;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th {
-    background: #f8fafc;
-    padding: 18px 20px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--muted);
-    text-align: left;
-    border-bottom: 2px solid var(--border);
-}
-
-td {
-    padding: 18px 20px;
-    font-size: 14px;
-    border-bottom: 1px solid #f1f5f9;
-    vertical-align: middle;
-}
-
-tr:hover td {
-    background: #fdfdff;
-}
-
-/* ===============================
-   Status Logic Styles
-================================ */
-.demo-selected-row {
-    background: #f0fdf4 !important;
-    border-left: 6px solid var(--success);
-}
-
-.demo-rejected-row {
-    background: #fff1f2 !important;
-    border-left: 6px solid var(--danger);
-}
-
-.gender-pill {
-    font-size: 11px;
-    padding: 3px 10px;
-    border-radius: 100px;
-    font-weight: 700;
-}
-
-.gender-pill.male { background: #e0f2fe; color: #0369a1; }
-.gender-pill.female { background: #fdf2f8; color: #be185d; }
-
-/* ===============================
-   Buttons & Interactions
-================================ */
-.btn-action {
-    background: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 12px var(--primary-glow);
-}
-
-.btn-action:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.1);
-    box-shadow: 0 8px 16px var(--primary-glow);
-}
-
-/* ===============================
-   Modal & Forms
-================================ */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.7);
-    backdrop-filter: blur(8px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 40px;
-    z-index: 1000;
-}
-
 .modal-window {
     background: white;
     width: 100%;
-    max-width: 1000px;
-    border-radius: 24px;
+    max-width: 1050px;
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 92vh;
     overflow: hidden;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.25);
 }
 
 .modal-header {
-    padding: 25px 35px;
-    background: #f8fafc;
+    padding: 28px 40px;
+    background: #ffffff;
     border-bottom: 1px solid var(--border);
 }
 
+.modal-body {
+    padding: 40px 45px;
+    overflow-y: auto;
+}
+
+/* ===============================
+   FORM GRID PERFECT ALIGNMENT
+================================ */
 .input-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 20px 30px;
+    column-gap: 40px;
+    row-gap: 28px;
 }
 
+/* Section Divider */
 .section-tag {
     grid-column: span 3;
-    font-size: 11px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--primary);
-    letter-spacing: 0.1em;
-    padding-bottom: 8px;
-    border-bottom: 1px solid var(--border);
-    margin-top: 20px;
+    margin-top: 25px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #eef2ff;
 }
 
-.form-input {
-    padding: 12px 14px;
+/* ===============================
+   FORM GROUP STRUCTURE
+================================ */
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Labels */
+.form-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+}
+
+/* Inputs */
+.form-input,
+select.form-input,
+textarea.form-input {
+    padding: 13px 14px;
     border-radius: 10px;
     border: 1px solid var(--border);
     font-size: 14px;
-    background: #fcfdfe;
-    transition: all 0.2s;
+    font-family: inherit;
+    background: #ffffff;
+    transition: all 0.2s ease;
 }
 
+/* Input Focus */
 .form-input:focus {
     border-color: var(--primary);
     outline: none;
-    background: white;
     box-shadow: 0 0 0 4px var(--primary-glow);
+}
+
+/* Full Width Row */
+.form-group.full-width {
+    grid-column: span 3;
+}
+
+/* Better Textarea */
+textarea.form-input {
+    resize: vertical;
+    min-height: 90px;
+}
+
+/* Footer Button Area */
+.modal-footer {
+    padding: 25px 40px;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
 }
