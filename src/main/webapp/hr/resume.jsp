@@ -111,6 +111,12 @@ font-size:12px;
 .btn-edit{
 background:#fff;
 border:1px solid var(--border);
+transition: all 0.2s;
+}
+
+.btn-edit:hover{
+background: var(--bg);
+border-color: #cbd5e1;
 }
 
 .modal-overlay{
@@ -121,6 +127,7 @@ display:none;
 align-items:center;
 justify-content:center;
 z-index:1000;
+backdrop-filter: blur(4px);
 }
 
 .modal-content{
@@ -130,6 +137,7 @@ max-width:850px;
 border-radius:16px;
 max-height:90vh;
 overflow-y:auto;
+box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
 }
 
 .modal-header{
@@ -161,10 +169,18 @@ color:#64748b;
 
 .form-control{
 width:100%;
-padding:8px;
+padding:10px;
 border:1px solid var(--border);
 border-radius:6px;
 font-size:14px;
+font-family: inherit;
+box-sizing: border-box;
+}
+
+.form-control:focus{
+outline: none;
+border-color: var(--primary);
+box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .section-divider{
@@ -175,6 +191,7 @@ text-transform:uppercase;
 margin-top:15px;
 padding-bottom:5px;
 border-bottom:1px solid var(--border);
+color: var(--primary);
 }
 
 .footer-actions{
@@ -195,23 +212,20 @@ border-top:1px solid var(--border);
 <h2 style="margin-bottom:30px;">Candidate Database</h2>
 
 <%
-List<Map<String,String>> rawList =
-(List<Map<String,String>>) request.getAttribute("resumeList");
+List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
+Set<String> uniquePosts = new TreeSet<>(); // To store unique posts for the dropdown
 
 if(rawList!=null && !rawList.isEmpty()){
 
-Map<String,List<Map<String,String>>> groupedData =
-new LinkedHashMap<>();
+Map<String,List<Map<String,String>>> groupedData = new LinkedHashMap<>();
 
 for(Map<String,String> row : rawList){
 String post=row.get("post_applied_for");
-if(post==null||post.trim().isEmpty())
-post="General / Unspecified";
+if(post==null||post.trim().isEmpty()) post="General / Unspecified";
 
+uniquePosts.add(post); // Build the set of unique posts
 groupedData.computeIfAbsent(post,k->new ArrayList<>()).add(row);
 }
-
-int globalSerial=1;
 
 for(String postName:groupedData.keySet()){
 List<Map<String,String>> candidates=groupedData.get(postName);
@@ -249,15 +263,10 @@ for(Map<String,String> candidate:candidates){
 
 <tr>
 <td class="sl-no"><%=serial++%></td>
-
 <td><strong><%=String.valueOf(candidate.get("name"))%></strong></td>
-
 <td><%=String.valueOf(candidate.get("mobile_no"))%></td>
-
 <td><%=String.valueOf(candidate.get("qualification"))%></td>
-
 <td><%=String.valueOf(candidate.get("total_experience"))%> Years</td>
-
 <td>
 <span class="badge badge-blue">
 <%=String.valueOf(candidate.get("call_status"))%>
@@ -267,7 +276,7 @@ for(Map<String,String> candidate:candidates){
 <td style="text-align:center;">
 <button class="btn btn-edit"
 onclick='openModal(<%=new Gson().toJson(candidate)%>)'>
-<i class="fas fa-user-edit"></i> View
+<i class="fas fa-user-edit"></i> View Profile
 </button>
 </td>
 </tr>
@@ -290,15 +299,13 @@ onclick='openModal(<%=new Gson().toJson(candidate)%>)'>
 </div>
 
 
-<!-- MODAL -->
-
 <div class="modal-overlay" id="editModal">
 <div class="modal-content">
 
 <div class="modal-header">
-<h3><i class="fas fa-id-card"></i> Candidate Profile</h3>
+<h3 style="margin:0;"><i class="fas fa-id-card"></i> Edit Candidate Profile</h3>
 <button onclick="closeModal()" 
-style="background:none;border:none;font-size:20px;">&times;</button>
+style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">&times;</button>
 </div>
 
 <div class="modal-body">
@@ -320,12 +327,16 @@ style="background:none;border:none;font-size:20px;">&times;</button>
 
 <div class="form-group">
 <label>Gender</label>
-<input type="text" name="gender" id="f_gender" class="form-control">
+<select name="gender" id="f_gender" class="form-control">
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+    <option value="Other">Other</option>
+</select>
 </div>
 
 <div class="form-group">
-<label>DOB</label>
-<input type="text" name="date_of_birth" id="f_date_of_birth" class="form-control">
+<label>Date of Birth</label>
+<input type="text" name="date_of_birth" id="f_date_of_birth" class="form-control" placeholder="DD/MM/YYYY">
 </div>
 
 <div class="section-divider">Academic & Experience</div>
@@ -336,13 +347,17 @@ style="background:none;border:none;font-size:20px;">&times;</button>
 </div>
 
 <div class="form-group">
-<label>Experience</label>
+<label>Total Experience</label>
 <input type="text" name="total_experience" id="f_total_experience" class="form-control">
 </div>
 
 <div class="form-group">
-<label>Post Applied</label>
-<input type="text" name="post_applied_for" id="f_post_applied_for" class="form-control">
+<label>Post Applied For (Category)</label>
+<select name="post_applied_for" id="f_post_applied_for" class="form-control">
+    <% for(String p : uniquePosts) { %>
+        <option value="<%= p %>"><%= p %></option>
+    <% } %>
+</select>
 </div>
 
 <div class="form-group">
@@ -350,7 +365,7 @@ style="background:none;border:none;font-size:20px;">&times;</button>
 <input type="text" name="expected_salary" id="f_expected_salary" class="form-control">
 </div>
 
-<div class="section-divider">Status</div>
+<div class="section-divider">Process Status</div>
 
 <div class="form-group">
 <label>Call Status</label>
@@ -364,12 +379,12 @@ style="background:none;border:none;font-size:20px;">&times;</button>
 
 <div class="footer-actions full">
 <button type="button" class="btn"
-onclick="closeModal()" style="background:#f1f5f9;">
+onclick="closeModal()" style="background:#f1f5f9; color: #475569;">
 Cancel
 </button>
 <button type="submit" class="btn"
 style="background:var(--primary);color:#fff;">
-Save Changes
+Update Record
 </button>
 </div>
 
@@ -381,6 +396,7 @@ Save Changes
 
 <script>
 function openModal(data){
+// Dynamically fill all fields
 for(let key in data){
 let element=document.getElementById('f_'+key);
 if(element) element.value=data[key]||'';
@@ -392,6 +408,14 @@ document.body.style.overflow='hidden';
 function closeModal(){
 document.getElementById('editModal').style.display='none';
 document.body.style.overflow='auto';
+}
+
+// Close modal when clicking outside content
+window.onclick = function(event) {
+    let modal = document.getElementById('editModal');
+    if (event.target == modal) {
+        closeModal();
+    }
 }
 </script>
 
