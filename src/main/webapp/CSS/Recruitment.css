@@ -1,98 +1,130 @@
 /* ===============================
-   MODAL CLEAN & SIMPLE
+   MODAL – SPACIOUS ENTERPRISE
 ================================ */
 
 .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.6);
-    backdrop-filter: blur(4px);
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 30px;
+    padding: 40px;
     z-index: 1000;
 }
 
 .modal-window {
     background: #ffffff;
     width: 100%;
-    max-width: 900px; /* Reduced width */
-    border-radius: 18px;
+    max-width: 850px; /* Slightly smaller for focus */
+    border-radius: 20px;
     display: flex;
     flex-direction: column;
-    max-height: 90vh;
+    max-height: 92vh;
     overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    box-shadow: 0 30px 60px rgba(0,0,0,0.18);
+}
+
+.modal-header {
+    padding: 28px 40px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fafafa;
 }
 
 .modal-body {
-    padding: 35px 40px;
+    padding: 45px 50px; /* More breathing space */
     overflow-y: auto;
 }
 
 /* ===============================
-   2 COLUMN GRID (MUCH CLEANER)
+   2 COLUMN GRID – MORE SPACE
 ================================ */
 
 .input-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* 2 columns instead of 3 */
-    gap: 22px 30px;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px 40px; /* Increased spacing */
 }
 
 /* Section Title */
 .section-tag {
     grid-column: span 2;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    text-transform: uppercase;
     letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--primary);
-    padding-bottom: 8px;
+    padding-bottom: 12px;
+    margin-top: 25px;
     border-bottom: 1px solid #e5e7eb;
-    margin-top: 10px;
 }
 
 /* ===============================
-   FORM FIELDS
+   FORM GROUP
 ================================ */
 
 .form-group {
     display: flex;
     flex-direction: column;
+    gap: 8px; /* Space between label and input */
 }
 
 .form-group.full-width {
     grid-column: span 2;
 }
 
+/* Label */
 .form-group label {
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 600;
-    color: var(--muted);
-    margin-bottom: 6px;
+    color: #475569;
 }
 
-/* Inputs */
+/* Input */
 .form-input {
     width: 100%;
-    padding: 11px 14px;
-    border-radius: 8px;
+    padding: 14px 16px; /* Bigger input */
+    border-radius: 10px;
     border: 1px solid #d1d5db;
     font-size: 14px;
-    background: #fff;
-    transition: 0.2s ease;
+    background: #ffffff;
+    transition: all 0.25s ease;
 }
 
 .form-input:focus {
     border-color: var(--primary);
     outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.10);
 }
 
 /* Textarea */
 textarea.form-input {
-    min-height: 80px;
+    min-height: 110px;
     resize: vertical;
+}
+
+/* ===============================
+   RESPONSIVE – STACK ON MOBILE
+================================ */
+
+@media (max-width: 768px) {
+    .modal-window {
+        max-width: 100%;
+        border-radius: 14px;
+    }
+
+    .modal-body {
+        padding: 30px;
+    }
+
+    .input-grid {
+        grid-template-columns: 1fr; /* Stack fields */
+        gap: 22px;
+    }
+
+    .section-tag,
+    .form-group.full-width {
+        grid-column: span 1;
+    }
 }
