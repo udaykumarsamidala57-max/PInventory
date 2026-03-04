@@ -2,48 +2,47 @@
 <%@ page import="com.google.gson.Gson" %>
 
 <%
-HttpSession sess = request.getSession(false);
-if (sess == null || sess.getAttribute("username") == null) {
-    response.sendRedirect("login.jsp");
-    return;
-}
+    // Session Check
+    HttpSession sess = request.getSession(false);
+    if (sess == null || sess.getAttribute("username") == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
 %>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RecruitPro | High-Impact HR Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RecruitPro | High-Impact HR Dashboard</title>
     
-    <link rel="stylesheet" href="CSS/Recruitment.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="CSS/Recruitment.css">
 </head>
 
 <body>
 
 <div class="container">
-    <div class="header-hero">
-        <div>
-            <h1 style="margin:0; font-size: 32px; font-weight: 800;">Recruitment 2026 -27</h1>
-            <p style="opacity:0.7; margin: 5px 0 0;">Managing Excellence at Sandur Residential School</p>
+    <header class="header-hero">
+        <div class="header-left">
+            <h1>Recruitment 2026 - 27</h1>
+            <p>Managing Excellence at Sandur Residential School</p>
         </div>
         <div style="text-align: right;">
-            <div style="font-size: 14px; opacity:0.6;">System Status</div>
-            <div style="font-weight: 800; color: #4ade80;"><i class="fas fa-circle"></i> LIVE & ACCURATE</div>
+            <div style="font-size: 12px; opacity:0.6; text-transform: uppercase; letter-spacing: 1px;">System Status</div>
+            <div style="font-weight: 800; color: #4ade80; display: flex; align-items: center; gap: 8px; justify-content: flex-end;">
+                <i class="fas fa-circle" style="font-size: 8px;"></i> LIVE & ACCURATE
+            </div>
         </div>
-    </div>
+    </header>
 
     <%
     List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
     if(rawList != null && !rawList.isEmpty()){
+        // Grouping logic
         Map<String,List<Map<String,String>>> groupedData = new LinkedHashMap<>();
         for(Map<String,String> row : rawList){
             String post = row.get("post_applied_for");
@@ -55,10 +54,13 @@ if (sess == null || sess.getAttribute("username") == null) {
             List<Map<String,String>> candidates = groupedData.get(postName);
     %>
 
-    <div style="margin-bottom: 60px;">
-        <h2 style="display:flex; align-items:center; gap:15px; color: var(--dark);">
-            <span style="background:var(--primary); color:white; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:12px;"><i class="fas fa-layer-group"></i></span>
-            <%=postName%> <small style="font-weight:400; color:#94a3b8;">(<%=candidates.size()%>)</small>
+    <section style="margin-bottom: 60px;">
+        <h2 style="display:flex; align-items:center; gap:15px; color: var(--dark); margin-bottom: 20px;">
+            <span style="background:var(--primary); color:white; width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; font-size: 14px;">
+                <i class="fas fa-layer-group"></i>
+            </span>
+            <%=postName%> 
+            <span style="font-weight:400; color:#94a3b8; font-size: 16px;">(<%=candidates.size()%>)</span>
         </h2>
 
         <div class="modern-card">
@@ -75,80 +77,75 @@ if (sess == null || sess.getAttribute("username") == null) {
                 </thead>
                 <tbody>
                 <% for(Map<String,String> c : candidates){ 
-                	String isYes = c.get("shortlisted") == null ? "" : c.get("shortlisted");
-                	String demo = c.get("demo_status") == null ? "" : c.get("demo_status");
-                	String gender = c.get("gender") == null ? "" : c.get("gender");
+                    String isYes = c.get("shortlisted") == null ? "" : c.get("shortlisted");
+                    String demo = c.get("demo_status") == null ? "" : c.get("demo_status");
+                    String gender = c.get("gender") == null ? "" : c.get("gender");
 
-                	String rowClass = "";
-
-           
-                	// 1️⃣ If Shortlisted = No → Always Red
-                	if(isYes.equalsIgnoreCase("No")){
-                	    rowClass = "demo-rejected-row";
-                	}
-                	// 2️⃣ Demo Selected → Green
-                	else if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
-                	    rowClass = "demo-selected-row";
-                	}
-                	// 3️⃣ Demo Rejected → Red
-                	else if(demo.equalsIgnoreCase("Rejected") || demo.equalsIgnoreCase("Rejected in Demo")){
-                	    rowClass = "demo-rejected-row";
-                	}
-                	
+                    String rowClass = "";
+                    if(isYes.equalsIgnoreCase("No") || demo.toLowerCase().contains("rejected")) {
+                        rowClass = "demo-rejected-row";
+                    } else if(demo.toLowerCase().contains("selected")) {
+                        rowClass = "demo-selected-row";
+                    }
                 %>
                     <tr class="<%=rowClass%>">
                         <td>
-                            <div style="font-weight: 800; font-size: 16px;"><%=c.get("name")%></div>
-                            <div style="display:flex; gap:8px; margin-top:5px; align-items:center;">
+                            <div style="font-weight: 700; font-size: 15px; color: var(--dark);"><%=c.get("name")%></div>
+                            <div style="display:flex; gap:8px; margin-top:6px; align-items:center;">
                                 <span class="gender-pill <%=gender.toLowerCase()%>">
                                     <i class="fas fa-<%=gender.equalsIgnoreCase("Male") ? "mars" : "venus"%>"></i> <%=gender%>
                                 </span>
-                                <small style="color:#64748b;"><i class="fas fa-phone"></i> <%=c.get("mobile_no")%></small>
+                                <small style="color:var(--muted);"><i class="fas fa-phone"></i> <%=c.get("mobile_no")%></small>
                             </div>
                         </td>
                         <td>
-                            <div style="font-weight: 600; color:#1e293b;"><%=c.get("qualification")%></div>
-                            <small style="color:#94a3b8;"><%=c.get("specialization")%></small>
+                            <div style="font-weight: 600;"><%=c.get("qualification")%></div>
+                            <small style="color:var(--muted);"><%=c.get("specialization")%></small>
                         </td>
                         <td>
-                            <div style="background:#f1f5f9; display:inline-block; padding:5px 12px; border-radius:10px; font-weight:800; color:var(--dark);">
-                                <%=c.get("total_experience")%> Years
-                            </div>
+                            <span style="background:#f1f5f9; padding:4px 10px; border-radius:8px; font-weight:700; font-size: 13px;">
+                                <%=c.get("total_experience")%> Yrs
+                            </span>
                         </td>
                         <td>
                             <% if(isYes.equalsIgnoreCase("Yes")) { %>
-                                <div style="color:var(--success); font-weight:800;"><i class="fas fa-check-double"></i> SHORTLISTED</div>
+                                <span style="color:var(--success); font-weight:700; font-size: 12px;"><i class="fas fa-check-circle"></i> SHORTLISTED</span>
                             <% } else if(isYes.equalsIgnoreCase("No")) { %>
-                                <div style="color:var(--accent); font-weight:800;"><i class="fas fa-times"></i> REJECTED</div>
+                                <span style="color:var(--danger); font-weight:700; font-size: 12px;"><i class="fas fa-times-circle"></i> REJECTED</span>
                             <% } else { %>
-                                <div style="color:var(--warning); font-weight:800;"><i class="fas fa-hourglass-start"></i> IN REVIEW</div>
+                                <span style="color:var(--warning); font-weight:700; font-size: 12px;"><i class="fas fa-clock"></i> IN REVIEW</span>
                             <% } %>
                         </td>
                         <td>
-                            <div class="demo-active">
-                                <i class="fas fa-chalkboard-teacher"></i> <%= (demo == null || demo.isEmpty()) ? "PENDING" : demo.toUpperCase() %>
+                            <div style="font-weight: 600; font-size: 13px; color: var(--muted);">
+                                <i class="fas fa-chalkboard-teacher" style="margin-right: 5px;"></i>
+                                <%= (demo == null || demo.isEmpty()) ? "PENDING" : demo.toUpperCase() %>
                             </div>
                         </td>
                         <td style="text-align:center;">
-                            <button class="btn-action" onclick='openModal(<%=new Gson().toJson(c)%>)'>Review Profile</button>
+                            <button class="btn-action" onclick='openModal(<%=new Gson().toJson(c)%>)'>
+                                <i class="fas fa-external-link-alt" style="font-size: 10px; margin-right: 5px;"></i> Review
+                            </button>
                         </td>
                     </tr>
                 <% } %>
                 </tbody>
             </table>
         </div>
-    </div>
+    </section>
     <% } } %>
 </div>
 
 <div class="modal-overlay" id="editModal">
     <div class="modal-window">
-        <div class="modal-header">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h2 style="margin:0; font-weight: 800; color:var(--dark);">Application Intelligence</h2>
-                <p style="margin:0; color:#64748b;">Full control over candidate status and workflow</p>
+                <h2 style="margin:0; font-weight: 800; color:var(--dark); font-size: 20px;">Application Intelligence</h2>
+                <p style="margin:4px 0 0; color:var(--muted); font-size: 13px;">Update candidate status and workflow details</p>
             </div>
-            <button onclick="closeModal()" style="background:none; border:none; font-size:28px; cursor:pointer;">&times;</button>
+            <button onclick="closeModal()" style="background:#f1f5f9; border:none; width: 36px; height: 36px; border-radius: 50%; cursor:pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                <i class="fas fa-times" style="color: var(--muted);"></i>
+            </button>
         </div>
         
         <form action="resume" method="post">
@@ -166,25 +163,25 @@ if (sess == null || sess.getAttribute("username") == null) {
                         <input type="text" name="mobile_no" id="f_mobile_no" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label>Gender Selection</label>
-                        <select name="gender" id="f_gender" class="form-input" style="background: #fff7ed;">
-                            <option value="Male">Male ♂</option>
-                            <option value="Female">Female ♀</option>
+                        <label>Gender</label>
+                        <select name="gender" id="f_gender" class="form-input">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
 
-                    <div class="section-tag">Candidate Assessment</div>
+                    <div class="section-tag">Assessment & Progress</div>
                     <div class="form-group">
-                        <label>Shortlisting Final Call</label>
-                        <select name="shortlisted" id="f_shortlisted" class="form-input" style="border:2px solid var(--success);">
+                        <label>Shortlist Status</label>
+                        <select name="shortlisted" id="f_shortlisted" class="form-input" style="font-weight: 700;">
                             <option value="Pending">Pending Decision</option>
                             <option value="Yes">Shortlist (Yes)</option>
                             <option value="No">Reject (No)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Demo Progress</label>
-                        <select name="demo_status" id="f_demo_status" class="form-input" style="border:2px solid var(--demo-color);">
+                        <label>Demo Status</label>
+                        <select name="demo_status" id="f_demo_status" class="form-input">
                             <option value="Not Scheduled">Not Scheduled</option>
                             <option value="Scheduled">Scheduled</option>
                             <option value="Demo Completed">Demo Completed</option>
@@ -194,10 +191,10 @@ if (sess == null || sess.getAttribute("username") == null) {
                     </div>
                     <div class="form-group">
                         <label>Interview Outcome</label>
-                        <input type="text" name="interview_status" id="f_interview_status" class="form-input" placeholder="e.g. Selected for HOD round">
+                        <input type="text" name="interview_status" id="f_interview_status" class="form-input" placeholder="Current stage...">
                     </div>
 
-                    <div class="section-tag">Professional Data</div>
+                    <div class="section-tag">Professional Background</div>
                     <div class="form-group">
                         <label>Qualification</label>
                         <input type="text" name="qualification" id="f_qualification" class="form-input">
@@ -207,13 +204,13 @@ if (sess == null || sess.getAttribute("username") == null) {
                         <input type="text" name="specialization" id="f_specialization" class="form-input">
                     </div>
                     <div class="form-group">
-                        <label>Experience (Yrs)</label>
+                        <label>Experience (Years)</label>
                         <input type="text" name="total_experience" id="f_total_experience" class="form-input">
                     </div>
 
-                    <div class="form-group" style="grid-column: span 3;">
-                        <label>Internal Admin Remarks</label>
-                        <textarea name="remarks" id="f_remarks" class="form-input" rows="3"></textarea>
+                    <div class="form-group full-width">
+                        <label>Internal Administrative Remarks</label>
+                        <textarea name="remarks" id="f_remarks" class="form-input" rows="3" placeholder="Add notes about the candidate..."></textarea>
                     </div>
                 </div>
 
@@ -234,23 +231,39 @@ if (sess == null || sess.getAttribute("username") == null) {
                 <input type="hidden" name="interview_taken_by" id="f_interview_taken_by">
             </div>
             
-            <div style="padding: 30px 40px; background: #f8fafc; border-top: 1px solid #e2e8f0; display:flex; justify-content: flex-end; gap: 20px;">
-                <button type="button" onclick="closeModal()" style="background:none; border:none; font-weight:700; cursor:pointer; color:#64748b;">Cancel Changes</button>
-                <button type="submit" class="btn-action" style="padding: 15px 50px; font-size:16px;">Commit Updates</button>
+            <div class="modal-footer" style="padding: 24px 40px; background: #f8fafc; border-top: 1px solid var(--border); display:flex; justify-content: flex-end; gap: 15px;">
+                <button type="button" onclick="closeModal()" style="background:none; border:none; font-weight:700; cursor:pointer; color:var(--muted); font-size: 14px;">Dismiss</button>
+                <button type="submit" class="btn-action" style="padding: 12px 36px; font-size: 14px; border-radius: 12px;">Update Record</button>
             </div>
         </form>
     </div>
 </div>
 
 <script>
-function openModal(data){
-    for(let key in data){
-        let el = document.getElementById('f_'+key);
-        if(el) el.value = data[key] || '';
+    function openModal(data){
+        // Map JSON data to form fields
+        for(let key in data){
+            let el = document.getElementById('f_'+key);
+            if(el) el.value = data[key] || '';
+        }
+        
+        const modal = document.getElementById('editModal');
+        modal.style.display = 'flex';
+        // Gentle fade in
+        modal.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 200, fill: 'forwards' });
     }
-    document.getElementById('editModal').style.display = 'flex';
-}
-function closeModal(){ document.getElementById('editModal').style.display = 'none'; }
+
+    function closeModal(){ 
+        const modal = document.getElementById('editModal');
+        modal.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 200, fill: 'forwards' });
+        setTimeout(() => { modal.style.display = 'none'; }, 200);
+    }
+    
+    // Close modal on outside click
+    window.onclick = function(event) {
+        const modal = document.getElementById('editModal');
+        if (event.target == modal) { closeModal(); }
+    }
 </script>
 
 </body>
