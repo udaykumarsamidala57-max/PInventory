@@ -165,8 +165,8 @@
                     <div class="form-group">
                         <label>Gender</label>
                         <select name="gender" id="f_gender" class="form-input">
-                            <option value="Male">Male ♂</option>
-                            <option value="Female">Female ♀</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
                         </select>
                     </div>
 
