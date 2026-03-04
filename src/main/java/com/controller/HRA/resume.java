@@ -50,13 +50,13 @@ public class resume extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        String sql = "UPDATE candidate_recruitment SET " +
-            "name=?, mobile_no=?, address=?, post_applied_for=?, gender=?, " +
-            "date_of_birth=?, marital_status=?, qualification=?, specialization=?, percentage_marks=?, " +
-            "year_of_passing=?, reference_by=?, other_skills_certifications=?, experience=?, relevant_experience=?, " +
-            "total_experience=?, present_salary=?, expected_salary=?, remarks=?, shortlisted=?, " +
-            "call_status=?, demo_status=?, interview_status=?, interview_taken_by=?, demo_taken_by=? " +
-            "WHERE sl_no=?";
+        // Full SQL parameter mapping based on your DB schema
+        String sql = "UPDATE candidate_recruitment SET name=?, mobile_no=?, address=?, post_applied_for=?, " +
+                     "gender=?, date_of_birth=?, marital_status=?, qualification=?, specialization=?, " +
+                     "percentage_marks=?, year_of_passing=?, reference_by=?, other_skills_certifications=?, " +
+                     "experience=?, relevant_experience=?, total_experience=?, present_salary=?, expected_salary=?, " +
+                     "remarks=?, shortlisted=?, call_status=?, demo_status=?, interview_status=?, " +
+                     "interview_taken_by=?, demo_taken_by=? WHERE sl_no=?";
 
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
