@@ -340,11 +340,16 @@ tr:hover {
 
                 	String rowClass = "";
 
-                	// Highlight Demo Selected (highest priority)
-                	if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
+           
+                	// 1️⃣ If Shortlisted = No → Always Red
+                	if(isYes.equalsIgnoreCase("No")){
+                	    rowClass = "demo-rejected-row";
+                	}
+                	// 2️⃣ Demo Selected → Green
+                	else if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
                 	    rowClass = "demo-selected-row";
                 	}
-                	// Highlight Demo Rejected
+                	// 3️⃣ Demo Rejected → Red
                 	else if(demo.equalsIgnoreCase("Rejected") || demo.equalsIgnoreCase("Rejected in Demo")){
                 	    rowClass = "demo-rejected-row";
                 	}
