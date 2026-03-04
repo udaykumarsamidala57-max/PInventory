@@ -264,6 +264,14 @@ tr:hover {
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
+.demo-selected-row {
+    background: #ecfdf5 !important;
+    border-left: 6px solid var(--success);
+}
+
+.demo-selected-row td {
+    font-weight: 600;
+}
 </style>
 </head>
 
@@ -315,12 +323,18 @@ tr:hover {
                 </thead>
                 <tbody>
                 <% for(Map<String,String> c : candidates){ 
-                    String isYes = c.get("shortlisted");
-                    String demo = c.get("demo_status");
-                    String gender = c.get("gender");
-                    String rowHighlight = isYes.equalsIgnoreCase("Yes") ? "highlight-row-yes" : "";
+                	String isYes = c.get("shortlisted") == null ? "" : c.get("shortlisted");
+                	String demo = c.get("demo_status") == null ? "" : c.get("demo_status");
+                	String gender = c.get("gender") == null ? "" : c.get("gender");
+
+                	String rowClass = "";
+
+                	// Priority highlight: Demo Selected
+                	if(demo.equalsIgnoreCase("Selected") || demo.equalsIgnoreCase("Selected in Demo")){
+                	    rowClass = "demo-selected-row";
+                	}
                 %>
-                    <tr class="<%=rowHighlight%>">
+                    <tr class="<%=rowClass%>">
                         <td>
                             <div style="font-weight: 800; font-size: 16px;"><%=c.get("name")%></div>
                             <div style="display:flex; gap:8px; margin-top:5px; align-items:center;">
