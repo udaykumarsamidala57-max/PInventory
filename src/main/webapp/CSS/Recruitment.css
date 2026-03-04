@@ -178,20 +178,3 @@ td{
     justify-content:flex-end;
     gap:10px;
 }
-tr.row-selected {
-    background-color: #ecfdf5;
-}
-
-tr.row-rejected {
-    background-color: #fef2f2;
-}
-
-tr.row-shortlisted {
-    background-color: #fffbeb;
-}
-
-tr.row-selected:hover,
-tr.row-rejected:hover,
-tr.row-shortlisted:hover {
-    opacity: 0.9;
-}

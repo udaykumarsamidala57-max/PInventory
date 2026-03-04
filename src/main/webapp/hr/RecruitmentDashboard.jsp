@@ -107,71 +107,41 @@ List<Map<String,String>> candidates = grouped.get(post);
                     <th>Action</th>
                 </tr>
             </thead>
-          <tbody>
-<% for(Map<String,String> c : candidates){ 
-
-    String shortlist = c.get("shortlisted");
-    String demoStatus = c.get("demo_status");
-    String interviewStatus = c.get("interview_status");
-
-    String rowClass = "";
-
-    if("Selected".equalsIgnoreCase(demoStatus) || 
-        "Selected".equalsIgnoreCase(interviewStatus)){
-        rowClass = "row-selected";
-    }
-    else if("No".equalsIgnoreCase(shortlist) || 
-            "Rejected".equalsIgnoreCase(demoStatus) || 
-            "Rejected".equalsIgnoreCase(interviewStatus)){
-        rowClass = "row-rejected";
-    }
-    else if("Yes".equalsIgnoreCase(shortlist)){
-        rowClass = "row-shortlisted";
-    }
-%>
-
-<tr class="<%=rowClass%>">
-
-    <td>
-        <strong><%=c.get("name")%></strong><br>
-        <%=c.get("mobile_no")%><br>
-        <%=c.get("address")%>
-    </td>
-
-    <td>
-        <%=c.get("qualification")%><br>
-        <%=c.get("specialization")%><br>
-        <%=c.get("year_of_passing")%>
-    </td>
-
-    <td>
-        <%=c.get("total_experience")%><br>
-        <%=c.get("relevant_experience")%>
-    </td>
-
-    <td>
-        <%=c.get("present_salary")%><br>
-        <%=c.get("expected_salary")%>
-    </td>
-
-    <td>
-        <%=shortlist%><br>
-        <%=c.get("call_status")%><br>
-        <%=demoStatus%><br>
-        <%=interviewStatus%>
-    </td>
-
-    <td>
-        <button class="btn-primary"
-        onclick='openModal(<%=new Gson().toJson(c)%>)'>
-        Edit
-        </button>
-    </td>
-
-</tr>
-
-<% } %>
-</tbody>
+            <tbody>
+            <% for(Map<String,String> c : candidates){ %>
+                <tr>
+                    <td>
+                        <b><%=c.get("name")%></b><br>
+                        <small><%=c.get("mobile_no")%></small>
+                    </td>
+                    <td>
+                        <%=c.get("qualification")%><br>
+                        <small><%=c.get("specialization")%></small>
+                    </td>
+                    <td><%=c.get("total_experience")%> Yrs</td>
+                    <td>
+                        <% if("Yes".equalsIgnoreCase(c.get("shortlisted"))){ %>
+                            <span class="badge success">Shortlisted</span>
+                        <% } else if("No".equalsIgnoreCase(c.get("shortlisted"))){ %>
+                            <span class="badge danger">Rejected</span>
+                        <% } else { %>
+                            <span class="badge warning">Review</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <span class="badge primary">
+                        <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn-primary"
+                        onclick='openModal(<%=new Gson().toJson(c)%>)'>
+                        Review
+                        </button>
+                    </td>
+                </tr>
+            <% } %>
+            </tbody>
         </table>
     </div>
 </div>
