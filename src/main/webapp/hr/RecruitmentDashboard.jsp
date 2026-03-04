@@ -128,11 +128,14 @@ List<Map<String,String>> candidates = grouped.get(post);
                             <span class="badge warning">Review</span>
                         <% } %>
                     </td>
+                    <td><%=c.get("call_status")%> Yrs</td>
                     <td>
                         <span class="badge primary">
                         <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
                         </span>
                     </td>
+                    <td><%=c.get("interview_status")%> Yrs</td>
+                    
                     <td>
                         <button class="btn-primary"
                         onclick='openModal(<%=new Gson().toJson(c)%>)'>
