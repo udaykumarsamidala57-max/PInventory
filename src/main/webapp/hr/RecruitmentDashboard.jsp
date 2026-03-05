@@ -136,7 +136,7 @@ List<Map<String,String>> candidates = grouped.get(post);
                         <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
                         </span>
                     </td>
-                    <td><%=c.get("interview_status")%> Yrs</td>
+                    <td><%=c.get("interview_status")%> </td>
                     
                     <td>
                         <button class="btn-primary"
