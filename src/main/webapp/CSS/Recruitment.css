@@ -50,11 +50,13 @@ body{
     margin-bottom:35px;
 }
 
+/* CLEAN GOLD STRIP */
 .kpi-card{
     background:#ffffff;
     padding:20px;
     border-radius:8px;
     border:1px solid #e2e8f0;
+    border-left:4px solid #c9a227;   /* Premium thin gold */
     box-shadow:0 4px 10px rgba(15,42,77,0.05);
     transition:all 0.2s ease;
 }
@@ -111,13 +113,13 @@ body{
     background:#ffffff;
     border-radius:8px;
     border:1px solid #e2e8f0;
+    border-left:4px solid #c9a227;   /* Clean thin gold */
     overflow:hidden;
     box-shadow:0 4px 12px rgba(0,0,0,0.04);
 }
 
 table{
     width:100%;
-    
     font-size:14px;
 }
 
@@ -219,7 +221,6 @@ td small{
     box-shadow:0 10px 25px rgba(0,0,0,0.15);
 }
 
-/* Fix sticky header conflict */
 .modal-content table thead th{
     position:static;
 }
@@ -275,7 +276,7 @@ td small{
     margin-top:15px;
 }
 
-/* Demo Selected */
+/* ================= ROW HIGHLIGHT ================= */
 tr.demo-selected{
     background-color:#dcfce7 !important;
 }
@@ -284,57 +285,10 @@ tr.demo-selected:hover{
     background-color:#bbf7d0 !important;
 }
 
-/* Interview Selected (Higher Priority) */
 tr.interview-selected{
     background-color:#e0f2fe !important;
 }
 
 tr.interview-selected:hover{
     background-color:#bae6fd !important;
-}
-
-* ================= GOLD ACCENT STYLE ================= */
-
-/* KPI Cards - Golden Left Accent */
-.kpi-card{
-    position:relative;
-    border-left:5px solid #d4af37; /* Classic gold */
-}
-
-/* Optional soft gold glow */
-.kpi-card::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0;
-    bottom:0;
-    width:5px;
-    background:linear-gradient(
-        to bottom,
-        #f6e27a,
-        #d4af37,
-        #b8860b
-    );
-}
-
-/* Table Wrapper - Golden Left Accent */
-.table-wrapper{
-    position:relative;
-    border-left:6px solid #d4af37;
-}
-
-/* Premium softer gold shadow */
-.table-wrapper::before{
-    content:"";
-    position:absolute;
-    left:0;
-    top:0;
-    bottom:0;
-    width:6px;
-    background:linear-gradient(
-        to bottom,
-        #f6e27a,
-        #d4af37,
-        #b8860b
-    );
 }
