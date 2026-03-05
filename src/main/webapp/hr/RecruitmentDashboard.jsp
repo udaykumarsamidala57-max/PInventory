@@ -16,7 +16,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <title>RecruitPro | Recruitment Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="CSS/Recruitment.css?v=12">
+<link rel="stylesheet" href="CSS/Recruitment.css?v=13">
 
 <style>
 .modal-content{
