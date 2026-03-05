@@ -105,7 +105,7 @@ List<Map<String,String>> candidates = grouped.get(post);
                     <th>Shortlist Status</th>
                     <th>Call Status</th>
                     <th>Demo Status</th>
-                    <th>Interview Status</th>
+                    <th>Interview status</th>
                     <th>Remarks</th>
                     <th>Action</th>
                 </tr>
