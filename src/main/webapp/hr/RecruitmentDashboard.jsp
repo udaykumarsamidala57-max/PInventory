@@ -158,7 +158,7 @@ List<Map<String,String>> candidates = grouped.get(post);
     </td>
 
     <td><%=c.get("interview_status")%></td>
-     <td><%=c.get("demo_remarks")%></td>
+     <td><%=c.get("remarks")%></td>
     <td>
         <button class="btn-primary"
         onclick='openModal(<%=new Gson().toJson(c)%>)'>
