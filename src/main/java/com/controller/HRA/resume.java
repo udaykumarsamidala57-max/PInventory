@@ -56,7 +56,7 @@ public class resume extends HttpServlet {
                      "percentage_marks=?, year_of_passing=?, reference_by=?, other_skills_certifications=?, " +
                      "experience=?, relevant_experience=?, total_experience=?, present_salary=?, expected_salary=?, " +
                      "remarks=?, shortlisted=?, call_status=?, demo_status=?, interview_status=?, " +
-                     "interview_taken_by=?, demo_taken_by=? WHERE sl_no=?";
+                     "interview_taken_by=?, demo_taken_by=?, remarks=? WHERE sl_no=?";
 
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -86,7 +86,8 @@ public class resume extends HttpServlet {
             ps.setString(23, request.getParameter("interview_status"));
             ps.setString(24, request.getParameter("interview_taken_by"));
             ps.setString(25, request.getParameter("demo_taken_by"));
-            ps.setInt(26, Integer.parseInt(request.getParameter("sl_no")));
+            ps.setString(26, request.getParameter("remarks"));
+            ps.setInt(27, Integer.parseInt(request.getParameter("sl_no")));
 
             ps.executeUpdate();
         } catch (Exception e) { e.printStackTrace(); }

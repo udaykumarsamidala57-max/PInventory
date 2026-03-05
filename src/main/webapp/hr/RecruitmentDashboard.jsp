@@ -270,7 +270,7 @@ List<Map<String,String>> candidates = grouped.get(post);
 <h4>Interview Taken by</h4>
 <input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By">
 </div>
-<h4>Interview Taken by</h4>
+<h4>Remarks</h4>
 <textarea name="remarks" id="f_remarks" placeholder="Remarks"></textarea>
 
 <div class="modal-buttons">
