@@ -292,3 +292,49 @@ tr.interview-selected{
 tr.interview-selected:hover{
     background-color:#bae6fd !important;
 }
+
+* ================= GOLD ACCENT STYLE ================= */
+
+/* KPI Cards - Golden Left Accent */
+.kpi-card{
+    position:relative;
+    border-left:5px solid #d4af37; /* Classic gold */
+}
+
+/* Optional soft gold glow */
+.kpi-card::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:5px;
+    background:linear-gradient(
+        to bottom,
+        #f6e27a,
+        #d4af37,
+        #b8860b
+    );
+}
+
+/* Table Wrapper - Golden Left Accent */
+.table-wrapper{
+    position:relative;
+    border-left:6px solid #d4af37;
+}
+
+/* Premium softer gold shadow */
+.table-wrapper::before{
+    content:"";
+    position:absolute;
+    left:0;
+    top:0;
+    bottom:0;
+    width:6px;
+    background:linear-gradient(
+        to bottom,
+        #f6e27a,
+        #d4af37,
+        #b8860b
+    );
+}

@@ -16,7 +16,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <title>RecruitPro | Recruitment Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="CSS/Recruitment.css?v=11">
+<link rel="stylesheet" href="CSS/Recruitment.css?v=12">
 
 <style>
 .modal-content{
@@ -91,7 +91,7 @@ List<Map<String,String>> candidates = grouped.get(post);
 
 <div class="section">
     <div class="section-header">
-        <h2><%=post%></h2>
+        <h1><%=post%></h1>
         <span class="count"><%=candidates.size()%> Candidates</span>
     </div>
 
