@@ -102,8 +102,10 @@ List<Map<String,String>> candidates = grouped.get(post);
                     <th>Name</th>
                     <th>Qualification</th>
                     <th>Experience</th>
-                    <th>Status</th>
-                    <th>Demo</th>
+                    <th>Shortlist Status</th>
+                    <th>Call Status</th>
+                    <th>Demo Status</th>
+                    <th>Interview Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -128,7 +130,7 @@ List<Map<String,String>> candidates = grouped.get(post);
                             <span class="badge warning">Review</span>
                         <% } %>
                     </td>
-                    <td><%=c.get("call_status")%> Yrs</td>
+                    <td><%=c.get("call_status")%> </td>
                     <td>
                         <span class="badge primary">
                         <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
