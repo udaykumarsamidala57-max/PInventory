@@ -310,7 +310,7 @@ Review
 
 <div class="modal-buttons">
 <button type="button" onclick="closeModal()" class="btn-light">Cancel</button>
-<button type="submit" class="btn-primary">Update Full Details</button>
+<button type="submit" class="btn-primary">Update Full Detail</button>
 </div>
 
 </form>
