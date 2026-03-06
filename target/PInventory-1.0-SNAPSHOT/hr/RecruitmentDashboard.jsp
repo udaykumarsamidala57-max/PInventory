@@ -7,6 +7,8 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
+
+Gson gson = new Gson();
 %>
 
 <!DOCTYPE html>
@@ -24,6 +26,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     max-height:90vh;
     overflow-y:auto;
 }
+
 .modal-form h4{
     margin-top:20px;
     margin-bottom:10px;
@@ -34,7 +37,9 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 </head>
 <body>
+
 <%@ include file="header.jsp" %>
+
 <div class="navbar">
     <div class="logo">Recruitment 2026 - 27</div>
     <div><span class="status-dot"></span>System Active</div>
@@ -60,18 +65,22 @@ if(rawList != null){
 %>
 
 <div class="kpi-grid">
-    <div class="kpi-card">
-        <h3>Total Applications</h3>
-        <div class="kpi-number"><%=total%></div>
-    </div>
-    <div class="kpi-card">
-        <h3>Shortlisted</h3>
-        <div class="kpi-number success"><%=shortlisted%></div>
-    </div>
-    <div class="kpi-card">
-        <h3>Selected in Demo</h3>
-        <div class="kpi-number primary"><%=selected%></div>
-    </div>
+
+<div class="kpi-card">
+<h3>Total Applications</h3>
+<div class="kpi-number"><%=total%></div>
+</div>
+
+<div class="kpi-card">
+<h3>Shortlisted</h3>
+<div class="kpi-number success"><%=shortlisted%></div>
+</div>
+
+<div class="kpi-card">
+<h3>Selected in Demo</h3>
+<div class="kpi-number primary"><%=selected%></div>
+</div>
+
 </div>
 
 <%
@@ -86,101 +95,120 @@ for(Map<String,String> row : rawList){
 }
 
 for(String post : grouped.keySet()){
+
 List<Map<String,String>> candidates = grouped.get(post);
 %>
 
 <div class="section">
-    <div class="section-header">
-        <h1><%=post%></h1>
-        <span class="count"><%=candidates.size()%> Candidates</span>
-    </div>
 
-    <div class="table-wrapper">
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Qualification</th>
-                    <th>Experience</th>
-                    <th>Shortlist Status</th>
-                    <th>Call Status</th>
-                    <th>Demo Status</th>
-                    <th>Interview Status</th>
-                    <th>Remarks</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-           <tbody>
-<% for(Map<String,String> c : candidates){ 
+<div class="section-header">
+<h1><%=post%></h1>
+<span class="count"><%=candidates.size()%> Candidates</span>
+</div>
 
-    String rowClass = "";
+<div class="table-wrapper">
 
-    if(c.get("interview_status") != null &&
-       c.get("interview_status").equalsIgnoreCase("Selected")){
-        rowClass = "interview-selected";
-    }
-    else if(c.get("demo_status") != null &&
-            c.get("demo_status").equalsIgnoreCase("Selected")){
-        rowClass = "demo-selected";
-    }
+<table>
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Qualification</th>
+<th>Experience</th>
+<th>Shortlist Status</th>
+<th>Call Status</th>
+<th>Demo Status</th>
+<th>Interview status</th>
+<th>Remarks</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+<% for(Map<String,String> c : candidates){
+
+String rowClass = "";
+
+if("Selected".equalsIgnoreCase(c.get("interview_status")))
+    rowClass="interview-selected";
+else if("Selected".equalsIgnoreCase(c.get("demo_status")))
+    rowClass="demo-selected";
+
+/* SAFE JSON */
+String json = gson.toJson(c)
+.replace("&","&amp;")
+.replace("\"","&quot;")
+.replace("<","&lt;")
+.replace(">","&gt;");
 %>
 
 <tr class="<%=rowClass%>">
 
-    <td>
-        <b><%=c.get("name")%></b><br>
-        <small><%=c.get("mobile_no")%></small>
-    </td>
+<td>
+<b><%=c.get("name")%></b><br>
+<small><%=c.get("mobile_no")%></small>
+</td>
 
-    <td>
-        <%=c.get("qualification")%><br>
-        <small><%=c.get("specialization")%></small>
-    </td>
+<td>
+<%=c.get("qualification")%><br>
+<small><%=c.get("specialization")%></small>
+</td>
 
-    <td><%=c.get("total_experience")%> Yrs</td>
+<td><%=c.get("total_experience")%> Yrs</td>
 
-    <td>
-        <% if("Yes".equalsIgnoreCase(c.get("shortlisted"))){ %>
-            <span class="badge success">Shortlisted</span>
-        <% } else if("No".equalsIgnoreCase(c.get("shortlisted"))){ %>
-            <span class="badge danger">Rejected</span>
-        <% } else { %>
-            <span class="badge warning">Review</span>
-        <% } %>
-    </td>
+<td>
 
-    <td><%=c.get("call_status")%></td>
+<% if("Yes".equalsIgnoreCase(c.get("shortlisted"))){ %>
+<span class="badge success">Shortlisted</span>
+<% } else if("No".equalsIgnoreCase(c.get("shortlisted"))){ %>
+<span class="badge danger">Rejected</span>
+<% } else { %>
+<span class="badge warning">Review</span>
+<% } %>
 
-    <td>
-        <span class="badge primary">
-        <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
-        </span>
-    </td>
+</td>
 
-    <td><%=c.get("interview_status")%></td>
-     <td><%=c.get("demo_remarks")%></td>
-    <td>
-        <button class="btn-primary"
-        onclick='openModal(<%=new Gson().toJson(c)%>)'>
-        Review
-        </button>
-    </td>
+<td><%=c.get("call_status")%></td>
+
+<td>
+<span class="badge primary">
+<%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
+</span>
+</td>
+
+<td><%=c.get("interview_status")%></td>
+
+<td><%=c.get("remarks")%></td>
+
+<td>
+
+<button class="btn-primary reviewBtn"
+data-candidate="<%=json%>">
+Review
+</button>
+
+</td>
 
 </tr>
 
 <% } %>
+
 </tbody>
-        </table>
-    </div>
+</table>
+
+</div>
 </div>
 
 <% } } %>
 
 </div>
 
-<!-- ================= FULL EDIT MODAL ================= -->
+
+<!-- ================= MODAL ================= -->
 
 <div class="modal" id="editModal">
+
 <div class="modal-content">
 
 <div class="modal-title">Update Candidate Full Details</div>
@@ -190,6 +218,7 @@ List<Map<String,String>> candidates = grouped.get(post);
 <input type="hidden" name="sl_no" id="f_sl_no">
 
 <h4>Basic Information</h4>
+
 <div class="form-row">
 <input type="text" name="name" id="f_name" placeholder="Full Name">
 <input type="text" name="mobile_no" id="f_mobile_no" placeholder="Mobile">
@@ -211,6 +240,7 @@ List<Map<String,String>> candidates = grouped.get(post);
 </div>
 
 <h4>Education</h4>
+
 <div class="form-row">
 <input type="text" name="qualification" id="f_qualification" placeholder="Qualification">
 <input type="text" name="specialization" id="f_specialization" placeholder="Specialization">
@@ -222,56 +252,61 @@ List<Map<String,String>> candidates = grouped.get(post);
 </div>
 
 <h4>Experience</h4>
+
 <textarea name="experience" id="f_experience" placeholder="Experience Details"></textarea>
 
 <div class="form-row">
-<input type="text" name="relevant_experience" id="f_relevant_experience" placeholder="Relevant Experience">
-<input type="text" name="total_experience" id="f_total_experience" placeholder="Total Experience">
+<input type="text" name="relevant_experience" id="f_relevant_experience">
+<input type="text" name="total_experience" id="f_total_experience">
 </div>
 
 <h4>Salary</h4>
+
 <div class="form-row">
-<input type="text" name="present_salary" id="f_present_salary" placeholder="Present Salary">
-<input type="text" name="expected_salary" id="f_expected_salary" placeholder="Expected Salary">
+<input type="text" name="present_salary" id="f_present_salary">
+<input type="text" name="expected_salary" id="f_expected_salary">
 </div>
 
 <h4>Shortlisting Status</h4>
-<div class="form-row">
+
 <select name="shortlisted" id="f_shortlisted">
 <option value="Pending">Pending</option>
 <option value="Yes">Shortlist</option>
 <option value="No">Reject</option>
 </select>
+
 <h4>Calling Status</h4>
+
 <select name="call_status" id="f_call_status">
 <option value="Pending">Pending</option>
 <option value="Called">Called</option>
 <option value="Not Reachable">Not Reachable</option>
 </select>
-</div>
+
 <h4>Demo Status</h4>
-<div class="form-row">
+
 <select name="demo_status" id="f_demo_status">
 <option value="Pending">Pending</option>
 <option value="Scheduled">Scheduled</option>
 <option value="Selected">Selected</option>
 <option value="Rejected">Rejected</option>
 </select>
-<h4>Demo Taken By</h4>
+
 <input type="text" name="demo_taken_by" id="f_demo_taken_by" placeholder="Demo Taken By">
-</div>
+
 <h4>Interview Status</h4>
-<div class="form-row">
+
 <select name="interview_status" id="f_interview_status">
 <option value="Pending">Pending</option>
 <option value="Selected">Selected</option>
 <option value="Rejected">Rejected</option>
 </select>
-<h4>Interview Taken by</h4>
+
 <input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By">
-</div>
+
 <h4>Remarks</h4>
-<textarea name="remarks" id="f_remarks" placeholder="Remarks"></textarea>
+
+<textarea name="remarks" id="f_remarks"></textarea>
 
 <div class="modal-buttons">
 <button type="button" onclick="closeModal()" class="btn-light">Cancel</button>
@@ -279,20 +314,38 @@ List<Map<String,String>> candidates = grouped.get(post);
 </div>
 
 </form>
+
 </div>
 </div>
 
+
 <script>
-function openModal(data){
-    for(let key in data){
-        let el = document.getElementById('f_'+key);
-        if(el) el.value = data[key] || '';
-    }
-    document.getElementById('editModal').style.display='flex';
-}
+
+/* OPEN MODAL */
+
+document.querySelectorAll(".reviewBtn").forEach(btn=>{
+
+btn.addEventListener("click",function(){
+
+let data = JSON.parse(this.dataset.candidate);
+
+Object.keys(data).forEach(key=>{
+let el = document.getElementById("f_"+key);
+if(el) el.value = data[key] || "";
+});
+
+document.getElementById("editModal").style.display="flex";
+
+});
+
+});
+
+/* CLOSE MODAL */
+
 function closeModal(){
-    document.getElementById('editModal').style.display='none';
+document.getElementById("editModal").style.display="none";
 }
+
 </script>
 
 </body>
