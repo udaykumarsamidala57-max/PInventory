@@ -217,14 +217,23 @@
                 <label>Post Applied For</label>
                 <select name="post_applied_for">
                     <option value="" disabled selected>Select Post</option>
-                    <option value="Teacher">Mathematics Teacher</option>
-                    <option value="Administrator">English Teacher</option>
-                    <option value="Support Staff">Social Teacher</option>
-                    <option value="Support Staff">Biology Teacher</option>
-                    <option value="Warden">Physics Teacher</option>
-                    <option value="Warden">Chemistry Teacher</option>
-                    <option value="Warden">Geography Teacher</option>
-                    <option value="Warden">Computer Science Teacher</option>
+                    <option value="Mathematics Teacher">Mathematics Teacher</option>
+                    <option value="English Teacher">English Teacher</option>
+                    <option value="Kannada Teacher">Kannada Teacher</option>
+                    <option value="Social Teacher">Social Teacher</option>
+                    <option value="Biology Teacher">Biology Teacher</option>
+                    <option value="Physics Teacher">Physics Teacher</option>
+                    <option value="Chemistry Teacher">Chemistry Teacher</option>
+                    <option value="Geography Teacher">Geography Teacher</option>
+                    <option value="Computer Science Teacher">Computer Science Teacher</option>
+                    <option value="HR">HR</option>
+                    <option value="Academic Assistant">Academic Assistant</option>
+                     <option value="Environmental Applications Teacher">Environmental Applications Teacher</option>
+                     <option value="Mother Teacher">Mother Teacher</option>
+                     <option value="General Science Teacher">General Science Teacher</option>
+                     <option value="Dance">Dance</option>
+                     <option value="Music">Music</option>
+                     <option value="PE Teacher">PE Teacher</option>
                 </select>
             </div>
           
