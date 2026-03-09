@@ -18,9 +18,10 @@ Gson gson = new Gson();
 <title>RecruitPro | Recruitment Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="CSS/Recruitment.css?v=13">
+<link rel="stylesheet" href="CSS/Recruitment.css?v=14">
 
 <style>
+
 .modal-content{
     width:900px;
     max-height:90vh;
@@ -33,36 +34,96 @@ Gson gson = new Gson();
     font-size:14px;
     color:#4f46e5;
 }
+
+/* KPI GRID */
+
+.kpi-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+margin-bottom:30px;
+}
+
+.kpi-card{
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.06);
+}
+
+.kpi-number{
+font-size:32px;
+font-weight:700;
+margin-top:10px;
+}
+
+.kpi-number.success{color:#16a34a;}
+.kpi-number.primary{color:#2563eb;}
+.kpi-number.hired{color:#9333ea;}
+
+/* POST ANALYTICS */
+
+.section-stats{
+display:flex;
+gap:20px;
+font-size:13px;
+margin-top:5px;
+color:#64748b;
+}
+
+/* HIRED ROW */
+
+.hired-row{
+background:#f5f3ff;
+font-weight:600;
+}
+
 </style>
 
 </head>
+
 <body>
 
 <%@ include file="header.jsp" %>
 
 <div class="navbar">
-    <div class="logo">Recruitment 2026 - 27</div>
-    <div><span class="status-dot"></span>System Active</div>
+<div class="logo">Recruitment 2026 - 27</div>
+<div><span class="status-dot"></span>System Active</div>
 </div>
 
 <div class="main-container">
 
 <%
+
 List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
 
-int total = 0;
-int shortlisted = 0;
-int selected = 0;
+int total=0;
+int shortlisted=0;
+int selected=0;
+int hired=0;
 
-if(rawList != null){
-    total = rawList.size();
-    for(Map<String,String> c : rawList){
-        if("Yes".equalsIgnoreCase(c.get("shortlisted"))) shortlisted++;
-        if(c.get("demo_status") != null && c.get("demo_status").toLowerCase().contains("selected"))
-            selected++;
-    }
+if(rawList!=null){
+
+total = rawList.size();
+
+for(Map<String,String> c:rawList){
+
+if("Yes".equalsIgnoreCase(c.get("shortlisted")))
+shortlisted++;
+
+if(c.get("demo_status")!=null && c.get("demo_status").equalsIgnoreCase("Selected"))
+selected++;
+
+if("Yes".equalsIgnoreCase(c.get("Hired_status")))
+hired++;
+
 }
+
+}
+
 %>
+
+<!-- KPI DASHBOARD -->
 
 <div class="kpi-grid">
 
@@ -81,36 +142,79 @@ if(rawList != null){
 <div class="kpi-number primary"><%=selected%></div>
 </div>
 
+<div class="kpi-card">
+<h3>Hired Candidates</h3>
+<div class="kpi-number hired"><%=hired%></div>
 </div>
 
+</div>
+
+
 <%
-if(rawList != null && !rawList.isEmpty()){
 
-Map<String,List<Map<String,String>>> grouped = new LinkedHashMap<>();
+if(rawList!=null && !rawList.isEmpty()){
 
-for(Map<String,String> row : rawList){
-    String post = row.get("post_applied_for");
-    if(post == null || post.trim().isEmpty()) post = "General";
-    grouped.computeIfAbsent(post, k-> new ArrayList<>()).add(row);
+Map<String,List<Map<String,String>>> grouped=new LinkedHashMap<>();
+
+for(Map<String,String> row:rawList){
+
+String post=row.get("post_applied_for");
+
+if(post==null || post.trim().isEmpty())
+post="General";
+
+grouped.computeIfAbsent(post,k->new ArrayList<>()).add(row);
+
 }
 
-for(String post : grouped.keySet()){
+for(String post:grouped.keySet()){
 
-List<Map<String,String>> candidates = grouped.get(post);
+List<Map<String,String>> candidates=grouped.get(post);
+
+int postShortlisted=0;
+int postDemoSelected=0;
+int postHired=0;
+
+for(Map<String,String> c:candidates){
+
+if("Yes".equalsIgnoreCase(c.get("shortlisted")))
+postShortlisted++;
+
+if("Selected".equalsIgnoreCase(c.get("demo_status")))
+postDemoSelected++;
+
+if("Yes".equalsIgnoreCase(c.get("Hired_status")))
+postHired++;
+
+}
+
 %>
+
 
 <div class="section">
 
 <div class="section-header">
+
 <h1><%=post%></h1>
-<span class="count"><%=candidates.size()%> Candidates</span>
+
+<div class="section-stats">
+
+<span>Total : <%=candidates.size()%></span>
+<span>Shortlisted : <%=postShortlisted%></span>
+<span>Demo Selected : <%=postDemoSelected%></span>
+<span>Hired : <%=postHired%></span>
+
 </div>
+
+</div>
+
 
 <div class="table-wrapper">
 
 <table>
 
 <thead>
+
 <tr>
 <th>Name</th>
 <th>Qualification</th>
@@ -118,74 +222,137 @@ List<Map<String,String>> candidates = grouped.get(post);
 <th>Shortlist Status</th>
 <th>Call Status</th>
 <th>Demo Status</th>
-<th>Interview status</th>
+<th>Interview Status</th>
+<th>Hired</th>
 <th>Remarks</th>
 <th>Action</th>
 </tr>
+
 </thead>
 
 <tbody>
 
-<% for(Map<String,String> c : candidates){
+<%
 
-String rowClass = "";
+for(Map<String,String> c:candidates){
 
-if("Selected".equalsIgnoreCase(c.get("interview_status")))
-    rowClass="interview-selected";
-else if("Selected".equalsIgnoreCase(c.get("demo_status")))
-    rowClass="demo-selected";
+String rowClass="";
 
-/* SAFE JSON */
-String json = gson.toJson(c)
+if("Yes".equalsIgnoreCase(c.get("Hired_status")))
+rowClass="hired-row";
+
+String json=gson.toJson(c)
 .replace("&","&amp;")
 .replace("\"","&quot;")
 .replace("<","&lt;")
 .replace(">","&gt;");
+
 %>
 
 <tr class="<%=rowClass%>">
 
 <td>
+
 <b><%=c.get("name")%></b><br>
 <small><%=c.get("mobile_no")%></small>
+
 </td>
 
 <td>
+
 <%=c.get("qualification")%><br>
 <small><%=c.get("specialization")%></small>
+
 </td>
 
 <td><%=c.get("total_experience")%> Yrs</td>
 
+
 <td>
 
-<% if("Yes".equalsIgnoreCase(c.get("shortlisted"))){ %>
+<%
+
+if("Yes".equalsIgnoreCase(c.get("shortlisted"))){
+
+%>
+
 <span class="badge success">Shortlisted</span>
-<% } else if("No".equalsIgnoreCase(c.get("shortlisted"))){ %>
+
+<%
+
+}else if("No".equalsIgnoreCase(c.get("shortlisted"))){
+
+%>
+
 <span class="badge danger">Rejected</span>
-<% } else { %>
+
+<%
+
+}else{
+
+%>
+
 <span class="badge warning">Review</span>
-<% } %>
+
+<%
+
+}
+
+%>
 
 </td>
+
 
 <td><%=c.get("call_status")%></td>
 
 <td>
+
 <span class="badge primary">
+
 <%= (c.get("demo_status")==null)?"Pending":c.get("demo_status") %>
+
 </span>
+
 </td>
 
 <td><%=c.get("interview_status")%></td>
 
+<td>
+
+<%
+
+if("Yes".equalsIgnoreCase(c.get("Hired_status"))){
+
+%>
+
+<span class="badge success">Hired</span>
+
+<%
+
+}else{
+
+%>
+
+<span class="badge warning">Pending</span>
+
+<%
+
+}
+
+%>
+
+</td>
+
 <td><%=c.get("remarks")%></td>
+
 
 <td>
 
 <button class="btn-primary reviewBtn"
 data-candidate="<%=json%>">
+
 Review
+
 </button>
 
 </td>
@@ -195,9 +362,11 @@ Review
 <% } %>
 
 </tbody>
+
 </table>
 
 </div>
+
 </div>
 
 <% } } %>
@@ -242,18 +411,18 @@ Review
 <h4>Education</h4>
 
 <div class="form-row">
-<input type="text" name="qualification" id="f_qualification" placeholder="Qualification">
-<input type="text" name="specialization" id="f_specialization" placeholder="Specialization">
+<input type="text" name="qualification" id="f_qualification">
+<input type="text" name="specialization" id="f_specialization">
 </div>
 
 <div class="form-row">
-<input type="text" name="percentage_marks" id="f_percentage_marks" placeholder="Percentage">
-<input type="text" name="year_of_passing" id="f_year_of_passing" placeholder="Year of Passing">
+<input type="text" name="percentage_marks" id="f_percentage_marks">
+<input type="text" name="year_of_passing" id="f_year_of_passing">
 </div>
 
 <h4>Experience</h4>
 
-<textarea name="experience" id="f_experience" placeholder="Experience Details"></textarea>
+<textarea name="experience" id="f_experience"></textarea>
 
 <div class="form-row">
 <input type="text" name="relevant_experience" id="f_relevant_experience">
@@ -304,24 +473,37 @@ Review
 
 <input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By">
 
+
+<h4>Hired Status</h4>
+
+<select name="Hired_status" id="f_Hired_status">
+<option value="No">Not Hired</option>
+<option value="Yes">Hired</option>
+</select>
+
+
 <h4>Remarks</h4>
 
 <textarea name="remarks" id="f_remarks"></textarea>
 
 <div class="modal-buttons">
+
 <button type="button" onclick="closeModal()" class="btn-light">Cancel</button>
-<button type="submit" class="btn-primary">Update Full Detail</button>
+
+<button type="submit" class="btn-primary">
+Update Full Detail
+</button>
+
 </div>
 
 </form>
 
 </div>
+
 </div>
 
 
 <script>
-
-/* OPEN MODAL */
 
 document.querySelectorAll(".reviewBtn").forEach(btn=>{
 
@@ -330,8 +512,11 @@ btn.addEventListener("click",function(){
 let data = JSON.parse(this.dataset.candidate);
 
 Object.keys(data).forEach(key=>{
-let el = document.getElementById("f_"+key);
-if(el) el.value = data[key] || "";
+
+let el=document.getElementById("f_"+key);
+
+if(el) el.value=data[key] || "";
+
 });
 
 document.getElementById("editModal").style.display="flex";
@@ -340,10 +525,10 @@ document.getElementById("editModal").style.display="flex";
 
 });
 
-/* CLOSE MODAL */
-
 function closeModal(){
+
 document.getElementById("editModal").style.display="none";
+
 }
 
 </script>
