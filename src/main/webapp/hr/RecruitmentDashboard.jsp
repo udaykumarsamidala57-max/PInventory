@@ -9,9 +9,11 @@ if (sess == null || sess.getAttribute("username") == null) {
 }
 
 Gson gson = new Gson();
+%>
 
-String safe(Object o){
-    return o==null?"":o.toString();
+<%!
+public String safe(Object o){
+    return (o==null) ? "" : o.toString();
 }
 %>
 
