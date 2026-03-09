@@ -14,80 +14,69 @@ Gson gson = new Gson();
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>RecruitPro | High-Visibility Dashboard</title>
+<title>RecruitPro | Intelligence Dashboard</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="CSS/Recruitment.css?v=14">
+<link rel="stylesheet" href="CSS/Recruitment.css?v=15">
 
 <style>
-    /* --- ENHANCED HIGHLIGHTING --- */
+    /* --- ENHANCED COLOR LOGIC --- */
+    .row-hired { background-color: #f0fdf4 !important; border-left: 6px solid #15803d; } /* Deep Green */
+    .row-final-selected { background-color: #f0f9ff !important; border-left: 6px solid #0369a1; } /* Blue */
+    .row-rejected { background-color: #fff1f2 !important; opacity: 0.8; }
     
-    /* Final Success - Interview Selected */
-    .row-final-selected { 
-        background-color: #dcfce7 !important; /* Soft Green */
-        border-left: 5px solid #16a34a;
-    }
+    .badge-hired { background: #15803d; color: white; border: 1px solid #14532d; }
     
-    /* Demo Cleared - Waiting Interview */
-    .row-demo-selected { 
-        background-color: #dbeafe !important; /* Soft Blue */
-        border-left: 5px solid #2563eb;
+    /* --- MODAL OPTIMIZATION --- */
+    .modal-content { width: 1000px; border-radius: 16px; border: none; }
+    .modal-form { 
+        display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        gap: 15px; 
+        padding: 25px;
+        background: #f8fafc;
     }
+    .full-width { grid-column: span 3; }
+    .half-width { grid-column: span 2; }
     
-    /* Shortlisted - Early Stage */
-    .row-shortlisted { 
-        background-color: #fffbeb !important; /* Soft Yellow */
-        border-left: 5px solid #d97706;
+    .section-title {
+        grid-column: span 3;
+        background: #e2e8f0;
+        padding: 8px 15px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 13px;
+        color: #475569;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
     }
 
-    /* Rejected */
-    .row-rejected { 
-        background-color: #fef2f2 !important; /* Soft Red */
-        opacity: 0.8;
+    input, select, textarea {
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 13px;
     }
 
-    /* --- KPI STYLING --- */
-    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-bottom: 30px; }
-    .kpi-card { padding: 20px; border-radius: 12px; background: white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); border: 1px solid #e5e7eb; }
-    .kpi-number { font-size: 32px; font-weight: 800; margin-top: 10px; }
-    .kpi-card.total { border-top: 4px solid #6366f1; }
-    .kpi-card.short { border-top: 4px solid #f59e0b; }
-    .kpi-card.demo { border-top: 4px solid #3b82f6; }
-    .kpi-card.final { border-top: 4px solid #10b981; }
-
-    /* --- TABLE & MODAL --- */
-    .table-wrapper table tr:hover { filter: brightness(95%); cursor: pointer; }
-    .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
-    .badge-success { background: #16a34a; color: white; }
-    .badge-danger { background: #dc2626; color: white; }
-    .badge-warning { background: #f59e0b; color: white; }
-    .badge-info { background: #3b82f6; color: white; }
-    .badge-dark { background: #4b5563; color: white; }
-
-    .modal-content { width: 950px; border-radius: 15px; overflow: hidden; }
+    label { font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; display: block; }
 </style>
 </head>
 <body>
 
 <%@ include file="header.jsp" %>
 
-<div class="navbar">
-    <div class="logo">RECRUITMENT TRACKER 2026-27</div>
-    <div><span class="status-dot"></span> LIVE SYSTEM</div>
-</div>
-
 <div class="main-container">
 
 <%
 List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
-int total = 0, shorted = 0, demoSel = 0, finalSel = 0;
+int total = 0, shorted = 0, hiredCount = 0;
 
 if(rawList != null){
     total = rawList.size();
     for(Map<String,String> c : rawList){
         if("Yes".equalsIgnoreCase(c.get("shortlisted"))) shorted++;
-        if("Selected".equalsIgnoreCase(c.get("demo_status"))) demoSel++;
-        if("Selected".equalsIgnoreCase(c.get("interview_status"))) finalSel++;
+        if("Hired".equalsIgnoreCase(c.get("Hired_status"))) hiredCount++;
     }
 }
 %>
@@ -95,8 +84,7 @@ if(rawList != null){
 <div class="kpi-grid">
     <div class="kpi-card total"><h3>Applications</h3><div class="kpi-number"><%=total%></div></div>
     <div class="kpi-card short"><h3>Shortlisted</h3><div class="kpi-number" style="color:#f59e0b"><%=shorted%></div></div>
-    <div class="kpi-card demo"><h3>Demo Selected</h3><div class="kpi-number" style="color:#3b82f6"><%=demoSel%></div></div>
-    <div class="kpi-card final"><h3>Final Hires</h3><div class="kpi-number" style="color:#10b981"><%=finalSel%></div></div>
+    <div class="kpi-card final"><h3>Final Hires</h3><div class="kpi-number" style="color:#10b981"><%=hiredCount%></div></div>
 </div>
 
 <%
@@ -115,20 +103,19 @@ if(rawList != null && !rawList.isEmpty()){
 <div class="section">
     <div class="section-header">
         <h1><%=post%></h1>
-        <span class="count"><%=candidates.size()%> Profiles</span>
     </div>
 
     <div class="table-wrapper">
-        <table style="width:100%; border-collapse: separate; border-spacing: 0 5px;">
+        <table style="width:100%;">
             <thead>
                 <tr>
-                    <th>Candidate</th>
-                    <th>Education</th>
+                    <th>Candidate Detail</th>
                     <th>Experience</th>
-                    <th>Stage 1: Shortlist</th>
-                    <th>Stage 2: Demo</th>
-                    <th>Stage 3: Interview</th>
-                    <th>Actions</th>
+                    <th>Status: Shortlist</th>
+                    <th>Status: Demo</th>
+                    <th>Status: Interview</th>
+                    <th>HIRED STATUS</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -137,47 +124,36 @@ if(rawList != null && !rawList.isEmpty()){
                 String sStat = c.get("shortlisted");
                 String dStat = c.get("demo_status");
                 String iStat = c.get("interview_status");
+                String hStat = c.get("Hired_status");
 
-                // --- PRIORITY HIGHLIGHTING LOGIC ---
                 String highlightClass = "";
-                if("Selected".equalsIgnoreCase(iStat)) highlightClass = "row-final-selected";
-                else if("Rejected".equalsIgnoreCase(iStat) || "No".equalsIgnoreCase(sStat) || "Rejected".equalsIgnoreCase(dStat)) highlightClass = "row-rejected";
-                else if("Selected".equalsIgnoreCase(dStat)) highlightClass = "row-demo-selected";
-                else if("Yes".equalsIgnoreCase(sStat)) highlightClass = "row-shortlisted";
+                if("Hired".equalsIgnoreCase(hStat)) highlightClass = "row-hired";
+                else if("Selected".equalsIgnoreCase(iStat)) highlightClass = "row-final-selected";
+                else if("No".equalsIgnoreCase(sStat) || "Rejected".equalsIgnoreCase(iStat)) highlightClass = "row-rejected";
 
                 String json = gson.toJson(c).replace("&","&amp;").replace("\"","&quot;").replace("<","&lt;").replace(">","&gt;");
             %>
                 <tr class="<%=highlightClass%>">
                     <td>
-                        <div style="font-weight: 800; color: #1e293b;"><%=c.get("name")%></div>
-                        <div style="font-size: 11px; color: #64748b;"><%=c.get("mobile_no")%></div>
+                        <b><%=c.get("name")%></b><br>
+                        <small><%=c.get("mobile_no")%> | <%=c.get("qualification")%></small>
                     </td>
-                    <td><b><%=c.get("qualification")%></b><br><small><%=c.get("specialization")%></small></td>
-                    <td><span style="font-weight: 700;"><%=c.get("total_experience")%> Yrs</span></td>
+                    <td><b><%=c.get("total_experience")%> Yrs</b></td>
+                    
+                    <td><span class="badge <%= "Yes".equalsIgnoreCase(sStat) ? "badge-success" : "badge-warning" %>"><%=sStat%></span></td>
+                    <td><span class="badge badge-info"><%=dStat == null ? "Pending" : dStat%></span></td>
+                    <td><span class="badge <%= "Selected".equalsIgnoreCase(iStat) ? "badge-success" : "badge-dark" %>"><%=iStat%></span></td>
                     
                     <td>
-                        <% if("Yes".equalsIgnoreCase(sStat)){ %> <span class="badge badge-success">Shortlisted</span>
-                        <% } else if("No".equalsIgnoreCase(sStat)){ %> <span class="badge badge-danger">Rejected</span>
-                        <% } else { %> <span class="badge badge-warning">In Review</span> <% } %>
+                        <% if("Hired".equalsIgnoreCase(hStat)){ %>
+                            <span class="badge badge-hired">HIRED</span>
+                        <% } else { %>
+                            <span class="badge badge-dark"><%=hStat == null ? "On Process" : hStat%></span>
+                        <% } %>
                     </td>
 
                     <td>
-                        <% if("Selected".equalsIgnoreCase(dStat)){ %> <span class="badge badge-success">Demo Passed</span>
-                        <% } else if("Rejected".equalsIgnoreCase(dStat)){ %> <span class="badge badge-danger">Demo Failed</span>
-                        <% } else if("Scheduled".equalsIgnoreCase(dStat)){ %> <span class="badge badge-info">Scheduled</span>
-                        <% } else { %> <span class="badge badge-dark">Pending</span> <% } %>
-                    </td>
-
-                    <td>
-                        <% if("Selected".equalsIgnoreCase(iStat)){ %> <span class="badge badge-success">SELECTED</span>
-                        <% } else if("Rejected".equalsIgnoreCase(iStat)){ %> <span class="badge badge-danger">REJECTED</span>
-                        <% } else { %> <span class="badge badge-dark">WAITING</span> <% } %>
-                    </td>
-
-                    <td>
-                        <button class="btn-primary reviewBtn" data-candidate="<%=json%>" style="padding: 8px 15px; border-radius: 6px;">
-                            VIEW & EDIT
-                        </button>
+                        <button class="btn-primary reviewBtn" data-candidate="<%=json%>">EDIT FULL PROFILE</button>
                     </td>
                 </tr>
             <% } %>
@@ -189,74 +165,80 @@ if(rawList != null && !rawList.isEmpty()){
 
 </div>
 
-<div class="modal" id="editModal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); z-index: 1000;">
-    <div class="modal-content" style="background: white; border-radius: 12px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-        <div style="padding: 20px; background: #4f46e5; color: white; display: flex; justify-content: space-between; align-items: center;">
-            <h2 style="margin:0; font-size: 1.25rem;">Candidate Management Profile</h2>
-            <button onclick="closeModal()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+<div class="modal" id="editModal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 1000;">
+    <div class="modal-content">
+        <div style="padding: 15px 25px; background: #1e293b; color: white; display: flex; justify-content: space-between;">
+            <h3 style="margin:0">Complete Candidate File</h3>
+            <button onclick="closeModal()" style="color:white; background:none; border:none; font-size:24px; cursor:pointer;">&times;</button>
         </div>
 
-        <form action="resume" method="post" class="modal-form" style="padding: 30px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <form action="resume" method="post" class="modal-form">
             <input type="hidden" name="sl_no" id="f_sl_no">
 
-            <div class="form-group" style="grid-column: span 2;">
-                <h4 style="color: #4f46e5; border-bottom: 2px solid #eef2ff; padding-bottom: 5px;">Personal & Application Details</h4>
-            </div>
+            <div class="section-title">PRIMARY INFORMATION</div>
+            <div><label>Full Name</label><input type="text" name="name" id="f_name" style="width:100%"></div>
+            <div><label>Mobile</label><input type="text" name="mobile_no" id="f_mobile_no" style="width:100%"></div>
+            <div><label>Resume No</label><input type="text" name="resume_no" id="f_resume_no" style="width:100%"></div>
             
-            <input type="text" name="name" id="f_name" placeholder="Full Name">
-            <input type="text" name="mobile_no" id="f_mobile_no" placeholder="Mobile Number">
-            <input type="text" name="post_applied_for" id="f_post_applied_for" placeholder="Position">
-            <input type="text" name="qualification" id="f_qualification" placeholder="Qualification">
+            <div class="half-width"><label>Address</label><input type="text" name="address" id="f_address" style="width:100%"></div>
+            <div><label>Post Applied For</label><input type="text" name="post_applied_for" id="f_post_applied_for" style="width:100%"></div>
 
-            <div class="form-group" style="grid-column: span 2;">
-                <h4 style="color: #4f46e5; border-bottom: 2px solid #eef2ff; padding-bottom: 5px;">Recruitment Workflow</h4>
-            </div>
+            <div><label>Gender</label><input type="text" name="gender" id="f_gender" style="width:100%"></div>
+            <div><label>DOB</label><input type="text" name="date_of_birth" id="f_date_of_birth" style="width:100%"></div>
+            <div><label>Marital Status</label><input type="text" name="marital_status" id="f_marital_status" style="width:100%"></div>
 
-            <div>
-                <label style="display:block; font-size: 12px; font-weight:700; margin-bottom:5px;">Shortlist Status</label>
-                <select name="shortlisted" id="f_shortlisted" style="width:100%; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1;">
-                    <option value="Pending">Pending Review</option>
-                    <option value="Yes">Yes - Shortlist</option>
-                    <option value="No">No - Reject</option>
+            <div class="section-title">EDUCATION & SKILLS</div>
+            <div><label>Qualification</label><input type="text" name="qualification" id="f_qualification" style="width:100%"></div>
+            <div><label>Specialization</label><input type="text" name="specialization" id="f_specialization" style="width:100%"></div>
+            <div><label>Passing Year</label><input type="text" name="year_of_passing" id="f_year_of_passing" style="width:100%"></div>
+            <div><label>Percentage %</label><input type="text" name="percentage_marks" id="f_percentage_marks" style="width:100%"></div>
+            <div class="half-width"><label>Other Skills/Certifications</label><input type="text" name="other_skills_certifications" id="f_other_skills_certifications" style="width:100%"></div>
+
+            <div class="section-title">PROFESSIONAL EXPERIENCE & SALARY</div>
+            <div><label>Total Experience</label><input type="text" name="total_experience" id="f_total_experience" style="width:100%"></div>
+            <div><label>Relevant Exp</label><input type="text" name="relevant_experience" id="f_relevant_experience" style="width:100%"></div>
+            <div><label>Reference By</label><input type="text" name="reference_by" id="f_reference_by" style="width:100%"></div>
+            
+            <div><label>Present Salary</label><input type="text" name="present_salary" id="f_present_salary" style="width:100%"></div>
+            <div><label>Expected Salary</label><input type="text" name="expected_salary" id="f_expected_salary" style="width:100%"></div>
+            <div><label>Created At</label><input type="text" id="f_created_at" readonly style="background:#f1f5f9; width:100%"></div>
+            
+            <div class="full-width"><label>Experience Details</label><textarea name="experience" id="f_experience" style="width:100%; height:50px;"></textarea></div>
+
+            <div class="section-title" style="background:#fee2e2; color:#b91c1c;">INTERNAL WORKFLOW & STATUS</div>
+            
+            <div><label>Shortlisted</label>
+                <select name="shortlisted" id="f_shortlisted" style="width:100%">
+                    <option value="No">No</option><option value="Yes">Yes</option><option value="Pending">Pending</option>
                 </select>
             </div>
+            <div><label>Call Status</label><input type="text" name="call_status" id="f_call_status" style="width:100%"></div>
+            <div><label>Attending Date</label><input type="date" name="attending_date" id="f_attending_date" style="width:100%"></div>
 
-            <div>
-                <label style="display:block; font-size: 12px; font-weight:700; margin-bottom:5px;">Demo Performance</label>
-                <select name="demo_status" id="f_demo_status" style="width:100%; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1;">
-                    <option value="Pending">Pending</option>
-                    <option value="Scheduled">Scheduled</option>
-                    <option value="Selected">Selected / Passed</option>
-                    <option value="Rejected">Rejected / Failed</option>
+            <div><label>Demo Date</label><input type="date" name="demo_date" id="f_demo_date" style="width:100%"></div>
+            <div><label>Demo Status</label><input type="text" name="demo_status" id="f_demo_status" style="width:100%"></div>
+            <div><label>Demo Taken By</label><input type="text" name="demo_taken_by" id="f_demo_taken_by" style="width:100%"></div>
+            
+            <div class="full-width"><label>Demo Remarks</label><textarea name="demo_remarks" id="f_demo_remarks" style="width:100%; height:40px;"></textarea></div>
+
+            <div><label>Interview Date</label><input type="date" name="interview_date" id="f_interview_date" style="width:100%"></div>
+            <div><label>Interview Status</label><input type="text" name="interview_status" id="f_interview_status" style="width:100%"></div>
+            <div><label>Interview Taken By</label><input type="text" name="interview_taken_by" id="f_interview_taken_by" style="width:100%"></div>
+
+            <div style="background:#dcfce7; padding:5px; border-radius:5px;">
+                <label style="color:#15803d">HIRED STATUS</label>
+                <select name="Hired_status" id="f_Hired_status" style="width:100%; border-color:#15803d; font-weight:bold;">
+                    <option value="On Process">On Process</option>
+                    <option value="Hired">Hired</option>
+                    <option value="Hold">Hold</option>
+                    <option value="Rejected">Rejected</option>
                 </select>
             </div>
+            <div class="half-width"><label>Final Remarks</label><textarea name="remarks" id="f_remarks" style="width:100%; height:40px;"></textarea></div>
 
-            <div>
-                <label style="display:block; font-size: 12px; font-weight:700; margin-bottom:5px;">Final Interview</label>
-                <select name="interview_status" id="f_interview_status" style="width:100%; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1;">
-                    <option value="Pending">Waiting</option>
-                    <option value="Selected">SELECTED FOR HIRE</option>
-                    <option value="Rejected">NOT SELECTED</option>
-                </select>
-            </div>
-
-            <div>
-                <label style="display:block; font-size: 12px; font-weight:700; margin-bottom:5px;">Call Log</label>
-                <select name="call_status" id="f_call_status" style="width:100%; padding: 10px; border-radius: 5px; border: 1px solid #cbd5e1;">
-                    <option value="Pending">Not Called</option>
-                    <option value="Called">Called / Responsive</option>
-                    <option value="Not Reachable">Not Reachable</option>
-                </select>
-            </div>
-
-            <div style="grid-column: span 2;">
-                <label style="display:block; font-size: 12px; font-weight:700; margin-bottom:5px;">Internal Remarks</label>
-                <textarea name="remarks" id="f_remarks" style="width:100%; height:80px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px;"></textarea>
-            </div>
-
-            <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 15px; margin-top: 10px;">
-                <button type="button" onclick="closeModal()" class="btn-light" style="padding: 12px 25px; cursor:pointer;">Close</button>
-                <button type="submit" class="btn-primary" style="padding: 12px 40px; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor:pointer; font-weight: 700;">UPDATE CANDIDATE STATUS</button>
+            <div class="full-width" style="display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px;">
+                <button type="button" onclick="closeModal()" class="btn-light">Discard Changes</button>
+                <button type="submit" class="btn-primary" style="padding: 12px 50px;">SAVE FULL PROFILE</button>
             </div>
         </form>
     </div>
@@ -268,19 +250,21 @@ document.querySelectorAll(".reviewBtn").forEach(btn => {
         let data = JSON.parse(this.dataset.candidate);
         Object.keys(data).forEach(key => {
             let el = document.getElementById("f_" + key);
-            if (el) el.value = data[key] || "";
+            if (el) {
+                // Special check for date fields to ensure they format correctly for <input type="date">
+                if(el.type === 'date' && data[key]) {
+                    el.value = data[key].split(' ')[0]; // Takes 'YYYY-MM-DD' from 'YYYY-MM-DD HH:mm:ss'
+                } else {
+                    el.value = data[key] || "";
+                }
+            }
         });
         document.getElementById("editModal").style.display = "flex";
     });
 });
 
-function closeModal() {
-    document.getElementById("editModal").style.display = "none";
-}
-
-window.onclick = function(e) {
-    if (e.target == document.getElementById("editModal")) closeModal();
-}
+function closeModal() { document.getElementById("editModal").style.display = "none"; }
+window.onclick = function(e) { if (e.target == document.getElementById("editModal")) closeModal(); }
 </script>
 
 </body>
