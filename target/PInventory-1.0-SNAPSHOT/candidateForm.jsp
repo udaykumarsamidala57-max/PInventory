@@ -234,7 +234,7 @@
                      <option value="Dance">Dance</option>
                      <option value="Music">Music</option>
                      <option value="PE Teacher">PE Teacher</option>
-                     <option value="Music">Art & Craft</option>
+                     <option value="Art & Craft">Art & Craft</option>
                 </select>
             </div>
           

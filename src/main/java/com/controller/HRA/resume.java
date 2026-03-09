@@ -30,6 +30,7 @@ public class resume extends HttpServlet {
 
         List<Map<String, String>> resumeList = new ArrayList<>();
 
+        // Fetching all columns to ensure the "Review" modal has data for all fields
         String sql = "SELECT * FROM candidate_recruitment ORDER BY sl_no DESC";
 
         try (Connection con = DBUtil2.getConnection();
@@ -40,18 +41,12 @@ public class resume extends HttpServlet {
             int columnCount = metaData.getColumnCount();
 
             while (rs.next()) {
-
                 Map<String, String> row = new HashMap<>();
-
                 for (int i = 1; i <= columnCount; i++) {
-
                     String colName = metaData.getColumnName(i);
                     String value = rs.getString(colName);
-
                     row.put(colName, value != null ? value : "");
-
                 }
-
                 resumeList.add(row);
             }
 
@@ -60,9 +55,8 @@ public class resume extends HttpServlet {
         }
 
         request.setAttribute("resumeList", resumeList);
-
-        request.getRequestDispatcher("hr/RecruitmentDashboard.jsp")
-               .forward(request, response);
+        // Ensure this path matches your folder structure
+        request.getRequestDispatcher("hr/RecruitmentDashboard.jsp").forward(request, response);
     }
 
     // ---------- POST : Update Candidate ----------
@@ -73,6 +67,7 @@ public class resume extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
+        // Updated SQL to include Hired_status and missing date/taken_by fields
         String sql = "UPDATE candidate_recruitment SET " +
                 "name=?, mobile_no=?, address=?, post_applied_for=?, " +
                 "gender=?, date_of_birth=?, marital_status=?, qualification=?, specialization=?, " +
@@ -80,7 +75,8 @@ public class resume extends HttpServlet {
                 "experience=?, relevant_experience=?, total_experience=?, " +
                 "present_salary=?, expected_salary=?, " +
                 "remarks=?, shortlisted=?, call_status=?, demo_status=?, interview_status=?, " +
-                "interview_taken_by=?, demo_taken_by=? " +
+                "interview_taken_by=?, demo_taken_by=?, resume_no=?, " +
+                "attending_date=?, demo_date=?, interview_date=?, demo_remarks=?, Hired_status=? " +
                 "WHERE sl_no=?";
 
         try (Connection con = DBUtil2.getConnection();
@@ -111,8 +107,17 @@ public class resume extends HttpServlet {
             ps.setString(23, getParam(request, "interview_status"));
             ps.setString(24, getParam(request, "interview_taken_by"));
             ps.setString(25, getParam(request, "demo_taken_by"));
+            ps.setString(26, getParam(request, "resume_no"));
+            
+            // Dates handling: If the date is empty, set as null to avoid SQL errors
+            ps.setString(27, getParamDate(request, "attending_date"));
+            ps.setString(28, getParamDate(request, "demo_date"));
+            ps.setString(29, getParamDate(request, "interview_date"));
+            
+            ps.setString(30, getParam(request, "demo_remarks"));
+            ps.setString(31, getParam(request, "Hired_status")); // NEW COLUMN
 
-            ps.setInt(26, Integer.parseInt(request.getParameter("sl_no")));
+            ps.setInt(32, Integer.parseInt(request.getParameter("sl_no")));
 
             ps.executeUpdate();
 
@@ -123,9 +128,22 @@ public class resume extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/resume");
     }
 
-    // ---------- Utility Method ----------
+    // ---------- Utility Methods ----------
+    
     private String getParam(HttpServletRequest request, String name) {
         String value = request.getParameter(name);
-        return value != null ? value.trim() : "";
+        return (value != null) ? value.trim() : "";
+    }
+
+    /**
+     * Specialized utility for dates to ensure they are stored as NULL 
+     * in the DB if the input is empty.
+     */
+    private String getParamDate(HttpServletRequest request, String name) {
+        String value = request.getParameter(name);
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
     }
 }
