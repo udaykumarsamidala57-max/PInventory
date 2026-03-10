@@ -52,7 +52,7 @@ public String safe(Object o){
         
         /* Row Highlighting */
         .hired-row { background:#f5f3ff !important; }
-        .rejected-row { background:#fff1f2 !important; }
+        .rejected-row { background:#ff5050 !important; }
         
         .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
         .badge.success {background:#dcfce7;color:#166534;}
