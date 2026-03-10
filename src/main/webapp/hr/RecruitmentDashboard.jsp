@@ -164,6 +164,7 @@ public String safe(Object o){
                         <th>Demo</th>
                         <th>Interview</th>
                         <th>Hired</th>
+                        <th>Remarks</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -187,6 +188,7 @@ public String safe(Object o){
                         <td><span class="badge primary"><%=safe(c.get("demo_status")).isEmpty()?"Pending":safe(c.get("demo_status"))%></span></td>
                         <td><%=safe(c.get("interview_status"))%></td>
                         <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Pending</span><% } %></td>
+                        <td><%=safe(c.get("remarks"))%></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button></td>
                     </tr>
                 <% } %>
@@ -255,6 +257,15 @@ public String safe(Object o){
                             <option value="Pending">Shortlist: Pending</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
+                        </select>
+                    </div>
+                    <h4>Called Status</h4>
+                    <div class="form-row">
+                       
+                        <select name="call_status" id="f_shortlisted">
+                            <option value="Called">Called</option>
+                            <option value="Not Reachable">Not Reachable</option>
+                            
                         </select>
                     </div>
 
