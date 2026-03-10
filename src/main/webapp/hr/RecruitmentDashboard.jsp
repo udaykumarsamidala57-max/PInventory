@@ -49,7 +49,10 @@ public String safe(Object o){
         table { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
         th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; padding:12px; text-align: left; }
         td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; }
+        
+        /* Row Highlighting */
         .hired-row { background:#f5f3ff !important; }
+        .rejected-row { background:#fff1f2 !important; }
         
         .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
         .badge.success {background:#dcfce7;color:#166534;}
@@ -172,9 +175,18 @@ public String safe(Object o){
                 <%
                 for(Map<String,String> c:candidates){
                     boolean isHired = "Yes".equalsIgnoreCase(c.get("Hired_status"));
+                    // Logic for Rejected Row
+                    boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("demo_status")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("interview_status"));
+                    
+                    String rowClass = "";
+                    if(isHired) rowClass = "hired-row";
+                    else if(isRejected) rowClass = "rejected-row";
+
                     String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
                 %>
-                    <tr class="<%=isHired ? "hired-row" : ""%>">
+                    <tr class="<%=rowClass%>">
                         <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
                         <td><%=safe(c.get("qualification"))%><br><small><%=safe(c.get("specialization"))%></small></td>
                         <td><%=safe(c.get("total_experience"))%> Yrs</td>
@@ -185,8 +197,16 @@ public String safe(Object o){
                                else { %><span class="badge warning">Review</span><% } %>
                         </td>
                         <td><%=safe(c.get("call_status"))%></td>
-                        <td><span class="badge primary"><%=safe(c.get("demo_status")).isEmpty()?"Pending":safe(c.get("demo_status"))%></span></td>
-                        <td><%=safe(c.get("interview_status"))%></td>
+                        <td>
+                            <% String ds=safe(c.get("demo_status"));
+                               if("Rejected".equalsIgnoreCase(ds)){ %><span class="badge danger">Rejected</span><% }
+                               else { %><span class="badge primary"><%=ds.isEmpty()?"Pending":ds%></span><% } %>
+                        </td>
+                        <td>
+                             <% String is=safe(c.get("interview_status"));
+                               if("Rejected".equalsIgnoreCase(is)){ %><span class="badge danger">Rejected</span><% }
+                               else { %><%=is%><% } %>
+                        </td>
                         <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Pending</span><% } %></td>
                         <td><%=safe(c.get("remarks"))%></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button></td>
@@ -262,7 +282,7 @@ public String safe(Object o){
                     <h4>Called Status</h4>
                     <div class="form-row">
                        
-                        <select name="call_status" id="f_shortlisted">
+                        <select name="call_status" id="f_call_status">
                             <option value="Called">Called</option>
                             <option value="Not Reachable">Not Reachable</option>
                             
