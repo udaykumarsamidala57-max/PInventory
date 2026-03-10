@@ -51,8 +51,8 @@ public String safe(Object o){
         td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; }
         
         /* Row Highlighting */
-        .hired-row { background:#f5f3ff !important; }
-        .rejected-row { background:#ff5050 !important; }
+        .hired-row { background:#ccffcc !important; }
+        .rejected-row { background:#ff8080 !important; }
         
         .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
         .badge.success {background:#dcfce7;color:#166534;}
