@@ -10,342 +10,329 @@ if (sess == null || sess.getAttribute("username") == null) {
 Gson gson = new Gson();
 %>
 
+<%!
+public String safe(Object o){
+    return (o==null) ? "" : o.toString();
+}
+%>
+
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Recruitment Management System | Enterprise Edition</title>
+    <meta charset="UTF-8">
+    <title>RecruitPro | Recruitment Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="CSS/Recruitment.css?v=17">
 
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="CSS/Recruitment.css?v=20">
+    <style>
+        body { font-family:'Inter',sans-serif; background:#f4f6fb; margin:0; color:#1e293b; }
+        .main-container { padding: 20px; max-width: 1400px; margin: 0 auto; }
 
-<style>
-    :root {
-        --primary: #4f46e5;
-        --success: #10b981;
-        --danger: #ef4444;
-        --sidebar-bg: #f8fafc;
-        --border-color: #e2e8f0;
-        --text-main: #1e293b;
-        --text-muted: #64748b;
-    }
+        /* KPI GRID */
+        .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:20px; margin-bottom:30px; }
+        .kpi-card { background:white; padding:22px; border-radius:12px; box-shadow:0 3px 12px rgba(0,0,0,0.05); }
+        .kpi-card h3 { font-size:14px; color:#64748b; margin:0; }
+        .kpi-number { font-size:32px; font-weight:800; margin-top:10px; }
+        .kpi-number.success {color:#16a34a;} 
+        .kpi-number.primary {color:#2563eb;} 
+        .kpi-number.hired {color:#9333ea;}
 
-    body { 
-        background-color: #fcfcfd; 
-        font-family: 'Plus Jakarta Sans', sans-serif; 
-        color: var(--text-main);
-        margin: 0;
-    }
+        /* FUNNEL */
+        .funnel { background:white; padding:18px; border-radius:10px; margin-bottom:30px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .progress { height:10px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-top:10px; }
+        .progress div { height:100%; background:#4f46e5; }
 
-    /* --- DASHBOARD HEADER --- */
-    .dashboard-header {
-        background: white;
-        padding: 24px 40px;
-        border-bottom: 1px solid var(--border-color);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        /* TABLE UI */
+        .section { margin-top:40px; }
+        .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
+        .table-wrapper { overflow-x:auto; }
+        table { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; padding:12px; text-align: left; }
+        td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; }
+        
+        /* Row Highlighting */
+        .hired-row { background:#ccffcc !important; }
+        .rejected-row { background:#ff8080 !important; }
+        
+        .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
+        .badge.success {background:#dcfce7;color:#166534;}
+        .badge.primary {background:#dbeafe;color:#1d4ed8;}
+        .badge.warning {background:#fef3c7;color:#92400e;}
+        .badge.danger {background:#fee2e2;color:#991b1b;}
 
-    /* --- KPI CARDS (Minimalist) --- */
-    .kpi-container {
-        display: flex;
-        gap: 20px;
-        padding: 30px 40px;
-    }
-    .kpi-card {
-        background: white;
-        border: 1px solid var(--border-color);
-        padding: 20px 24px;
-        border-radius: 12px;
-        flex: 1;
-        transition: all 0.3s ease;
-    }
-    .kpi-card:hover { border-color: var(--primary); box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-    .kpi-label { font-size: 13px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-    .kpi-value { font-size: 28px; font-weight: 800; margin-top: 8px; color: var(--text-main); }
+        .btn-primary { background:#4f46e5; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
 
-    /* --- TABLE UI (Clean & Spaced) --- */
-    .content-wrapper { padding: 0 40px 40px 40px; }
-    .table-card {
-        background: white;
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        overflow: hidden;
-    }
-    .position-group-header {
-        background: var(--sidebar-bg);
-        padding: 12px 24px;
-        font-weight: 700;
-        font-size: 14px;
-        border-bottom: 1px solid var(--border-color);
-        color: var(--primary);
-        display: flex;
-        justify-content: space-between;
-    }
-    
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th { padding: 16px 24px; font-size: 12px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border-color); }
-    td { padding: 18px 24px; border-bottom: 1px solid #f8fafc; font-size: 14px; }
-    
-    tr:hover { background-color: #fbfbfb; }
-    
-    /* Highlight Hired */
-    tr.row-hired { background-color: #f0fdf4; }
-    tr.row-hired td:first-child { border-left: 4px solid var(--success); }
-
-    /* --- BADGE STYLING --- */
-    .status-badge {
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
-    }
-    .status-pending { background: #fff7ed; color: #9a3412; }
-    .status-success { background: #ecfdf5; color: #065f46; }
-    .status-rejected { background: #fef2f2; color: #991b1b; }
-    .status-blue { background: #eff6ff; color: #1e40af; }
-
-    /* --- ACTION BUTTONS --- */
-    .btn-edit {
-        background: transparent;
-        border: 1px solid var(--border-color);
-        color: var(--text-main);
-        padding: 8px 16px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 13px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    .btn-edit:hover { background: var(--primary); color: white; border-color: var(--primary); }
-
-    /* --- MODAL (Dossier View) --- */
-    .modal-content {
-        border-radius: 20px;
-        border: none;
-        overflow: hidden;
-    }
-    .modal-header {
-        background: #1e293b;
-        color: white;
-        padding: 30px 40px;
-    }
-    .modal-body {
-        padding: 40px;
-        display: grid;
-        grid-template-columns: 2fr 1fr; /* Dossier Layout */
-        gap: 40px;
-    }
-    .field-group { margin-bottom: 24px; }
-    .field-label { display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
-    .field-input { 
-        width: 100%; 
-        padding: 10px 14px; 
-        border: 1px solid var(--border-color); 
-        border-radius: 8px; 
-        font-family: inherit;
-        font-size: 14px;
-        box-sizing: border-box;
-    }
-    .field-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
-</style>
+        /* MODAL SYSTEM */
+        .modal { 
+            display:none; 
+            position:fixed; 
+            top:0; left:0; width:100%; height:100%; 
+            background:rgba(15, 23, 42, 0.7); 
+            z-index:9999; 
+            justify-content:center; 
+            align-items:center; 
+            backdrop-filter: blur(4px);
+        }
+        .modal-content { 
+            background:white; 
+            width:90%; 
+            max-width:1100px; 
+            max-height:92vh; 
+            overflow-y:auto; 
+            padding:30px; 
+            border-radius:12px; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .modal-title { font-size:20px; font-weight:800; margin-bottom:20px; color:#1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .modal-form h4 { margin: 20px 0 10px 0; font-size: 13px; color: #4f46e5; text-transform: uppercase; letter-spacing: 0.5px; }
+        .form-row { display: flex; gap: 12px; margin-top: 10px; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; }
+        textarea { min-height: 80px; }
+        
+        .modal-buttons { margin-top: 30px; display: flex; justify-content: flex-end; gap: 12px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
+        .btn-light { background:#f1f5f9; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:600; color:#475569; }
+    </style>
 </head>
+
 <body>
 
 <%@ include file="header.jsp" %>
 
-<div class="dashboard-header">
-    <div>
-        <h1 style="margin:0; font-size: 24px; font-weight: 800;">Recruitment Dashboard</h1>
-        <p style="margin:4px 0 0 0; color: var(--text-muted); font-size: 14px;">Review and manage incoming candidate profiles.</p>
-    </div>
-    <div style="font-size: 12px; font-weight: 700; color: var(--text-muted); background: #f1f5f9; padding: 8px 16px; border-radius: 20px;">
-        SESSION: 2026-2027
-    </div>
+<div class="navbar">
+    <div class="logo">Recruitment 2026 - 27</div>
+    <div><span class="status-dot"></span>System Active</div>
 </div>
 
 <div class="main-container">
 
-<%
-List<Map<String,String>> rawList = (List<Map<String,String>>) request.getAttribute("resumeList");
-int total = 0, shorted = 0, hiredCount = 0;
+    <%
+    List<Map<String,String>> rawList=(List<Map<String,String>>)request.getAttribute("resumeList");
+    int total=0, shortlisted=0, demoSelected=0, hired=0;
 
-if(rawList != null){
-    total = rawList.size();
-    for(Map<String,String> c : rawList){
-        if("Yes".equalsIgnoreCase(c.get("shortlisted"))) shorted++;
-        if("Hired".equalsIgnoreCase(c.get("Hired_status"))) hiredCount++;
+    if(rawList!=null){
+        total=rawList.size();
+        for(Map<String,String> c:rawList){
+            if("Yes".equalsIgnoreCase(c.get("shortlisted"))) shortlisted++;
+            if("Selected".equalsIgnoreCase(c.get("demo_status"))) demoSelected++;
+            if("Yes".equalsIgnoreCase(c.get("Hired_status"))) hired++;
+        }
     }
-}
-%>
+    %>
 
-<div class="kpi-container">
-    <div class="kpi-card">
-        <div class="kpi-label">Total Applications</div>
-        <div class="kpi-value"><%=total%></div>
+    <div class="kpi-grid">
+        <div class="kpi-card"><h3>Total Applications</h3><div class="kpi-number"><%=total%></div></div>
+        <div class="kpi-card"><h3>Shortlisted</h3><div class="kpi-number success"><%=shortlisted%></div></div>
+        <div class="kpi-card"><h3>Demo Selected</h3><div class="kpi-number primary"><%=demoSelected%></div></div>
+        <div class="kpi-card"><h3>Hired</h3><div class="kpi-number hired"><%=hired%></div></div>
     </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Shortlisted</div>
-        <div class="kpi-value" style="color: var(--primary);"><%=shorted%></div>
-    </div>
-    <div class="kpi-card">
-        <div class="kpi-label">Confirmed Hires</div>
-        <div class="kpi-value" style="color: var(--success);"><%=hiredCount%></div>
-    </div>
-</div>
 
-<div class="content-wrapper">
-<%
-if(rawList != null && !rawList.isEmpty()){
-    Map<String,List<Map<String,String>>> grouped = new LinkedHashMap<>();
-    for(Map<String,String> row : rawList){
-        String post = row.get("post_applied_for");
-        if(post == null || post.trim().isEmpty()) post = "Unassigned Positions";
-        grouped.computeIfAbsent(post, k-> new ArrayList<>()).add(row);
-    }
-
-    for(String post : grouped.keySet()){
-        List<Map<String,String>> candidates = grouped.get(post);
-%>
-
-    <div class="table-card" style="margin-bottom: 30px;">
-        <div class="position-group-header">
-            <span><%=post.toUpperCase()%></span>
-            <span><%=candidates.size()%> PROFILES</span>
+    <div class="funnel">
+        <b>Recruitment Funnel</b>
+        <div class="progress">
+            <% int percent = total==0 ? 0 : (hired*100/total); %>
+            <div style="width:<%=percent%>%"></div>
         </div>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width: 25%;">Full Name</th>
-                    <th>Experience</th>
-                    <th>Interview</th>
-                    <th>Demo Status</th>
-                    <th>Final Verdict</th>
-                    <th style="text-align: right;">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-            <% 
-            for(Map<String,String> c : candidates){
-                String iStat = c.get("interview_status");
-                String hStat = c.get("Hired_status");
-                String highlight = "Hired".equalsIgnoreCase(hStat) ? "row-hired" : "";
-                String json = gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
-            %>
-                <tr class="<%=highlight%>">
-                    <td>
-                        <div style="font-weight: 700;"><%=c.get("name")%></div>
-                        <div style="font-size: 12px; color: var(--text-muted); margin-top:2px;"><%=c.get("mobile_no")%></div>
-                    </td>
-                    <td><span style="font-weight: 600;"><%=c.get("total_experience")%> Years</span></td>
-                    <td>
-                        <span class="status-badge <%= "Selected".equalsIgnoreCase(iStat) ? "status-success" : "status-pending" %>">
-                            <%=iStat == null || iStat.isEmpty() ? "Waiting" : iStat%>
-                        </span>
-                    </td>
-                    <td><span class="status-badge status-blue"><%=c.get("demo_status")%></span></td>
-                    <td>
-                        <% if("Hired".equalsIgnoreCase(hStat)){ %>
-                            <span class="status-badge status-success" style="background:#059669; color:white;">HIRED</span>
-                        <% } else { %>
-                            <span class="status-badge status-pending"><%=hStat%></span>
-                        <% } %>
-                    </td>
-                    <td style="text-align: right;">
-                        <button class="btn-edit reviewBtn" data-candidate="<%=json%>">View Profile</button>
-                    </td>
-                </tr>
-            <% } %>
-            </tbody>
-        </table>
+        <small style="display:block; margin-top:5px;"><%=percent%>% conversion to hired</small>
     </div>
-<% } } %>
-</div>
+
+    <%
+    if(rawList!=null && !rawList.isEmpty()){
+        Map<String,List<Map<String,String>>> grouped=new LinkedHashMap<>();
+        for(Map<String,String> row:rawList){
+            String post=row.get("post_applied_for");
+            if(post==null||post.trim().isEmpty()) post="General Pipeline";
+            grouped.computeIfAbsent(post, k->new ArrayList<>()).add(row);
+        }
+
+        for(String post:grouped.keySet()){
+            List<Map<String,String>> candidates=grouped.get(post);
+    %>
+    <div class="section">
+        <div class="section-header">
+            <h1><%=post%></h1>
+            <div class="section-stats"><span>Total : <%=candidates.size()%></span></div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Candidate</th>
+                        <th>Qualification</th>
+                        <th>Exp</th>
+                        <th>Shortlist</th>
+                        <th>Call</th>
+                        <th>Demo</th>
+                        <th>Interview</th>
+                        <th>Hired</th>
+                        <th>Remarks</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <%
+                for(Map<String,String> c:candidates){
+                    boolean isHired = "Yes".equalsIgnoreCase(c.get("Hired_status"));
+                    // Logic for Rejected Row
+                    boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("demo_status")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("interview_status"));
+                    
+                    String rowClass = "";
+                    if(isHired) rowClass = "hired-row";
+                    else if(isRejected) rowClass = "rejected-row";
+
+                    String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
+                %>
+                    <tr class="<%=rowClass%>">
+                        <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
+                        <td><%=safe(c.get("qualification"))%><br><small><%=safe(c.get("specialization"))%></small></td>
+                        <td><%=safe(c.get("total_experience"))%> Yrs</td>
+                        <td>
+                            <% String s=c.get("shortlisted");
+                               if("Yes".equalsIgnoreCase(s)){ %><span class="badge success">Shortlisted</span><% }
+                               else if("No".equalsIgnoreCase(s)){ %><span class="badge danger">Rejected</span><% }
+                               else { %><span class="badge warning">Review</span><% } %>
+                        </td>
+                        <td><%=safe(c.get("call_status"))%></td>
+                        <td>
+                            <% String ds=safe(c.get("demo_status"));
+                               if("Rejected".equalsIgnoreCase(ds)){ %><span class="badge danger">Rejected</span><% }
+                               else { %><span class="badge primary"><%=ds.isEmpty()?"Pending":ds%></span><% } %>
+                        </td>
+                        <td>
+                             <% String is=safe(c.get("interview_status"));
+                               if("Rejected".equalsIgnoreCase(is)){ %><span class="badge danger">Rejected</span><% }
+                               else { %><%=is%><% } %>
+                        </td>
+                        <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Pending</span><% } %></td>
+                        <td><%=safe(c.get("remarks"))%></td>
+                        <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button></td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <% } } %>
 </div>
 
-<div class="modal" id="editModal" style="display: none; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); z-index: 1000; backdrop-filter: blur(4px);">
-    <div class="modal-content" style="background: white; width: 1050px; max-height: 90vh; display:flex; flex-direction:column;">
-        <div class="modal-header">
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+<div class="modal" id="editModal">
+    <div class="modal-content">
+        <div class="modal-title">Update Candidate Dossier</div>
+        <form action="resume" method="post" class="modal-form">
+            <input type="hidden" name="sl_no" id="f_sl_no">
+            
+            <input type="hidden" name="resume_no" id="f_resume_no">
+            <input type="hidden" name="attending_date" id="f_attending_date">
+            <input type="hidden" name="demo_remarks" id="f_demo_remarks">
+            <input type="hidden" name="experience" id="f_experience">
+
+            <div class="form-grid">
                 <div>
-                    <h2 style="margin:0; font-size: 22px;">Candidate Dossier</h2>
-                    <span id="display_sl_no" style="font-size:12px; opacity:0.7;">Ref: ---</span>
+                    <h4>1. Basic Information</h4>
+                    <div class="form-row">
+                        <input type="text" name="name" id="f_name" placeholder="Full Name">
+                        <input type="text" name="mobile_no" id="f_mobile_no" placeholder="Mobile Number">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" name="address" id="f_address" placeholder="Full Address">
+                    </div>
+                    <div class="form-row">
+                        <select name="gender" id="f_gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                        </select>
+                        <input type="date" name="date_of_birth" id="f_date_of_birth" title="DOB">
+                        <select name="marital_status" id="f_marital_status">
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                        </select>
+                    </div>
+
+                    <h4>2. Qualification & Skills</h4>
+                    <div class="form-row">
+                        <input type="text" name="qualification" id="f_qualification" placeholder="Qualification">
+                        <input type="text" name="specialization" id="f_specialization" placeholder="Specialization">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" name="percentage_marks" id="f_percentage_marks" placeholder="Percentage %">
+                        <input type="text" name="year_of_passing" id="f_year_of_passing" placeholder="Year of Passing">
+                    </div>
+                    <textarea name="other_skills_certifications" id="f_other_skills_certifications" placeholder="Additional Skills/Certifications" style="margin-top:10px;"></textarea>
+
+                    <h4>3. Experience & Salary</h4>
+                    <div class="form-row">
+                        <input type="text" name="total_experience" id="f_total_experience" placeholder="Total Exp">
+                        <input type="text" name="relevant_experience" id="f_relevant_experience" placeholder="Rel Exp">
+                    </div>
+                    <div class="form-row">
+                        <input type="text" name="present_salary" id="f_present_salary" placeholder="Current Salary">
+                        <input type="text" name="expected_salary" id="f_expected_salary" placeholder="Expected">
+                    </div>
                 </div>
-                <button onclick="closeModal()" style="background:none; border:none; color:white; font-size:28px; cursor:pointer;">&times;</button>
+
+                <div>
+                    <h4>4. Selection Process</h4>
+                    <div class="form-row">
+                        <input type="text" name="post_applied_for" id="f_post_applied_for" placeholder="Post Applied For">
+                        <select name="shortlisted" id="f_shortlisted">
+                            <option value="Pending">Shortlist: Pending</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <h4>Called Status</h4>
+                    <div class="form-row">
+                       
+                        <select name="call_status" id="f_call_status">
+                            <option value="Called">Called</option>
+                            <option value="Not Reachable">Not Reachable</option>
+                            
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div><label style="font-size:10px;">Demo Date</label><input type="date" name="demo_date" id="f_demo_date"></div>
+                        <div><label style="font-size:10px;">Demo Status</label>
+                            <select name="demo_status" id="f_demo_status">
+                                <option value="Pending">Pending</option>
+                                <option value="Selected">Selected</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="text" name="demo_taken_by" id="f_demo_taken_by" placeholder="Demo Taken By" style="margin-top:10px;">
+
+                    <div class="form-row" style="margin-top:10px;">
+                        <div><label style="font-size:10px;">Interview Date</label><input type="date" name="interview_date" id="f_interview_date"></div>
+                        <div><label style="font-size:10px;">Interview Status</label>
+                            <select name="interview_status" id="f_interview_status">
+                                <option value="Pending">Pending</option>
+                                <option value="Selected">Selected</option>
+                                <option value="Rejected">Rejected</option>
+                            </select>
+                        </div>
+                    </div>
+                    <input type="text" name="interview_taken_by" id="f_interview_taken_by" placeholder="Interview Taken By" style="margin-top:10px;">
+
+                    <h4>5. Final Decision</h4>
+                    <div class="form-row">
+                        <select name="Hired_status" id="f_Hired_status" style="border: 2px solid #9333ea; font-weight: bold;">
+                            <option value="No">Not Hired</option>
+                            <option value="Yes">FINAL HIRE (Confirmed)</option>
+                        </select>
+                        <input type="text" name="reference_by" id="f_reference_by" placeholder="Reference By">
+                    </div>
+                    <textarea name="remarks" id="f_remarks" placeholder="Final Performance Remarks" style="margin-top:10px;"></textarea>
+                </div>
             </div>
-        </div>
 
-        <form action="resume" method="post" style="overflow-y:auto;">
-            <div class="modal-body">
-                <div>
-                    <h3 style="margin-top:0; font-size:16px; border-bottom:1px solid #eee; padding-bottom:10px;">Personal & Education</h3>
-                    <input type="hidden" name="sl_no" id="f_sl_no">
-                    
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                        <div class="field-group"><label class="field-label">Candidate Name</label><input type="text" name="name" id="f_name" class="field-input"></div>
-                        <div class="field-group"><label class="field-label">Mobile Number</label><input type="text" name="mobile_no" id="f_mobile_no" class="field-input"></div>
-                    </div>
-
-                    <div class="field-group"><label class="field-label">Address</label><input type="text" name="address" id="f_address" class="field-input"></div>
-
-                    <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:15px;">
-                        <div class="field-group"><label class="field-label">Position</label><input type="text" name="post_applied_for" id="f_post_applied_for" class="field-input"></div>
-                        <div class="field-group"><label class="field-label">Qualification</label><input type="text" name="qualification" id="f_qualification" class="field-input"></div>
-                        <div class="field-group"><label class="field-label">Specialization</label><input type="text" name="specialization" id="f_specialization" class="field-input"></div>
-                    </div>
-
-                    <h3 style="margin-top:20px; font-size:16px; border-bottom:1px solid #eee; padding-bottom:10px;">Experience & Salary</h3>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:15px;">
-                        <div class="field-group"><label class="field-label">Total Exp (Years)</label><input type="text" name="total_experience" id="f_total_experience" class="field-input"></div>
-                        <div class="field-group"><label class="field-label">Current Salary</label><input type="text" name="present_salary" id="f_present_salary" class="field-input"></div>
-                    </div>
-                    <div class="field-group"><label class="field-label">Experience Details</label><textarea name="experience" id="f_experience" class="field-input" style="height:80px;"></textarea></div>
-                </div>
-
-                <div style="background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid var(--border-color);">
-                    <h3 style="margin-top:0; font-size:16px; color: var(--primary);">Review Process</h3>
-                    
-                    <div class="field-group">
-                        <label class="field-label">Shortlist Status</label>
-                        <select name="shortlisted" id="f_shortlisted" class="field-input">
-                            <option value="Pending">Pending</option>
-                            <option value="Yes">Shortlisted</option>
-                            <option value="No">Rejected</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group">
-                        <label class="field-label">Demo Assessment</label>
-                        <input type="text" name="demo_status" id="f_demo_status" class="field-input" placeholder="Result">
-                        <input type="text" name="demo_taken_by" id="f_demo_taken_by" class="field-input" placeholder="Taken By" style="margin-top:8px;">
-                    </div>
-
-                    <div class="field-group">
-                        <label class="field-label">Interview Verdict</label>
-                        <select name="interview_status" id="f_interview_status" class="field-input">
-                            <option value="Pending">Waiting</option>
-                            <option value="Selected">Selected</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-                    </div>
-
-                    <div class="field-group" style="margin-top:30px; border-top: 1px solid #cbd5e1; padding-top:20px;">
-                        <label class="field-label" style="color: var(--success); font-weight:800;">Hiring Decision</label>
-                        <select name="Hired_status" id="f_Hired_status" class="field-input" style="background:#ecfdf5; border-color:var(--success); font-weight:700;">
-                            <option value="Pipeline">Pipeline</option>
-                            <option value="Hired">Confirm Hire</option>
-                            <option value="Hold">On Hold</option>
-                            <option value="Rejected">Rejected</option>
-                        </select>
-                    </div>
-
-                    <div style="margin-top:40px;">
-                        <button type="submit" style="width:100%; padding:14px; background:var(--primary); color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Update Dossier</button>
-                        <button type="button" onclick="closeModal()" style="width:100%; margin-top:10px; padding:10px; background:white; color:var(--text-muted); border:1px solid var(--border-color); border-radius:8px; font-weight:600; cursor:pointer;">Cancel</button>
-                    </div>
-                </div>
+            <div class="modal-buttons">
+                <button type="button" onclick="closeModal()" class="btn-light">Discard Changes</button>
+                <button type="submit" class="btn-primary" style="padding: 12px 30px;">SAVE CANDIDATE PROFILE</button>
             </div>
         </form>
     </div>
@@ -354,17 +341,37 @@ if(rawList != null && !rawList.isEmpty()){
 <script>
 document.querySelectorAll(".reviewBtn").forEach(btn => {
     btn.addEventListener("click", function() {
-        const data = JSON.parse(this.dataset.candidate);
-        document.getElementById("display_sl_no").innerText = "Ref: #" + data.sl_no;
+        const rawData = this.getAttribute("data-candidate");
+        if(!rawData) return;
+        
+        const data = JSON.parse(rawData);
+        
         Object.keys(data).forEach(key => {
             const el = document.getElementById("f_" + key);
-            if (el) el.value = data[key] || "";
+            if (el) {
+                // Fix for SQL Timestamp/Date format to HTML Input
+                if(el.type === 'date' && data[key]){
+                    el.value = data[key].split(' ')[0];
+                } else {
+                    el.value = data[key] || "";
+                }
+            }
         });
         document.getElementById("editModal").style.display = "flex";
     });
 });
 
-function closeModal() { document.getElementById("editModal").style.display = "none"; }
+function closeModal() {
+    document.getElementById("editModal").style.display = "none";
+}
+
+// Close on outside click
+window.onclick = function(event) {
+    let modal = document.getElementById("editModal");
+    if (event.target == modal) {
+        closeModal();
+    }
+}
 </script>
 
 </body>

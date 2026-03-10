@@ -224,6 +224,11 @@ public String safe(Object o){
         <div class="modal-title">Update Candidate Dossier</div>
         <form action="resume" method="post" class="modal-form">
             <input type="hidden" name="sl_no" id="f_sl_no">
+            
+            <input type="hidden" name="resume_no" id="f_resume_no">
+            <input type="hidden" name="attending_date" id="f_attending_date">
+            <input type="hidden" name="demo_remarks" id="f_demo_remarks">
+            <input type="hidden" name="experience" id="f_experience">
 
             <div class="form-grid">
                 <div>

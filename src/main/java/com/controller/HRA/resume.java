@@ -29,8 +29,6 @@ public class resume extends HttpServlet {
         }
 
         List<Map<String, String>> resumeList = new ArrayList<>();
-
-        // Fetching all columns to ensure the "Review" modal has data for all fields
         String sql = "SELECT * FROM candidate_recruitment ORDER BY sl_no DESC";
 
         try (Connection con = DBUtil2.getConnection();
@@ -55,7 +53,6 @@ public class resume extends HttpServlet {
         }
 
         request.setAttribute("resumeList", resumeList);
-        // Ensure this path matches your folder structure
         request.getRequestDispatcher("hr/RecruitmentDashboard.jsp").forward(request, response);
     }
 
@@ -67,17 +64,17 @@ public class resume extends HttpServlet {
         request.setCharacterEncoding("UTF-8");
         response.setCharacterEncoding("UTF-8");
 
-        // Updated SQL to include Hired_status and missing date/taken_by fields
+        // The query must strictly match the count and order of ps.setXXX calls below
         String sql = "UPDATE candidate_recruitment SET " +
-                "name=?, mobile_no=?, address=?, post_applied_for=?, " +
-                "gender=?, date_of_birth=?, marital_status=?, qualification=?, specialization=?, " +
-                "percentage_marks=?, year_of_passing=?, reference_by=?, other_skills_certifications=?, " +
-                "experience=?, relevant_experience=?, total_experience=?, " +
-                "present_salary=?, expected_salary=?, " +
-                "remarks=?, shortlisted=?, call_status=?, demo_status=?, interview_status=?, " +
-                "interview_taken_by=?, demo_taken_by=?, resume_no=?, " +
-                "attending_date=?, demo_date=?, interview_date=?, demo_remarks=?, Hired_status=? " +
-                "WHERE sl_no=?";
+                "name=?, mobile_no=?, address=?, post_applied_for=?, " +        // 1-4
+                "gender=?, date_of_birth=?, marital_status=?, qualification=?, specialization=?, " + // 5-9
+                "percentage_marks=?, year_of_passing=?, reference_by=?, other_skills_certifications=?, " + // 10-13
+                "experience=?, relevant_experience=?, total_experience=?, " +   // 14-16
+                "present_salary=?, expected_salary=?, " +                       // 17-18
+                "remarks=?, shortlisted=?, call_status=?, demo_status=?, interview_status=?, " + // 19-23
+                "interview_taken_by=?, demo_taken_by=?, resume_no=?, " +        // 24-26
+                "attending_date=?, demo_date=?, interview_date=?, demo_remarks=?, Hired_status=? " + // 27-31
+                "WHERE sl_no=?";                                                // 32
 
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -109,19 +106,23 @@ public class resume extends HttpServlet {
             ps.setString(25, getParam(request, "demo_taken_by"));
             ps.setString(26, getParam(request, "resume_no"));
             
-            // Dates handling: If the date is empty, set as null to avoid SQL errors
+            // For actual DATE columns in MySQL, empty strings must be set as NULL
             ps.setString(27, getParamDate(request, "attending_date"));
             ps.setString(28, getParamDate(request, "demo_date"));
             ps.setString(29, getParamDate(request, "interview_date"));
             
             ps.setString(30, getParam(request, "demo_remarks"));
-            ps.setString(31, getParam(request, "Hired_status")); // NEW COLUMN
+            ps.setString(31, getParam(request, "Hired_status")); 
 
             ps.setInt(32, Integer.parseInt(request.getParameter("sl_no")));
 
-            ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+            if(rowsUpdated > 0) {
+                System.out.println("Update Successful for sl_no: " + request.getParameter("sl_no"));
+            }
 
         } catch (Exception e) {
+            System.err.println("Error updating candidate recruitment:");
             e.printStackTrace();
         }
 
@@ -136,13 +137,13 @@ public class resume extends HttpServlet {
     }
 
     /**
-     * Specialized utility for dates to ensure they are stored as NULL 
-     * in the DB if the input is empty.
+     * Ensures empty date strings from HTML are sent as NULL to SQL
+     * to prevent "Incorrect date value" errors.
      */
     private String getParamDate(HttpServletRequest request, String name) {
         String value = request.getParameter(name);
         if (value == null || value.trim().isEmpty()) {
-            return null;
+            return null; 
         }
         return value.trim();
     }
