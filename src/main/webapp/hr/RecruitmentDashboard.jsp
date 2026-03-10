@@ -207,7 +207,7 @@ public String safe(Object o){
                                if("Rejected".equalsIgnoreCase(is)){ %><span class="badge danger">Rejected</span><% }
                                else { %><%=is%><% } %>
                         </td>
-                        <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Pending</span><% } %></td>
+                        <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Not Hired</span><% } %></td>
                         <td><%=safe(c.get("remarks"))%></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button></td>
                     </tr>
