@@ -159,6 +159,7 @@ public String safe(Object o){
             <table>
                 <thead>
                     <tr>
+                        <th>Enquiry No</th>
                         <th>Candidate</th>
                         <th>Qualification</th>
                         <th>Exp</th>
@@ -187,6 +188,7 @@ public String safe(Object o){
                     String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
                 %>
                     <tr class="<%=rowClass%>">
+                        <td><%=safe(c.get("sl_no"))%></td>
                         <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
                         <td><%=safe(c.get("qualification"))%><br><small><%=safe(c.get("specialization"))%></small></td>
                         <td><%=safe(c.get("total_experience"))%> Yrs</td>
