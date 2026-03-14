@@ -146,7 +146,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)) { %>
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
