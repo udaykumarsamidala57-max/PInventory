@@ -301,7 +301,7 @@ function renderCards(exams, students) {
                     <span class="percentage">\${s.percentage.toFixed(1)}%</span>
                 </div>
 
-                <% if("Global".equalsIgnoreCase(role)){%>
+                <% if("Global".equalsIgnoreCase(role)|| "Tejkumar".equalsIgnoreCase(User)){%>
                 <div class="action-area">
                     <button class="btn btn-approve" onclick="updateStatus(\${s.id}, 'Selected')">
                         \${sel ? '✓ Selected' : 'Approve'}

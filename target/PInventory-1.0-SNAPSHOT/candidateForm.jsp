@@ -199,15 +199,15 @@
             </div>
             <div class="form-group">
                 <label>Date of Birth</label>
-                <input type="date" name="date_of_birth">
+                <input type="date" required name="date_of_birth">
             </div>
             <div class="form-group">
                 <label>Mobile No</label>
-                <input type="text" name="mobile_no">
+                <input type="text" required name="mobile_no">
             </div>
             <div class="form-group full-width">
                 <label>Address</label>
-                <textarea name="address" rows="2"></textarea>
+                <textarea name="address" required rows="2"></textarea>
             </div>
         </div>
 
@@ -215,7 +215,7 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Post Applied For</label>
-                <select name="post_applied_for">
+                <select name="post_applied_for" >
                     <option value="" disabled selected>Select Post</option>
                     <option value="Mathematics Teacher">Mathematics Teacher</option>
                     <option value="English Teacher">English Teacher</option>
@@ -255,27 +255,27 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Qualification</label>
-                <input type="text" name="qualification">
+                <input type="text" required name="qualification">
             </div>
             <div class="form-group">
                 <label>Specialization</label>
-                <input type="text" name="specialization">
+                <input type="text" required name="specialization">
             </div>
             <div class="form-group">
                 <label>Total Experience (Years)</label>
-                <input type="text" name="total_experience">
+                <input type="text" required name="total_experience">
             </div>
             <div class="form-group">
                 <label>Expected Salary</label>
-                <input type="text" name="expected_salary">
+                <input type="text" required name="expected_salary">
             </div>
             <div class="form-group full-width">
                 <label>Experience Details</label>
-                <textarea name="experience" rows="3"></textarea>
+                <textarea name="experience" required  rows="3"></textarea>
             </div>
             <div class="form-group full-width">
                 <label>Remarks</label>
-                <textarea name="remarks" rows="2"></textarea>
+                <textarea name="remarks"  rows="2"></textarea>
             </div>
         </div>
 
