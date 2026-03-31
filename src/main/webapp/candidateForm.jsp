@@ -278,6 +278,11 @@
                 <textarea name="remarks"  rows="2"></textarea>
             </div>
         </div>
+        
+        <div class="form-group full-width">
+    <label>Upload Resume (PDF / Word)</label>
+    <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
+</div>
 
         <button type="submit" class="btn-submit">Submit Application</button>
 

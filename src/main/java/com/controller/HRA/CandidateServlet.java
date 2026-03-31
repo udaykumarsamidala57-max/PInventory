@@ -2,15 +2,19 @@ package com.controller.HRA;
 
 import com.bean.DBUtil2;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
 
+@MultipartConfig(maxFileSize = 5 * 1024 * 1024) // 5MB
 @WebServlet("/CandidateServlet")
 public class CandidateServlet extends HttpServlet {
 
@@ -22,15 +26,15 @@ public class CandidateServlet extends HttpServlet {
         try (Connection con = DBUtil2.getConnection()) {
 
             String sql = "INSERT INTO candidate_recruitment "
-                    + "( name, mobile_no, address, post_applied_for, gender, date_of_birth, "
+                    + "(name, mobile_no, address, post_applied_for, gender, date_of_birth, "
                     + "marital_status, qualification, specialization, percentage_marks, year_of_passing, "
                     + "reference_by, other_skills_certifications, experience, relevant_experience, "
-                    + "total_experience, present_salary, expected_salary, remarks) "
-                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
+                    + "total_experience, present_salary, expected_salary, remarks, resume) "
+                    + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
             PreparedStatement ps = con.prepareStatement(sql);
 
-           
+            // 🔹 Normal form data
             ps.setString(1, request.getParameter("name"));
             ps.setString(2, request.getParameter("mobile_no"));
             ps.setString(3, request.getParameter("address"));
@@ -51,8 +55,19 @@ public class CandidateServlet extends HttpServlet {
             ps.setString(18, request.getParameter("expected_salary"));
             ps.setString(19, request.getParameter("remarks"));
 
+            // 🔹 File upload handling
+            Part filePart = request.getPart("resume");
+
+            if (filePart != null && filePart.getSize() > 0) {
+                InputStream fileContent = filePart.getInputStream();
+                ps.setBlob(20, fileContent);
+            } else {
+                ps.setNull(20, java.sql.Types.BLOB);
+            }
+
             ps.executeUpdate();
-            message = "✅ Candidate data saved successfully";
+
+            message = "✅ Candidate data + Resume uploaded successfully";
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -62,9 +77,7 @@ public class CandidateServlet extends HttpServlet {
         // store message in session
         request.getSession().setAttribute("message", message);
 
-        // redirect to JSP (GET request)
+        // redirect back to form
         response.sendRedirect(request.getContextPath() + "/candidateForm.jsp");
     }
-    
-    
 }
