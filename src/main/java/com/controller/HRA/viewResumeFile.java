@@ -20,7 +20,7 @@ public class viewResumeFile extends HttpServlet {
         if (id == null) return;
 
         // CRITICAL FIX: Ensure SQL column matches the rs.getBlob column name
-        String sql = "SELECT resumelongblob FROM candidate_recruitment WHERE sl_no = ?";
+        String sql = "SELECT resume FROM candidate_recruitment WHERE sl_no = ?";
 
         try (Connection con = DBUtil2.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
