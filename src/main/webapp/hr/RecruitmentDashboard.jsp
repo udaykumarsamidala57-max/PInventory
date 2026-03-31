@@ -60,7 +60,9 @@ public String safe(Object o){
         .badge.warning {background:#fef3c7;color:#92400e;}
         .badge.danger {background:#fee2e2;color:#991b1b;}
 
-        .btn-primary { background:#4f46e5; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; }
+        .btn-primary { background:#4f46e5; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
+        .btn-outline { background:transparent; border:1px solid #4f46e5; color:#4f46e5; padding:7px 13px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
+        .btn-outline:hover { background:#4f46e5; color:white; }
 
         /* MODAL SYSTEM */
         .modal { 
@@ -166,9 +168,8 @@ public String safe(Object o){
                         <th>Shortlist</th>
                         <th>Call</th>
                         <th>Demo</th>
-                        <th>Interview</th>
                         <th>Hired</th>
-                        <th>Remarks</th>
+                        <th>Resume</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -176,7 +177,6 @@ public String safe(Object o){
                 <%
                 for(Map<String,String> c:candidates){
                     boolean isHired = "Yes".equalsIgnoreCase(c.get("Hired_status"));
-                    // Logic for Rejected Row
                     boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || 
                                        "Rejected".equalsIgnoreCase(c.get("demo_status")) || 
                                        "Rejected".equalsIgnoreCase(c.get("interview_status"));
@@ -204,14 +204,13 @@ public String safe(Object o){
                                if("Rejected".equalsIgnoreCase(ds)){ %><span class="badge danger">Rejected</span><% }
                                else { %><span class="badge primary"><%=ds.isEmpty()?"Pending":ds%></span><% } %>
                         </td>
-                        <td>
-                             <% String is=safe(c.get("interview_status"));
-                               if("Rejected".equalsIgnoreCase(is)){ %><span class="badge danger">Rejected</span><% }
-                               else { %><%=is%><% } %>
-                        </td>
                         <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Not Hired</span><% } %></td>
-                        <td><%=safe(c.get("remarks"))%></td>
-                        <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button></td>
+                        <td>
+                            <a href="ViewResumeServlet?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline">📄 View Resume</a>
+                        </td>
+                        <td>
+                            <button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button>
+                        </td>
                     </tr>
                 <% } %>
                 </tbody>
@@ -288,11 +287,9 @@ public String safe(Object o){
                     </div>
                     <h4>Called Status</h4>
                     <div class="form-row">
-                       
                         <select name="call_status" id="f_call_status">
                             <option value="Called">Called</option>
                             <option value="Not Reachable">Not Reachable</option>
-                            
                         </select>
                     </div>
 
@@ -351,7 +348,6 @@ document.querySelectorAll(".reviewBtn").forEach(btn => {
         Object.keys(data).forEach(key => {
             const el = document.getElementById("f_" + key);
             if (el) {
-                // Fix for SQL Timestamp/Date format to HTML Input
                 if(el.type === 'date' && data[key]){
                     el.value = data[key].split(' ')[0];
                 } else {
@@ -367,7 +363,6 @@ function closeModal() {
     document.getElementById("editModal").style.display = "none";
 }
 
-// Close on outside click
 window.onclick = function(event) {
     let modal = document.getElementById("editModal");
     if (event.target == modal) {
