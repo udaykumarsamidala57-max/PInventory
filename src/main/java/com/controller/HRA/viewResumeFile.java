@@ -28,7 +28,7 @@ public class viewResumeFile extends HttpServlet {
             ps.setInt(1, Integer.parseInt(id));
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    Blob blob = rs.getBlob("resumelongblob"); // Matches SQL select
+                    Blob blob = rs.getBlob("resume"); // Matches SQL select
                     if (blob != null) {
                         byte[] data = blob.getBytes(1, (int) blob.length());
                         
