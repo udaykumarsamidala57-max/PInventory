@@ -6,12 +6,15 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.*;
-import java.util.*;
+
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import com.bean.DBUtil2;
 
 @WebServlet("/resume")
