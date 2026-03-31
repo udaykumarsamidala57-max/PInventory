@@ -69,7 +69,11 @@
                     <td><%= row.get("qualification") %></td>
                     <td><span style="color:blue"><%= row.get("call_status") %></span></td>
                     <td>
-                        <button class="btn btn-edit" onclick='openModal(<%= new com.google.gson.Gson().toJson(row) %>)'>View / Edit</button>
+                        <button class="btn btn-edit"
+onclick="openModal({
+    name:'<%= row.get("name") %>',
+    mobile_no:'<%= row.get("mobile_no") %>'
+})">
                     </td>
                 </tr>
                 <% } } %>

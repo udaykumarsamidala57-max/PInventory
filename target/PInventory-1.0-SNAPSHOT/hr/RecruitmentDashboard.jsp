@@ -200,10 +200,12 @@ public String safe(Object o){
                         <select name="call_status" id="f_call_status"><option value="Called">Called</option><option value="Not Reachable">Not Reachable</option></select>
                     </div>
                     <div class="form-row">
+                    <h6> Demo Status</h6>
                         <input type="date" name="demo_date" id="f_demo_date">
                         <select name="demo_status" id="f_demo_status"><option value="Pending">Pending</option><option value="Selected">Selected</option><option value="Rejected">Rejected</option></select>
                     </div>
                     <div class="form-row">
+                     <h6> Interview Status</h6>
                         <input type="date" name="interview_date" id="f_interview_date">
                         <select name="interview_status" id="f_interview_status"><option value="Pending">Pending</option><option value="Selected">Selected</option><option value="Rejected">Rejected</option></select>
                     </div>
