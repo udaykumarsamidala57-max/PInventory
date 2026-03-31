@@ -206,7 +206,7 @@ public String safe(Object o){
                         </td>
                         <td><% if(isHired){ %><span class="badge success">Hired</span><% } else { %><span class="badge warning">Not Hired</span><% } %></td>
                         <td>
-                            <a href="ViewResumeServlet?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline"> View Resume</a>
+                            <a href="viewResumeFile?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline"> View Resume</a>
                         </td>
                         <td>
                             <button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review Details</button>
