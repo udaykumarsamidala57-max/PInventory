@@ -2,10 +2,7 @@ package com.controller.HRA;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.sql.Blob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -13,7 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.bean.DBUtil2;
 
-@WebServlet("/reseume")
+// Rename the URL mapping to avoid conflicts with JSP files
+@WebServlet("/viewResumeFile") 
 public class resume extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -21,31 +19,35 @@ public class resume extends HttpServlet {
         String id = request.getParameter("id");
         if (id == null) return;
 
+        // CRITICAL FIX: Ensure SQL column matches the rs.getBlob column name
+        String sql = "SELECT resumelongblob FROM candidate_recruitment WHERE sl_no = ?";
+
         try (Connection con = DBUtil2.getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT resumelongblob FROM candidate_recruitment WHERE sl_no = ?")) {
+             PreparedStatement ps = con.prepareStatement(sql)) {
             
             ps.setInt(1, Integer.parseInt(id));
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-                Blob blob = rs.getBlob("resumelongblob");
-                if (blob != null) {
-                    byte[] data = blob.getBytes(1, (int) blob.length());
-                    
-                    // Most resumes are PDF, this allows them to open in the browser tab
-                    response.setContentType("application/pdf"); 
-                    response.setContentLength(data.length);
-                    
-                    try (OutputStream out = response.getOutputStream()) {
-                        out.write(data);
-                        out.flush();
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Blob blob = rs.getBlob("resumelongblob"); // Matches SQL select
+                    if (blob != null) {
+                        byte[] data = blob.getBytes(1, (int) blob.length());
+                        
+                        response.setContentType("application/pdf"); 
+                        response.setContentLength(data.length);
+                        
+                        try (OutputStream out = response.getOutputStream()) {
+                            out.write(data);
+                            out.flush();
+                        }
+                    } else {
+                        response.setContentType("text/html");
+                        response.getWriter().println("<h3>No resume file found for this candidate.</h3>");
                     }
-                } else {
-                    response.getWriter().println("No resume file found for this candidate.");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }
