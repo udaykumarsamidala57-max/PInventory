@@ -7,9 +7,9 @@
     <title>Teacher Recruitment - Sandur Residential School</title>
     <style>
         :root {
-            --brand-dark: #1a2a47; /* Dark Blue from image */
-            --brand-yellow: #f1c40f; /* Yellow from image */
-            --brand-accent: #3498db; /* Light Blue highlight */
+            --brand-dark: #1a2a47;
+            --brand-yellow: #f1c40f;
+            --brand-accent: #3498db;
             --bg-color: #f0f2f5;
             --text-main: #2c3e50;
         }
@@ -22,7 +22,6 @@
             color: var(--text-main);
         }
 
-        /* --- BRAND HEADER STYLES --- */
         .brand-header {
             background-color: var(--brand-dark);
             padding: 20px 0;
@@ -69,7 +68,6 @@
             opacity: 0.9;
         }
 
-        /* --- FORM CONTAINER STYLES --- */
         .container {
             max-width: 900px;
             margin: 30px auto;
@@ -110,13 +108,6 @@
             border: 1px solid #ced4da;
             border-radius: 5px;
             font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--brand-accent);
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
-            outline: none;
         }
 
         .btn-submit {
@@ -130,11 +121,6 @@
             cursor: pointer;
             width: 100%;
             margin-top: 30px;
-            transition: background 0.3s;
-        }
-
-        .btn-submit:hover {
-            background-color: #0d1625;
         }
 
         .message {
@@ -147,12 +133,9 @@
         .success { background: #d4edda; color: #155724; }
         .error { background: #f8d7da; color: #721c24; }
 
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
-            .container { margin: 10px; padding: 20px; }
-            .school-name { font-size: 18px; }
         }
     </style>
 </head>
@@ -172,7 +155,7 @@
     <%
         String msg = (String) session.getAttribute("message");
         if (msg != null) {
-            String cls = msg.startsWith("❌") ? "error" : "success";
+            String cls = msg.contains("❌") ? "error" : "success";
     %>
         <div class="message <%= cls %>"><%= msg %></div>
     <%
@@ -180,13 +163,13 @@
         }
     %>
 
-    <form action="CandidateServlet" method="post">
+    <form action="CandidateServlet" method="post" enctype="multipart/form-data">
         
         <div class="section-title">Personal Information</div>
         <div class="form-grid">
             <div class="form-group">
                 <label>Name *</label>
-                <input type="text" name="name" required placeholder="Full Name">
+                <input type="text" name="name" required>
             </div>
             <div class="form-group">
                 <label>Gender</label>
@@ -194,7 +177,6 @@
                     <option value="" disabled selected>Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
-                    
                 </select>
             </div>
             <div class="form-group">
@@ -215,27 +197,13 @@
         <div class="form-grid">
             <div class="form-group">
                 <label>Post Applied For</label>
-                <select name="post_applied_for" >
+                <select name="post_applied_for">
                     <option value="" disabled selected>Select Post</option>
                     <option value="Mathematics Teacher">Mathematics Teacher</option>
                     <option value="English Teacher">English Teacher</option>
                     <option value="Kannada Teacher">Kannada Teacher</option>
-                    <option value="Social Teacher">Social Teacher</option>
-                    <option value="Biology Teacher">Biology Teacher</option>
-                    <option value="Physics Teacher">Physics Teacher</option>
-                    <option value="Chemistry Teacher">Chemistry Teacher</option>
-                    <option value="Geography Teacher">Geography Teacher</option>
-                    <option value="Computer Science Teacher">Computer Science Teacher</option>
                     <option value="HR">HR</option>
-                    <option value="Academic Assistant">Academic Assistant</option>
-                     <option value="Environmental Applications Teacher">Environmental Applications Teacher</option>
-                     <option value="Mother Teacher">Mother Teacher</option>
-                     <option value="General Science Teacher">General Science Teacher</option>
-                     <option value="Dance">Dance</option>
-                     <option value="Music">Music</option>
-                     <option value="PE Teacher">PE Teacher</option>
-                     <option value="Art & Craft">Art & Craft</option>
-                </select>
+                    </select>
             </div>
           
             <div class="form-group">
@@ -262,6 +230,14 @@
                 <input type="text" required name="specialization">
             </div>
             <div class="form-group">
+                <label>Percentage Marks</label>
+                <input type="text" name="percentage_marks">
+            </div>
+            <div class="form-group">
+                <label>Year of Passing</label>
+                <input type="text" name="year_of_passing">
+            </div>
+            <div class="form-group">
                 <label>Total Experience (Years)</label>
                 <input type="text" required name="total_experience">
             </div>
@@ -271,18 +247,19 @@
             </div>
             <div class="form-group full-width">
                 <label>Experience Details</label>
-                <textarea name="experience" required  rows="3"></textarea>
+                <textarea name="experience" required rows="3"></textarea>
             </div>
             <div class="form-group full-width">
                 <label>Remarks</label>
-                <textarea name="remarks"  rows="2"></textarea>
+                <textarea name="remarks" rows="2"></textarea>
             </div>
         </div>
         
+        <div class="section-title">Documents</div>
         <div class="form-group full-width">
-    <label>Upload Resume (PDF / Word)</label>
-    <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
-</div>
+            <label>Upload Resume (PDF / Word) *</label>
+            <input type="file" name="resume" accept=".pdf,.doc,.docx" required>
+        </div>
 
         <button type="submit" class="btn-submit">Submit Application</button>
 
