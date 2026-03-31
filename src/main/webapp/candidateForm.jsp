@@ -277,7 +277,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label>Full Name *</label>
-                        <input type="text" name="name" required placeholder="e.g. John Doe">
+                        <input type="text" name="name" required placeholder="e.g. Uday Kumar">
                     </div>
                     <div class="form-group">
                         <label>Gender</label>
