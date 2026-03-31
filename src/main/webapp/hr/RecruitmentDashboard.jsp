@@ -14,6 +14,16 @@ Gson gson = new Gson();
 public String safe(Object o){
     return (o==null) ? "" : o.toString();
 }
+
+// Helper to determine badge styling based on status text
+public String getBadgeClass(String status) {
+    if (status == null) return "badge";
+    String s = status.toLowerCase();
+    if (s.contains("yes") || s.contains("selected") || s.contains("hired")) return "badge success";
+    if (s.contains("no") || s.contains("rejected")) return "badge danger";
+    if (s.contains("pending") || s.contains("called")) return "badge warning";
+    return "badge primary";
+}
 %>
 
 <!DOCTYPE html>
@@ -41,13 +51,14 @@ public String safe(Object o){
         table { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
         th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; padding:12px; text-align: left; }
         td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; }
-        .hired-row { background:#ccffcc !important; }
-        .rejected-row { background:#ff8080 !important; }
-        .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
-        .badge.success {background:#dcfce7;color:#166534;}
-        .badge.primary {background:#dbeafe;color:#1d4ed8;}
-        .badge.warning {background:#fef3c7;color:#92400e;}
-        .badge.danger {background:#fee2e2;color:#991b1b;}
+        
+        /* Badges Styling */
+        .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge.success {background:#dcfce7;color:#166534; border: 1px solid #bbf7d0;}
+        .badge.primary {background:#dbeafe;color:#1d4ed8; border: 1px solid #bfdbfe;}
+        .badge.warning {background:#fef3c7;color:#92400e; border: 1px solid #fde68a;}
+        .badge.danger {background:#fee2e2;color:#991b1b; border: 1px solid #fecaca;}
+        
         .btn-primary { background:#4f46e5; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
         .btn-outline { background:transparent; border:1px solid #4f46e5; color:#4f46e5; padding:7px 13px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
         .btn-outline:hover { background:#4f46e5; color:white; }
@@ -115,26 +126,24 @@ public String safe(Object o){
                         <th>Exp</th>
                         <th>Shortlist</th>
                         <th>Demo</th>
-                        <th>Hired</th>
+                        <th>Hired Status</th>
                         <th>Resume</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 <% for(Map<String,String> c:candidates){
-                    boolean isHired = "Yes".equalsIgnoreCase(c.get("Hired_status"));
-                    boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || "Rejected".equalsIgnoreCase(c.get("demo_status"));
-                    String rowClass = isHired ? "hired-row" : (isRejected ? "rejected-row" : "");
                     String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
+                    String hiredStatus = "Yes".equalsIgnoreCase(c.get("Hired_status")) ? "Hired" : "Pending";
                 %>
-                    <tr class="<%=rowClass%>">
+                    <tr>
                         <td><%=safe(c.get("sl_no"))%></td>
                         <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
                         <td><%=safe(c.get("qualification"))%></td>
                         <td><%=safe(c.get("total_experience"))%> Y</td>
-                        <td><%=safe(c.get("shortlisted"))%></td>
-                        <td><%=safe(c.get("demo_status"))%></td>
-                        <td><%=isHired ? "Hired" : "Pending"%></td>
+                        <td><span class="<%=getBadgeClass(c.get("shortlisted"))%>"><%=safe(c.get("shortlisted"))%></span></td>
+                        <td><span class="<%=getBadgeClass(c.get("demo_status"))%>"><%=safe(c.get("demo_status"))%></span></td>
+                        <td><span class="<%=getBadgeClass(hiredStatus)%>"><%=hiredStatus%></span></td>
                         <td><a href="viewResumeFile?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline">View</a></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review</button></td>
                     </tr>
