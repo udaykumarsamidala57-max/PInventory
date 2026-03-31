@@ -11,6 +11,7 @@ com\controller\Admissions\UploadCSVServlet.class
 com\controller\IndentlistServlet.class
 com\controller\POListServlet.class
 com\controller\AIndentListServlet.class
+com\controller\HRA\viewResumeFile.class
 com\controller\PurchaseOrderServlet.class
 com\controller\Admissions\DashboardServlet.class
 com\controller\GRNServlet.class
