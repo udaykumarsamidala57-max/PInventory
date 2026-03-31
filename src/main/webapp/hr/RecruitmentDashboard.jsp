@@ -122,6 +122,15 @@ public String getBadgeClass(String status) {
 
         for(String post:grouped.keySet()){
             List<Map<String,String>> candidates=grouped.get(post);
+            
+            // Sort logic: Active candidates first, Rejected (Dimmed) candidates last
+            Collections.sort(candidates, new Comparator<Map<String,String>>() {
+                public int compare(Map<String,String> c1, Map<String,String> c2) {
+                    boolean r1 = "No".equalsIgnoreCase(c1.get("shortlisted")) || "Rejected".equalsIgnoreCase(c1.get("demo_status")) || "Rejected".equalsIgnoreCase(c1.get("interview_status"));
+                    boolean r2 = "No".equalsIgnoreCase(c2.get("shortlisted")) || "Rejected".equalsIgnoreCase(c2.get("demo_status")) || "Rejected".equalsIgnoreCase(c2.get("interview_status"));
+                    return Boolean.compare(r1, r2); 
+                }
+            });
     %>
     <div class="section">
         <div class="section-header"><h1><%=post%></h1></div>
@@ -145,7 +154,6 @@ public String getBadgeClass(String status) {
                     String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
                     String hiredStatusText = "Yes".equalsIgnoreCase(c.get("Hired_status")) ? "Hired" : "Pending";
                     
-                    // Logic to check if the row should be dimmed (Rejected/Not Shortlisted)
                     boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || 
                                        "Rejected".equalsIgnoreCase(c.get("demo_status")) || 
                                        "Rejected".equalsIgnoreCase(c.get("interview_status"));
