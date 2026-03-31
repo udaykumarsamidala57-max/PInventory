@@ -27,7 +27,7 @@ public class CandidateServlet extends HttpServlet {
                 + "(name, mobile_no, address, post_applied_for, gender, date_of_birth, "
                 + "marital_status, qualification, specialization, percentage_marks, year_of_passing, "
                 + "reference_by, other_skills_certifications, experience, relevant_experience, "
-                + "total_experience, present_salary, expected_salary, remarks, resumelongblob) "
+                + "total_experience, present_salary, expected_salary, remarks, resume) "
                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
         try (Connection con = DBUtil2.getConnection();
