@@ -165,9 +165,12 @@ public String getBadgeClass(String status) {
                         <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
                         <td><%=safe(c.get("qualification"))%></td>
                         <td><%=safe(c.get("total_experience"))%> Y</td>
+                        <td><%=safe(c.get("call_status"))%> </td>
+                        
                         <td><span class="<%=getBadgeClass(c.get("shortlisted"))%>"><%=safe(c.get("shortlisted"))%></span></td>
                         <td><span class="<%=getBadgeClass(c.get("demo_status"))%>"><%=safe(c.get("demo_status"))%></span></td>
                         <td><span class="<%=getBadgeClass(hiredStatusText)%>"><%=hiredStatusText%></span></td>
+                        <td><%=safe(c.get("remarks"))%> </td>
                         <td><a href="viewResumeFile?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline">View</a></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review</button></td>
                     </tr>
