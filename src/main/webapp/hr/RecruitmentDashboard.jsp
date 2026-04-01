@@ -144,7 +144,9 @@ public String getBadgeClass(String status) {
                         <th>Exp</th>
                         <th>Shortlist</th>
                         <th>Demo</th>
+                        <th>Interview Status</th>
                         <th>Hired Status</th>
+                        <th> Remarks></th>
                         <th>Resume</th>
                         <th>Action</th>
                     </tr>
