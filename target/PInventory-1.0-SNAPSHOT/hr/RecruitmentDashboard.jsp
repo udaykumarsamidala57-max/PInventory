@@ -14,6 +14,16 @@ Gson gson = new Gson();
 public String safe(Object o){
     return (o==null) ? "" : o.toString();
 }
+
+// Helper to determine badge styling based on status text
+public String getBadgeClass(String status) {
+    if (status == null) return "badge";
+    String s = status.toLowerCase();
+    if (s.contains("yes") || s.contains("selected") || s.contains("hired")) return "badge success";
+    if (s.contains("no") || s.contains("rejected")) return "badge danger";
+    if (s.contains("pending") || s.contains("called")) return "badge warning";
+    return "badge primary";
+}
 %>
 
 <!DOCTYPE html>
@@ -32,25 +42,35 @@ public String safe(Object o){
         .kpi-number.success {color:#16a34a;} 
         .kpi-number.primary {color:#2563eb;} 
         .kpi-number.hired {color:#9333ea;}
-        .funnel { background:white; padding:18px; border-radius:10px; margin-bottom:30px; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
-        .progress { height:10px; background:#e2e8f0; border-radius:8px; overflow:hidden; margin-top:10px; }
-        .progress div { height:100%; background:#4f46e5; }
+        
         .section { margin-top:40px; }
         .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; }
         .table-wrapper { overflow-x:auto; }
         table { width:100%; border-collapse:collapse; background:white; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
         th { background:#f8fafc; font-size:11px; text-transform:uppercase; color:#64748b; padding:12px; text-align: left; }
-        td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; }
-        .hired-row { background:#ccffcc !important; }
-        .rejected-row { background:#ff8080 !important; }
-        .badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:600; }
-        .badge.success {background:#dcfce7;color:#166534;}
-        .badge.primary {background:#dbeafe;color:#1d4ed8;}
-        .badge.warning {background:#fef3c7;color:#92400e;}
-        .badge.danger {background:#fee2e2;color:#991b1b;}
+        td { padding:12px; border-top:1px solid #f1f5f9; font-size:13px; vertical-align: top; transition: all 0.2s ease; }
+        
+        /* Dimmed Row Effect (Gmail Style) */
+        .dimmed-row td { 
+            opacity: 0.45; 
+            filter: grayscale(0.8);
+        }
+        .dimmed-row:hover td {
+            opacity: 1;
+            filter: grayscale(0);
+        }
+
+        /* Badges Styling */
+        .badge { display:inline-block; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; text-transform: uppercase; letter-spacing: 0.3px; }
+        .badge.success {background:#dcfce7;color:#166534; border: 1px solid #bbf7d0;}
+        .badge.primary {background:#dbeafe;color:#1d4ed8; border: 1px solid #bfdbfe;}
+        .badge.warning {background:#fef3c7;color:#92400e; border: 1px solid #fde68a;}
+        .badge.danger {background:#fee2e2;color:#991b1b; border: 1px solid #fecaca;}
+        
         .btn-primary { background:#4f46e5; color:white; border:none; padding:8px 14px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
         .btn-outline { background:transparent; border:1px solid #4f46e5; color:#4f46e5; padding:7px 13px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; text-decoration:none; display:inline-block;}
         .btn-outline:hover { background:#4f46e5; color:white; }
+        
         .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15, 23, 42, 0.7); z-index:9999; justify-content:center; align-items:center; backdrop-filter: blur(4px); }
         .modal-content { background:white; width:90%; max-width:1100px; max-height:92vh; overflow-y:auto; padding:30px; border-radius:12px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
         .modal-title { font-size:20px; font-weight:800; margin-bottom:20px; color:#1e293b; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
@@ -102,6 +122,15 @@ public String safe(Object o){
 
         for(String post:grouped.keySet()){
             List<Map<String,String>> candidates=grouped.get(post);
+            
+            // Sort logic: Active candidates first, Rejected (Dimmed) candidates last
+            Collections.sort(candidates, new Comparator<Map<String,String>>() {
+                public int compare(Map<String,String> c1, Map<String,String> c2) {
+                    boolean r1 = "No".equalsIgnoreCase(c1.get("shortlisted")) || "Rejected".equalsIgnoreCase(c1.get("demo_status")) || "Rejected".equalsIgnoreCase(c1.get("interview_status"));
+                    boolean r2 = "No".equalsIgnoreCase(c2.get("shortlisted")) || "Rejected".equalsIgnoreCase(c2.get("demo_status")) || "Rejected".equalsIgnoreCase(c2.get("interview_status"));
+                    return Boolean.compare(r1, r2); 
+                }
+            });
     %>
     <div class="section">
         <div class="section-header"><h1><%=post%></h1></div>
@@ -113,28 +142,38 @@ public String safe(Object o){
                         <th>Candidate</th>
                         <th>Qualification</th>
                         <th>Exp</th>
+                        <th>Call</th>
                         <th>Shortlist</th>
                         <th>Demo</th>
-                        <th>Hired</th>
+                        <th>Interview Status</th>
+                        <th>Hired Status</th>
+                        <th> Remarks></th>	
                         <th>Resume</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                 <% for(Map<String,String> c:candidates){
-                    boolean isHired = "Yes".equalsIgnoreCase(c.get("Hired_status"));
-                    boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || "Rejected".equalsIgnoreCase(c.get("demo_status"));
-                    String rowClass = isHired ? "hired-row" : (isRejected ? "rejected-row" : "");
                     String json=gson.toJson(c).replace("&","&amp;").replace("\"","&quot;");
+                    String hiredStatusText = "Yes".equalsIgnoreCase(c.get("Hired_status")) ? "Hired" : "Pending";
+                    
+                    boolean isRejected = "No".equalsIgnoreCase(c.get("shortlisted")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("demo_status")) || 
+                                       "Rejected".equalsIgnoreCase(c.get("interview_status"));
+                    
+                    String rowClass = isRejected ? "dimmed-row" : "";
                 %>
                     <tr class="<%=rowClass%>">
                         <td><%=safe(c.get("sl_no"))%></td>
                         <td><b><%=safe(c.get("name"))%></b><br><small><%=safe(c.get("mobile_no"))%></small></td>
                         <td><%=safe(c.get("qualification"))%></td>
                         <td><%=safe(c.get("total_experience"))%> Y</td>
-                        <td><%=safe(c.get("shortlisted"))%></td>
-                        <td><%=safe(c.get("demo_status"))%></td>
-                        <td><%=isHired ? "Hired" : "Pending"%></td>
+                        <td><%=safe(c.get("call_status"))%> </td>
+                        
+                        <td><span class="<%=getBadgeClass(c.get("shortlisted"))%>"><%=safe(c.get("shortlisted"))%></span></td>
+                        <td><span class="<%=getBadgeClass(c.get("demo_status"))%>"><%=safe(c.get("demo_status"))%></span></td>
+                        <td><span class="<%=getBadgeClass(hiredStatusText)%>"><%=hiredStatusText%></span></td>
+                        <td><%=safe(c.get("remarks"))%> </td>
                         <td><a href="viewResumeFile?id=<%=c.get("sl_no")%>" target="_blank" class="btn-outline">View</a></td>
                         <td><button class="btn-primary reviewBtn" data-candidate="<%=json%>">Review</button></td>
                     </tr>

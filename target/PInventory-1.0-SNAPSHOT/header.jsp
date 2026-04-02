@@ -206,7 +206,9 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
       <% } %>
     </div>
   </div>
-
+<% if ("karthik".equalsIgnoreCase(users) || 
+       "Principal".equalsIgnoreCase(roles) || 
+       "Global".equalsIgnoreCase(roles)) { %>
   <div class="sidebar-label">HR & Recruitment</div>
 
    <div class="dropdown recruitment-menu">
@@ -216,7 +218,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
        <a href="resume"><i class="fas fa-users-viewfinder"></i> Applications</a>
      </div>
    </div>
-  
+   <% } %>
   <a href="Logout.jsp" style="margin-top: auto;"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
 

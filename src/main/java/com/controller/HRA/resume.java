@@ -35,7 +35,13 @@ public class resume extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
+        String user = (String) sess.getAttribute("user");
+        String role = (String) sess.getAttribute("role");
+        if (!"Global".equalsIgnoreCase(role)&& !"karthik".equalsIgnoreCase(user)) {
+            response.setContentType("text/html");
+            response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
+            return;
+        }
         List<Map<String, String>> resumeList = new ArrayList<>();
 
         String sql = "SELECT * FROM candidate_recruitment ORDER BY sl_no DESC";
