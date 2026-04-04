@@ -35,7 +35,7 @@ public class resume extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-        String user = (String) sess.getAttribute("user");
+        String user = (String) sess.getAttribute("username");
         String role = (String) sess.getAttribute("role");
         if (!"Global".equalsIgnoreCase(role)&& !"karthik".equalsIgnoreCase(user)) {
             response.setContentType("text/html");
