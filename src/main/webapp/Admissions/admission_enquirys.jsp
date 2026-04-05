@@ -245,7 +245,7 @@ window.onload = function(){ calculateAges(); applyFilters(); }
 <table id="enquiryTable">
 <thead>
     <tr>
-    <th>ID</th><th>Student</th><th>Gender</th><th>DOB</th><th>Age</th>
+    <th>ID</th><th>Enquiry Date</th><th>Student</th><th>Gender</th><th>DOB</th><th>Age</th>
     <th>Class</th><th>Type</th><th>Father</th><th>F Occ</th><th>F Org</th>
     <th>F Mobile</th><th>Mother</th><th>M Occ</th><th>M Org</th>
     <th>M Mobile</th><th>Place</th><th>Segment</th><th>Exam Date</th><th>App No</th><th>Edit</th><th>Print</th><th>Approve</th>
@@ -263,6 +263,7 @@ if(dataList != null){
 %>
 <tr class="data-row <%= isNoApp ? "empty-app-row" : "" %>" id="row<%=id%>">
     <td><%=id%></td>
+    <td><%=rowMap.get("created_at")%></td>
     <td><%=rowMap.get("student_name")%></td>
     <td><%=rowMap.get("gender")%></td>
     <td><%=dob%></td>
