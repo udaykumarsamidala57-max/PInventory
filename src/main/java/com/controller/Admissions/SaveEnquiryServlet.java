@@ -61,9 +61,7 @@ public class SaveEnquiryServlet extends HttpServlet {
         }
     }
 
-    // =======================
-    // ✅ FORM SUBMIT
-    // =======================
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -85,29 +83,31 @@ public class SaveEnquiryServlet extends HttpServlet {
         String motherMobile = request.getParameter("mother_mobile_no");
 
         String segment = request.getParameter("segment");
-        String placeFrom = request.getParameter("place_from");
+        String address = request.getParameter("Address");
 
+        // 2. Null safety
+        if (fatherMobile == null) fatherMobile = "";
+        if (motherMobile == null) motherMobile = "";
         if (segment == null) segment = "";
+        if (address == null) address = "";
 
-        Connection con = null;
-        PreparedStatement ps = null;
-
-        try {
-            // 2. Get DB connection
-            con = DBUtil3.getConnection();
+        try (Connection con = DBUtil3.getConnection()) {
 
             // ===============================
-            // 🛡️ SERVER-SIDE MOBILE LIMIT CHECK
+            // 🛡️ MOBILE LIMIT CHECK (SERVER SIDE)
             // ===============================
             String checkSql = "SELECT COUNT(*) FROM admission_enquiry WHERE father_mobile_no = ? OR mother_mobile_no = ?";
-            PreparedStatement checkPs = con.prepareStatement(checkSql);
-            checkPs.setString(1, fatherMobile);
-            checkPs.setString(2, fatherMobile);
-
-            ResultSet rs = checkPs.executeQuery();
+            
             int count = 0;
-            if (rs.next()) {
-                count = rs.getInt(1);
+            try (PreparedStatement checkPs = con.prepareStatement(checkSql)) {
+                checkPs.setString(1, fatherMobile);
+                checkPs.setString(2, motherMobile);
+
+                try (ResultSet rs = checkPs.executeQuery()) {
+                    if (rs.next()) {
+                        count = rs.getInt(1);
+                    }
+                }
             }
 
             if (count >= 2) {
@@ -117,72 +117,62 @@ public class SaveEnquiryServlet extends HttpServlet {
                 out.println("alert('❌ This mobile number already used 2 times. Further submissions are blocked!');");
                 out.println("window.history.back();");
                 out.println("</script>");
-                return; // ⛔ STOP INSERT
+                return;
             }
 
             // ===============================
-            // ✅ INSERT DATA
+            // ✅ INSERT DATA (FIXED ORDER)
             // ===============================
-         // 1. Update the SQL string: 16 columns, 16 placeholders
             String sql = "INSERT INTO admission_enquiry ("
-                       + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
-                       + "father_name, father_occupation, father_organization, father_mobile_no, "
-                       + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
-                       + "segment, Address" 
-                       + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 16 placeholders
+                    + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
+                    + "father_name, father_occupation, father_organization, father_mobile_no, "
+                    + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
+                    + "Address, segment"
+                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            ps = con.prepareStatement(sql);
+            try (PreparedStatement ps = con.prepareStatement(sql)) {
 
-            // 2. Set the 15 values you have
-            ps.setString(1, studentName);
-            ps.setString(2, gender);
-            ps.setString(3, dob);
-            ps.setString(4, classOfAdmission);
-            ps.setString(5, admissionType);
-            ps.setString(6, fatherName);
-            ps.setString(7, fatherOccupation);
-            ps.setString(8, fatherOrganization);
-            ps.setString(9, fatherMobile);
-            ps.setString(10, motherName);
-            ps.setString(11, motherOccupation);
-            ps.setString(12, motherOrganization);
-            ps.setString(13, motherMobile);
-            ps.setString(14, segment);
-            ps.setString(15, placeFrom);
+                ps.setString(1, studentName);
+                ps.setString(2, gender);
+                ps.setString(3, dob);
+                ps.setString(4, classOfAdmission);
+                ps.setString(5, admissionType);
+                ps.setString(6, fatherName);
+                ps.setString(7, fatherOccupation);
+                ps.setString(8, fatherOrganization);
+                ps.setString(9, fatherMobile);
+                ps.setString(10, motherName);
+                ps.setString(11, motherOccupation);
+                ps.setString(12, motherOrganization);
+                ps.setString(13, motherMobile);
+                ps.setString(14, address);   // ✅ Correct position
+                ps.setString(15, segment);   // ✅ Correct position
 
-          
+                int result = ps.executeUpdate();
 
-      
-
-            int result = ps.executeUpdate();
-
-            if (result > 0) {
-                response.sendRedirect("enquiry_success.jsp");
-            } else {
-                response.setContentType("text/html;charset=UTF-8");
-                PrintWriter out = response.getWriter();
-                out.println("<script>");
-                out.println("alert('❌ Failed to submit enquiry. Please try again!');");
-                out.println("window.history.back();");
-                out.println("</script>");
+                if (result > 0) {
+                    response.sendRedirect("enquiry_success.jsp");
+                } else {
+                    sendError(response, "❌ Failed to submit enquiry. Please try again!");
+                }
             }
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.setContentType("text/html;charset=UTF-8");
-            PrintWriter out = response.getWriter();
-            out.println("<script>");
-            out.println("alert('❌ Server error! Please try again later.');");
-            out.println("window.history.back();");
-            out.println("</script>");
-
-        } finally {
-            try {
-                if (ps != null) ps.close();
-                if (con != null) con.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            sendError(response, "❌ Server error! Please try again later.");
         }
     }
+
+    // ===============================
+    // 🔧 COMMON ERROR METHOD
+    // ===============================
+    private void sendError(HttpServletResponse response, String message) throws IOException {
+        response.setContentType("text/html;charset=UTF-8");
+        PrintWriter out = response.getWriter();
+        out.println("<script>");
+        out.println("alert('" + message + "');");
+        out.println("window.history.back();");
+        out.println("</script>");
+    }
+    
 }
