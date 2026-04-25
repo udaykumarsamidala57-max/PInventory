@@ -127,8 +127,8 @@ public class SaveEnquiryServlet extends HttpServlet {
                     + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
                     + "father_name, father_occupation, father_organization, father_mobile_no, "
                     + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
-                    + "segment, place_from"
-                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    + "segment, place_from, Address" // Added Address as an example
+                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             ps = con.prepareStatement(sql);
 
