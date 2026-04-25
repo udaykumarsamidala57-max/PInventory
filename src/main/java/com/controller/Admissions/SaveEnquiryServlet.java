@@ -56,8 +56,10 @@ public class SaveEnquiryServlet extends HttpServlet {
 
         if (count >= 2) {
             out.print("BLOCK");
+        } else if (count == 1) {
+            out.print("EXISTS");
         } else {
-            out.print(count); // 0 or 1
+            out.print("OK");
         }
     }
 

@@ -172,7 +172,6 @@
 <script>
 let mobileExists = false;
 
-
 function calculateAge() {
     let dobValue = document.getElementById("dob").value;
     if (!dobValue) {
@@ -217,15 +216,26 @@ function checkMobile(mobile) {
 
             let response = xhr.responseText.trim();
 
-            if (response === "EXISTS") {
+            // ✅ HANDLE BLOCK (>=2 entries)
+            if (response === "BLOCK") {
 
-                alert("⚠ This mobile number is already submitted!");
+                alert("❌ This mobile number already used 2 times!");
 
-                document.getElementById("mobileMsg").innerHTML = "This mobile number already exists!";
+                document.getElementById("mobileMsg").innerHTML = "Mobile number limit reached (2 entries)";
                 document.getElementById("submitBox").style.display = "none";
                 mobileExists = true;
 
-            } else {
+            }
+            // ✅ HANDLE EXISTS (1 entry)
+            else if (response === "EXISTS" || response === "1") {
+
+                document.getElementById("mobileMsg").innerHTML = "This mobile number already exists!";
+                document.getElementById("submitBox").style.display = "block";
+                mobileExists = false;
+
+            }
+            // ✅ OK (0 entries)
+            else {
 
                 document.getElementById("mobileMsg").innerHTML = "";
                 document.getElementById("submitBox").style.display = "block";
@@ -247,12 +257,11 @@ function resetSubmit() {
 
 function validateBeforeSubmit() {
     if (mobileExists) {
-        alert("This mobile number already exists!");
+        alert("This mobile number is blocked!");
         return false;
     }
     return true;
 }
 </script>
-
 </body>
 </html>

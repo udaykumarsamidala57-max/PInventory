@@ -13,23 +13,10 @@
       response.sendRedirect("login.jsp");
        return;
    }
-   
 
    String role = (String) sess.getAttribute("role");
    String User = (String) sess.getAttribute("username");
-   String dept = (String) sess.getAttribute("department");
-   
-// Sanitize the input before checking
-String cleanDept = (dept != null) ? dept.trim() : "";
-String cleanRole = (role != null) ? role.trim() : "";
 
-if (!"Finance".equalsIgnoreCase(cleanDept) && 
-    !"Academics".equalsIgnoreCase(cleanDept) && 
-    !"Global".equalsIgnoreCase(cleanRole)) {
-    
-    out.println("<h3 style='color:red;text-align:center;margin-top:30px;'>Access Denied!</h3>");
-    return;
-}
    CachedRowSet rs = (CachedRowSet)request.getAttribute("list");
    List<Map<String, Object>> dataList = new ArrayList<>();
    
@@ -232,7 +219,7 @@ window.onload = function(){ calculateAges(); applyFilters(); }
 </head>
 
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="common_header.jsp" />
 
 <div class="filters">
     <b>Total:</b> <span id="countTotal">0</span>
@@ -258,7 +245,7 @@ window.onload = function(){ calculateAges(); applyFilters(); }
 <table id="enquiryTable">
 <thead>
     <tr>
-    <th>ID</th><th>Student</th><th>Gender</th><th>DOB</th><th>Age</th>
+    <th>ID</th><th>Enquiry Date</th><th>Student</th><th>Gender</th><th>DOB</th><th>Age</th>
     <th>Class</th><th>Type</th><th>Father</th><th>F Occ</th><th>F Org</th>
     <th>F Mobile</th><th>Mother</th><th>M Occ</th><th>M Org</th>
     <th>M Mobile</th><th>Place</th><th>Segment</th><th>Exam Date</th><th>App No</th><th>Edit</th><th>Print</th><th>Approve</th>
@@ -276,6 +263,7 @@ if(dataList != null){
 %>
 <tr class="data-row <%= isNoApp ? "empty-app-row" : "" %>" id="row<%=id%>">
     <td><%=id%></td>
+    <td><%=rowMap.get("created_at")%></td>
     <td><%=rowMap.get("student_name")%></td>
     <td><%=rowMap.get("gender")%></td>
     <td><%=dob%></td>
