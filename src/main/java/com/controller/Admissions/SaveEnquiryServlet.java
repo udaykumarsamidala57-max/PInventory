@@ -150,8 +150,7 @@ public class SaveEnquiryServlet extends HttpServlet {
             ps.setString(14, segment);
             ps.setString(15, placeFrom);
 
-            // 3. Set the 16th value (Address) as empty or null
-           
+          
 
       
 
