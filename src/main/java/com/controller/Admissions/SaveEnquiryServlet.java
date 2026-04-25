@@ -128,7 +128,7 @@ public class SaveEnquiryServlet extends HttpServlet {
                        + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
                        + "father_name, father_occupation, father_organization, father_mobile_no, "
                        + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
-                       + "segment, place_from, Address" 
+                       + "segment, Address" 
                        + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 16 placeholders
 
             ps = con.prepareStatement(sql);
@@ -151,7 +151,7 @@ public class SaveEnquiryServlet extends HttpServlet {
             ps.setString(15, placeFrom);
 
             // 3. Set the 16th value (Address) as empty or null
-            ps.setString(16, ""); 
+           
 
       
 
