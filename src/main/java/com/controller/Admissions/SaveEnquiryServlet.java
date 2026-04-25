@@ -123,33 +123,37 @@ public class SaveEnquiryServlet extends HttpServlet {
             // ===============================
             // ✅ INSERT DATA
             // ===============================
+         // 1. Update the SQL string: 16 columns, 16 placeholders
             String sql = "INSERT INTO admission_enquiry ("
-                    + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
-                    + "father_name, father_occupation, father_organization, father_mobile_no, "
-                    + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
-                    + "segment, place_from, Address" // Added Address as an example
-                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                       + "student_name, gender, date_of_birth, class_of_admission, admission_type, "
+                       + "father_name, father_occupation, father_organization, father_mobile_no, "
+                       + "mother_name, mother_occupation, mother_organization, mother_mobile_no, "
+                       + "segment, place_from, Address" 
+                       + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"; // 16 placeholders
 
             ps = con.prepareStatement(sql);
 
+            // 2. Set the 15 values you have
             ps.setString(1, studentName);
             ps.setString(2, gender);
             ps.setString(3, dob);
             ps.setString(4, classOfAdmission);
             ps.setString(5, admissionType);
-
             ps.setString(6, fatherName);
             ps.setString(7, fatherOccupation);
             ps.setString(8, fatherOrganization);
             ps.setString(9, fatherMobile);
-
             ps.setString(10, motherName);
             ps.setString(11, motherOccupation);
             ps.setString(12, motherOrganization);
             ps.setString(13, motherMobile);
-
             ps.setString(14, segment);
             ps.setString(15, placeFrom);
+
+            // 3. Set the 16th value (Address) as empty or null
+            ps.setString(16, ""); 
+
+      
 
             int result = ps.executeUpdate();
 
