@@ -134,7 +134,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
                     "(student_name, gender, date_of_birth, class_of_admission, admission_type, " +
                     "father_name, father_occupation, father_organization, father_mobile_no, " +
                     "mother_name, mother_occupation, mother_organization, mother_mobile_no, " +
-                    "place_from, segment, exam_date, general_remarks, entrance_remarks, application_no) " +
+                    "Address, segment, exam_date, general_remarks, entrance_remarks, application_no) " +
                     "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
             } else {
                 sql =
@@ -142,7 +142,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
                     "student_name=?, gender=?, date_of_birth=?, class_of_admission=?, admission_type=?, " +
                     "father_name=?, father_occupation=?, father_organization=?, father_mobile_no=?, " +
                     "mother_name=?, mother_occupation=?, mother_organization=?, mother_mobile_no=?, " +
-                    "place_from=?, segment=?, exam_date=?, general_remarks=?, entrance_remarks=?, application_no=? " +
+                    "Address=?, segment=?, exam_date=?, general_remarks=?, entrance_remarks=?, application_no=? " +
                     "WHERE enquiry_id=?";
             }
 
@@ -167,7 +167,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
                 ps.setString(i++, nullIfEmpty(req,"mother_occupation"));
                 ps.setString(i++, nullIfEmpty(req,"mother_organization"));
                 ps.setString(i++, nullIfEmpty(req,"mother_mobile_no"));
-                ps.setString(i++, nullIfEmpty(req,"place_from"));
+                ps.setString(i++, nullIfEmpty(req,"Address"));
                 ps.setString(i++, nullIfEmpty(req,"segment"));
                 ps.setString(i++, nullIfEmpty(req,"exam_date"));   // VARCHAR in DB
                 ps.setString(i++, nullIfEmpty(req,"general_remarks"));

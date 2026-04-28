@@ -284,7 +284,7 @@ if(dataList != null){
     <td><%=rowMap.get("mother_occupation")%></td>
     <td><%=rowMap.get("mother_organization")%></td>
     <td><%=rowMap.get("mother_mobile_no")%></td>
-    <td><%=rowMap.get("place_from")%></td>
+    <td><%=rowMap.get("Address")%></td>
     <td><%=rowMap.get("segment")%></td>
     <td><%=rowMap.get("exam_date")%></td>
     <td><%= isNoApp ? "<b style='color:red;'>Not Attended</b>" : appNo %></td>
@@ -340,7 +340,7 @@ if(dataList != null){
             <div><label>Mother Occupation</label><input type="text" name="mother_occupation" value="<%=rowMap.get("mother_occupation")%>"></div>
             <div><label>Mother Organization</label><input type="text" name="mother_organization" value="<%=rowMap.get("mother_organization")%>"></div>
             <div><label>Mother Mobile</label><input type="text" name="mother_mobile_no" value="<%=rowMap.get("mother_mobile_no")%>"></div>
-            <div><label>Place From</label><input type="text" name="place_from" value="<%=rowMap.get("place_from")%>"></div>
+            <div><label>Place From</label><input type="text" name="Address" value="<%=rowMap.get("Address")%>"></div>
             <div><label>Segment</label><input type="text" name="segment" value="<%=rowMap.get("segment")%>"></div>
             <div><label>Exam Date</label><input type="date" name="exam_date" value="<%= rowMap.get("exam_date") == null ? "" : rowMap.get("exam_date") %>"></div>
             <div><label>General Remarks</label><input type="text" name="general_remarks" value="<%= rowMap.get("general_remarks") == null ? "" : rowMap.get("general_remarks") %>"></div>
