@@ -173,7 +173,7 @@ public class MarksReport extends HttpServlet {
                             s.put("mother_occ", rs.getString("mother_occupation"));
                             s.put("mother_org", rs.getString("mother_organization"));
                             s.put("mother_mob", rs.getString("mother_mobile_no"));
-                            s.put("place", rs.getString("place_from"));
+                            s.put("place", rs.getString("Address"));
                             s.put("remarks", rs.getString("entrance_remarks"));
 
                             int studentTotal = 0;
