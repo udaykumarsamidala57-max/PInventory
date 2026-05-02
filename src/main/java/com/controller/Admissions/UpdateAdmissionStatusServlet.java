@@ -111,7 +111,7 @@ public class UpdateAdmissionStatusServlet extends HttpServlet {
                     studentsJson.append("\"mOrg\":\"").append(rs.getString("mother_organization") != null ? rs.getString("mother_organization") : "N/A").append("\",");
                     studentsJson.append("\"admission_type\":\"").append(rs.getString("admission_type") != null ? rs.getString("admission_type") : "Regular").append("\",");
                     studentsJson.append("\"segment\":\"").append(rs.getString("segment") != null ? rs.getString("segment") : "N/A").append("\",");
-                    studentsJson.append("\"place\":\"").append(rs.getString("place_from") != null ? rs.getString("place_from") : "N/A").append("\",");
+                    studentsJson.append("\"place\":\"").append(rs.getString("Address") != null ? rs.getString("Address") : "N/A").append("\",");
                     
                     studentsJson.append("\"marks\":{");
                     final boolean[] first = {true};
