@@ -143,7 +143,7 @@ public class Home extends HttpServlet {
         String selectedFY = request.getParameter("year");
         if (selectedFY == null) {
             int y = Calendar.getInstance().get(Calendar.YEAR);
-            selectedFY = (y - 1) + "-" + y;
+            selectedFY = "2026-27";
         }
 
         // Parse FY

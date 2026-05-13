@@ -402,7 +402,7 @@
             </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:5px;">
-            <label style="font-size:12px; font-weight:700; opacity:0.8;">Fiscal Year</label>
+            <label style="font-size:12px; font-weight:700; opacity:0.8;">Financial Year</label>
             <select name="year">
                 <% if(years != null){ for(String y : years){ %>
                     <option value="<%= y %>" <%= y.equals(selectedYear) ? "selected" : "" %>><%= y %></option>
