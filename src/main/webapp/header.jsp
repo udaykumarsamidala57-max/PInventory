@@ -157,7 +157,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fas fa-box text-primary"></i> SANDUR POLYTECHNIC</h2>
+  <h2><i class="fas fa-box text-primary"></i> SRS</h2>
 
   <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
