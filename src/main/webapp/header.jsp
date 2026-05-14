@@ -322,7 +322,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 </main>
 
 <footer>
-  <p>© <%= currentYear %> | SANPOLY | Office Central |  
+  <p>© <%= currentYear %> | SRS | Office Central |  
   <i class="fas fa-leaf" style="color:green;"></i> Developed by
   <i class="fas fa-leaf" style="color:green;"></i> SSS IT Department</p>
 </footer>
