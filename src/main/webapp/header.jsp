@@ -20,6 +20,17 @@
     // Extract year for the footer specifically
     int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 %>
+<%
+    String pageTitle = (String) request.getAttribute("pageTitle");
+    if(pageTitle == null || pageTitle.trim().isEmpty()){
+        pageTitle = "Dashboard";
+    }
+
+    String breadcrumb = (String) request.getAttribute("breadcrumb");
+    if(breadcrumb == null){
+        breadcrumb = "Admissions";
+    }
+    %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,6 +41,51 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
+.adm-header {
+    background: linear-gradient(to right, #f8fbff, #ffffff);
+    border:1px solid #d6e2f0;
+    border-left:7px solid #002147;
+    padding:16px 22px;
+    border-radius:10px;
+    margin:10px 0 20px 0;
+
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+.adm-left {
+    display:flex;
+    flex-direction:column;
+}
+
+.adm-breadcrumb {
+    font-size:13px;
+    color:#6c757d;
+    margin-bottom:4px;
+}
+
+.adm-title {
+    font-size:14px;
+    font-weight:700;
+    color:#002147;
+    letter-spacing:0.4px;
+}
+
+.adm-right {
+    text-align:right;
+}
+
+.adm-badge {
+    background:#002147;
+    color:#fff;
+    padding:6px 12px;
+    font-size:13px;
+    border-radius:20px;
+    letter-spacing:0.6px;
+}
 /* ... (Existing CSS) ... */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; color: #333; transition: margin-left 0.3s ease; overflow-x: hidden; min-height: 100vh; position: relative; padding-bottom: 60px; }
@@ -81,7 +137,7 @@ header { position: fixed; top: 0; left: 250px; right: 0; height: 75px; backgroun
 .user-meta .u-name { font-size: 13px; font-weight: 700; color: #0f2a4d; }
 .user-meta .u-role { font-size: 10px; font-weight: 600; color: #3b82f6; }
 
-main { margin-left: 250px; padding: 110px 30px 40px; transition: margin-left 0.3s ease; }
+main { margin-left: 250px; padding: 80px 30px 10px; transition: margin-left 0.3s ease; }
 footer { position: fixed; bottom: 0; left: 250px; right: 0; background: #ffffff; color: #64748b; text-align: center; padding: 12px 10px; font-size: 13px; border-top: 1px solid #e2e8f0; transition: left 0.3s ease; z-index: 1000; }
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
@@ -101,7 +157,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fas fa-box text-primary"></i> Sandur Residential School</h2>
+  <h2><i class="fas fa-box text-primary"></i> SANDUR POLYTECHNIC</h2>
 
   <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
@@ -225,7 +281,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title">SRS | Office Central </div>
+    <div class="header-brand-title">SANPOLY | Office Central </div>
   </div>
 
   <div class="user-info-card">
@@ -238,17 +294,70 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 </header>
 
 <main>
-  <h2>Welcome back, <%= users.toUpperCase() %></h2>
-  <p style="color: #64748b; font-size: 14px;">Current Session: <%= todayDate %></p>
+
+    <!-- 🔷 ADMISSIONS HEADER (TOP FIRST) -->
+   
+
+
+   <div class="adm-header">
+    <div style="margin-top:1px;">
+        <h6 style="margin-bottom:1px;">
+            Welcome back, <%= users.toUpperCase() %>
+        </h6>
+         
+
+        <!-- LEFT -->
+        <div class="adm-left">
+            
+            <div class="adm-title" id="admPageTitle"></div>
+        </div>
+  
+    </div>
+
+        <p style="color:#64748b; font-size:10px;">
+            Current Session: <%= todayDate %>
+        </p>
+    </div>
+
 </main>
 
 <footer>
-  <p>© <%= currentYear %> | SRS | Office Central |  
+  <p>© <%= currentYear %> | SANPOLY | Office Central |  
   <i class="fas fa-leaf" style="color:green;"></i> Developed by
-  <i class="fas fa-leaf" style="color:green;"></i> School IT Department</p>
+  <i class="fas fa-leaf" style="color:green;"></i> SSS IT Department</p>
 </footer>
 
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // 🔹 TITLE AUTO
+    let title = document.title;
+    title = title.replace(" - SANPOLY", "").trim();
+    document.getElementById("admPageTitle").innerText = title;
+
+    // 🔹 BREADCRUMB AUTO FROM URL
+    let path = window.location.pathname;
+    let parts = path.split("/").filter(p => p !== "");
+
+    if(parts.length > 0){
+        parts.shift(); // remove project name
+    }
+
+    let formatted = parts.map(p => {
+        return p
+            .replace(".jsp", "")
+            .replace(/([A-Z])/g, " $1")
+            .trim();
+    });
+
+    let breadcrumb = "Home";
+
+    formatted.forEach(p => {
+        breadcrumb += " / " + p;
+    });
+
+    document.getElementById("admBreadcrumb").innerText = breadcrumb;
+});
 document.querySelectorAll('.dropdown-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.dropdown').forEach(drop => {
@@ -266,3 +375,5 @@ toggleBtn.addEventListener('click', () => {
 
 </body>
 </html>
+
+  
