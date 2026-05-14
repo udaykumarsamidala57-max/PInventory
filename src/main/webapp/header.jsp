@@ -281,7 +281,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title">SANPOLY | Office Central </div>
+    <div class="header-brand-title">SRS | Office Central </div>
   </div>
 
   <div class="user-info-card">
