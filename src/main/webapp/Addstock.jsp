@@ -7,7 +7,10 @@
         return;
     }
     String role = (String) sess.getAttribute("role");
-    if (!"admin".equalsIgnoreCase(role) && !"Global".equalsIgnoreCase(role) ) {
+    String user = (String) sess.getAttribute("username");
+    if (!"admin".equalsIgnoreCase(role) && 
+    	    !"Global".equalsIgnoreCase(role) && 
+    	    !"Saritha".equalsIgnoreCase(user)) {
         out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");
         return;
     }
