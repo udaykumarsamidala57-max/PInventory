@@ -3,10 +3,13 @@
 <%@ page import="java.util.Calendar, java.text.SimpleDateFormat" %>
 <%
     HttpSession sesso = request.getSession(false);
-    if (sesso == null || sesso.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
+
+if (sesso == null || sesso.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+    	
+    
     String users = (String) sesso.getAttribute("username");
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
@@ -237,8 +240,19 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
   </div>
   <% } %>
 
-  <div class="sidebar-label">Academic & Students</div>
-  
+
+  <div class="sidebar-label">Asset management</div>
+  <div class="dropdown admission-menu">
+    <button class="dropdown-btn"><i class="fas fa-laptop-house text-warning"></i></i> Fixed Assets <i class="fas fa-caret-down"></i></button>
+    <div class="dropdown-content">
+    
+    <a href="LocationController"><i class="fas fa-home"></i> Locations</a>
+      
+      
+    </div>
+    
+    </div>
+    <div class="sidebar-label">HR & Recruitment</div>
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
@@ -275,8 +289,11 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
      </div>
    </div>
    <% } %>
+   
+   
   <a href="Logout.jsp" style="margin-top: auto;"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
 </div>
+
 
 <header>
   <div style="display: flex; align-items: center;">

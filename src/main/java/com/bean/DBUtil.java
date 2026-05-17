@@ -12,9 +12,9 @@ public class DBUtil {
    //private static final String USER = "root";
 //private static final String PASSWORD = System.getenv("MYSQLPASSWORD");
 	
-private static final String URL = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&tcpKeepAlive=true";
-private static final String USER = "root";
-private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
+	private static final String URL = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&tcpKeepAlive=true";
+	   private static final String USER = "root";
+	   private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
 	
 	
 	

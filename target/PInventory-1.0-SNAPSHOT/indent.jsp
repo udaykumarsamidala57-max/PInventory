@@ -370,7 +370,7 @@ function addRow() {
     <td><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
     <td><select class="item"><option value="">-- Select Item --</option></select></td>
     <td class="uom"></td>
-    <td class="stock"></td>
+   <td style="color: #FA6D16; font-weight: bold;" class="stock"></td>
     <td><input type="number" class="qty" min="0" step="any" required></td>
     <td><input type="text" class="purpose" required></td>
     <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>

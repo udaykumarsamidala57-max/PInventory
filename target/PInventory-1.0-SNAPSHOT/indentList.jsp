@@ -219,7 +219,7 @@ footer i {
           <td><%= ind.getIndentNo() %></td>
           <td><%= ind.getDate() %></td>
           <td><%= ind.getItemName() %></td>
-          <td><%= ind.getBalanceQty() %></td>
+          <td style="color:#FA6D16"><b><%= ind.getBalanceQty() %></b></td>
           <td><%= ind.getQty() %></td>
           <td><%= ind.getUom() %></td>
           <td><%= ind.getDepartment() %></td>
