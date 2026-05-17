@@ -58,9 +58,7 @@ function cancelEdit(id){
 
 <div class="container">
 
-<div class="page-title">
-Location Management
-</div>
+
 
 <%
 if(request.getParameter("success") != null){

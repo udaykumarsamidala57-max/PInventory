@@ -239,20 +239,21 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     </div>
   </div>
   <% } %>
-<div class="sidebar-label">Asset Management</div>
 
-  <div class="sidebar-label">Academic & Students</div>
+<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <div class="sidebar-label">Asset management</div>
   <div class="dropdown admission-menu">
-    <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fas fa-laptop-house text-warning"></i></i> Fixed Assets <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
     
-    <a href="dashboard"><i class="fas fa-home"></i> Home</a>
-      <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
-      <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
+    <a href="LocationController"><i class="fas fa-home"></i> Locations</a>
+      
       
     </div>
     
-    
+    </div>
+    <%} %>
+    <div class="sidebar-label">HR & Recruitment</div>
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">

@@ -4,6 +4,21 @@
 contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"%>
 
+<%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+String user = (String) sess.getAttribute("username");
+String role = (String) sess.getAttribute("role");
+String dept = (String) sess.getAttribute("department");
+if ((!"Global".equalsIgnoreCase(role) &&  !"Finance".equalsIgnoreCase(dept))) {
+
+    out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");
+    return;
+}
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,180 +27,8 @@ pageEncoding="UTF-8"%>
 
 <title>Location Management</title>
 
-<style>
-
-body{
-    margin:0;
-    padding:20px;
-    font-family:Arial;
-    background:#f3f5f9;
-}
-
-/* MAIN CARD */
-
-.container{
-    width:95%;
-    margin:auto;
-    background:#ffffff;
-    border-radius:18px;
-    padding:30px;
-    box-shadow:0 4px 20px rgba(0,0,0,0.08);
-}
-
-/* TITLE */
-
-.page-title{
-    font-size:34px;
-    font-weight:bold;
-    color:#172b5b;
-    margin-bottom:25px;
-    border-left:6px solid #172b5b;
-    padding-left:15px;
-}
-
-/* ALERTS */
-
-.success{
-    background:#e8fff0;
-    color:#00a651;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:20px;
-    font-weight:bold;
-}
-
-.error{
-    background:#ffecec;
-    color:#ff3b3b;
-    padding:12px;
-    border-radius:10px;
-    margin-bottom:20px;
-    font-weight:bold;
-}
-
-/* FORM */
-
-.form-grid{
-    display:grid;
-    grid-template-columns:repeat(2,1fr);
-    gap:20px;
-}
-
-.form-group label{
-    display:block;
-    margin-bottom:8px;
-    color:#172b5b;
-    font-weight:bold;
-}
-
-.form-group input,
-.form-group textarea{
-    width:100%;
-    padding:12px;
-    border:1px solid #d6dce8;
-    border-radius:10px;
-    font-size:14px;
-    box-sizing:border-box;
-}
-
-.form-group textarea{
-    height:90px;
-    resize:none;
-}
-
-/* BUTTON */
-
-.save-btn{
-    margin-top:25px;
-    background:#172b5b;
-    color:white;
-    border:none;
-    padding:14px 25px;
-    border-radius:10px;
-    font-size:15px;
-    cursor:pointer;
-    font-weight:bold;
-}
-
-.save-btn:hover{
-    background:#0f1d42;
-}
-
-/* TABLE SECTION */
-
-.table-title{
-    margin-top:45px;
-    margin-bottom:20px;
-    color:#172b5b;
-    font-size:28px;
-    font-weight:bold;
-}
-
-.table-wrapper{
-    overflow:auto;
-    border-radius:15px;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    background:white;
-}
-
-table th{
-    background:#172b5b;
-    color:white;
-    padding:14px;
-    text-align:left;
-    font-size:15px;
-}
-
-table td{
-    padding:12px;
-    border-bottom:1px solid #e5e9f2;
-}
-
-/* TABLE INPUT */
-
-.table-input{
-    width:100%;
-    padding:8px;
-    border:1px solid #d6dce8;
-    border-radius:8px;
-    box-sizing:border-box;
-}
-
-/* ACTION BUTTONS */
-
-.action-btn{
-    border:none;
-    padding:8px 14px;
-    border-radius:8px;
-    color:white;
-    cursor:pointer;
-    font-size:13px;
-    font-weight:bold;
-    text-decoration:none;
-    margin-right:5px;
-}
-
-.edit-btn{
-    background:#f4b400;
-}
-
-.update-btn{
-    background:#00a651;
-}
-
-.delete-btn{
-    background:#ff3b3b;
-}
-
-.cancel-btn{
-    background:#6c757d;
-}
-
-</style>
+<link rel="stylesheet"
+href="<%=request.getContextPath()%>/Asset/css/location.css">
 
 <script>
 
@@ -210,7 +53,9 @@ function cancelEdit(id){
 </head>
 
 <body>
+
 <%@ include file="../header.jsp" %>
+
 <div class="container">
 
 <div class="page-title">
@@ -317,14 +162,14 @@ style="grid-column:1/3;">
 </div>
 
 </div>
-
+<% if ("Global".equalsIgnoreCase(role) ) { %>
 <button type="submit"
 class="save-btn">
 
 Save Location
 
 </button>
-
+<%} %>
 </form>
 
 <!-- TABLE -->
@@ -341,7 +186,6 @@ Location List
 
 <th>ID</th>
 <th>Location</th>
-<th>Building</th>
 <th>Floor</th>
 <th>Room</th>
 <th>Description</th>
@@ -354,6 +198,8 @@ Location List
 ResultSet rs =
 (ResultSet)request.getAttribute("locationData");
 
+String currentBuilding = "";
+
 if(rs != null){
 
     while(rs.next()){
@@ -361,6 +207,42 @@ if(rs != null){
         int id =
         rs.getInt("location_id");
 
+        String building =
+        rs.getString("building");
+
+        if(building == null || building.trim().equals("")){
+
+            building = "No Building";
+        }
+
+        // BUILDING HEADING
+
+        if(!building.equals(currentBuilding)){
+
+            currentBuilding = building;
+
+%>
+
+<tr class="building-row">
+
+<td colspan="6"
+style="
+background:#eef4ff;
+font-weight:bold;
+font-size:15px;
+color:#172b5b;
+padding:14px;
+border-top:2px solid #d6e4ff;
+">
+
+🏢 <%=building%>
+
+</td>
+
+</tr>
+
+<%
+        }
 %>
 
 <!-- NORMAL VIEW -->
@@ -376,10 +258,6 @@ if(rs != null){
 </td>
 
 <td>
-<%=rs.getString("building")%>
-</td>
-
-<td>
 <%=rs.getString("floor_name")%>
 </td>
 
@@ -392,7 +270,7 @@ if(rs != null){
 </td>
 
 <td>
-
+<% if ("Global".equalsIgnoreCase(role) ) { %>
 <button type="button"
 class="action-btn edit-btn"
 onclick="enableEdit('<%=id%>')">
@@ -410,7 +288,7 @@ href="<%=request.getContextPath()%>/LocationController?action=delete&id=<%=id%>"
 Delete
 
 </a>
-
+<%} %>
 </td>
 
 </tr>
@@ -448,15 +326,6 @@ value="<%=rs.getString("location_name")%>">
 
 <input type="text"
 class="table-input"
-name="building"
-value="<%=rs.getString("building")%>">
-
-</td>
-
-<td>
-
-<input type="text"
-class="table-input"
 name="floor_name"
 value="<%=rs.getString("floor_name")%>">
 
@@ -481,6 +350,10 @@ value="<%=rs.getString("description")%>">
 </td>
 
 <td>
+
+<input type="hidden"
+name="building"
+value="<%=building%>">
 
 <button type="submit"
 class="action-btn update-btn">
