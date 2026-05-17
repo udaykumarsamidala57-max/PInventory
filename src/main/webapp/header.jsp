@@ -240,7 +240,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
   </div>
   <% } %>
 
-
+<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
   <div class="sidebar-label">Asset management</div>
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-laptop-house text-warning"></i></i> Fixed Assets <i class="fas fa-caret-down"></i></button>
@@ -252,6 +252,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     </div>
     
     </div>
+    <%} %>
     <div class="sidebar-label">HR & Recruitment</div>
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>

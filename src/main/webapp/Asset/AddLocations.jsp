@@ -4,6 +4,21 @@
 contentType="text/html; charset=UTF-8"
 pageEncoding="UTF-8"%>
 
+<%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+String user = (String) sess.getAttribute("username");
+String role = (String) sess.getAttribute("role");
+String dept = (String) sess.getAttribute("department");
+if ((!"Global".equalsIgnoreCase(role) &&  !"Finance".equalsIgnoreCase(dept))) {
+
+    out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");
+    return;
+}
+%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -147,14 +162,14 @@ style="grid-column:1/3;">
 </div>
 
 </div>
-
+<% if ("Global".equalsIgnoreCase(role) ) { %>
 <button type="submit"
 class="save-btn">
 
 Save Location
 
 </button>
-
+<%} %>
 </form>
 
 <!-- TABLE -->
@@ -255,7 +270,7 @@ border-top:2px solid #d6e4ff;
 </td>
 
 <td>
-
+<% if ("Global".equalsIgnoreCase(role) ) { %>
 <button type="button"
 class="action-btn edit-btn"
 onclick="enableEdit('<%=id%>')">
@@ -273,7 +288,7 @@ href="<%=request.getContextPath()%>/LocationController?action=delete&id=<%=id%>"
 Delete
 
 </a>
-
+<%} %>
 </td>
 
 </tr>
