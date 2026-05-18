@@ -40,10 +40,13 @@ public class AdmissionEnquiryServlet extends HttpServlet {
 
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
+        String user = (String) sess.getAttribute("username");
 
         if (!"Global".equalsIgnoreCase(role)
                 && !"Incharge".equalsIgnoreCase(role)
-                && !"Admin".equalsIgnoreCase(role)&& !"Finance".equalsIgnoreCase(dept)) {
+                && !"Admin".equalsIgnoreCase(role)
+                && !"Finance".equalsIgnoreCase(dept)
+                && !"karthik".equalsIgnoreCase(user)) {
             resp.setContentType("text/html");
             resp.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
             return;
