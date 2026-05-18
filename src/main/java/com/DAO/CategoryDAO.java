@@ -3,6 +3,8 @@ package com.DAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.bean.DBUtil4;
 
@@ -11,6 +13,102 @@ public class CategoryDAO {
     Connection con = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
+
+    // ================= GET ALL CATEGORIES =================
+
+    public ArrayList<HashMap<String,Object>>
+    getAllCategories() {
+
+        ArrayList<HashMap<String,Object>> list =
+                new ArrayList<HashMap<String,Object>>();
+
+        try {
+
+            con = DBUtil4.getConnection();
+
+            String sql =
+                    "SELECT * FROM asset_categories "
+                    + "ORDER BY category_name";
+
+            ps = con.prepareStatement(sql);
+
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+
+                HashMap<String,Object> map =
+                        new HashMap<String,Object>();
+
+                map.put("category_id",
+                        rs.getInt("category_id"));
+
+                map.put("category_name",
+                        rs.getString("category_name"));
+
+                map.put("description",
+                        rs.getString("description"));
+
+                list.add(map);
+            }
+
+        } catch(Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    // ================= GET SUBCATEGORIES =================
+
+    public ArrayList<HashMap<String,Object>>
+    getSubcategoriesByCategory(int categoryId) {
+
+        ArrayList<HashMap<String,Object>> list =
+                new ArrayList<HashMap<String,Object>>();
+
+        try {
+
+            con = DBUtil4.getConnection();
+
+            String sql =
+                    "SELECT * FROM asset_subcategories "
+                    + "WHERE category_id=? "
+                    + "ORDER BY subcategory_name";
+
+            ps = con.prepareStatement(sql);
+
+            ps.setInt(1, categoryId);
+
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+
+                HashMap<String,Object> map =
+                        new HashMap<String,Object>();
+
+                map.put("subcategory_id",
+                        rs.getInt("subcategory_id"));
+
+                map.put("category_id",
+                        rs.getInt("category_id"));
+
+                map.put("subcategory_name",
+                        rs.getString("subcategory_name"));
+
+                map.put("description",
+                        rs.getString("description"));
+
+                list.add(map);
+            }
+
+        } catch(Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return list;
+    }
 
     // ================= ADD CATEGORY =================
 
@@ -33,13 +131,10 @@ public class CategoryDAO {
             ps.setString(1, categoryName);
             ps.setString(2, description);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 
@@ -60,8 +155,7 @@ public class CategoryDAO {
 
             String sql =
                     "UPDATE asset_categories "
-                    + "SET category_name=?, "
-                    + "description=? "
+                    + "SET category_name=?,description=? "
                     + "WHERE category_id=?";
 
             ps = con.prepareStatement(sql);
@@ -70,13 +164,10 @@ public class CategoryDAO {
             ps.setString(2, description);
             ps.setInt(3, categoryId);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 
@@ -111,13 +202,10 @@ public class CategoryDAO {
 
             ps.setInt(1, categoryId);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 
@@ -147,13 +235,10 @@ public class CategoryDAO {
             ps.setString(2, subcategoryName);
             ps.setString(3, description);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 
@@ -174,8 +259,7 @@ public class CategoryDAO {
 
             String sql =
                     "UPDATE asset_subcategories "
-                    + "SET subcategory_name=?, "
-                    + "description=? "
+                    + "SET subcategory_name=?,description=? "
                     + "WHERE subcategory_id=?";
 
             ps = con.prepareStatement(sql);
@@ -184,13 +268,10 @@ public class CategoryDAO {
             ps.setString(2, description);
             ps.setInt(3, subcategoryId);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 
@@ -215,13 +296,10 @@ public class CategoryDAO {
 
             ps.setInt(1, subcategoryId);
 
-            int row = ps.executeUpdate();
-
-            if(row > 0) {
-                status = true;
-            }
+            status = ps.executeUpdate() > 0;
 
         } catch(Exception e) {
+
             e.printStackTrace();
         }
 

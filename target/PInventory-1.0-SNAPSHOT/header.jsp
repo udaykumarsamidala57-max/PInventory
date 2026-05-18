@@ -247,7 +247,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     <div class="dropdown-content">
     
     <a href="LocationController"><i class="fas fa-building"></i> Locations</a>
-    <a href="CategoryController"><i class="fas fa-tags"></i> Categories</a>
+    <a href="../CategoryController"><i class="fas fa-tags"></i> Categories</a>
       
       
     </div>

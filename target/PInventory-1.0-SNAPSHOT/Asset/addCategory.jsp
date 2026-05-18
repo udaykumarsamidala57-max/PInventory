@@ -110,6 +110,48 @@ function cancelSubEdit(id){
     flex-wrap:wrap;
 }
 
+.table-input{
+
+    width:100%;
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:5px;
+}
+
+.action-btn{
+
+    padding:7px 14px;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+}
+
+.edit-btn{
+
+    background:#2196f3;
+    color:white;
+}
+
+.delete-btn{
+
+    background:#f44336;
+    color:white;
+}
+
+.update-btn{
+
+    background:#4caf50;
+    color:white;
+}
+
+.cancel-btn{
+
+    background:#9e9e9e;
+    color:white;
+}
+
 </style>
 
 </head>
@@ -298,19 +340,21 @@ value="addSubcategory">
 
 <%
 
+Connection con = null;
+PreparedStatement ps = null;
+ResultSet rs = null;
+
 try{
 
-    Connection con = DBUtil4.getConnection();
+    con = DBUtil4.getConnection();
 
     String sql =
             "SELECT * FROM asset_categories "
             + "ORDER BY category_name";
 
-    PreparedStatement ps =
-            con.prepareStatement(sql);
+    ps = con.prepareStatement(sql);
 
-    ResultSet rs =
-            ps.executeQuery();
+    rs = ps.executeQuery();
 
     while(rs.next()){
 
@@ -371,7 +415,7 @@ Save Subcategory
 
 </form>
 
-<!-- ================= CATEGORY & SUBCATEGORY TABLE ================= -->
+<!-- ================= CATEGORY TABLE ================= -->
 
 <div class="table-title"
 style="margin-top:40px;">
@@ -397,7 +441,7 @@ Category & Subcategory List
 
 try{
 
-    Connection con = DBUtil4.getConnection();
+    con = DBUtil4.getConnection();
 
     String catSql =
             "SELECT * FROM asset_categories "
@@ -593,7 +637,7 @@ class="sub-row">
 
 <td style="padding-left:40px;">
 
-
+↳
 <%=subRs.getString("subcategory_name")%>
 
 </td>
