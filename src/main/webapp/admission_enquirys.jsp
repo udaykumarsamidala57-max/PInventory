@@ -298,13 +298,13 @@ if(dataList != null){
    <button class="btn gray" onclick="printHallTicket('<%=appNo%>', <%=id%>)">Print</button>
    </td>
     <td id="approveCell<%=id%>">
-        <% if("Global".equalsIgnoreCase(role)){
-            String approved = (String)rowMap.get("approved");
-            if(approved==null || !"Approved".equalsIgnoreCase(approved)){ %>
+       
+          <%  String approved = (String)rowMap.get("approved");
+              if(approved==null || !"Approved".equalsIgnoreCase(approved)){ %>
             <button onclick="approveRecord(<%=id%>)" class="btn gray">Approve</button>
         <% } else { %>
             <span style="color:#15803d;font-weight:900;">Approved</span>
-        <% } } %>
+        <% }  %>
     </td>
 </tr>
 <% } } %>
