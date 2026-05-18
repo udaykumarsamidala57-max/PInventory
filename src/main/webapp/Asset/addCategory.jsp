@@ -481,7 +481,7 @@ class="category-row">
 
 <td>
 
-<%=categoryId%>
+
 
 </td>
 
