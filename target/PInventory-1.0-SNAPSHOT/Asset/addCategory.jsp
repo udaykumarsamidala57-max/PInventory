@@ -481,7 +481,7 @@ class="category-row">
 
 <td>
 
-<%=categoryId%>
+
 
 </td>
 
@@ -499,7 +499,7 @@ Category
 
 <td>
 
-<%=catRs.getString("description")%>
+
 
 </td>
 
@@ -637,7 +637,7 @@ class="sub-row">
 
 <td style="padding-left:40px;">
 
-↳
+
 <%=subRs.getString("subcategory_name")%>
 
 </td>
