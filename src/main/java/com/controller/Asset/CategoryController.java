@@ -27,98 +27,112 @@ public class CategoryController extends HttpServlet {
 
         try {
 
-            // ADD
-            if ("add".equals(action)) {
+            // ================= ADD CATEGORY =================
 
-                String categoryName =
-                        request.getParameter("category_name");
-
-                String subcategoryName =
-                        request.getParameter("subcategory_name");
-
-                String description =
-                        request.getParameter("description");
+            if("add".equalsIgnoreCase(action)) {
 
                 boolean status =
-                        dao.addCategory(categoryName,
-                                        subcategoryName,
-                                        description);
+                        dao.addCategory(
+                        request.getParameter("category_name"),
+                        request.getParameter("description"));
 
-                if (status) {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=added");
-
-                } else {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=failed");
-                }
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "added" : "failed"));
             }
 
-            // UPDATE
-            else if ("update".equals(action)) {
+            // ================= UPDATE CATEGORY =================
 
-                int categoryId =
+            else if("update".equalsIgnoreCase(action)) {
+
+                boolean status =
+                        dao.updateCategory(
                         Integer.parseInt(
-                                request.getParameter("category_id"));
+                        request.getParameter("category_id")),
+                        request.getParameter("category_name"),
+                        request.getParameter("description"));
 
-                String categoryName =
-                        request.getParameter("category_name");
-
-                String subcategoryName =
-                        request.getParameter("subcategory_name");
-
-                String description =
-                        request.getParameter("description");
-
-                boolean status =
-                        dao.updateCategory(categoryId,
-                                           categoryName,
-                                           subcategoryName,
-                                           description);
-
-                if (status) {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=updated");
-
-                } else {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=updatefailed");
-                }
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "updated" : "updatefailed"));
             }
 
-            // DELETE
-            else if ("delete".equals(action)) {
+            // ================= DELETE CATEGORY =================
 
-                int categoryId =
+            else if("delete".equalsIgnoreCase(action)) {
+
+                boolean status =
+                        dao.deleteCategory(
                         Integer.parseInt(
-                                request.getParameter("category_id"));
+                        request.getParameter("category_id")));
 
-                boolean status =
-                        dao.deleteCategory(categoryId);
-
-                if (status) {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=deleted");
-
-                } else {
-
-                    response.sendRedirect(
-                            request.getContextPath()
-                            + "/Asset/addCategory.jsp?msg=deletefailed");
-                }
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "deleted" : "deletefailed"));
             }
 
-        } catch (Exception e) {
+            // ================= ADD SUBCATEGORY =================
+
+            else if("addSubcategory".equalsIgnoreCase(action)) {
+
+                boolean status =
+                        dao.addSubcategory(
+                        Integer.parseInt(
+                        request.getParameter("category_id")),
+                        request.getParameter("subcategory_name"),
+                        request.getParameter("description"));
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "subadded" : "subfailed"));
+            }
+
+            // ================= UPDATE SUBCATEGORY =================
+
+            else if("updateSubcategory".equalsIgnoreCase(action)) {
+
+                boolean status =
+                        dao.updateSubcategory(
+                        Integer.parseInt(
+                        request.getParameter("subcategory_id")),
+                        request.getParameter("subcategory_name"),
+                        request.getParameter("description"));
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "subupdated"
+                                  : "subupdatefailed"));
+            }
+
+            // ================= DELETE SUBCATEGORY =================
+
+            else if("deleteSubcategory".equalsIgnoreCase(action)) {
+
+                boolean status =
+                        dao.deleteSubcategory(
+                        Integer.parseInt(
+                        request.getParameter("subcategory_id")));
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg="
+                        + (status ? "subdeleted"
+                                  : "subdeletefailed"));
+            }
+
+            else {
+
+                response.sendRedirect(
+                        request.getContextPath()
+                        + "/Asset/addCategory.jsp?msg=invalid");
+            }
+
+        } catch(Exception e) {
 
             e.printStackTrace();
 
@@ -128,12 +142,10 @@ public class CategoryController extends HttpServlet {
         }
     }
 
-    // IMPORTANT FIX
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {
 
-        request.getRequestDispatcher("/Asset/addCategory.jsp")
-               .forward(request, response);
+        doPost(request, response);
     }
 }
