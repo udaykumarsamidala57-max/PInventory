@@ -248,7 +248,8 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     
     <a href="LocationController"><i class="fas fa-building"></i> Locations</a>
     <a href="CategoryController"><i class="fas fa-tags"></i> Categories</a>
-    <a href="AssetServlet"><i class="fas fa-tags"></i>Asset Management</a>
+    <a href="AssetServlet"><i class="fas fa-boxes"></i>Asset Creation</a>
+    <a href="AssetLocationController"><i class="fas fa-map-marker-alt"></i>Asset Location</a>
       
       
     </div>

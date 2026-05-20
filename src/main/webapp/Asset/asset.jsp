@@ -1,5 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+String user = (String) sess.getAttribute("username");
+String role = (String) sess.getAttribute("role");
+String dept = (String) sess.getAttribute("department");
+if ((!"Global".equalsIgnoreCase(role) &&  !"Finance".equalsIgnoreCase(dept))) {
+
+    out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");
+    return;
+}
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -186,6 +201,7 @@
     </style>
 </head>
 <body>
+<%@ include file="../header.jsp" %>
 
     <!-- Asset Registration Form Section -->
     <div class="dashboard-card">
@@ -313,7 +329,7 @@
     <div class="dashboard-card">
         <div class="matrix-toolbar">
             <div>
-                <h2>Registered Assets Live Matrix</h2>
+                <h2>Registered Assets</h2>
             </div>
             <div class="toolbar-filter">
                 <div class="form-group" style="margin: 0;">
