@@ -1,1088 +1,496 @@
-<%@page import="java.util.*"%>
-
-<%
-
-HttpSession sess = request.getSession(false);
-
-if(sess == null || sess.getAttribute("username") == null){
-
-    response.sendRedirect("login.jsp");
-    return;
-}
-
-String user =
-(String)sess.getAttribute("username");
-
-String role =
-(String)sess.getAttribute("role");
-
-String dept =
-(String)sess.getAttribute("department");
-
-if(!"Global".equalsIgnoreCase(role)
-        && !"Finance".equalsIgnoreCase(dept)){
-
-    out.println(
-    "<h3 style='color:red;text-align:center;'>"
-    + "Access Denied! You are not authorized."
-    + "</h3>");
-
-    return;
-}
-
-ArrayList<HashMap<String,Object>> list =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("assetList");
-
-ArrayList<HashMap<String,Object>> vendors =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("vendorList");
-
-ArrayList<HashMap<String,Object>> categories =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("categoryList");
-
-ArrayList<HashMap<String,Object>> subcategories =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("subcategoryList");
-
-ArrayList<HashMap<String,Object>> locations =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("locationList");
-
-if(list == null){
-    list = new ArrayList<>();
-}
-
-%>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <title>Asset Configuration Control</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --success-hover: #15803d;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
 
-<meta charset="UTF-8">
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 32px; 
+            background-color: var(--bg-main); 
+            color: var(--text-main);
+            line-height: 1.5;
+        }
 
-<title>Asset Management</title>
+        .dashboard-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+        }
 
-<link rel="stylesheet"
-href="<%=request.getContextPath()%>/Asset/css/location.css">
+        h2 { 
+            margin-top: 0; 
+            margin-bottom: 24px; 
+            font-size: 1.4rem; 
+            font-weight: 700; 
+            letter-spacing: -0.02em;
+            color: var(--text-main);
+        }
+        
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+            gap: 16px; 
+            margin-bottom: 24px; 
+        }
+        
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.span-2 { grid-column: span 2; }
+        
+        label { 
+            font-size: 13px; 
+            font-weight: 600; 
+            margin-bottom: 6px; 
+            color: var(--text-muted); 
+        }
+        
+        input, select, textarea { 
+            padding: 10px 14px; 
+            border: 1px solid var(--border); 
+            border-radius: 8px; 
+            font-family: inherit; 
+            font-size: 14px; 
+            color: var(--text-main);
+            background-color: #fff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
 
-<style>
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        
+        .btn-panel { 
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-top: 20px; 
+        }
+        
+        .btn-primary { 
+            background: var(--primary); 
+            color: #fff; 
+            border: 0; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.15s ease;
+        }
+        .btn-primary:hover { background: var(--primary-hover); }
 
-body{
-    background:#f5f7fb;
-    font-family:Arial,sans-serif;
-}
+        .btn-success { 
+            background: var(--success); 
+            color: #fff; 
+            border: 0; 
+            padding: 10px 20px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: 600;
+            font-size: 14px;
+            transition: background 0.15s ease;
+        }
+        .btn-success:hover { background: var(--success-hover); }
+        
+        .btn-secondary { 
+            background: #fff; 
+            color: var(--text-main); 
+            text-decoration: none; 
+            border: 1px solid var(--border); 
+            padding: 9px 18px; 
+            border-radius: 8px; 
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.15s ease;
+        }
+        .btn-secondary:hover { background: #f8fafc; }
 
-.container{
-    width:98%;
-    margin:auto;
-    padding:10px;
-}
+        .matrix-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
 
-.page-title{
-    font-size:28px;
-    font-weight:bold;
-    margin:15px 0;
-    color:#1e293b;
-}
+        .toolbar-filter {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            background: #fff;
+        }
 
-.top-form{
-    background:#fff;
-    padding:20px;
-    border-radius:10px;
-    margin-bottom:20px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
+        table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+        th, td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+        
+        th { 
+            background: #f8fafc; 
+            font-weight: 600; 
+            color: var(--text-muted);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        
+        tr:last-child td { border-bottom: 0; }
+        tr:hover { background: #fdfdfd; }
 
-.form-grid{
-    display:grid;
-    grid-template-columns:
-    repeat(auto-fit,minmax(240px,1fr));
-    gap:15px;
-}
-
-.form-group{
-    display:flex;
-    flex-direction:column;
-}
-
-.form-group label{
-    font-size:14px;
-    font-weight:600;
-    margin-bottom:6px;
-}
-
-.form-group input,
-.form-group select,
-.form-group textarea{
-    padding:10px;
-    border:1px solid #d1d5db;
-    border-radius:6px;
-    font-size:14px;
-}
-
-textarea{
-    min-height:80px;
-}
-
-.save-btn{
-    margin-top:18px;
-    padding:11px 22px;
-    background:#0d6efd;
-    color:#fff;
-    border:none;
-    border-radius:6px;
-    cursor:pointer;
-    font-size:15px;
-    font-weight:600;
-}
-
-.save-btn:hover{
-    background:#0b5ed7;
-}
-
-.table-title{
-    font-size:24px;
-    font-weight:bold;
-    margin:20px 0 12px;
-}
-
-.table-wrapper{
-    overflow-x:auto;
-    background:#fff;
-    border-radius:10px;
-    box-shadow:0 2px 8px rgba(0,0,0,0.08);
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-table th{
-    background:#0f172a;
-    color:white;
-    padding:12px;
-    font-size:14px;
-    white-space:nowrap;
-}
-
-table td{
-    border-bottom:1px solid #e5e7eb;
-    padding:10px;
-    vertical-align:top;
-    font-size:14px;
-}
-
-table tr:hover{
-    background:#f8fafc;
-}
-
-.table-input{
-    width:100%;
-    padding:7px;
-    border:1px solid #cbd5e1;
-    border-radius:5px;
-    font-size:13px;
-}
-
-.action-btn{
-    padding:6px 12px;
-    border:none;
-    border-radius:5px;
-    color:white;
-    cursor:pointer;
-    font-size:12px;
-    text-decoration:none;
-}
-
-.edit-btn{
-    background:#198754;
-}
-
-.update-btn{
-    background:#0d6efd;
-}
-
-.cancel-btn{
-    background:#6c757d;
-}
-
-.delete-btn{
-    background:#dc3545;
-}
-
-.editRow{
-    display:none;
-    background:#f8fafc;
-}
-
-.edit-container{
-    padding:15px;
-    background:#f8fafc;
-    border-radius:8px;
-}
-
-</style>
-
-<script>
-
-function enableEdit(id){
-
-    document.getElementById("view_"+id)
-    .style.display = "none";
-
-    document.getElementById("edit_"+id)
-    .style.display = "table-row";
-}
-
-function cancelEdit(id){
-
-    document.getElementById("view_"+id)
-    .style.display = "table-row";
-
-    document.getElementById("edit_"+id)
-    .style.display = "none";
-}
-
-</script>
-
+        /* Grouping UI Enhancements */
+        .group-start {
+            border-top: 2px solid #cbd5e1 !important;
+            background-color: #fcfdfe;
+        }
+        .group-label {
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 6px;
+            background: #f1f5f9;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
-
 <body>
 
-<%@ include file="../header.jsp" %>
+    <!-- Asset Registration Form Section -->
+    <div class="dashboard-card">
+        <h2>Asset Profile Entry Form</h2>
+        <form action="AssetServlet" method="post">
+            <input type="hidden" name="assetId" value="${editableAsset.assetId}" />
 
-<div class="container">
-
-<div class="page-title">
-Asset Management
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Asset Code *</label>
+                    <input type="text" name="assetCode" value="${editableAsset.assetCode}" required maxlength="50" />
+                </div>
+                <div class="form-group">
+                    <label>Asset Name *</label>
+                    <input type="text" name="assetName" value="${editableAsset.assetName}" required maxlength="150" />
+                </div>
+                
+                <div style="grid-column: 1/-1;"></div>
+                
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="categorySelect" name="categoryId" required onchange="filterSubcategories()">
+                        <option value="">-- Select Category --</option>
+                        <c:forEach var="cat" items="${categoriesList}">
+                            <option value="${cat.id}" ${cat.id == editableAsset.categoryId ? 'selected="selected"' : ''}>
+                                <c:out value="${cat.name}"/>
+                            </option>
+                        </c:forEach>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Subcategory</label>
+                    <select id="subcategorySelect" name="subcategoryId">
+                        <option value="">-- Select Subcategory --</option>
+                        <c:forEach var="sub" items="${subcategoriesList}">
+                            <option value="${sub.id}" 
+                                    data-category="${sub.categoryId}" 
+                                    ${sub.id == editableAsset.subcategoryId ? 'selected="selected"' : ''}>
+                                <c:out value="${sub.name}"/>
+                            </option>
+                        </c:forEach>
+                    </select>
+                </div>
+                
+                
+               <div class="form-group">
+    <label>Vendor Name</label>
+    <select id="vendorSelect" name="vendorName">
+        <option value="">-- Select Vendor --</option>
+        <c:forEach var="vendor" items="${vendorsList}">
+            <option value="${vendor.name}" ${vendor.name == editableAsset.vendorName ? 'selected="selected"' : ''}>
+                <c:out value="${vendor.name}"/>
+            </option>
+        </c:forEach>
+    </select>
 </div>
-
-<!-- ADD FORM -->
-
-<div class="top-form">
-
-<form action="<%=request.getContextPath()%>/AssetController"
-method="post">
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Asset Code</label>
-
-<input type="text"
-name="assetCode"
-required>
-
-</div>
-
-<div class="form-group">
-
-<label>Asset Name</label>
-
-<input type="text"
-name="assetName"
-required>
-
-</div>
-
-<div class="form-group">
-
-<label>Category</label>
-
-<select name="categoryId"
-required>
-
-<option value="">
-Select Category
-</option>
-
-<%
-for(HashMap<String,Object> c : categories){
-%>
-
-<option value="<%=c.get("category_id")%>">
-
-<%=c.get("category_name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Subcategory</label>
-
-<select name="subcategoryId"
-required>
-
-<option value="">
-Select Subcategory
-</option>
-
-<%
-for(HashMap<String,Object> s : subcategories){
-%>
-
-<option value="<%=s.get("subcategory_id")%>">
-
-<%=s.get("subcategory_name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Vendor</label>
-
-<select name="vendor_name"
-required>
-
-<option value="">
-Select Vendor
-</option>
-
-<%
-for(HashMap<String,Object> v : vendors){
-%>
-
-<option value="<%=v.get("name")%>">
-
-<%=v.get("name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Location</label>
-
-<select name="locationId"
-required>
-
-<option value="">
-Select Location
-</option>
-
-<%
-for(HashMap<String,Object> l : locations){
-%>
-
-<option value="<%=l.get("location_id")%>">
-
-<%=l.get("location_name")%>
--
-<%=l.get("building")%>
--
-<%=l.get("floor_name")%>
--
-Room <%=l.get("room_number")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Brand</label>
-
-<input type="text"
-name="brand">
-
-</div>
-
-<div class="form-group">
-
-<label>Model Number</label>
-
-<input type="text"
-name="modelNumber">
-
-</div>
-
-<div class="form-group">
-
-<label>Serial Number</label>
-
-<input type="text"
-name="serialNumber">
-
-</div>
-
-<div class="form-group">
-
-<label>Purchase Date</label>
-
-<input type="date"
-name="purchaseDate">
-
-</div>
-
-<div class="form-group">
-
-<label>Purchase Cost</label>
-
-<input type="number"
-step="0.01"
-name="purchaseCost">
-
-</div>
-
-<div class="form-group">
-
-<label>Warranty Expiry</label>
-
-<input type="date"
-name="warrantyExpiry">
-
-</div>
-
-<div class="form-group">
-
-<label>Depreciation Method</label>
-
-<select name="depreciationMethod">
-
-<option value="">
-Select
-</option>
-
-<option value="STRAIGHT_LINE">
-STRAIGHT LINE
-</option>
-
-<option value="WDV">
-WDV
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Useful Life Years</label>
-
-<input type="number"
-name="usefulLifeYears">
-
-</div>
-
-<div class="form-group">
-
-<label>Salvage Value</label>
-
-<input type="number"
-step="0.01"
-name="salvageValue">
-
-</div>
-
-<div class="form-group">
-
-<label>Status</label>
-
-<select name="assetStatus">
-
-<option value="AVAILABLE">
-AVAILABLE
-</option>
-
-<option value="ALLOCATED">
-ALLOCATED
-</option>
-
-<option value="UNDER_MAINTENANCE">
-UNDER MAINTENANCE
-</option>
-
-<option value="SCRAPPED">
-SCRAPPED
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>QR Code</label>
-
-<input type="text"
-name="qrCode">
-
-</div>
-
-<div class="form-group"
-style="grid-column:1/-1;">
-
-<label>Description</label>
-
-<textarea name="description"></textarea>
-
-</div>
-
-</div>
-
-<button type="submit"
-name="action"
-value="add"
-class="save-btn">
-
-Save Asset
-
-</button>
-
-</form>
-
-</div>
-
-<!-- TABLE -->
-
-<div class="table-title">
-Asset List
-</div>
-
-<div class="table-wrapper">
-
-<table>
-
-<tr>
-
-<th>ID</th>
-<th>Code</th>
-<th>Name</th>
-<th>Category</th>
-<th>Subcategory</th>
-<th>Vendor</th>
-<th>Location</th>
-<th>Brand</th>
-<th>Model</th>
-<th>Serial</th>
-<th>Purchase</th>
-<th>Cost</th>
-<th>Status</th>
-<th>Description</th>
-<th>Actions</th>
-
-</tr>
-
-<%
-
-for(HashMap<String,Object> a : list){
-
-String aid =
-String.valueOf(a.get("asset_id"));
-
-%>
-
-<!-- VIEW ROW -->
-
-<tr id="view_<%=aid%>">
-
-<td><%=aid%></td>
-
-<td><%=a.get("asset_code")%></td>
-
-<td><%=a.get("asset_name")%></td>
-
-<td><%=a.get("category_name")%></td>
-
-<td><%=a.get("subcategory_name")%></td>
-
-<td><%=a.get("vendor_name")%></td>
-
-<td><%=a.get("location_name")%></td>
-
-<td><%=a.get("brand")%></td>
-
-<td><%=a.get("model_number")%></td>
-
-<td><%=a.get("serial_number")%></td>
-
-<td><%=a.get("purchase_date")%></td>
-
-<td><%=a.get("purchase_cost")%></td>
-
-<td><%=a.get("asset_status")%></td>
-
-<td><%=a.get("description")%></td>
-
-<td>
-
-<div style="display:flex;gap:5px;">
-
-<button type="button"
-class="action-btn edit-btn"
-onclick="enableEdit('<%=aid%>')">
-
-Edit
-
-</button>
-
-<a class="action-btn delete-btn"
-href="<%=request.getContextPath()%>/AssetController?action=delete&id=<%=aid%>"
-onclick="return confirm('Delete Asset?')">
-
-Delete
-
-</a>
-
-</div>
-
-</td>
-
-</tr>
-
-<!-- EDIT ROW -->
-
-<tr id="edit_<%=aid%>"
-class="editRow">
-
-<td colspan="15">
-
-<div class="edit-container">
-
-<form action="<%=request.getContextPath()%>/AssetController"
-method="post">
-
-<input type="hidden"
-name="assetId"
-value="<%=aid%>">
-
-<div class="form-grid">
-
-<div class="form-group">
-
-<label>Asset Code</label>
-
-<input type="text"
-name="assetCode"
-class="table-input"
-value="<%=a.get("asset_code")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Asset Name</label>
-
-<input type="text"
-name="assetName"
-class="table-input"
-value="<%=a.get("asset_name")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Category</label>
-
-<select name="categoryId"
-class="table-input">
-
-<%
-
-for(HashMap<String,Object> c : categories){
-
-String cid =
-String.valueOf(c.get("category_id"));
-
-String acat =
-String.valueOf(a.get("category_id"));
-
-%>
-
-<option value="<%=cid%>"
-<%=cid.equals(acat)
-? "selected"
-: ""%>>
-
-<%=c.get("category_name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Subcategory</label>
-
-<select name="subcategoryId"
-class="table-input">
-
-<%
-
-for(HashMap<String,Object> s : subcategories){
-
-String sid =
-String.valueOf(s.get("subcategory_id"));
-
-String asid =
-String.valueOf(a.get("subcategory_id"));
-
-%>
-
-<option value="<%=sid%>"
-<%=sid.equals(asid)
-? "selected"
-: ""%>>
-
-<%=s.get("subcategory_name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Vendor</label>
-
-<select name="vendor_name"
-class="table-input">
-
-<%
-
-for(HashMap<String,Object> v : vendors){
-
-String vname =
-String.valueOf(v.get("name"));
-
-String av =
-String.valueOf(a.get("vendor_name"));
-
-%>
-
-<option value="<%=vname%>"
-<%=vname.equals(av)
-? "selected"
-: ""%>>
-
-<%=vname%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Location</label>
-
-<select name="locationId"
-class="table-input">
-
-<%
-
-for(HashMap<String,Object> l : locations){
-
-String lid =
-String.valueOf(l.get("location_id"));
-
-String alid =
-String.valueOf(a.get("location_id"));
-
-%>
-
-<option value="<%=lid%>"
-<%=lid.equals(alid)
-? "selected"
-: ""%>>
-
-<%=l.get("location_name")%>
-
-</option>
-
-<%
-}
-%>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Brand</label>
-
-<input type="text"
-name="brand"
-class="table-input"
-value="<%=a.get("brand")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Model Number</label>
-
-<input type="text"
-name="modelNumber"
-class="table-input"
-value="<%=a.get("model_number")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Serial Number</label>
-
-<input type="text"
-name="serialNumber"
-class="table-input"
-value="<%=a.get("serial_number")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Purchase Date</label>
-
-<input type="date"
-name="purchaseDate"
-class="table-input"
-value="<%=a.get("purchase_date")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Purchase Cost</label>
-
-<input type="number"
-step="0.01"
-name="purchaseCost"
-class="table-input"
-value="<%=a.get("purchase_cost")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Warranty Expiry</label>
-
-<input type="date"
-name="warrantyExpiry"
-class="table-input"
-value="<%=a.get("warranty_expiry")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Depreciation Method</label>
-
-<select name="depreciationMethod"
-class="table-input">
-
-<option value="STRAIGHT_LINE"
-<%="STRAIGHT_LINE".equals(
-String.valueOf(a.get("depreciation_method")))
-? "selected"
-: ""%>>
-
-STRAIGHT LINE
-
-</option>
-
-<option value="WDV"
-<%="WDV".equals(
-String.valueOf(a.get("depreciation_method")))
-? "selected"
-: ""%>>
-
-WDV
-
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>Useful Life Years</label>
-
-<input type="number"
-name="usefulLifeYears"
-class="table-input"
-value="<%=a.get("useful_life_years")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Salvage Value</label>
-
-<input type="number"
-step="0.01"
-name="salvageValue"
-class="table-input"
-value="<%=a.get("salvage_value")%>">
-
-</div>
-
-<div class="form-group">
-
-<label>Status</label>
-
-<select name="assetStatus"
-class="table-input">
-
-<option value="AVAILABLE"
-<%="AVAILABLE".equals(
-String.valueOf(a.get("asset_status")))
-? "selected"
-: ""%>>
-
-AVAILABLE
-
-</option>
-
-<option value="ALLOCATED"
-<%="ALLOCATED".equals(
-String.valueOf(a.get("asset_status")))
-? "selected"
-: ""%>>
-
-ALLOCATED
-
-</option>
-
-<option value="UNDER_MAINTENANCE"
-<%="UNDER_MAINTENANCE".equals(
-String.valueOf(a.get("asset_status")))
-? "selected"
-: ""%>>
-
-UNDER MAINTENANCE
-
-</option>
-
-<option value="SCRAPPED"
-<%="SCRAPPED".equals(
-String.valueOf(a.get("asset_status")))
-? "selected"
-: ""%>>
-
-SCRAPPED
-
-</option>
-
-</select>
-
-</div>
-
-<div class="form-group">
-
-<label>QR Code</label>
-
-<input type="text"
-name="qrCode"
-class="table-input"
-value="<%=a.get("qr_code")%>">
-
-</div>
-
-<div class="form-group"
-style="grid-column:1/-1;">
-
-<label>Description</label>
-
-<textarea name="description"
-class="table-input"><%=a.get("description")%></textarea>
-
-</div>
-
-</div>
-
-<div style="margin-top:15px;display:flex;gap:10px;">
-
-<button type="submit"
-name="action"
-value="update"
-class="action-btn update-btn">
-
-Update
-
-</button>
-
-<button type="button"
-class="action-btn cancel-btn"
-onclick="cancelEdit('<%=aid%>')">
-
-Cancel
-
-</button>
-
-</div>
-
-</form>
-
-</div>
-
-</td>
-
-</tr>
-
-<%
-}
-%>
-
-</table>
-
-</div>
-
-</div>
-
+                
+                
+                <div class="form-group">
+                    <label>Brand</label>
+                    <input type="text" name="brand" value="${editableAsset.brand}" maxlength="100" />
+                </div>
+                <div class="form-group">
+                    <label>Model Number</label>
+                    <input type="text" name="modelNumber" value="${editableAsset.modelNumber}" maxlength="100" />
+                </div>
+                <div class="form-group">
+                    <label>Serial Number</label>
+                    <input type="text" name="serialNumber" value="${editableAsset.serialNumber}" maxlength="100" />
+                </div>
+                <div class="form-group">
+                    <label>Purchase Date</label>
+                    <input type="date" name="purchaseDate" value="${editableAsset.purchaseDate}" />
+                </div>
+                <div class="form-group">
+                    <label>Purchase Cost</label>
+                    <input type="number" step="0.01" name="purchaseCost" value="${editableAsset.purchaseCost}" />
+                </div>
+                <div class="form-group">
+                    <label>Warranty Expiry</label>
+                    <input type="date" name="warrantyExpiry" value="${editableAsset.warrantyExpiry}" />
+                </div>
+                <div class="form-group">
+                    <label>Depreciation Method</label>
+                    <input type="text" name="depreciationMethod" value="${editableAsset.depreciationMethod}" maxlength="500" />
+                </div>
+                <div class="form-group">
+                    <label>Useful Life (Years)</label>
+                    <input type="number" name="usefulLifeYears" value="${editableAsset.usefulLifeYears}" />
+                </div>
+                <div class="form-group">
+                    <label>Salvage Value</label>
+                    <input type="number" step="0.01" name="salvageValue" value="${editableAsset.salvageValue}" />
+                </div>
+                <div class="form-group">
+                    <label>Asset Status</label>
+                    <input type="text" name="assetStatus" value="${editableAsset.assetStatus}" maxlength="500" />
+                </div>
+                <div class="form-group">
+                    <label>QR Code Location String</label>
+                    <input type="text" name="qrCode" value="${editableAsset.qrCode}" maxlength="255" />
+                </div>
+                <div class="form-group span-2">
+                    <label>Description Details</label>
+                    <textarea name="description" rows="2">${editableAsset.description}</textarea>
+                </div>
+            </div>
+
+            <div class="btn-panel">
+                <button type="submit" class="btn-primary">
+                    <c:choose>
+                        <c:when test="${not empty editableAsset}">Update Asset</c:when>
+                        <c:otherwise>Save New Asset</c:otherwise>
+                    </c:choose>
+                </button>
+                <c:if test="${not empty editableAsset}">
+                    <a href="AssetServlet" class="btn-secondary">Cancel Edit</a>
+                </c:if>
+            </div>
+        </form>
+    </div>
+
+    <!-- Live Management Matrix Area -->
+    <div class="dashboard-card">
+        <div class="matrix-toolbar">
+            <div>
+                <h2>Registered Assets Live Matrix</h2>
+            </div>
+            <div class="toolbar-filter">
+                <div class="form-group" style="margin: 0;">
+                    <select id="matrixCategoryFilter" onchange="filterMatrixByCategory()" style="padding: 8px 12px; font-size: 13px;">
+                        <option value="ALL">All Categories</option>
+                        <c:forEach var="cat" items="${categoriesList}">
+                            <option value="${cat.name}"><c:out value="${cat.name}"/></option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <button type="button" onclick="exportToExcel()" class="btn-success" style="padding: 8px 14px; font-size: 13px;">
+                    Export Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="assetDataTable">
+                <thead>
+                    <tr>
+                        <th>Actions</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Classification (Cat / Sub)</th>
+                        <th>Vendor</th>
+                        <th>Brand/Model</th>
+                        <th>Serial No</th>
+                        <th>Purchase Date</th>
+                        <th>Cost</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Local variable pointers initialization tracking group row boundaries -->
+                    <c:set var="prevGroup" value="" />
+                    <c:forEach var="item" items="${assetList}">
+                        <!-- Build distinct group parsing logic token out of text values -->
+                        <c:set var="currentGroup" value="${item.categoryName} // ${item.subcategoryName}" />
+                        
+                        <tr class="asset-row ${currentGroup != prevGroup ? 'group-start' : ''}" data-category-name="${item.categoryName}">
+                            <td>
+                                <a href="AssetServlet?action=edit&id=${item.assetId}" class="btn-secondary" style="padding: 4px 8px; font-size: 12px; border-radius: 6px;">Edit</a>
+                            </td>
+                            <td><strong><c:out value="${item.assetCode}"/></strong></td>
+                            <td><c:out value="${item.assetName}"/></td>
+                            <td data-group-token="${currentGroup}">
+                                <c:choose>
+                                    <c:when test="${not empty item.categoryName}">
+                                        <span class="${currentGroup != prevGroup ? 'group-label' : ''}"><c:out value="${item.categoryName}"/></span>
+                                        <c:if test="${not empty item.subcategoryName}">
+                                             / <span style="color: var(--text-muted);"><c:out value="${item.subcategoryName}"/></span>
+                                        </c:if>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span style="color: #999; font-style: italic;">Unassigned</span>
+                                    </c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td><c:out value="${item.vendorName}"/></td>
+                            <td><c:out value="${item.brand}"/> <c:out value="${item.modelNumber}"/></td>
+                            <td><c:out value="${item.serialNumber}"/></td>
+                            <td><c:out value="${item.purchaseDate}"/></td>
+                            <td>
+                                <c:if test="${not empty item.purchaseCost}">
+                                    $<c:out value="${item.purchaseCost}"/>
+                                </c:if>
+                            </td>
+                            <td>
+                                <span class="badge"><c:out value="${item.assetStatus}"/></span>
+                            </td>
+                        </tr>
+                        <c:set var="prevGroup" value="${currentGroup}" />
+                    </c:forEach>
+                    <c:if test="${empty assetList}">
+                        <tr id="emptyRowPlaceholder">
+                            <td colspan="10" style="text-align: center; color: var(--text-muted); padding: 32px;">No registered infrastructure assets discovered.</td>
+                        </tr>
+                    </c:if>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Scripting Routine Core Framework Blocks -->
+    <script type="text/javascript">
+        // Cascading logic linking input categories down to matching child elements
+        function filterSubcategories() {
+            var categorySelect = document.getElementById("categorySelect");
+            var subcategorySelect = document.getElementById("subcategorySelect");
+            var selectedCategoryId = categorySelect.value;
+            var options = subcategorySelect.options;
+            
+            for (var i = 1; i < options.length; i++) {
+                var option = options[i];
+                var optionCatId = option.getAttribute("data-category");
+                
+                if (selectedCategoryId === "" || optionCatId === selectedCategoryId) {
+                    option.style.display = "";
+                } else {
+                    option.style.display = "none";
+                    if (option.selected) { subcategorySelect.value = ""; }
+                }
+            }
+        }
+
+        // Live category UI display matching filter routine
+        function filterMatrixByCategory() {
+            var filterValue = document.getElementById("matrixCategoryFilter").value;
+            var rows = document.getElementsByClassName("asset-row");
+            var visibleCount = 0;
+            
+            for (var i = 0; i < rows.length; i++) {
+                var row = rows[i];
+                var rowCat = row.getAttribute("data-category-name");
+                
+                if (filterValue === "ALL" || rowCat === filterValue) {
+                    row.style.display = "";
+                    visibleCount++;
+                } else {
+                    row.style.display = "none";
+                }
+            }
+            
+            // Handle row visually separating lines reconfiguration during multi-row hidden states
+            recalculateVisibleGroupingBorders(filterValue);
+        }
+
+        // dynamically resets grouping styling classes when items are filtered out
+        function recalculateVisibleGroupingBorders(filterActive) {
+            var rows = document.querySelectorAll(".asset-row");
+            var lastGroupToken = "";
+            
+            rows.forEach(function(row) {
+                if (row.style.display === "none") return;
+                
+                var cell = row.querySelector("td[data-group-token]");
+                var currentToken = cell ? cell.getAttribute("data-group-token") : "";
+                
+                if (filterActive !== "ALL" || currentToken !== lastGroupToken) {
+                    row.classList.add("group-start");
+                    var labelSpan = row.querySelector(".group-label");
+                    if (labelSpan) labelSpan.style.fontWeight = "600";
+                } else {
+                    row.classList.remove("group-start");
+                }
+                lastGroupToken = currentToken;
+            });
+        }
+
+        // Standalone safe pure client-side raw data Microsoft Excel layout pipeline
+        function exportToExcel() {
+            var table = document.getElementById("assetDataTable");
+            var html = table.outerHTML;
+            
+            // Strip structural application operation components cleanly from the binary stream wrapper
+            html = html.replace(/<th>Actions<\/th>/g, "")
+                       .replace(/<td>\s*<a[^>]*>Edit<\/a>\s*<\/td>/g, "");
+
+            var blob = new Blob([html], {
+                type: "application/vnd.ms-excel;charset=utf-8;"
+            });
+            
+            var link = document.createElement("a");
+            var url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute("download", "Asset_Configuration_Matrix.xls");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Trigger loading behaviors explicitly on window instantiation sequences
+        window.onload = function() {
+            if (document.getElementById("categorySelect").value !== "") {
+                filterSubcategories();
+            }
+        };
+    </script>
 </body>
-
 </html>

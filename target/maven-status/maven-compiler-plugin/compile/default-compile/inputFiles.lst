@@ -3,7 +3,6 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\Indentlist.ja
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\ReportDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil2.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\resume.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AssetController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\UpdateAdmissionStatusServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\PurchaseOrderServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\AIndentListServlet.java
@@ -18,8 +17,10 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Home.ja
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\POItems.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\UploadCSVServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil3.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\AssetLocationDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\example\HomeServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\UpdateTCStatusServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\Asset.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\IndentItems.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\MealSummaryServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AllocationController.java
@@ -31,6 +32,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\VendorDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AuditController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\SaveMarksServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\DiningHallServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AssetLocationController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\CategoryController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\IndentPO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\ViewGRNServlet.java
@@ -49,6 +51,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil4.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\PO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\TransferControlle.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\LoadStudentsAndExamsServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AssetServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\IssueServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\CandidateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\CategoryDAO.java

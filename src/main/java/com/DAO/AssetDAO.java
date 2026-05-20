@@ -1,739 +1,145 @@
 package com.DAO;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import com.bean.Asset;
+import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-
-import com.bean.DBUtil;
+import java.util.List;
 import com.bean.DBUtil4;
 
 public class AssetDAO {
 
-    Connection con = null;
-    PreparedStatement ps = null;
-    ResultSet rs = null;
-
-    // =========================
-    // LOAD VENDORS
-    // =========================
-
-    public ArrayList<HashMap<String, Object>> getAllVendors() {
-
-        ArrayList<HashMap<String, Object>> list =
-                new ArrayList<>();
-
-        try {
-
-            con = DBUtil.getConnection();
-
-            String sql =
-                    "SELECT * FROM vendors "
-                    + "ORDER BY name";
-
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                HashMap<String, Object> map =
-                        new HashMap<>();
-
-                map.put("id",
-                        rs.getInt("id"));
-
-                map.put("name",
-                        rs.getString("name"));
-
-                list.add(map);
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
+    public void insertAsset(Asset asset) throws SQLException {
+        String sql = "INSERT INTO assets (asset_code, asset_name, category_id, subcategory_id, vendor_name, brand, model_number, serial_number, purchase_date, purchase_cost, warranty_expiry, depreciation_method, useful_life_years, salvage_value, asset_status, qr_code, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        try (Connection conn = DBUtil4.getConnection(); 
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            setPreparedStatementValues(ps, asset);
+            ps.executeUpdate();
         }
+    }
 
+    public List<Asset> getAllAssets() throws SQLException {
+        List<Asset> list = new ArrayList<>();
+        // Updated to target asset_categories and asset_subcategories tables
+        String sql = "SELECT a.*, c.category_name, sc.subcategory_name " +
+                     "FROM assets a " +
+                     "LEFT JOIN asset_categories c ON a.category_id = c.category_id " +
+                     "LEFT JOIN asset_subcategories sc ON a.subcategory_id = sc.subcategory_id " +
+                     "ORDER BY a.created_at DESC";
+        
+        try (Connection conn = DBUtil4.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            
+            while (rs.next()) {
+                Asset asset = mapResultSetToAsset(rs);
+                list.add(asset);
+            }
+        }
         return list;
     }
 
-    // =========================
-    // LOAD CATEGORIES
-    // =========================
-
-    public ArrayList<HashMap<String, Object>> getAllCategories() {
-
-        ArrayList<HashMap<String, Object>> list =
-                new ArrayList<>();
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "SELECT * FROM asset_categories "
-                    + "ORDER BY category_name";
-
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                HashMap<String, Object> map =
-                        new HashMap<>();
-
-                map.put("category_id",
-                        rs.getInt("category_id"));
-
-                map.put("category_name",
-                        rs.getString("category_name"));
-
-                list.add(map);
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return list;
-    }
-
-    // =========================
-    // LOAD SUBCATEGORIES
-    // =========================
-
-    public ArrayList<HashMap<String, Object>> getAllSubCategories() {
-
-        ArrayList<HashMap<String, Object>> list =
-                new ArrayList<>();
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "SELECT * FROM asset_subcategories "
-                    + "ORDER BY subcategory_name";
-
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                HashMap<String, Object> map =
-                        new HashMap<>();
-
-                map.put("subcategory_id",
-                        rs.getInt("subcategory_id"));
-
-                map.put("category_id",
-                        rs.getInt("category_id"));
-
-                map.put("subcategory_name",
-                        rs.getString("subcategory_name"));
-
-                list.add(map);
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return list;
-    }
-
-    // =========================
-    // LOAD LOCATIONS
-    // =========================
-
-    public ArrayList<HashMap<String, Object>> getAllLocations() {
-
-        ArrayList<HashMap<String, Object>> list =
-                new ArrayList<>();
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "SELECT * FROM locations "
-                    + "ORDER BY location_name";
-
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                HashMap<String, Object> map =
-                        new HashMap<>();
-
-                map.put("location_id",
-                        rs.getInt("location_id"));
-
-                map.put("location_name",
-                        rs.getString("location_name"));
-
-                map.put("building",
-                        rs.getString("building"));
-
-                map.put("floor_name",
-                        rs.getString("floor_name"));
-
-                map.put("room_number",
-                        rs.getString("room_number"));
-
-                map.put("description",
-                        rs.getString("description"));
-
-                list.add(map);
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return list;
-    }
-
-    // =========================
-    // ADD ASSET
-    // =========================
-
-    public boolean addAsset(
-
-            String assetCode,
-            String assetName,
-            int categoryId,
-            int subcategoryId,
-            String vendorName,
-            int locationId,
-            String brand,
-            String modelNumber,
-            String serialNumber,
-            String purchaseDate,
-            double purchaseCost,
-            String warrantyExpiry,
-            String depreciationMethod,
-            int usefulLifeYears,
-            double salvageValue,
-            String assetStatus,
-            String qrCode,
-            String description) {
-
-        boolean status = false;
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "INSERT INTO assets("
-                    + "asset_code,"
-                    + "asset_name,"
-                    + "category_id,"
-                    + "subcategory_id,"
-                    + "vendor_name,"
-                    + "location_id,"
-                    + "brand,"
-                    + "model_number,"
-                    + "serial_number,"
-                    + "purchase_date,"
-                    + "purchase_cost,"
-                    + "warranty_expiry,"
-                    + "depreciation_method,"
-                    + "useful_life_years,"
-                    + "salvage_value,"
-                    + "asset_status,"
-                    + "qr_code,"
-                    + "description"
-                    + ") "
-                    + "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
-
-            ps = con.prepareStatement(sql);
-
-            ps.setString(1, assetCode);
-            ps.setString(2, assetName);
-            ps.setInt(3, categoryId);
-            ps.setInt(4, subcategoryId);
-            ps.setString(5, vendorName);
-            ps.setInt(6, locationId);
-            ps.setString(7, brand);
-            ps.setString(8, modelNumber);
-            ps.setString(9, serialNumber);
-
-            if (purchaseDate == null || purchaseDate.equals("")) {
-
-                ps.setNull(10, java.sql.Types.DATE);
-
-            } else {
-
-                ps.setString(10, purchaseDate);
-            }
-
-            ps.setDouble(11, purchaseCost);
-
-            if (warrantyExpiry == null || warrantyExpiry.equals("")) {
-
-                ps.setNull(12, java.sql.Types.DATE);
-
-            } else {
-
-                ps.setString(12, warrantyExpiry);
-            }
-
-            ps.setString(13, depreciationMethod);
-            ps.setInt(14, usefulLifeYears);
-            ps.setDouble(15, salvageValue);
-            ps.setString(16, assetStatus);
-            ps.setString(17, qrCode);
-            ps.setString(18, description);
-
-            int i = ps.executeUpdate();
-
-            if (i > 0) {
-
-                status = true;
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return status;
-    }
-
-    // =========================
-    // GET ALL ASSETS
-    // =========================
-
-    public ArrayList<HashMap<String, Object>> getAllAssets() {
-
-        ArrayList<HashMap<String, Object>> list =
-                new ArrayList<>();
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "SELECT "
-                    + "a.*, "
-                    + "c.category_name, "
-                    + "s.subcategory_name, "
-                    + "l.location_name, "
-                    + "l.building, "
-                    + "l.floor_name, "
-                    + "l.room_number "
-                    + "FROM assets a "
-                    + "LEFT JOIN asset_categories c "
-                    + "ON a.category_id = c.category_id "
-                    + "LEFT JOIN asset_subcategories s "
-                    + "ON a.subcategory_id = s.subcategory_id "
-                    + "LEFT JOIN locations l "
-                    + "ON a.location_id = l.location_id "
-                    + "ORDER BY a.asset_id DESC";
-
-            ps = con.prepareStatement(sql);
-
-            rs = ps.executeQuery();
-
-            while (rs.next()) {
-
-                HashMap<String, Object> map =
-                        new HashMap<>();
-
-                map.put("asset_id",
-                        rs.getInt("asset_id"));
-
-                map.put("asset_code",
-                        rs.getString("asset_code"));
-
-                map.put("asset_name",
-                        rs.getString("asset_name"));
-
-                map.put("category_id",
-                        rs.getInt("category_id"));
-
-                map.put("subcategory_id",
-                        rs.getInt("subcategory_id"));
-
-                map.put("vendor_name",
-                        rs.getString("vendor_name"));
-
-                map.put("location_id",
-                        rs.getInt("location_id"));
-
-                map.put("location_name",
-                        rs.getString("location_name"));
-
-                map.put("building",
-                        rs.getString("building"));
-
-                map.put("floor_name",
-                        rs.getString("floor_name"));
-
-                map.put("room_number",
-                        rs.getString("room_number"));
-
-                map.put("brand",
-                        rs.getString("brand"));
-
-                map.put("model_number",
-                        rs.getString("model_number"));
-
-                map.put("serial_number",
-                        rs.getString("serial_number"));
-
-                map.put("purchase_date",
-                        rs.getString("purchase_date"));
-
-                map.put("purchase_cost",
-                        rs.getDouble("purchase_cost"));
-
-                map.put("warranty_expiry",
-                        rs.getString("warranty_expiry"));
-
-                map.put("depreciation_method",
-                        rs.getString("depreciation_method"));
-
-                map.put("useful_life_years",
-                        rs.getInt("useful_life_years"));
-
-                map.put("salvage_value",
-                        rs.getDouble("salvage_value"));
-
-                map.put("asset_status",
-                        rs.getString("asset_status"));
-
-                map.put("qr_code",
-                        rs.getString("qr_code"));
-
-                map.put("description",
-                        rs.getString("description"));
-
-                map.put("category_name",
-                        rs.getString("category_name"));
-
-                map.put("subcategory_name",
-                        rs.getString("subcategory_name"));
-
-                list.add(map);
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return list;
-    }
-
-    // =========================
-    // DELETE ASSET
-    // =========================
-
-    public boolean deleteAsset(int id) {
-
-        boolean status = false;
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "DELETE FROM assets "
-                    + "WHERE asset_id=?";
-
-            ps = con.prepareStatement(sql);
-
+    public Asset getAssetById(int id) throws SQLException {
+        // Updated to target asset_categories and asset_subcategories tables
+        String sql = "SELECT a.*, c.category_name, sc.subcategory_name " +
+                     "FROM assets a " +
+                     "LEFT JOIN asset_categories c ON a.category_id = c.category_id " +
+                     "LEFT JOIN asset_subcategories sc ON a.subcategory_id = sc.subcategory_id " +
+                     "WHERE a.asset_id = ?";
+        try (Connection conn = DBUtil4.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
             ps.setInt(1, id);
-
-            int i = ps.executeUpdate();
-
-            if (i > 0) {
-
-                status = true;
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapResultSetToAsset(rs);
+                }
             }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
         }
-
-        return status;
+        return null;
     }
 
-    // =========================
-    // GET ASSET BY ID
-    // =========================
-
-    public HashMap<String, Object> getAssetById(int id) {
-
-        HashMap<String, Object> map =
-                new HashMap<>();
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "SELECT * FROM assets "
-                    + "WHERE asset_id=?";
-
-            ps = con.prepareStatement(sql);
-
-            ps.setInt(1, id);
-
-            rs = ps.executeQuery();
-
-            if (rs.next()) {
-
-                map.put("asset_id",
-                        rs.getInt("asset_id"));
-
-                map.put("asset_code",
-                        rs.getString("asset_code"));
-
-                map.put("asset_name",
-                        rs.getString("asset_name"));
-
-                map.put("category_id",
-                        rs.getInt("category_id"));
-
-                map.put("subcategory_id",
-                        rs.getInt("subcategory_id"));
-
-                map.put("vendor_name",
-                        rs.getString("vendor_name"));
-
-                map.put("location_id",
-                        rs.getInt("location_id"));
-
-                map.put("brand",
-                        rs.getString("brand"));
-
-                map.put("model_number",
-                        rs.getString("model_number"));
-
-                map.put("serial_number",
-                        rs.getString("serial_number"));
-
-                map.put("purchase_date",
-                        rs.getString("purchase_date"));
-
-                map.put("purchase_cost",
-                        rs.getDouble("purchase_cost"));
-
-                map.put("warranty_expiry",
-                        rs.getString("warranty_expiry"));
-
-                map.put("depreciation_method",
-                        rs.getString("depreciation_method"));
-
-                map.put("useful_life_years",
-                        rs.getInt("useful_life_years"));
-
-                map.put("salvage_value",
-                        rs.getDouble("salvage_value"));
-
-                map.put("asset_status",
-                        rs.getString("asset_status"));
-
-                map.put("qr_code",
-                        rs.getString("qr_code"));
-
-                map.put("description",
-                        rs.getString("description"));
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
+    public void updateAsset(Asset asset) throws SQLException {
+        String sql = "UPDATE assets SET asset_code=?, asset_name=?, category_id=?, subcategory_id=?, vendor_name=?, brand=?, model_number=?, serial_number=?, purchase_date=?, purchase_cost=?, warranty_expiry=?, depreciation_method=?, useful_life_years=?, salvage_value=?, asset_status=?, qr_code=?, description=? WHERE asset_id=?";
+        
+        try (Connection conn = DBUtil4.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            setPreparedStatementValues(ps, asset);
+            ps.setInt(18, asset.getAssetId());
+            ps.executeUpdate();
         }
-
-        return map;
     }
 
-    // =========================
-    // UPDATE ASSET
-    // =========================
-
-    public boolean updateAsset(
-
-            int assetId,
-            String assetCode,
-            String assetName,
-            int categoryId,
-            int subcategoryId,
-            String vendorName,
-            int locationId,
-            String brand,
-            String modelNumber,
-            String serialNumber,
-            String purchaseDate,
-            double purchaseCost,
-            String warrantyExpiry,
-            String depreciationMethod,
-            int usefulLifeYears,
-            double salvageValue,
-            String assetStatus,
-            String qrCode,
-            String description) {
-
-        boolean status = false;
-
-        try {
-
-            con = DBUtil4.getConnection();
-
-            String sql =
-                    "UPDATE assets SET "
-                    + "asset_code=?,"
-                    + "asset_name=?,"
-                    + "category_id=?,"
-                    + "subcategory_id=?,"
-                    + "vendor_name=?,"
-                    + "location_id=?,"
-                    + "brand=?,"
-                    + "model_number=?,"
-                    + "serial_number=?,"
-                    + "purchase_date=?,"
-                    + "purchase_cost=?,"
-                    + "warranty_expiry=?,"
-                    + "depreciation_method=?,"
-                    + "useful_life_years=?,"
-                    + "salvage_value=?,"
-                    + "asset_status=?,"
-                    + "qr_code=?,"
-                    + "description=? "
-                    + "WHERE asset_id=?";
-
-            ps = con.prepareStatement(sql);
-
-            ps.setString(1, assetCode);
-            ps.setString(2, assetName);
-            ps.setInt(3, categoryId);
-            ps.setInt(4, subcategoryId);
-            ps.setString(5, vendorName);
-            ps.setInt(6, locationId);
-            ps.setString(7, brand);
-            ps.setString(8, modelNumber);
-            ps.setString(9, serialNumber);
-
-            if (purchaseDate == null || purchaseDate.equals("")) {
-
-                ps.setNull(10, java.sql.Types.DATE);
-
-            } else {
-
-                ps.setString(10, purchaseDate);
-            }
-
-            ps.setDouble(11, purchaseCost);
-
-            if (warrantyExpiry == null || warrantyExpiry.equals("")) {
-
-                ps.setNull(12, java.sql.Types.DATE);
-
-            } else {
-
-                ps.setString(12, warrantyExpiry);
-            }
-
-            ps.setString(13, depreciationMethod);
-            ps.setInt(14, usefulLifeYears);
-            ps.setDouble(15, salvageValue);
-            ps.setString(16, assetStatus);
-            ps.setString(17, qrCode);
-            ps.setString(18, description);
-
-            ps.setInt(19, assetId);
-
-            int i = ps.executeUpdate();
-
-            if (i > 0) {
-
-                status = true;
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-        } finally {
-
-            closeConnection();
-        }
-
-        return status;
+    // Helper method to keep code clean and handle potentially null database values
+    private void setPreparedStatementValues(PreparedStatement ps, Asset asset) throws SQLException {
+        ps.setString(1, asset.getAssetCode());
+        ps.setString(2, asset.getAssetName());
+        
+        if (asset.getCategoryId() != null) ps.setInt(3, asset.getCategoryId()); else ps.setNull(3, Types.INTEGER);
+        if (asset.getSubcategoryId() != null) ps.setInt(4, asset.getSubcategoryId()); else ps.setNull(4, Types.INTEGER);
+        
+        ps.setString(5, asset.getVendorName());
+        ps.setString(6, asset.getBrand());
+        ps.setString(7, asset.getModelNumber());
+        ps.setString(8, asset.getSerialNumber());
+        ps.setDate(9, asset.getPurchaseDate());
+        ps.setBigDecimal(10, asset.getPurchaseCost());
+        ps.setDate(11, asset.getWarrantyExpiry());
+        ps.setString(12, asset.getDepreciationMethod());
+        
+        if (asset.getUsefulLifeYears() != null) ps.setInt(13, asset.getUsefulLifeYears()); else ps.setNull(13, Types.INTEGER);
+        
+        ps.setBigDecimal(14, asset.getSalvageValue());
+        ps.setString(15, asset.getAssetStatus());
+        ps.setString(16, asset.getQrCode());
+        ps.setString(17, asset.getDescription());
     }
 
-    // =========================
-    // CLOSE CONNECTION
-    // =========================
-
-    private void closeConnection() {
-
+    private Asset mapResultSetToAsset(ResultSet rs) throws SQLException {
+        Asset asset = new Asset();
+        asset.setAssetId(rs.getInt("asset_id"));
+        asset.setAssetCode(rs.getString("asset_code"));
+        asset.setAssetName(rs.getString("asset_name"));
+        
+        int catId = rs.getInt("category_id");
+        asset.setCategoryId(rs.wasNull() ? null : catId);
+        int subCatId = rs.getInt("subcategory_id");
+        asset.setSubcategoryId(rs.wasNull() ? null : subCatId);
+        
+        asset.setVendorName(rs.getString("vendor_name"));
+        asset.setBrand(rs.getString("brand"));
+        asset.setModelNumber(rs.getString("model_number"));
+        asset.setSerialNumber(rs.getString("serial_number"));
+        asset.setPurchaseDate(rs.getDate("purchase_date"));
+        asset.setPurchaseCost(rs.getBigDecimal("purchase_cost"));
+        asset.setWarrantyExpiry(rs.getDate("warranty_expiry"));
+        asset.setDepreciationMethod(rs.getString("depreciation_method"));
+        
+        int usefulLife = rs.getInt("useful_life_years");
+        asset.setUsefulLifeYears(rs.wasNull() ? null : usefulLife);
+        
+        asset.setSalvageValue(rs.getBigDecimal("salvage_value"));
+        asset.setAssetStatus(rs.getString("asset_status"));
+        asset.setQrCode(rs.getString("qr_code"));
+        asset.setDescription(rs.getString("description"));
+        asset.setCreatedAt(rs.getTimestamp("created_at"));
+        
+        // Map the category_name field securely
         try {
-
-            if (rs != null) {
-
-                rs.close();
-            }
-
-            if (ps != null) {
-
-                ps.close();
-            }
-
-            if (con != null) {
-
-                con.close();
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
+            asset.setCategoryName(rs.getString("category_name"));
+        } catch (SQLException e) {
+            asset.setCategoryName(null);
         }
+
+        // Map the subcategory_name field securely
+        try {
+            asset.setSubcategoryName(rs.getString("subcategory_name"));
+        } catch (SQLException e) {
+            asset.setSubcategoryName(null);
+        }
+        
+        return asset;
     }
 }

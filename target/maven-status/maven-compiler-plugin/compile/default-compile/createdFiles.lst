@@ -8,6 +8,7 @@ com\controller\DIndentListServlet.class
 com\controller\IndentPO.class
 com\controller\Admissions\MarksReport.class
 com\controller\DiningHallServlet.class
+com\controller\Asset\AssetServlet.class
 com\bean\Indentlist.class
 com\controller\Admissions\UploadCSVServlet.class
 com\controller\IndentlistServlet.class
@@ -16,7 +17,6 @@ com\controller\Asset\DashboardController.class
 com\DAO\LocationDAO.class
 com\controller\POListServlet.class
 com\controller\AIndentListServlet.class
-com\controller\Asset\AssetController.class
 com\controller\HRA\viewResumeFile.class
 com\controller\PurchaseOrderServlet.class
 com\DAO\MaintenanceDAO.class
@@ -31,11 +31,13 @@ com\DAO\VendorDAO.class
 com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\controller\Admissions\SaveEnquiryServlet.class
+com\controller\Asset\AssetLocationController.class
 com\controller\Home.class
 com\controller\Asset\MaintenanceController.class
 com\controller\Asset\TransferControlle.class
 com\bean\DBUtil4.class
 com\bean\DBUtil3.class
+com\DAO\AssetLocationDAO.class
 com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\controller\HRA\CandidateServlet.class
 com\controller\Asset\CategoryController.class
@@ -68,5 +70,6 @@ com\bean\Addstock.class
 com\bean\PO.class
 com\controller\HRA\resume.class
 com\controller\SendOTPServlet.class
+com\bean\Asset.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
 com\DAO\AllocationDAO.class
