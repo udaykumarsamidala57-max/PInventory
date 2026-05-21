@@ -63,8 +63,10 @@ public class LocationDAO {
             con = DBUtil4.getConnection();
 
             String sql =
-                "SELECT * FROM locations "
-              + "ORDER BY location_id DESC";
+            	    "SELECT * FROM locations "
+            	  + "ORDER BY building ASC, "
+            	  + "floor_name ASC, "
+            	  + "room_number ASC";
 
             ps = con.prepareStatement(sql);
 
