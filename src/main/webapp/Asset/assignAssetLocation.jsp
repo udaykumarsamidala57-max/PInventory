@@ -424,7 +424,7 @@ window.onclick = function(event) {
                                     </select>
                                 </td>
                                 <td style="border-bottom: 0; padding: 14px 20px; width: 50%;">
-                                    <button type="submit">Assign</button>
+                                    <button type="submit">Assign </button>
                                 </td>
                             </tr>
                         </table>
