@@ -36,6 +36,7 @@ com\controller\Home.class
 com\controller\Asset\MaintenanceController.class
 com\controller\Asset\TransferControlle.class
 com\bean\DBUtil4.class
+com\controller\Asset\Staff.class
 com\bean\DBUtil3.class
 com\DAO\AssetLocationDAO.class
 com\controller\Admissions\LoadStudentsAndExamsServlet.class
