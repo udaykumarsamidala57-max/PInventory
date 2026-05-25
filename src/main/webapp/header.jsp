@@ -421,10 +421,36 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 
 </main>
 
-<footer>
-  <p>© <%= currentYear %> | SRS | Office Central |  
-  <i class="fas fa-leaf" style="color:green;"></i> Developed by
-  <i class="fas fa-leaf" style="color:green;"></i> SSS IT Department</p>
+<footer class="footer">
+
+    <div class="footer-badge">
+
+        <i class="fas fa-laptop-code"></i>
+
+        <span class="brand">
+            SRS Office Central |
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="tagline">
+            Technology Built with Purpose & Responsibility|
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="developer">
+            Developed by SSS IT Department
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="year">
+            © 2026
+        </span>
+
+    </div>
+
 </footer>
 
 <script>
