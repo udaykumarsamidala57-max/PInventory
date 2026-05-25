@@ -607,7 +607,7 @@ window.onload = function(){
 
     <div class="filter-group">
 
-        <label>Category</label>
+        <label>Category </label>
 
         <select id="category"
         onchange="loadSubcategories()">
