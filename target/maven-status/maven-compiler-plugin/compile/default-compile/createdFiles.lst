@@ -1,5 +1,6 @@
 com\DAO\ReportDAO.class
 com\controller\Admissions\AdmissionEnquiryServlet.class
+com\Service\MasterServlet.class
 com\bean\IndentItem.class
 com\controller\LoginServlet.class
 com\controller\ViewGRNServlet.class
@@ -16,6 +17,7 @@ com\controller\Asset\EmployeeController.class
 com\controller\Asset\DashboardController.class
 com\DAO\LocationDAO.class
 com\controller\POListServlet.class
+com\bean\DBUtil5.class
 com\controller\AIndentListServlet.class
 com\controller\HRA\viewResumeFile.class
 com\controller\PurchaseOrderServlet.class
