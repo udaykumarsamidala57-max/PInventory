@@ -19,20 +19,12 @@ import com.bean.DBUtil5;
 @WebServlet("/MasterServlet")
 public class MasterServlet extends HttpServlet {
 
-    // =========================================
-    // LOAD PAGE
-    // =========================================
-
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
                          throws ServletException, IOException {
 
         loadData(request, response);
     }
-
-    // =========================================
-    // SAVE DATA
-    // =========================================
 
     protected void doPost(HttpServletRequest request,
                           HttpServletResponse response)
@@ -47,17 +39,17 @@ public class MasterServlet extends HttpServlet {
 
             con = DBUtil5.getConnection();
 
-            // =====================================
+            // =========================================
             // ADD DEPARTMENT
-            // =====================================
+            // =========================================
 
             if ("addDepartment".equals(action)) {
 
                 String departmentName =
                         request.getParameter("department_name");
 
-                String inchargeUserId =
-                        request.getParameter("incharge_user_id");
+                String inchargeId =
+                        request.getParameter("incharge_id");
 
                 String sql =
                         "INSERT INTO departments(department_name,incharge_user_id) VALUES(?,?)";
@@ -67,14 +59,14 @@ public class MasterServlet extends HttpServlet {
                 ps.setString(1, departmentName);
 
                 ps.setInt(2,
-                        Integer.parseInt(inchargeUserId));
+                        Integer.parseInt(inchargeId));
 
                 ps.executeUpdate();
             }
 
-            // =====================================
+            // =========================================
             // ADD COMPLAINT TYPE
-            // =====================================
+            // =========================================
 
             else if ("addComplaintType".equals(action)) {
 
@@ -97,7 +89,9 @@ public class MasterServlet extends HttpServlet {
                 ps.executeUpdate();
             }
 
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
 
             e.printStackTrace();
         }
@@ -106,26 +100,26 @@ public class MasterServlet extends HttpServlet {
 
             try {
 
-                if (ps != null)
+                if(ps != null)
                     ps.close();
 
-                if (con != null)
+                if(con != null)
                     con.close();
 
-            } catch (Exception e) {
+            }
+
+            catch(Exception e){
 
                 e.printStackTrace();
             }
         }
 
-        // Reload page through servlet only
-
         response.sendRedirect("MasterServlet");
     }
 
-    // =========================================
-    // LOAD ALL DATA
-    // =========================================
+    // ======================================================
+    // LOAD DATA
+    // ======================================================
 
     private void loadData(HttpServletRequest request,
                           HttpServletResponse response)
@@ -135,9 +129,11 @@ public class MasterServlet extends HttpServlet {
 
         PreparedStatement psDept = null;
         PreparedStatement psComplaint = null;
+        PreparedStatement psIncharge = null;
 
         ResultSet rsDept = null;
         ResultSet rsComplaint = null;
+        ResultSet rsIncharge = null;
 
         ArrayList<HashMap<String,Object>> departments =
                 new ArrayList<HashMap<String,Object>>();
@@ -145,22 +141,59 @@ public class MasterServlet extends HttpServlet {
         ArrayList<HashMap<String,Object>> complaints =
                 new ArrayList<HashMap<String,Object>>();
 
+        ArrayList<HashMap<String,Object>> incharges =
+                new ArrayList<HashMap<String,Object>>();
+
         try {
 
             con = DBUtil5.getConnection();
 
-            // =====================================
-            // DEPARTMENTS
-            // =====================================
+            // =========================================
+            // INCHARGE LIST
+            // =========================================
+
+            String inchargeSql =
+                    "SELECT id,incharge_name " +
+                    "FROM department_incharge " +
+                    "WHERE status='ACTIVE' " +
+                    "ORDER BY incharge_name";
+
+            psIncharge = con.prepareStatement(inchargeSql);
+
+            rsIncharge = psIncharge.executeQuery();
+
+            while(rsIncharge.next()){
+
+                HashMap<String,Object> map =
+                        new HashMap<String,Object>();
+
+                map.put("id",
+                        rsIncharge.getInt("id"));
+
+                map.put("incharge_name",
+                        rsIncharge.getString("incharge_name"));
+
+                incharges.add(map);
+            }
+
+            // =========================================
+            // DEPARTMENT LIST
+            // =========================================
 
             String deptSql =
-                    "SELECT * FROM departments ORDER BY department_name";
+                    "SELECT d.id, " +
+                    "d.department_name, " +
+                    "i.incharge_name " +
+                    "FROM departments d " +
+                    "LEFT JOIN department_incharge i " +
+                    "ON d.incharge_user_id = i.id " +
+                    "ORDER BY d.department_name";
 
             psDept = con.prepareStatement(deptSql);
 
             rsDept = psDept.executeQuery();
 
-            while(rsDept.next()) {
+            while(rsDept.next()){
 
                 HashMap<String,Object> map =
                         new HashMap<String,Object>();
@@ -171,15 +204,15 @@ public class MasterServlet extends HttpServlet {
                 map.put("department_name",
                         rsDept.getString("department_name"));
 
-                map.put("incharge_user_id",
-                        rsDept.getInt("incharge_user_id"));
+                map.put("incharge_name",
+                        rsDept.getString("incharge_name"));
 
                 departments.add(map);
             }
 
-            // =====================================
-            // COMPLAINT TYPES
-            // =====================================
+            // =========================================
+            // COMPLAINT LIST
+            // =========================================
 
             String complaintSql =
                     "SELECT c.id, " +
@@ -187,14 +220,14 @@ public class MasterServlet extends HttpServlet {
                     "d.department_name " +
                     "FROM complaint_types c " +
                     "JOIN departments d " +
-                    "ON c.department_id = d.id " +
+                    "ON c.department_id=d.id " +
                     "ORDER BY d.department_name";
 
             psComplaint = con.prepareStatement(complaintSql);
 
             rsComplaint = psComplaint.executeQuery();
 
-            while(rsComplaint.next()) {
+            while(rsComplaint.next()){
 
                 HashMap<String,Object> map =
                         new HashMap<String,Object>();
@@ -211,9 +244,9 @@ public class MasterServlet extends HttpServlet {
                 complaints.add(map);
             }
 
-            // =====================================
-            // SEND DATA TO JSP
-            // =====================================
+            // =========================================
+            // SEND TO JSP
+            // =========================================
 
             request.setAttribute("departments",
                                  departments);
@@ -221,12 +254,17 @@ public class MasterServlet extends HttpServlet {
             request.setAttribute("complaints",
                                  complaints);
 
+            request.setAttribute("incharges",
+                                 incharges);
+
             RequestDispatcher rd =
-            		request.getRequestDispatcher("/Service/Mater.jsp");
+                    request.getRequestDispatcher("/Service/Mater.jsp");
 
             rd.forward(request, response);
 
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
 
             e.printStackTrace();
         }
@@ -241,16 +279,24 @@ public class MasterServlet extends HttpServlet {
                 if(rsComplaint != null)
                     rsComplaint.close();
 
+                if(rsIncharge != null)
+                    rsIncharge.close();
+
                 if(psDept != null)
                     psDept.close();
 
                 if(psComplaint != null)
                     psComplaint.close();
 
+                if(psIncharge != null)
+                    psIncharge.close();
+
                 if(con != null)
                     con.close();
 
-            } catch (Exception e) {
+            }
+
+            catch(Exception e){
 
                 e.printStackTrace();
             }

@@ -8,6 +8,9 @@ ArrayList<HashMap<String,Object>> departments =
 ArrayList<HashMap<String,Object>> complaints =
 (ArrayList<HashMap<String,Object>>)request.getAttribute("complaints");
 
+ArrayList<HashMap<String,Object>> incharges =
+(ArrayList<HashMap<String,Object>>)request.getAttribute("incharges");
+
 %>
 
 <!DOCTYPE html>
@@ -16,88 +19,200 @@ ArrayList<HashMap<String,Object>> complaints =
 
 <meta charset="UTF-8">
 
-<title>Master Setup</title>
+<title>MASTER SETUP</title>
 
 <style>
 
 body{
-    font-family:Arial;
-    background:#f5f5f5;
     margin:0;
-    padding:20px;
+    font-family:Segoe UI, sans-serif;
+    background:#f4f6f9;
+    color:#16325c;
+    font-size:13px;
 }
+
+/* HEADER */
+
+.header{
+    background:#0176d3;
+    color:white;
+    padding:14px 24px;
+    font-size:20px;
+    font-weight:600;
+}
+
+/* CONTAINER */
 
 .container{
-    width:95%;
-    margin:auto;
+    padding:20px;
 }
 
-.flex{
-    display:flex;
-    gap:20px;
-    flex-wrap:wrap;
+/* GRID */
+
+.grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
 }
 
-.box{
-    width:48%;
-}
+/* CARD */
 
 .card{
-    background:#fff;
-    padding:20px;
+    background:white;
     border-radius:8px;
-    margin-bottom:20px;
-    box-shadow:0px 0px 5px #ccc;
+    padding:20px;
+    border:1px solid #d8dde6;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
 }
 
-h2{
-    margin-top:0;
+.card h2{
+    margin:0 0 16px;
+    color:#16325c;
+    font-size:17px;
+    font-weight:600;
 }
+
+/* LABEL */
+
+label{
+    display:block;
+    margin-bottom:5px;
+    font-size:13px;
+    font-weight:600;
+    color:#444;
+}
+
+/* INPUTS */
 
 input,
 select,
-button{
-
+textarea{
     width:100%;
-    padding:10px;
-    margin-top:10px;
+    padding:10px 12px;
+    margin-bottom:12px;
+    border:1px solid #d8dde6;
+    border-radius:5px;
     box-sizing:border-box;
+    font-size:13px;
+    background:white;
 }
 
-button{
+input:focus,
+select:focus,
+textarea:focus{
+    outline:none;
+    border-color:#0176d3;
+    box-shadow:0 0 0 1px #0176d3;
+}
 
-    background:#007bff;
+/* BUTTON */
+
+button{
+    background:#0176d3;
     color:white;
     border:none;
+    padding:10px 18px;
     border-radius:5px;
     cursor:pointer;
+    font-size:13px;
+    font-weight:600;
+}
+
+button:hover{
+    background:#015fb2;
+}
+
+/* TABLE SECTION */
+
+.table-card{
+    margin-top:20px;
+}
+
+.table-wrapper{
+    overflow-x:auto;
 }
 
 table{
-
     width:100%;
     border-collapse:collapse;
-    margin-top:15px;
-}
-
-table,
-th,
-td{
-
-    border:1px solid #ccc;
+    background:white;
+    border:1px solid #d8dde6;
 }
 
 th{
-
-    background:#007bff;
-    color:white;
-}
-
-th,
-td{
-
+    background:#f3f3f3;
+    color:#16325c;
     padding:10px;
     text-align:left;
+    font-size:13px;
+    font-weight:600;
+    border-bottom:1px solid #d8dde6;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #ecebea;
+    font-size:13px;
+}
+
+tr:hover{
+    background:#f7fbff;
+}
+
+/* BADGE */
+
+.badge{
+    background:#e8f3ff;
+    color:#0176d3;
+    padding:4px 10px;
+    border-radius:12px;
+    font-size:11px;
+    font-weight:600;
+}
+
+/* ACTION BUTTONS */
+
+.btn-edit{
+    background:#f4b942;
+    color:white;
+    padding:6px 12px;
+    border-radius:4px;
+    font-size:12px;
+    text-decoration:none;
+}
+
+.btn-delete{
+    background:#d9534f;
+    color:white;
+    padding:6px 12px;
+    border-radius:4px;
+    font-size:12px;
+    text-decoration:none;
+}
+
+.btn-edit:hover{
+    background:#e0a12f;
+}
+
+.btn-delete:hover{
+    background:#c9302c;
+}
+
+/* RESPONSIVE */
+
+@media(max-width:768px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .container{
+        padding:12px;
+    }
+
+    .card{
+        padding:15px;
+    }
 }
 
 </style>
@@ -105,20 +220,23 @@ td{
 </head>
 
 <body>
+<%@ include file="../header.jsp" %>
+
 
 <div class="container">
 
-    <div class="flex">
+    <div class="grid">
 
-        <!-- ========================= -->
-        <!-- ADD DEPARTMENT -->
-        <!-- ========================= -->
+        <!-- ==================================== -->
+        <!-- CREATE DEPARTMENT -->
+        <!-- ==================================== -->
 
-        <div class="card box">
+        <div class="card">
 
-            <h2>Create Department</h2>
+            <h2>CREATE DEPARTMENT</h2>
 
-            <form action="../MasterServlet" method="post">
+            <form action="<%=request.getContextPath()%>/MasterServlet"
+                  method="post">
 
                 <input type="hidden"
                        name="action"
@@ -126,17 +244,36 @@ td{
 
                 <input type="text"
                        name="department_name"
-                       placeholder="Department Name"
+                       placeholder="ENTER DEPARTMENT NAME"
                        required>
 
-                <input type="number"
-                       name="incharge_user_id"
-                       placeholder="Incharge User ID"
-                       required>
+                <select name="incharge_id" required>
+
+                    <option value="">
+                        SELECT INCHARGE
+                    </option>
+
+                    <%
+
+                    for(HashMap<String,Object> i : incharges){
+
+                    %>
+
+                    <option value="<%=i.get("id")%>">
+
+                        <%=i.get("incharge_name")%>
+
+                    </option>
+
+                    <%
+                    }
+                    %>
+
+                </select>
 
                 <button type="submit">
 
-                    Save Department
+                    SAVE DEPARTMENT
 
                 </button>
 
@@ -144,15 +281,16 @@ td{
 
         </div>
 
-        <!-- ========================= -->
-        <!-- ADD COMPLAINT -->
-        <!-- ========================= -->
+        <!-- ==================================== -->
+        <!-- CREATE COMPLAINT TYPE -->
+        <!-- ==================================== -->
 
-        <div class="card box">
+        <div class="card">
 
-            <h2>Create Complaint Type</h2>
+            <h2>CREATE COMPLAINT TYPE</h2>
 
-            <form action="../MasterServlet" method="post">
+            <form action="<%=request.getContextPath()%>/MasterServlet"
+                  method="post">
 
                 <input type="hidden"
                        name="action"
@@ -161,18 +299,18 @@ td{
                 <select name="department_id" required>
 
                     <option value="">
-                        Select Department
+                        SELECT DEPARTMENT
                     </option>
 
                     <%
 
-                    for(HashMap<String,Object> dept : departments){
+                    for(HashMap<String,Object> d : departments){
 
                     %>
 
-                    <option value="<%=dept.get("id")%>">
+                    <option value="<%=d.get("id")%>">
 
-                        <%=dept.get("department_name")%>
+                        <%=d.get("department_name")%>
 
                     </option>
 
@@ -184,12 +322,12 @@ td{
 
                 <input type="text"
                        name="complaint_name"
-                       placeholder="Complaint Type"
+                       placeholder="ENTER COMPLAINT TYPE"
                        required>
 
                 <button type="submit">
 
-                    Save Complaint Type
+                    SAVE COMPLAINT TYPE
 
                 </button>
 
@@ -199,37 +337,45 @@ td{
 
     </div>
 
-    <!-- ========================= -->
+    <!-- ==================================== -->
     <!-- DEPARTMENT TABLE -->
-    <!-- ========================= -->
+    <!-- ==================================== -->
 
-    <div class="card">
+    <div class="card table-card">
 
-        <h2>Department List</h2>
+        <h2>DEPARTMENTS</h2>
 
         <table>
 
             <tr>
 
                 <th>ID</th>
-                <th>Department</th>
-                <th>Incharge User ID</th>
+                <th>DEPARTMENT</th>
+                <th>INCHARGE</th>
 
             </tr>
 
             <%
 
-            for(HashMap<String,Object> dept : departments){
+            for(HashMap<String,Object> d : departments){
 
             %>
 
             <tr>
 
-                <td><%=dept.get("id")%></td>
+                <td><%=d.get("id")%></td>
 
-                <td><%=dept.get("department_name")%></td>
+                <td>
 
-                <td><%=dept.get("incharge_user_id")%></td>
+                    <span class="badge">
+
+                        <%=d.get("department_name")%>
+
+                    </span>
+
+                </td>
+
+                <td><%=d.get("incharge_name")%></td>
 
             </tr>
 
@@ -241,21 +387,21 @@ td{
 
     </div>
 
-    <!-- ========================= -->
-    <!-- COMPLAINT TABLE -->
-    <!-- ========================= -->
+    <!-- ==================================== -->
+    <!-- COMPLAINT TYPES -->
+    <!-- ==================================== -->
 
-    <div class="card">
+    <div class="card table-card">
 
-        <h2>Complaint Type List</h2>
+        <h2>COMPLAINT TYPES</h2>
 
         <table>
 
             <tr>
 
                 <th>ID</th>
-                <th>Department</th>
-                <th>Complaint Type</th>
+                <th>DEPARTMENT</th>
+                <th>COMPLAINT TYPE</th>
 
             </tr>
 

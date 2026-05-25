@@ -117,7 +117,42 @@ body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; c
     margin: 5px 10px;
     border-radius: 8px;
 }
-.admission-menu .dropdown-btn { color: #7dd3fc; font-weight: 600; }
+
+.Service-menu{
+    background: linear-gradient(135deg,
+                rgba(239, 68, 68, 0.12),
+                rgba(220, 38, 38, 0.05));
+    border-left: 4px solid #ef4444 !important;
+    margin: 6px 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(239,68,68,0.08);
+    transition: all 0.3s ease;
+}
+
+.Service-menu:hover{
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(239,68,68,0.15);
+}
+
+.Service-menu .dropdown-btn{
+    color: #fecaca;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.Service-menu .dropdown-btn:hover{
+    background: linear-gradient(90deg, #dc2626, #ef4444);
+    color: #ffffff;
+}
+
+.Service-menu .dropdown-content{
+    border-left: 3px solid #ef4444;
+}
+
+.Service-menu .dropdown-content a:hover{
+    background: rgba(239,68,68,0.12);
+}
+
 
 /* Recruitment-specific Visual Difference */
 .recruitment-menu {
@@ -205,7 +240,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)) { %>
+  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
@@ -257,6 +292,49 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     
     </div>
     <%} %>
+    
+    
+   <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+
+<div class="sidebar-label">Service Request</div>
+
+<div class="dropdown Service-menu">
+
+    <button class="dropdown-btn">
+
+   <i class="fas fa-concierge-bell text-info"></i>
+
+        <span>Service Request</span>
+
+        <i class="fas fa-caret-down" style="margin-left:auto;"></i>
+
+    </button>
+
+    <div class="dropdown-content">
+
+        <a href="MasterServlet">
+            <i class="fas fa-sitemap text-danger"></i>
+            Departments
+        </a>
+
+        <a href="Staff">
+            <i class="fas fa-plus-circle text-success"></i>
+            Book a Request
+        </a>
+
+        <a href="CategoryController">
+            <i class="fas fa-search-location text-info"></i>
+            Track your Request
+        </a>
+
+    </div>
+
+</div>
+
+<% } %> 
+    
+    
+    
     <div class="sidebar-label">HR & Recruitment</div>
   <div class="dropdown admission-menu">
     <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
