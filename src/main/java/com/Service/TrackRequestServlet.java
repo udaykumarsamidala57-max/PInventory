@@ -61,13 +61,13 @@ public class TrackRequestServlet extends HttpServlet {
             new ArrayList<HashMap<String,Object>>();
 
             boolean isSecretary =
-            		role.equalsIgnoreCase("Global");
+            		role.equalsIgnoreCase("Global12");
 
             		boolean isAdmin =
-            		role.equalsIgnoreCase("Admin");
+            		role.equalsIgnoreCase("Admin12");
             		
             		boolean isveeresh =
-            				username.equalsIgnoreCase("A_Veeresh");
+            				username.equalsIgnoreCase("A_Veeresh12");
 
             		String sql = "";
 

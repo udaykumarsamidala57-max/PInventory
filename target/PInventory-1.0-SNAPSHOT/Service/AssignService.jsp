@@ -18,8 +18,7 @@ if((!"Global".equalsIgnoreCase(role))
     return;
 }
 
-String username =
-((String)sess.getAttribute("username")).toUpperCase();
+String username = ((String)sess.getAttribute("username")).toUpperCase();
 %>
 
 <!DOCTYPE html>
@@ -28,11 +27,9 @@ String username =
 <meta charset="UTF-8">
 <title>Service Request Management</title>
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
-
 *{
     box-sizing:border-box;
 }
@@ -51,7 +48,6 @@ body{
 }
 
 /* ALERT */
-
 .alert{
     padding:12px 16px;
     border-radius:4px;
@@ -73,7 +69,6 @@ body{
 }
 
 /* CARD */
-
 .request-card{
     background:white;
     border:1px solid #d8dde6;
@@ -105,7 +100,6 @@ body{
 }
 
 /* TOGGLE */
-
 .toggle-details-btn{
     border:1px solid #0176d3;
     background:white;
@@ -122,7 +116,6 @@ body{
 }
 
 /* STATUS */
-
 .status-badge{
     padding:4px 12px;
     border-radius:20px;
@@ -131,38 +124,14 @@ body{
     text-transform:uppercase;
 }
 
-.open{
-    background:#fff1d6;
-    color:#8a4b00;
-}
-
-.assigned{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.in-progress{
-    background:#dbeafe;
-    color:#1d4ed8;
-}
-
-.pending{
-    background:#fef3c7;
-    color:#92400e;
-}
-
-.satisfied{
-    background:#e0f2fe;
-    color:#0369a1;
-}
-
-.closed{
-    background:#e2e8f0;
-    color:#334155;
-}
+.open{ background:#fff1d6; color:#8a4b00; }
+.assigned{ background:#dcfce7; color:#166534; }
+.in-progress{ background:#dbeafe; color:#1d4ed8; }
+.pending{ background:#fef3c7; color:#92400e; }
+.satisfied{ background:#e0f2fe; color:#0369a1; }
+.closed{ background:#e2e8f0; color:#334155; }
 
 /* SUMMARY */
-
 .highlights-panel{
     padding:16px;
     display:flex;
@@ -199,7 +168,6 @@ body{
 }
 
 /* WORKSPACE */
-
 .collapsible-workspace{
     display:none;
     border-top:1px solid #e2e8f0;
@@ -211,7 +179,6 @@ body{
 }
 
 /* LEFT PANEL */
-
 .action-card-panel{
     background:#f8fafc;
     border-right:1px solid #e2e8f0;
@@ -235,10 +202,7 @@ body{
     gap:10px;
 }
 
-select,
-textarea,
-input[type=text]{
-
+select, textarea, input[type=text]{
     width:100%;
     border:1px solid #cbd5e1;
     border-radius:4px;
@@ -252,18 +216,12 @@ textarea{
     min-height:80px;
 }
 
-select:focus,
-textarea:focus,
-input[type=text]:focus{
+select:focus, textarea:focus, input[type=text]:focus{
     border-color:#0176d3;
 }
 
 /* BUTTONS */
-
-.assign-btn,
-.close-btn,
-.followup-btn{
-
+.assign-btn, .close-btn, .followup-btn{
     border:none;
     border-radius:4px;
     padding:10px;
@@ -272,35 +230,15 @@ input[type=text]:focus{
     cursor:pointer;
 }
 
-.assign-btn{
-    background:#0176d3;
-    color:white;
-}
+.assign-btn{ background:#0176d3; color:white; }
+.close-btn{ background:#2e7d32; color:white; }
+.followup-btn{ background:#ea580c; color:white; }
 
-.close-btn{
-    background:#2e7d32;
-    color:white;
-}
+.assign-btn:hover{ background:#015a9e; }
+.close-btn:hover{ background:#1f6a24; }
+.followup-btn:hover{ background:#c2410c; }
 
-.followup-btn{
-    background:#ea580c;
-    color:white;
-}
-
-.assign-btn:hover{
-    background:#015a9e;
-}
-
-.close-btn:hover{
-    background:#1f6a24;
-}
-
-.followup-btn:hover{
-    background:#c2410c;
-}
-
-/* TIMELINE */
-
+/* TIMELINE ASYMMETRIC COLOR STYLING */
 .timeline-section{
     padding:16px;
 }
@@ -320,10 +258,33 @@ input[type=text]:focus{
 .followup-box{
     background:white;
     border:1px solid #d8dde6;
-    border-left:4px solid #0176d3;
     border-radius:4px;
     padding:10px 14px;
     margin-bottom:10px;
+}
+
+/* Base Variant 1: Original Request Creator Styling */
+.followup-requester {
+    border-left: 4px solid #0176d3;
+    background: #ffffff;
+}
+.followup-requester .followup-status {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Base Variant 2: Staff, Manager, or Admin Handling Updates (Different Colors) */
+.followup-staff-incharge {
+    border-left: 4px solid #ea580c;
+    background: #fffaf7; /* Warm tint to offset operational highlights */
+}
+.followup-staff-incharge .followup-status {
+    background: #ffedd5;
+    color: #c2410c;
+}
+.followup-staff-incharge .followup-remark {
+    color: #2e7d32; /* Changes font color for distinct readability */
+    font-weight: 500;
 }
 
 .followup-top{
@@ -334,8 +295,6 @@ input[type=text]:focus{
 }
 
 .followup-status{
-    background:#e0f2fe;
-    color:#0369a1;
     font-size:10px;
     font-weight:700;
     padding:3px 7px;
@@ -353,7 +312,6 @@ input[type=text]:focus{
 }
 
 /* LOCK */
-
 .action-lock-notice{
     background:#f1f5f9;
     border:1px dashed #cbd5e1;
@@ -364,7 +322,6 @@ input[type=text]:focus{
 }
 
 /* EMPTY */
-
 .empty-state{
     background:white;
     border:1px solid #d8dde6;
@@ -379,17 +336,9 @@ input[type=text]:focus{
 }
 
 @media(max-width:1000px){
-
-    .workspace-grid{
-        grid-template-columns:1fr;
-    }
-
-    .action-card-panel{
-        border-right:none;
-        border-bottom:1px solid #e2e8f0;
-    }
+    .workspace-grid{ grid-template-columns:1fr; }
+    .action-card-panel{ border-right:none; border-bottom:1px solid #e2e8f0; }
 }
-
 </style>
 </head>
 
@@ -404,79 +353,49 @@ String msg = request.getParameter("msg");
 
 if("success".equals(msg)){
 %>
-
 <div class="alert alert-success">
-    <i class="fas fa-circle-check"></i>
-    Request processed successfully.
+    <i class="fas fa-circle-check"></i> Request processed successfully.
 </div>
-
 <%
 }
 
 if("error".equals(msg)){
 %>
-
 <div class="alert alert-error">
-    <i class="fas fa-circle-xmark"></i>
-    Something went wrong while processing request.
+    <i class="fas fa-circle-xmark"></i> Something went wrong while processing request.
 </div>
-
 <%
 }
 
-ArrayList<HashMap<String,Object>> requestList =
-(ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
+ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
 
 if(requestList != null && requestList.size() > 0){
-
     for(HashMap<String,Object> row : requestList){
+        String id = String.valueOf(row.get("id"));
+        String status = String.valueOf(row.get("status"));
+        String priority = String.valueOf(row.get("priority"));
+        String requestedBy = String.valueOf(row.get("requested_by"));
 
-        String id =
-        String.valueOf(row.get("id"));
-
-        String status =
-        String.valueOf(row.get("status"));
-
-        String priority =
-        String.valueOf(row.get("priority"));
-
-        ArrayList<HashMap<String,Object>> inchargeList =
-        (ArrayList<HashMap<String,Object>>) row.get("inchargeList");
-
-        ArrayList<HashMap<String,Object>> followupList =
-        (ArrayList<HashMap<String,Object>>) row.get("followupList");
+        ArrayList<HashMap<String,Object>> inchargeList = (ArrayList<HashMap<String,Object>>) row.get("inchargeList");
+        ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
 %>
 
 <div class="request-card">
-
     <div class="request-top">
-
         <div class="header-left-group">
-
-            <button type="button"
-            class="toggle-details-btn"
-            onclick="toggleWorkspaceGrid(this)">
-                <i class="fas fa-chevron-down"></i>
-                Open Workspace
+            <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
+                <i class="fas fa-chevron-down"></i> Open Workspace
             </button>
-
             <div class="request-no">
-                <i class="fas fa-ticket"></i>
-                <%= row.get("request_no") %>
+                <i class="fas fa-ticket"></i> <%= row.get("request_no") %>
             </div>
-
         </div>
-
         <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>">
             <%= status %>
         </div>
-
     </div>
 
-    <!-- SUMMARY -->
-
     <div class="highlights-panel">
-
         <div class="info-box">
             <div class="label">Request Date</div>
             <div class="value"><%= row.get("request_date") %></div>
@@ -484,36 +403,26 @@ if(requestList != null && requestList.size() > 0){
 
         <div class="info-box">
             <div class="label">Requested By</div>
-            <div class="value"><%= row.get("requested_by") %></div>
+            <div class="value"><%= requestedBy %></div>
         </div>
 
         <div class="info-box">
             <div class="label">Priority</div>
-
             <div class="value">
-
                 <% if("HIGH".equalsIgnoreCase(priority)){ %>
-
                     <span style="color:#ba0517;">HIGH</span>
-
                 <% }else if("MEDIUM".equalsIgnoreCase(priority)){ %>
-
                     <span style="color:#b54708;">MEDIUM</span>
-
                 <% }else{ %>
-
                     <span style="color:#027a48;">LOW</span>
-
                 <% } %>
-
             </div>
         </div>
 
         <div class="info-box">
             <div class="label">Assigned Owner</div>
             <div class="value" style="color:#0176d3;">
-                <%= row.get("assigned_name") != null ?
-                row.get("assigned_name") : "Unassigned" %>
+                <%= row.get("assigned_name") != null ? row.get("assigned_name") : "Unassigned" %>
             </div>
         </div>
 
@@ -528,267 +437,137 @@ if(requestList != null && requestList.size() > 0){
                 <%= row.get("description") %>
             </div>
         </div>
-
     </div>
 
-    <!-- WORKSPACE -->
-
     <div class="collapsible-workspace">
-
         <div class="workspace-grid">
-
-            <!-- LEFT -->
-
+            
             <div class="action-card-panel">
-
-                <!-- ASSIGN -->
-
                 <div class="action-block">
-
                     <div class="action-title">
-                        <i class="fas fa-user-check"></i>
-                        Assign Owner
+                        <i class="fas fa-user-check"></i> Assign Owner
                     </div>
-
-                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"
-                    method="post"
-                    class="action-form">
-
-                        <input type="hidden"
-                        name="request_id"
-                        value="<%= id %>">
-
-                        <input type="hidden"
-                        name="action_type"
-                        value="ASSIGN">
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="ASSIGN">
 
                         <select name="assigned_to" required>
-
-                            <option value="">
-                                Select Incharge
-                            </option>
-
+                            <option value="">Select Incharge</option>
                             <% for(HashMap<String,Object> inc : inchargeList){ %>
-
                             <option value="<%= inc.get("id") %>">
-                                <%= inc.get("incharge_name") %>
-                                -
-                                <%= inc.get("designation") %>
+                                <%= inc.get("incharge_name") %> - <%= inc.get("designation") %>
                             </option>
-
                             <% } %>
-
                         </select>
 
                         <button type="submit" class="assign-btn">
-                            <i class="fas fa-paper-plane"></i>
-                            Assign Request
+                            <i class="fas fa-paper-plane"></i> Assign Request
                         </button>
-
                     </form>
-
                 </div>
 
                 <hr>
 
-                <!-- FOLLOWUP -->
-
                 <div class="action-block">
-
                     <div class="action-title">
-                        <i class="fas fa-comment-dots"></i>
-                        Add Followup
+                        <i class="fas fa-comment-dots"></i> Add Followup
                     </div>
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="FOLLOWUP">
 
-                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"
-                    method="post"
-                    class="action-form">
-
-                        <input type="hidden"
-                        name="request_id"
-                        value="<%= id %>">
-
-                        <input type="hidden"
-                        name="action_type"
-                        value="FOLLOWUP">
-
-                        <select name="status" required>
-
+                        <select name="followup_status" required>
                             <option value="">Select Status</option>
-
-                            <option value="OPEN">OPEN</option>
-
-                            <option value="ASSIGNED">ASSIGNED</option>
-
                             <option value="IN PROGRESS">IN PROGRESS</option>
-
-                            <option value="PENDING">PENDING</option>
-
-                            <option value="SATISFIED">SATISFIED</option>
-
                         </select>
 
-                        <textarea name="remarks"
-                        placeholder="Enter followup remarks..."
-                        required></textarea>
+                        <textarea name="followup_remarks" placeholder="Enter followup remarks..." required></textarea>
 
                         <button type="submit" class="followup-btn">
-                            <i class="fas fa-notes-medical"></i>
-                            Update Followup
+                            <i class="fas fa-notes-medical"></i> Update Followup
                         </button>
-
                     </form>
-
                 </div>
 
                 <hr>
 
-                <!-- CLOSE -->
-
                 <div class="action-block">
-
                     <div class="action-title">
-                        <i class="fas fa-circle-xmark"></i>
-                        Close Request
+                        <i class="fas fa-circle-xmark"></i> Close Request
                     </div>
 
                     <% if("SATISFIED".equalsIgnoreCase(status)){ %>
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="CLOSE">
 
-                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"
-                    method="post"
-                    class="action-form">
-
-                        <input type="hidden"
-                        name="request_id"
-                        value="<%= id %>">
-
-                        <input type="hidden"
-                        name="action_type"
-                        value="CLOSE">
-
-                        <input type="text"
-                        name="resolution"
-                        placeholder="Resolution remarks"
-                        required>
+                        <input type="text" name="resolution" placeholder="Resolution remarks" required>
 
                         <button type="submit" class="close-btn">
-                            <i class="fas fa-box-archive"></i>
-                            Close Request
+                            <i class="fas fa-box-archive"></i> Close Request
                         </button>
-
                     </form>
-
                     <% } else { %>
-
                     <div class="action-lock-notice">
-
-                        <i class="fas fa-lock"></i>
-
-                        Request can only be closed after
-                        status becomes SATISFIED.
-
+                        <i class="fas fa-lock"></i> Request can only be closed after status becomes SATISFIED.
                     </div>
-
                     <% } %>
-
                 </div>
-
             </div>
 
-            <!-- RIGHT -->
-
             <div class="timeline-section">
-
                 <div class="timeline-heading">
-                    <i class="fas fa-clock-rotate-left"></i>
-                    Activity Timeline
+                    <i class="fas fa-clock-rotate-left"></i> Activity Timeline
                 </div>
 
                 <div class="followup-container">
-
                     <%
-
-                    if(followupList != null &&
-                    followupList.size() > 0){
-
+                    if(followupList != null && followupList.size() > 0){
                         for(HashMap<String,Object> f : followupList){
+                            String updatedBy = String.valueOf(f.get("updated_by"));
+                            
+                            // Check if the individual updating this record matches the original requester identity
+                            boolean isRequester = updatedBy.equalsIgnoreCase(requestedBy);
                     %>
-
-                    <div class="followup-box">
-
+                    <div class="followup-box <%= isRequester ? "followup-requester" : "followup-staff-incharge" %>">
                         <div class="followup-top">
-
                             <span class="followup-status">
                                 <%= f.get("status") %>
                             </span>
-
                             <span class="followup-date">
-
-                                <i class="fas fa-user"></i>
-                                <%= f.get("updated_by") %>
-
-                                &nbsp; | &nbsp;
-
-                                <i class="fas fa-clock"></i>
-                                <%= f.get("updated_on") %>
-
+                                <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp; | &nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
                             </span>
-
                         </div>
-
                         <div class="followup-remark">
                             <%= f.get("remarks") %>
                         </div>
-
                     </div>
-
                     <%
                         }
-
                     } else {
                     %>
-
                     <div class="followup-box">
-
-                        <div class="followup-remark"
-                        style="color:#64748b;">
-
+                        <div class="followup-remark" style="color:#64748b;">
                             No followups available.
-
                         </div>
-
                     </div>
-
                     <% } %>
-
                 </div>
-
             </div>
 
         </div>
-
     </div>
-
 </div>
 
 <%
     }
-
 } else {
 %>
-
 <div class="empty-state">
-
     <i class="fas fa-inbox"></i>
-
     <h3>No Service Requests Found</h3>
-
-    <p>
-        No pending requests available right now.
-    </p>
-
+    <p>No pending requests available right now.</p>
 </div>
-
 <%
 }
 %>
@@ -796,31 +575,18 @@ if(requestList != null && requestList.size() > 0){
 </div>
 
 <script>
-
 function toggleWorkspaceGrid(button){
-
-    const card =
-    button.closest('.request-card');
-
-    const workspace =
-    card.querySelector('.collapsible-workspace');
+    const card = button.closest('.request-card');
+    const workspace = card.querySelector('.collapsible-workspace');
 
     if(workspace.style.display === "block"){
-
         workspace.style.display = "none";
-
-        button.innerHTML =
-        '<i class="fas fa-chevron-down"></i> Open Workspace';
-
+        button.innerHTML = '<i class="fas fa-chevron-down"></i> Open Workspace';
     }else{
-
         workspace.style.display = "block";
-
-        button.innerHTML =
-        '<i class="fas fa-chevron-up"></i> Hide Workspace';
+        button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Workspace';
     }
 }
-
 </script>
 
 </body>
