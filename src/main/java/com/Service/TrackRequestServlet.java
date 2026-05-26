@@ -65,6 +65,9 @@ public class TrackRequestServlet extends HttpServlet {
 
             		boolean isAdmin =
             		role.equalsIgnoreCase("Admin");
+            		
+            		boolean isveeresh =
+            				username.equalsIgnoreCase("A_Veeresh");
 
             		String sql = "";
 
@@ -82,7 +85,7 @@ public class TrackRequestServlet extends HttpServlet {
 
             		    "ORDER BY sr.id DESC";
 
-            		}else if(isAdmin){
+            		}else if(isAdmin ||isveeresh){
 
             		    sql =
 
@@ -126,11 +129,11 @@ public class TrackRequestServlet extends HttpServlet {
             		PreparedStatement ps =
             				con.prepareStatement(sql);
 
-            				if(!isSecretary && !isAdmin){
+            		if(!isSecretary && !isAdmin && !isveeresh){
 
-            				    ps.setString(1,
-            				    username.toUpperCase());
-            				}
+            		    ps.setString(1,
+            		    username.toUpperCase());
+            		}
 
             				ResultSet rs =
             				ps.executeQuery();
