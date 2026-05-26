@@ -97,6 +97,7 @@ body{
 .open{ background:#fff1d6; color:#8a4b00; border-color:#fcc06f;}
 .assigned{ background:#dcfce7; color:#166534; border-color:#86efac;}
 .pending{ background:#fef3c7; color:#92400e; border-color:#fcd34d;}
+.satisfied{ background:#e0f2fe; color:#0369a1; border-color:#7dd3fc;}
 .completed{ background:#f3e8ff; color:#7e22ce; border-color:#d8b4fe;}
 .closed{ background:#e2e8f0; color:#334155; border-color:#cbd5e1;}
 
@@ -119,39 +120,50 @@ body{
 .priority-low{ color:#027a48; font-weight:700; }
 .description-text{ font-size:14px; color:#161616; line-height:1.45; margin-top:4px; font-weight:500; }
 
-/* TRIPLE-GRID CONSOLE CORE WORKSPACE */
+/* REBALANCED CORE TWO-COLUMN WORKSPACE GRID */
 .workspace-grid{
     display:grid;
-    grid-template-columns: 310px 340px 1fr;
+    grid-template-columns: 320px 1fr;
     background:#ffffff;
     border-top:1px solid #e5e5e5;
 }
 
-/* INTERACTIVE PANELS COMMON STYLE */
-.assign-section, .close-section{
-    padding:14px 16px;
+/* UNIFIED ACTION CARD PANEL */
+.action-card-panel{
+    padding:16px;
     border-right:1px solid #d8dde6;
     background:#f9f9fa;
     display:flex;
     flex-direction:column;
-    justify-content:flex-start;
+    gap:20px;
 }
-.assign-title, .close-title, .timeline-heading{ 
+.action-block{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.action-title{ 
     font-size:12px; 
     font-weight:700; 
     color:#161616; 
-    margin:0 0 10px 0; 
+    margin:0 0 2px 0; 
     text-transform:uppercase; 
     letter-spacing:0.5px;
+    display:flex;
+    align-items:center;
+    gap:6px;
 }
+.action-title.assign-color{ color: #0176d3; }
+.action-title.close-color{ color: #2e7d32; }
+
 .action-form{ display:flex; flex-direction:column; gap:8px; }
 
-select, text-area, input[type="text"]{
+select, input[type="text"]{
     width:100%;
     border:1px solid #a09e9c;
     border-radius:4px;
     padding:8px 12px;
-    font-size:14px;
+    font-size:13px;
     background:#ffffff;
     color:#161616;
     outline:none;
@@ -165,11 +177,12 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     border:none;
     border-radius:4px;
     padding:10px 16px;
-    font-size:14px;
+    font-size:13px;
     font-weight:700;
     cursor:pointer;
     text-align:center;
     height:38px;
+    transition: background 0.1s ease;
 }
 .assign-btn:hover{ background:#015a9e; }
 
@@ -179,29 +192,55 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     border:none;
     border-radius:4px;
     padding:10px 16px;
-    font-size:14px;
+    font-size:13px;
     font-weight:700;
     cursor:pointer;
     text-align:center;
     height:38px;
+    transition: background 0.1s ease;
 }
 .close-btn:hover{ background:#1b5e20; }
 
-/* ACTION TIMELINE SLIDE VIEWPORT */
-.timeline-section{ padding:14px 16px; background:#ffffff; }
-.timeline-top-bar{ margin-bottom:10px; }
+/* LOCKED ACCORDION COMPONENT FOR PRE-SATISFIED CONDITIONS */
+.action-lock-notice{
+    background:#f1f5f9;
+    border:1px dashed #cbd5e1;
+    border-radius:4px;
+    padding:12px;
+    font-size:12px;
+    color:#64748b;
+    line-height:1.4;
+    font-weight:500;
+}
+.action-lock-notice i { color:#94a3b8; margin-right:4px; }
+
+/* MAXIMIZED TIMELINE STREAM VIEWPORT */
+.timeline-section{ 
+    padding:16px; 
+    background:#ffffff;
+    width: 100%;
+    display:flex;
+    flex-direction:column;
+}
+.timeline-heading{
+    font-size:12px; 
+    font-weight:700; 
+    color:#161616; 
+    margin:0 0 10px 0; 
+    text-transform:uppercase; 
+    letter-spacing:0.5px;
+}
 
 .followup-container{
     display:block;
-    max-height:150px; 
+    height:210px; 
     overflow-y:auto;
     border:1px solid #c9c9c9;
     border-radius:4px;
-    padding:8px;
+    padding:12px;
     background:#f9f9fa;
 }
 
-/* Low profile workspace trackbar */
 .followup-container::-webkit-scrollbar { width: 8px; }
 .followup-container::-webkit-scrollbar-track { background: #f1f1f1; }
 .followup-container::-webkit-scrollbar-thumb { background: #adadad; border-radius: 4px; }
@@ -212,14 +251,14 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     border:1px solid #c9c9c9;
     border-left:4px solid #0176d3;
     border-radius:3px;
-    padding:8px 12px;
-    margin-bottom:6px;
+    padding:10px 14px;
+    margin-bottom:8px;
 }
 .followup-box:last-child{ margin-bottom:0; }
-.followup-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; }
+.followup-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
 .followup-status{ font-size:10px; font-weight:700; background:#e0edff; color:#0176d3; padding:2px 6px; border-radius:2px; }
 .followup-date{ font-size:12px; color:#514f4d; font-weight:500; }
-.followup-remark{ font-size:13px; color:#161616; line-height:1.4; font-weight:500; }
+.followup-remark{ font-size:13px; color:#161616; line-height:1.4; font-weight:500; word-break: break-word; }
 
 /* EMPTY STATE */
 .empty-state{ background:#ffffff; border:1px solid #b0adab; border-radius:4px; padding:60px 20px; text-align:center; }
@@ -230,7 +269,7 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 /* RESPONSIVE LAYOUT MATRIX */
 @media(max-width:1150px){
     .workspace-grid { grid-template-columns: 1fr; }
-    .assign-section, .close-section { border-right:none; border-bottom:1px solid #d8dde6; }
+    .action-card-panel { border-right:none; border-bottom:1px solid #d8dde6; }
     .description-box{ border-left:none; padding-left:0; margin-top:10px;}
     .highlights-panel{ flex-direction:column; gap:12px; }
 }
@@ -318,39 +357,49 @@ if(requestList != null && requestList.size() > 0){
 
     <div class="workspace-grid">
         
-        <div class="assign-section">
-            <h3 class="assign-title"><i class="fas fa-user-check"></i> Assign Owner</h3>
-            <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
-                <input type="hidden" name="request_id" value="<%= id %>">
-                <input type="hidden" name="action_type" value="ASSIGN">
-                
-                <select name="assigned_to" required>
-                    <option value="">Select Incharge Member</option>
-                    <% for(HashMap<String,Object> inc : inchargeList){ %>
-                        <option value="<%= inc.get("id") %>">
-                            <%= inc.get("incharge_name") %> — <%= inc.get("designation") %>
-                        </option>
-                    <% } %>
-                </select>
-                <button type="submit" class="assign-btn"><i class="fas fa-paper-plane"></i> Update Owner</button>
-            </form>
-        </div>
+        <div class="action-card-panel">
+            
+            <div class="action-block">
+                <h3 class="action-title assign-color"><i class="fas fa-user-check"></i> Assign Owner</h3>
+                <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                    <input type="hidden" name="request_id" value="<%= id %>">
+                    <input type="hidden" name="action_type" value="ASSIGN">
+                    
+                    <select name="assigned_to" required>
+                        <option value="">Select Incharge Member</option>
+                        <% for(HashMap<String,Object> inc : inchargeList){ %>
+                            <option value="<%= inc.get("id") %>">
+                                <%= inc.get("incharge_name") %> — <%= inc.get("designation") %>
+                            </option>
+                        <% } %>
+                    </select>
+                    <button type="submit" class="assign-btn"><i class="fas fa-paper-plane"></i> Update Owner</button>
+                </form>
+            </div>
+            
+            <hr style="border: 0; border-top: 1px solid #d8dde6; margin: 4px 0;">
 
-        <div class="close-section">
-            <h3 class="close-title"><i class="fas fa-circle-xmark"></i> Resolve &amp; Close Ticket</h3>
-            <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
-                <input type="hidden" name="request_id" value="<%= id %>">
-                <input type="hidden" name="action_type" value="CLOSE">
-                
-                <input type="text" name="resolution" placeholder="Enter resolution remarks here..." required autocomplete="off">
-                <button type="submit" class="close-btn"><i class="fas fa-box-archive"></i> Close Request</button>
-            </form>
+            <div class="action-block">
+                <h3 class="action-title close-color"><i class="fas fa-circle-xmark"></i> Resolve &amp; Close Ticket</h3>
+                <% if("SATISFIED".equalsIgnoreCase(status)){ %>
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="CLOSE">
+                        
+                        <input type="text" name="resolution" placeholder="Enter resolution remarks here..." required autocomplete="off">
+                        <button type="submit" class="close-btn"><i class="fas fa-box-archive"></i> Close Request</button>
+                    </form>
+                <% } else { %>
+                    <div class="action-lock-notice">
+                        <i class="fas fa-lock"></i> This action is locked. Tickets can only be closed once their status has changed to <strong>SATISFIED</strong>.
+                    </div>
+                <% } %>
+            </div>
+            
         </div>
 
         <div class="timeline-section">
-            <div class="timeline-top-bar">
-                <h3 class="timeline-heading"><i class="fas fa-clock-rotate-left"></i> Activity Logs</h3>
-            </div>
+            <h3 class="timeline-heading"><i class="fas fa-clock-rotate-left"></i> Activity Logs</h3>
 
             <div class="followup-container" id="followup_<%= id %>">
                 <%

@@ -286,16 +286,27 @@ if(requestList != null && requestList.size() > 0){
             <form action="<%=request.getContextPath()%>/TrackRequestServlet" method="post" class="form-vertical">
                 <input type="hidden" name="request_id" value="<%= row.get("id") %>">
                 
-                <select name="status" required>
-                    <option value="">Select Status</option>
-                    <option value="OPEN">OPEN</option>
-                    <option value="ASSIGNED">ASSIGNED</option>
-                    <option value="IN PROGRESS">IN PROGRESS</option>
-                    <option value="PENDING">PENDING</option>
-                    <option value="COMPLETED">COMPLETED</option>
-                    <option value="SATISFIED">SATISFIED</option>
-                    <option value="CLOSED">CLOSED</option>
-                </select>
+              <select name="status" required>
+    <option value="">Select Status</option>
+    <option value="OPEN">OPEN</option>
+    
+    <%-- Condition: Only show ASSIGNED if the logged-in user matches the requested_by user --%>
+    
+      
+    
+    
+    <option value="IN PROGRESS">IN PROGRESS</option>
+   
+    <% 
+    String requestedBy = String.valueOf(row.get("requested_by"));
+    if (username.equalsIgnoreCase(requestedBy)) { 
+    %>
+    <option value="SATISFIED">SATISFIED</option>
+    <% 
+    } 
+    %>
+    
+</select>
 
                 <textarea name="remarks" placeholder="Provide operational remarks..." required></textarea>
                 

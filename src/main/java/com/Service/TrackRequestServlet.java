@@ -49,6 +49,10 @@ public class TrackRequestServlet extends HttpServlet {
             String.valueOf(
             session.getAttribute("username"))
             .trim();
+            String role =
+                    String.valueOf(
+                    session.getAttribute("role"))
+                    .trim();
 
             con = DBUtil5.getConnection();
 
@@ -57,41 +61,67 @@ public class TrackRequestServlet extends HttpServlet {
             new ArrayList<HashMap<String,Object>>();
 
             boolean isSecretary =
-            username.equalsIgnoreCase("Secretary");
+            		username.equalsIgnoreCase("Secretary");
 
-            String sql = "";
+            		boolean isAdmin =
+            		role.equalsIgnoreCase("Admin");
 
-            if(isSecretary){
+            		String sql = "";
 
-                sql =
+            		if(isSecretary){
 
-                "SELECT sr.*, " +
-                "di.incharge_name AS assigned_name " +
+            		    sql =
 
-                "FROM service_requests sr " +
+            		    "SELECT sr.*, " +
+            		    "di.incharge_name AS assigned_name " +
 
-                "LEFT JOIN department_incharge di " +
-                "ON sr.assigned_to = di.id " +
+            		    "FROM service_requests sr " +
 
-                "ORDER BY sr.id DESC";
+            		    "LEFT JOIN department_incharge di " +
+            		    "ON sr.assigned_to = di.id " +
 
-            }else{
+            		    "ORDER BY sr.id DESC";
 
-                sql =
+            		}else if(isAdmin){
 
-                "SELECT sr.*, " +
-                "di.incharge_name AS assigned_name " +
+            		    sql =
 
-                "FROM service_requests sr " +
+            		    "SELECT sr.*, " +
+            		    "di.incharge_name AS assigned_name " +
 
-                "LEFT JOIN department_incharge di " +
-                "ON sr.assigned_to = di.id " +
+            		    "FROM service_requests sr " +
 
-                "WHERE UPPER(sr.requested_by)=? " +
-                "AND COALESCE(TRIM(UPPER(sr.status)),'') <> 'SATISFIED' " +
+            		    "LEFT JOIN department_incharge di " +
+            		    "ON sr.assigned_to = di.id " +
 
-                "ORDER BY sr.id DESC";
-            }
+            		    "LEFT JOIN departments d " +
+            		    "ON sr.department_id = d.id " +
+
+            		    "WHERE UPPER(d.department_name) IN " +
+            		    "('ELECTRICAL','PLUMBING','HOUSEKEEPING') " +
+
+            		    "AND COALESCE(TRIM(UPPER(sr.status)),'') <> 'SATISFIED' " +
+
+            		    "ORDER BY sr.id DESC";
+
+            		}else{
+
+            		    sql =
+
+            		    "SELECT sr.*, " +
+            		    "di.incharge_name AS assigned_name " +
+
+            		    "FROM service_requests sr " +
+
+            		    "LEFT JOIN department_incharge di " +
+            		    "ON sr.assigned_to = di.id " +
+
+            		    "WHERE UPPER(sr.requested_by)=? " +
+
+            		    "AND COALESCE(TRIM(UPPER(sr.status)),'') <> 'SATISFIED' " +
+
+            		    "ORDER BY sr.id DESC";
+            		}
 
             PreparedStatement ps =
             con.prepareStatement(sql);

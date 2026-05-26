@@ -294,7 +294,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     <%} %>
     
     
-   <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+   
 
 <div class="sidebar-label">Service Request</div>
 
@@ -311,21 +311,24 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     </button>
 
     <div class="dropdown-content">
-
+<% if ("Global".equalsIgnoreCase(roles) ) { %>
         <a href="MasterServlet">
             <i class="fas fa-sitemap text-danger"></i>
             Departments
         </a>
+          <% } %> 
 
         <a href="RequestBookingServlet">
             <i class="fas fa-plus-circle text-success"></i>
             Book a Request
         </a>
-
+<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Admin".equalsIgnoreCase(roles)) { %>
         <a href="Assign_ServiceRequestServlet">
             <i class="fas fa-search-location text-info"></i>
             Assigne Incharge
         </a>
+        
+        <% } %> 
         
         <a href="TrackRequestServlet">
             <i class="fas fa-search-location text-info"></i>
@@ -338,7 +341,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 
 </div>
 
-<% } %> 
+
     
     
     
