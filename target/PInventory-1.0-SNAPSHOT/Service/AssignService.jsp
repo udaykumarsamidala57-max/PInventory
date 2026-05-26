@@ -3,116 +3,299 @@ pageEncoding="UTF-8"%>
 
 <%@ page import="java.util.*" %>
 
+<%
+HttpSession sess = request.getSession(false);
+
+if(sess == null || sess.getAttribute("username") == null){
+
+    response.sendRedirect(request.getContextPath()+"/login.jsp");
+    return;
+}
+
+String role = (String)sess.getAttribute("role");
+String dept = (String)sess.getAttribute("department");
+
+if((!"Global".equalsIgnoreCase(role))
+&& (!"Finance".equalsIgnoreCase(dept))){
+
+    out.println("<h3 style='text-align:center;color:red;'>Access Denied</h3>");
+    return;
+}
+
+String username =
+((String)sess.getAttribute("username")).toUpperCase();
+%>
+
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
-<title>Open Service Requests</title>
+
+<title>Service Request Management</title>
 
 <link rel="stylesheet"
 href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <style>
 
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    font-family:Segoe UI;
-    background:#f4f6f9;
+    font-family:"Segoe UI",sans-serif;
+    background:#f3f6f9;
+    color:#1f2937;
 }
 
-.header{
-    background:#0d6efd;
-    color:white;
-    padding:18px 25px;
-    font-size:24px;
-    font-weight:bold;
+/* Top Section */
+
+.page-header{
+    background:white;
+    padding:20px 28px;
+    border-bottom:1px solid #d8dde6;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.page-title{
     display:flex;
     align-items:center;
-    gap:10px;
+    gap:14px;
 }
 
-.container{
-    padding:25px;
+.icon-box{
+    width:52px;
+    height:52px;
+    background:#0176d3;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:22px;
+    box-shadow:0 4px 12px rgba(1,118,211,0.25);
 }
+
+.title-text h2{
+    margin:0;
+    font-size:24px;
+    font-weight:700;
+    color:#16325c;
+}
+
+.title-text p{
+    margin:4px 0 0;
+    color:#5f6b7a;
+    font-size:14px;
+}
+
+.user-chip{
+    background:#eef4ff;
+    color:#0176d3;
+    padding:10px 16px;
+    border-radius:30px;
+    font-size:14px;
+    font-weight:600;
+}
+
+/* Container */
+
+.container{
+    padding:24px;
+}
+
+/* Alert */
+
+.alert{
+    padding:14px 18px;
+    border-radius:12px;
+    margin-bottom:20px;
+    font-size:14px;
+    font-weight:600;
+}
+
+.alert-success{
+    background:#edfdf3;
+    color:#067647;
+    border:1px solid #abefc6;
+}
+
+.alert-error{
+    background:#fef3f2;
+    color:#b42318;
+    border:1px solid #fecdca;
+}
+
+/* Card */
 
 .card{
     background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 2px 12px rgba(15,23,42,0.06);
+    border:1px solid #e5e7eb;
+}
+
+/* Table */
+
+.table-wrapper{
+    overflow:auto;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:15px;
+}
+
+table thead{
+    background:#f8fafc;
 }
 
 table th{
-    background:#0d6efd;
-    color:white;
-    padding:12px;
-    font-size:14px;
+    padding:16px;
+    text-align:left;
+    font-size:13px;
+    color:#475467;
+    font-weight:700;
+    border-bottom:1px solid #e5e7eb;
+    white-space:nowrap;
 }
 
 table td{
-    padding:12px;
-    border-bottom:1px solid #ddd;
+    padding:16px;
+    border-bottom:1px solid #f1f5f9;
+    vertical-align:middle;
     font-size:14px;
-    vertical-align:top;
 }
+
+table tr:hover{
+    background:#fafcff;
+}
+
+/* Badges */
+
+.status-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    border-radius:30px;
+    font-size:12px;
+    font-weight:700;
+}
+
+.open{
+    background:#fff7e6;
+    color:#b54708;
+}
+
+.assigned{
+    background:#ecfdf3;
+    color:#027a48;
+}
+
+/* Priority */
+
+.priority{
+    font-weight:700;
+}
+
+.high{
+    color:#d92d20;
+}
+
+.medium{
+    color:#b54708;
+}
+
+.low{
+    color:#027a48;
+}
+
+/* Assigned */
+
+.assigned-user{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:600;
+    color:#027a48;
+}
+
+.assigned-user i{
+    background:#ecfdf3;
+    padding:8px;
+    border-radius:50%;
+}
+
+.not-assigned{
+    color:#98a2b3;
+    font-weight:600;
+}
+
+/* Select */
 
 select{
     width:100%;
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
+    min-width:220px;
+    padding:10px 12px;
+    border-radius:10px;
+    border:1px solid #d0d5dd;
+    background:white;
+    font-size:14px;
+    outline:none;
 }
 
-button{
-    background:#198754;
+select:focus{
+    border-color:#0176d3;
+    box-shadow:0 0 0 3px rgba(1,118,211,0.12);
+}
+
+/* Button */
+
+.assign-btn{
+    background:#0176d3;
     color:white;
     border:none;
-    padding:9px 14px;
-    border-radius:6px;
+    padding:10px 18px;
+    border-radius:10px;
     cursor:pointer;
-    font-weight:bold;
+    font-size:14px;
+    font-weight:700;
+    transition:0.2s;
+    white-space:nowrap;
 }
 
-button:hover{
-    background:#157347;
+.assign-btn:hover{
+    background:#025fb2;
+    transform:translateY(-1px);
 }
 
-.badge{
-    background:#ffc107;
-    color:#000;
-    padding:5px 12px;
-    border-radius:20px;
-    font-size:12px;
-    font-weight:bold;
-}
+/* Empty */
 
-.empty{
+.empty-state{
+    padding:70px 20px;
     text-align:center;
-    padding:40px;
-    color:#777;
-    font-size:18px;
 }
 
-.success{
-    background:#d1e7dd;
-    color:#0f5132;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:15px;
+.empty-state i{
+    font-size:60px;
+    color:#cbd5e1;
+    margin-bottom:18px;
 }
 
-.error{
-    background:#f8d7da;
-    color:#842029;
-    padding:12px;
-    border-radius:8px;
-    margin-bottom:15px;
+.empty-state h3{
+    margin:0;
+    color:#334155;
+}
+
+.empty-state p{
+    color:#64748b;
+    margin-top:8px;
 }
 
 </style>
@@ -121,14 +304,11 @@ button:hover{
 
 <body>
 
-<div class="header">
-    <i class="fas fa-headset"></i>
-    Open Service Requests
-</div>
+<%@ include file="../header.jsp" %>
+
+
 
 <div class="container">
-
-<div class="card">
 
 <%
 String msg = request.getParameter("msg");
@@ -136,8 +316,9 @@ String msg = request.getParameter("msg");
 if("success".equals(msg)){
 %>
 
-<div class="success">
-    Request Assigned Successfully
+<div class="alert alert-success">
+    <i class="fas fa-circle-check"></i>
+    Request assigned successfully.
 </div>
 
 <%
@@ -146,8 +327,9 @@ if("success".equals(msg)){
 if("error".equals(msg)){
 %>
 
-<div class="error">
-    Failed To Assign Request
+<div class="alert alert-error">
+    <i class="fas fa-circle-xmark"></i>
+    Failed to assign request.
 </div>
 
 <%
@@ -159,7 +341,13 @@ ArrayList<HashMap<String,Object>> requestList =
 if(requestList != null && requestList.size() > 0){
 %>
 
+<div class="card">
+
+<div class="table-wrapper">
+
 <table>
+
+<thead>
 
 <tr>
     <th>Request No</th>
@@ -170,15 +358,22 @@ if(requestList != null && requestList.size() > 0){
     <th>Priority</th>
     <th>Status</th>
     <th>Assigned To</th>
-    <th>Assign To</th>
+    <th>Assign Incharge</th>
     <th>Action</th>
 </tr>
+
+</thead>
+
+<tbody>
 
 <%
 for(HashMap<String,Object> row : requestList){
 
 ArrayList<HashMap<String,Object>> inchargeList =
 (ArrayList<HashMap<String,Object>>)row.get("inchargeList");
+
+String status = String.valueOf(row.get("status"));
+String priority = String.valueOf(row.get("priority"));
 %>
 
 <tr>
@@ -187,53 +382,54 @@ ArrayList<HashMap<String,Object>> inchargeList =
 method="post">
 
 <td>
-    <%= row.get("request_no") %>
+
+    <strong style="color:#0176d3;">
+        <%= row.get("request_no") %>
+    </strong>
 
     <input type="hidden"
     name="request_id"
     value="<%= row.get("id") %>">
+
 </td>
 
 <td><%= row.get("request_date") %></td>
 
-<td><%= row.get("requested_by") %></td>
+<td>
+    <strong><%= row.get("requested_by") %></strong>
+</td>
 
 <td><%= row.get("location") %></td>
 
-<td><%= row.get("description") %></td>
-
-<td><%= row.get("priority") %></td>
-
-<td>
-    <span class="badge">
-        <%= row.get("status") %>
-    </span>
+<td style="min-width:240px;">
+    <%= row.get("description") %>
 </td>
+
 <td>
 
 <%
-
-String assignedName =
-(String)row.get("assigned_name");
-
-if(assignedName != null){
-
+if("HIGH".equalsIgnoreCase(priority)){
 %>
 
-    <span style="color:#198754;font-weight:bold;">
-        <i class="fas fa-user-check"></i>
-        <%= assignedName %>
-    </span>
+<span class="priority high">
+    <i class="fas fa-circle"></i> HIGH
+</span>
 
 <%
-
-}else{
-
+}else if("MEDIUM".equalsIgnoreCase(priority)){
 %>
 
-    <span style="color:#999;">
-        Not Assigned
-    </span>
+<span class="priority medium">
+    <i class="fas fa-circle"></i> MEDIUM
+</span>
+
+<%
+}else{
+%>
+
+<span class="priority low">
+    <i class="fas fa-circle"></i> LOW
+</span>
 
 <%
 }
@@ -241,7 +437,64 @@ if(assignedName != null){
 
 </td>
 
-<td width="250">
+<td>
+
+<%
+if("OPEN".equalsIgnoreCase(status)){
+%>
+
+<span class="status-badge open">
+    <i class="fas fa-folder-open"></i>
+    OPEN
+</span>
+
+<%
+}else{
+%>
+
+<span class="status-badge assigned">
+    <i class="fas fa-user-check"></i>
+    ASSIGNED
+</span>
+
+<%
+}
+%>
+
+</td>
+
+<td>
+
+<%
+String assignedName =
+(String)row.get("assigned_name");
+
+if(assignedName != null){
+%>
+
+<div class="assigned-user">
+
+    <i class="fas fa-user"></i>
+
+    <span><%= assignedName %></span>
+
+</div>
+
+<%
+}else{
+%>
+
+<span class="not-assigned">
+    Not Assigned
+</span>
+
+<%
+}
+%>
+
+</td>
+
+<td>
 
 <select name="assigned_to" required>
 
@@ -254,9 +507,7 @@ for(HashMap<String,Object> inc : inchargeList){
 <option value="<%= inc.get("id") %>">
 
     <%= inc.get("incharge_name") %>
-
     -
-
     <%= inc.get("designation") %>
 
 </option>
@@ -271,9 +522,9 @@ for(HashMap<String,Object> inc : inchargeList){
 
 <td>
 
-<button type="submit">
+<button type="submit" class="assign-btn">
 
-    <i class="fas fa-save"></i>
+    <i class="fas fa-paper-plane"></i>
 
     Assign
 
@@ -289,27 +540,35 @@ for(HashMap<String,Object> inc : inchargeList){
 }
 %>
 
+</tbody>
+
 </table>
+
+</div>
+
+</div>
 
 <%
 }else{
 %>
 
-<div class="empty">
+<div class="card">
 
-    <i class="fas fa-folder-open"></i>
+<div class="empty-state">
 
-    <br><br>
+    <i class="fas fa-inbox"></i>
 
-    No Open Service Requests Found
+    <h3>No Service Requests Found</h3>
+
+    <p>All requests are cleared or no requests available.</p>
+
+</div>
 
 </div>
 
 <%
 }
 %>
-
-</div>
 
 </div>
 
