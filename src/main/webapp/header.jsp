@@ -311,33 +311,43 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     </button>
 
     <div class="dropdown-content">
-<% if ("Global".equalsIgnoreCase(roles) ) { %>
-        <a href="MasterServlet">
-            <i class="fas fa-sitemap text-danger"></i>
-            Departments
-        </a>
-          <% } %> 
 
-        <a href="RequestBookingServlet">
-            <i class="fas fa-plus-circle text-success"></i>
-            Book a Request
-        </a>
-<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Admin".equalsIgnoreCase(roles)) { %>
-        <a href="Assign_ServiceRequestServlet">
-            <i class="fas fa-search-location text-info"></i>
-            Assigne Incharge
-        </a>
-        
-        <% } %> 
-        
-   <a href="TrackRequestServlet">
+<% if ("Global".equalsIgnoreCase(roles) ) { %>
+
+<a href="<%=request.getContextPath()%>/MasterServlet">
+    <i class="fas fa-sitemap text-danger"></i>
+    Departments
+</a>
+
+<% } %>
+
+<a href="<%=request.getContextPath()%>/RequestBookingServlet">
+    <i class="fas fa-plus-circle text-success"></i>
+    Book a Request
+</a>
+
+<% if ("Global".equalsIgnoreCase(roles) || 
+       "A_Veeresh".equalsIgnoreCase(users) || 
+       "Admin".equalsIgnoreCase(roles)) { %>
+
+<a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet">
+    <i class="fas fa-search-location text-info"></i>
+    Assigne Incharge
+</a>
+
+<% } %>
+
+<a href="<%=request.getContextPath()%>/TrackRequestServlet">
     <i class="fas fa-clipboard-check text-info"></i>
     Track Your Request
 </a>
-        
-        
 
-    </div>
+<a href="<%=request.getContextPath()%>/Service/Closed.jsp">
+    <i class="fas fa-check-circle text-success"></i>
+    Closed Requests
+</a>
+
+</div>
 
 </div>
 

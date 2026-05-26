@@ -47,6 +47,31 @@ body{
     padding:20px;
 }
 
+/* FILTER PANEL */
+.filter-wrapper {
+    background: white;
+    border: 1px solid #d8dde6;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.filter-wrapper label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.filter-select {
+    max-width: 300px;
+    background: #fff;
+}
+
 /* ALERT */
 .alert{
     padding:12px 16px;
@@ -273,17 +298,17 @@ select:focus, textarea:focus, input[type=text]:focus{
     color: #0369a1;
 }
 
-/* Base Variant 2: Staff, Manager, or Admin Handling Updates (Different Colors) */
+/* Base Variant 2: Staff Handling Updates */
 .followup-staff-incharge {
     border-left: 4px solid #ea580c;
-    background: #fffaf7; /* Warm tint to offset operational highlights */
+    background: #fffaf7;
 }
 .followup-staff-incharge .followup-status {
     background: #ffedd5;
     color: #c2410c;
 }
 .followup-staff-incharge .followup-remark {
-    color: #2e7d32; /* Changes font color for distinct readability */
+    color: #2e7d32;
     font-weight: 500;
 }
 
@@ -321,7 +346,7 @@ select:focus, textarea:focus, input[type=text]:focus{
     color:#64748b;
 }
 
-/* EMPTY */
+/* EMPTY STATES */
 .empty-state{
     background:white;
     border:1px solid #d8dde6;
@@ -370,17 +395,41 @@ if("error".equals(msg)){
 ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
 
 if(requestList != null && requestList.size() > 0){
+    
+    // Extract unique Assigned Owners from data list to build dynamic drop-down options
+    Set<String> uniqueOwners = new TreeSet<>();
+    for(HashMap<String,Object> row : requestList) {
+        String owner = row.get("assigned_name") != null ? String.valueOf(row.get("assigned_name")).trim() : "Unassigned";
+        uniqueOwners.add(owner);
+    }
+%>
+
+<!-- Dynamic UI Owner Filter Block -->
+<div class="filter-wrapper">
+    <label for="ownerFilter"><i class="fas fa-filter"></i> Filter By Owner:</label>
+    <select id="ownerFilter" class="filter-select" onchange="filterRequestsByOwner()">
+        <option value="ALL">All Owners (<%= requestList.size() %>)</option>
+        <% for(String ownerName : uniqueOwners) { %>
+            <option value="<%= ownerName %>"><%= ownerName %></option>
+        <% } %>
+    </select>
+</div>
+
+<div id="requestCardsContainer">
+<%
     for(HashMap<String,Object> row : requestList){
         String id = String.valueOf(row.get("id"));
         String status = String.valueOf(row.get("status"));
         String priority = String.valueOf(row.get("priority"));
         String requestedBy = String.valueOf(row.get("requested_by"));
+        String assignedOwner = row.get("assigned_name") != null ? String.valueOf(row.get("assigned_name")) : "Unassigned";
 
         ArrayList<HashMap<String,Object>> inchargeList = (ArrayList<HashMap<String,Object>>) row.get("inchargeList");
         ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
 %>
 
-<div class="request-card">
+<!-- Attached an explicit data-attribute matching the assigned owner context -->
+<div class="request-card" data-owner="<%= assignedOwner.trim() %>">
     <div class="request-top">
         <div class="header-left-group">
             <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
@@ -422,7 +471,7 @@ if(requestList != null && requestList.size() > 0){
         <div class="info-box">
             <div class="label">Assigned Owner</div>
             <div class="value" style="color:#0176d3;">
-                <%= row.get("assigned_name") != null ? row.get("assigned_name") : "Unassigned" %>
+                <%= assignedOwner %>
             </div>
         </div>
 
@@ -470,7 +519,7 @@ if(requestList != null && requestList.size() > 0){
 
                 <div class="action-block">
                     <div class="action-title">
-                        <i class="fas fa-comment-dots"></i> Add Followup
+                        <i class="fas fa-comment-dots"></i> Add Reply
                     </div>
                     <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
                         <input type="hidden" name="request_id" value="<%= id %>">
@@ -525,8 +574,6 @@ if(requestList != null && requestList.size() > 0){
                     if(followupList != null && followupList.size() > 0){
                         for(HashMap<String,Object> f : followupList){
                             String updatedBy = String.valueOf(f.get("updated_by"));
-                            
-                            // Check if the individual updating this record matches the original requester identity
                             boolean isRequester = updatedBy.equalsIgnoreCase(requestedBy);
                     %>
                     <div class="followup-box <%= isRequester ? "followup-requester" : "followup-staff-incharge" %>">
@@ -561,6 +608,17 @@ if(requestList != null && requestList.size() > 0){
 
 <%
     }
+%>
+</div>
+
+<!-- Fallback block for filtered out records -->
+<div id="filterEmptyState" class="empty-state" style="display:none; margin-top:20px;">
+    <i class="fas fa-filter"></i>
+    <h3>No Matches Found</h3>
+    <p>No active service requests are assigned to this owner profile.</p>
+</div>
+
+<%
 } else {
 %>
 <div class="empty-state">
@@ -585,6 +643,32 @@ function toggleWorkspaceGrid(button){
     }else{
         workspace.style.display = "block";
         button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Workspace';
+    }
+}
+
+// Client side filtering logic
+function filterRequestsByOwner() {
+    const selectedOwner = document.getElementById("ownerFilter").value;
+    const cards = document.querySelectorAll(".request-card");
+    const emptyState = document.getElementById("filterEmptyState");
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+        const cardOwner = card.getAttribute("data-owner");
+        
+        if (selectedOwner === "ALL" || cardOwner === selectedOwner) {
+            card.style.display = "block";
+            visibleCount++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    // Handle display of secondary fallback state when zero matches return
+    if (visibleCount === 0) {
+        emptyState.style.display = "block";
+    } else {
+        emptyState.style.display = "none";
     }
 }
 </script>

@@ -322,7 +322,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
             <i class="fas fa-plus-circle text-success"></i>
             Book a Request
         </a>
-<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Admin".equalsIgnoreCase(roles)) { %>
+<% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles)) { %>
         <a href="Assign_ServiceRequestServlet">
             <i class="fas fa-search-location text-info"></i>
             Assigne Incharge
@@ -333,6 +333,10 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
    <a href="TrackRequestServlet">
     <i class="fas fa-clipboard-check text-info"></i>
     Track Your Request
+</a>
+<a href="Service/Closed.jsp">
+    <i class="fas fa-check-circle text-success"></i>
+    Closed Requests
 </a>
         
         
