@@ -2,6 +2,7 @@
 <%@ page import="java.util.*" %>
 <%
 HttpSession sess = request.getSession(false);
+
 if(sess == null || sess.getAttribute("username") == null){
     response.sendRedirect(request.getContextPath()+"/login.jsp");
     return;
@@ -9,244 +10,308 @@ if(sess == null || sess.getAttribute("username") == null){
 
 String role = (String)sess.getAttribute("role");
 String dept = (String)sess.getAttribute("department");
-if((!"Global".equalsIgnoreCase(role)) 
-	    && (!"Finance".equalsIgnoreCase(dept))
-	    && (!"Admin".equalsIgnoreCase(role))){
+
+if((!"Global".equalsIgnoreCase(role))
+        && (!"Finance".equalsIgnoreCase(dept))
+        && (!"Admin".equalsIgnoreCase(role))){
     out.println("<h3 style='text-align:center;color:red;'>Access Denied</h3>");
     return;
 }
 
 String username = ((String)sess.getAttribute("username")).toUpperCase();
 %>
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Service Request Management</title>
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
 <style>
-*{ box-sizing:border-box; }
+*{
+    box-sizing:border-box;
+}
+
 body{
     margin:0;
-    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background:#f3f3f3; 
+    font-family:Segoe UI;
+    background:#f3f3f3;
     color:#181818;
 }
 
-/* HEADER (Salesforce Console Style) */
-.page-header{
-    background:#ffffff;
-    padding:14px 24px;
-    border-bottom:1px solid #c9c9c9;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-}
-.page-title{ display:flex; align-items:center; gap:14px; }
-.icon-box{
-    width:40px;
-    height:40px;
-    border-radius:4px;
-    background:#0176d3;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:white;
-    font-size:18px;
-}
-.title-text h2{ margin:0; font-size:18px; color:#181818; font-weight:700; }
-.title-text p{ margin:3px 0 0; font-size:12px; color:#514f4d; }
-.user-chip{
-    background:#ffffff;
-    color:#181818;
-    padding:6px 12px;
-    border-radius:4px;
-    font-size:12px;
-    font-weight:600;
-    border:1px solid #747474;
+.container{
+    max-width:1450px;
+    margin:auto;
+    padding:20px;
 }
 
-/* CONTAINER */
-.container{ padding:20px; max-width:1440px; margin:auto; }
-
-/* ALERTS */
-.alert{ padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;}
-.alert-success{ background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
-.alert-error{ background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
-
-/* SALESFORCE STYLE CARD */
-.request-card{
-    background:#ffffff;
-    border-radius:4px;
-    border:1px solid #cbd5e1;
-    margin-bottom:16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    overflow: hidden;
-    transition: box-shadow 0.2s ease;
-}
-.request-card:hover {
-    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-}
-
-/* CARD BAR HEADER */
-.request-top{
+/* ALERT */
+.alert{
     padding:12px 16px;
+    border-radius:4px;
+    margin-bottom:16px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.alert-success{
+    background:#ecfdf5;
+    color:#065f46;
+    border:1px solid #a7f3d0;
+}
+
+.alert-error{
+    background:#fef2f2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+}
+
+/* CARD */
+.request-card{
+    background:white;
+    border:1px solid #d8dde6;
+    border-radius:6px;
+    margin-bottom:18px;
+    overflow:hidden;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+}
+
+.request-top{
     background:#f8fafc;
     border-bottom:1px solid #e2e8f0;
+    padding:12px 16px;
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
-.header-left-group { display: flex; align-items: center; gap: 12px; }
-.request-no{ font-size:14px; font-weight:700; color:#0176d3; text-decoration: none;}
 
-/* COLLAPSIBLE TOGGLE BUTTON */
-.toggle-details-btn {
-    background: #ffffff;
-    border: 1px solid #0176d3;
-    color: #0176d3;
-    padding: 6px 14px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: all 0.1s ease;
-}
-.toggle-details-btn:hover {
-    background: #f4f6f9;
-}
-.toggle-details-btn i {
-    transition: transform 0.2s ease;
-}
-.toggle-details-btn.active i {
-    transform: rotate(180deg);
-}
-
-/* STATUS BADGE */
-.status-badge{ padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; text-transform:uppercase; border: 1px solid transparent;}
-.open{ background:#fff1d6; color:#8a4b00; border-color:#fcc06f;}
-.assigned{ background:#dcfce7; color:#166534; border-color:#86efac;}
-.pending{ background:#fef3c7; color:#92400e; border-color:#fcd34d;}
-.satisfied{ background:#e0f2fe; color:#0369a1; border-color:#7dd3fc;}
-.completed{ background:#f3e8ff; color:#7e22ce; border-color:#d8b4fe;}
-.closed{ background:#e2e8f0; color:#334155; border-color:#cbd5e1;}
-
-/* COLLAPSIBLE WRAPPER (Workspace Grid Specific) */
-.collapsible-workspace {
-    max-height: 2000px;
-    opacity: 1;
-    overflow: hidden;
-    transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
-    border-top: 1px solid #e2e8f0;
-}
-.collapsible-workspace.collapsed {
-    max-height: 0 !important;
-    opacity: 0;
-    border-top: none !important;
-}
-
-/* HIGHLIGHTS PANEL */
-.highlights-panel{
-    display:flex;
-    flex-wrap:wrap;
-    padding:14px 16px;
-    background:#ffffff;
-    gap:20px;
-}
-.info-box{ flex:1; min-width:140px; }
-.description-box{ flex:3; min-width:320px; border-left:1px solid #e2e8f0; padding-left:16px; }
-.label{ font-size:11px; color:#514f4d; font-weight:700; margin-bottom:4px; letter-spacing:0.5px; text-transform:uppercase;}
-.value{ font-size:13px; color:#181818; font-weight:600; line-height:1.3; }
-
-.priority-high{ color:#ba0517; font-weight:700; }
-.priority-medium{ color:#b54708; font-weight:700; }
-.priority-low{ color:#027a48; font-weight:700; }
-.description-text{ font-size:13px; color:#181818; line-height:1.45; margin-top:4px; font-weight:500; }
-
-/* TWO-COLUMN WORKSPACE GRID */
-.workspace-grid{
-    display:grid;
-    grid-template-columns: 340px 1fr;
-    background:#ffffff;
-}
-
-/* ACTION CARD PANEL */
-.action-card-panel{
-    padding:16px;
-    border-right:1px solid #e2e8f0;
-    background:#f8fafc;
-    display:flex;
-    flex-direction:column;
-    gap:20px;
-}
-.action-block{
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-}
-.action-title{ 
-    font-size:11px; 
-    font-weight:700; 
-    color:#181818; 
-    margin:0 0 2px 0; 
-    text-transform:uppercase; 
-    letter-spacing:0.5px;
+.header-left-group{
     display:flex;
     align-items:center;
-    gap:6px;
+    gap:12px;
 }
-.action-title.assign-color{ color: #0176d3; }
-.action-title.close-color{ color: #2e7d32; }
 
-.action-form{ display:flex; flex-direction:column; gap:8px; }
+.request-no{
+    font-size:15px;
+    font-weight:700;
+    color:#0176d3;
+}
 
-select, input[type="text"]{
+/* TOGGLE */
+.toggle-details-btn{
+    border:1px solid #0176d3;
+    background:white;
+    color:#0176d3;
+    padding:6px 14px;
+    border-radius:4px;
+    cursor:pointer;
+    font-size:12px;
+    font-weight:600;
+}
+
+.toggle-details-btn:hover{
+    background:#eef4ff;
+}
+
+/* STATUS */
+.status-badge{
+    padding:4px 12px;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+}
+
+.open{ background:#fff1d6; color:#8a4b00; }
+.assigned{ background:#dcfce7; color:#166534; }
+.in-progress{ background:#dbeafe; color:#1d4ed8; }
+.pending{ background:#fef3c7; color:#92400e; }
+.satisfied{ background:#e0f2fe; color:#0369a1; }
+.closed{ background:#e2e8f0; color:#334155; }
+
+/* SUMMARY */
+.highlights-panel{
+    padding:16px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:18px;
+}
+
+.info-box{
+    flex:1;
+    min-width:150px;
+}
+
+.description-box{
+    flex:3;
+    min-width:320px;
+}
+
+.label{
+    font-size:11px;
+    font-weight:700;
+    color:#64748b;
+    text-transform:uppercase;
+    margin-bottom:5px;
+}
+
+.value{
+    font-size:13px;
+    font-weight:600;
+}
+
+.description-text{
+    font-size:13px;
+    line-height:1.5;
+}
+
+/* WORKSPACE */
+.collapsible-workspace{
+    display:none;
+    border-top:1px solid #e2e8f0;
+}
+
+.workspace-grid{
+    display:grid;
+    grid-template-columns:360px 1fr;
+}
+
+/* LEFT PANEL */
+.action-card-panel{
+    background:#f8fafc;
+    border-right:1px solid #e2e8f0;
+    padding:16px;
+}
+
+.action-block{
+    margin-bottom:20px;
+}
+
+.action-title{
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:10px;
+    text-transform:uppercase;
+}
+
+.action-form{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+select, textarea, input[type=text]{
     width:100%;
-    border:1px solid #aeaeae;
+    border:1px solid #cbd5e1;
     border-radius:4px;
-    padding:8px 12px;
+    padding:10px;
     font-size:13px;
-    background:#ffffff;
-    color:#181818;
     outline:none;
-    height:36px;
 }
-select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2px rgba(1,118,211,0.15); }
 
-.assign-btn{
-    background:#0176d3;
-    color:#ffffff;
+textarea{
+    resize:none;
+    min-height:80px;
+}
+
+select:focus, textarea:focus, input[type=text]:focus{
+    border-color:#0176d3;
+}
+
+/* BUTTONS */
+.assign-btn, .close-btn, .followup-btn{
     border:none;
     border-radius:4px;
-    padding:10px 16px;
+    padding:10px;
     font-size:13px;
     font-weight:700;
     cursor:pointer;
-    text-align:center;
-    height:36px;
-    transition: background 0.1s ease;
 }
+
+.assign-btn{ background:#0176d3; color:white; }
+.close-btn{ background:#2e7d32; color:white; }
+.followup-btn{ background:#ea580c; color:white; }
+
 .assign-btn:hover{ background:#015a9e; }
+.close-btn:hover{ background:#1f6a24; }
+.followup-btn:hover{ background:#c2410c; }
 
-.close-btn{
-    background:#2e7d32;
-    color:#ffffff;
-    border:none;
-    border-radius:4px;
-    padding:10px 16px;
-    font-size:13px;
-    font-weight:700;
-    cursor:pointer;
-    text-align:center;
-    height:36px;
-    transition: background 0.1s ease;
+/* TIMELINE ASYMMETRIC COLOR STYLING */
+.timeline-section{
+    padding:16px;
 }
-.close-btn:hover{ background:#1b5e20; }
 
-/* LOCKED COMPONENT NOTICES */
+.timeline-heading{
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:12px;
+    text-transform:uppercase;
+}
+
+.followup-container{
+    max-height:500px;
+    overflow-y:auto;
+}
+
+.followup-box{
+    background:white;
+    border:1px solid #d8dde6;
+    border-radius:4px;
+    padding:10px 14px;
+    margin-bottom:10px;
+}
+
+/* Base Variant 1: Original Request Creator Styling */
+.followup-requester {
+    border-left: 4px solid #0176d3;
+    background: #ffffff;
+}
+.followup-requester .followup-status {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+/* Base Variant 2: Staff, Manager, or Admin Handling Updates (Different Colors) */
+.followup-staff-incharge {
+    border-left: 4px solid #ea580c;
+    background: #fffaf7; /* Warm tint to offset operational highlights */
+}
+.followup-staff-incharge .followup-status {
+    background: #ffedd5;
+    color: #c2410c;
+}
+.followup-staff-incharge .followup-remark {
+    color: #2e7d32; /* Changes font color for distinct readability */
+    font-weight: 500;
+}
+
+.followup-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:6px;
+}
+
+.followup-status{
+    font-size:10px;
+    font-weight:700;
+    padding:3px 7px;
+    border-radius:3px;
+}
+
+.followup-date{
+    font-size:11px;
+    color:#64748b;
+}
+
+.followup-remark{
+    font-size:13px;
+    line-height:1.4;
+}
+
+/* LOCK */
 .action-lock-notice{
     background:#f1f5f9;
     border:1px dashed #cbd5e1;
@@ -254,73 +319,29 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     padding:12px;
     font-size:12px;
     color:#64748b;
-    line-height:1.4;
-    font-weight:500;
-}
-.action-lock-notice i { color:#94a3b8; margin-right:4px; }
-
-/* TIMELINE STREAM VIEWPORT */
-.timeline-section{ 
-    padding:16px; 
-    background:#ffffff;
-    width: 100%;
-    display:flex;
-    flex-direction:column;
-}
-.timeline-heading{
-    font-size:11px; 
-    font-weight:700; 
-    color:#181818; 
-    margin:0 0 10px 0; 
-    text-transform:uppercase; 
-    letter-spacing:0.5px;
 }
 
-.followup-container{
-    display:block;
-    height:220px; 
-    overflow-y:auto;
-    border:1px solid #cbd5e1;
-    border-radius:4px;
-    padding:12px;
-    background:#f8fafc;
+/* EMPTY */
+.empty-state{
+    background:white;
+    border:1px solid #d8dde6;
+    border-radius:6px;
+    padding:60px 20px;
+    text-align:center;
 }
 
-.followup-container::-webkit-scrollbar { width: 6px; }
-.followup-container::-webkit-scrollbar-track { background: #f1f1f1; }
-.followup-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-.followup-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-
-.followup-box{
-    background:#ffffff;
-    border:1px solid #cbd5e1;
-    border-left:3px solid #0176d3;
-    border-radius:4px;
-    padding:10px 14px;
-    margin-bottom:8px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+.empty-state i{
+    font-size:44px;
+    color:#cbd5e1;
 }
-.followup-box:last-child{ margin-bottom:0; }
-.followup-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-.followup-status{ font-size:10px; font-weight:700; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:2px; }
-.followup-date{ font-size:12px; color:#64748b; font-weight:500; }
-.followup-remark{ font-size:13px; color:#181818; line-height:1.4; font-weight:500; word-break: break-word; }
 
-/* EMPTY STATE */
-.empty-state{ background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; padding:60px 20px; text-align:center; }
-.empty-state i{ font-size:40px; color:#cbd5e1; margin-bottom:12px; }
-.empty-state h3{ margin:0; font-size:16px; color:#181818; }
-.empty-state p{ color:#64748b; margin-top:4px; font-size:14px; }
-
-/* RESPONSIVE LAYOUT MATRIX */
-@media(max-width:1150px){
-    .workspace-grid { grid-template-columns: 1fr; }
-    .action-card-panel { border-right:none; border-bottom:1px solid #cbd5e1; }
-    .description-box{ border-left:none; padding-left:0; margin-top:10px;}
-    .highlights-panel{ flex-direction:column; gap:12px; }
+@media(max-width:1000px){
+    .workspace-grid{ grid-template-columns:1fr; }
+    .action-card-panel{ border-right:none; border-bottom:1px solid #e2e8f0; }
 }
 </style>
 </head>
+
 <body>
 
 <%@ include file="../header.jsp" %>
@@ -329,23 +350,32 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 
 <%
 String msg = request.getParameter("msg");
+
 if("success".equals(msg)){
 %>
-<div class="alert alert-success"><i class="fas fa-circle-check"></i> Request processed successfully.</div>
+<div class="alert alert-success">
+    <i class="fas fa-circle-check"></i> Request processed successfully.
+</div>
 <%
 }
+
 if("error".equals(msg)){
 %>
-<div class="alert alert-error"><i class="fas fa-circle-xmark"></i> Operational processing error encountered.</div>
+<div class="alert alert-error">
+    <i class="fas fa-circle-xmark"></i> Something went wrong while processing request.
+</div>
 <%
 }
 
 ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
+
 if(requestList != null && requestList.size() > 0){
     for(HashMap<String,Object> row : requestList){
         String id = String.valueOf(row.get("id"));
         String status = String.valueOf(row.get("status"));
         String priority = String.valueOf(row.get("priority"));
+        String requestedBy = String.valueOf(row.get("requested_by"));
+
         ArrayList<HashMap<String,Object>> inchargeList = (ArrayList<HashMap<String,Object>>) row.get("inchargeList");
         ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
 %>
@@ -354,112 +384,173 @@ if(requestList != null && requestList.size() > 0){
     <div class="request-top">
         <div class="header-left-group">
             <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
-                <i class="fas fa-chevron-down"></i>
-                <span>Open Workspace</span>
+                <i class="fas fa-chevron-down"></i> Open Workspace
             </button>
-            <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
+            <div class="request-no">
+                <i class="fas fa-ticket"></i> <%= row.get("request_no") %>
+            </div>
         </div>
-        <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>"><%= status %></div>
+        <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>">
+            <%= status %>
+        </div>
     </div>
 
     <div class="highlights-panel">
         <div class="info-box">
-            <div class="label">Date / Creator</div>
+            <div class="label">Request Date</div>
             <div class="value"><%= row.get("request_date") %></div>
-            <div class="value" style="font-size:12px; color:#64748b; font-weight:500; margin-top:2px;"><%= row.get("requested_by") %></div>
         </div>
+
+        <div class="info-box">
+            <div class="label">Requested By</div>
+            <div class="value"><%= requestedBy %></div>
+        </div>
+
         <div class="info-box">
             <div class="label">Priority</div>
             <div class="value">
                 <% if("HIGH".equalsIgnoreCase(priority)){ %>
-                    <span class="priority-high">HIGH</span>
+                    <span style="color:#ba0517;">HIGH</span>
                 <% }else if("MEDIUM".equalsIgnoreCase(priority)){ %>
-                    <span class="priority-medium">MEDIUM</span>
+                    <span style="color:#b54708;">MEDIUM</span>
                 <% }else{ %>
-                    <span class="priority-low">LOW</span>
+                    <span style="color:#027a48;">LOW</span>
                 <% } %>
             </div>
         </div>
+
+        <div class="info-box">
+            <div class="label">Assigned Owner</div>
+            <div class="value" style="color:#0176d3;">
+                <%= row.get("assigned_name") != null ? row.get("assigned_name") : "Unassigned" %>
+            </div>
+        </div>
+
         <div class="info-box">
             <div class="label">Location</div>
             <div class="value"><%= row.get("location") %></div>
         </div>
-        <div class="info-box">
-            <div class="label">Assigned Owner</div>
-            <div class="value" style="color:#0176d3;"><%= row.get("assigned_name") != null ? row.get("assigned_name") : "Unassigned" %></div>
-        </div>
+
         <div class="description-box">
-            <div class="label">Description Summary</div>
-            <div class="description-text"><%= row.get("description") %></div>
+            <div class="label">Description</div>
+            <div class="description-text">
+                <%= row.get("description") %>
+            </div>
         </div>
     </div>
 
-    <div class="collapsible-workspace collapsed">
+    <div class="collapsible-workspace">
         <div class="workspace-grid">
             
             <div class="action-card-panel">
-                
                 <div class="action-block">
-                    <h3 class="action-title assign-color"><i class="fas fa-user-check"></i> Assign Owner</h3>
+                    <div class="action-title">
+                        <i class="fas fa-user-check"></i> Assign Owner
+                    </div>
                     <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
                         <input type="hidden" name="request_id" value="<%= id %>">
                         <input type="hidden" name="action_type" value="ASSIGN">
-                        
+
                         <select name="assigned_to" required>
-                            <option value="">Select Incharge Member</option>
+                            <option value="">Select Incharge</option>
                             <% for(HashMap<String,Object> inc : inchargeList){ %>
-                                <option value="<%= inc.get("id") %>">
-                                    <%= inc.get("incharge_name") %> — <%= inc.get("designation") %>
-                                </option>
+                            <option value="<%= inc.get("id") %>">
+                                <%= inc.get("incharge_name") %> - <%= inc.get("designation") %>
+                            </option>
                             <% } %>
                         </select>
-                        <button type="submit" class="assign-btn"><i class="fas fa-paper-plane"></i> Update Owner</button>
+
+                        <button type="submit" class="assign-btn">
+                            <i class="fas fa-paper-plane"></i> Assign Request
+                        </button>
                     </form>
                 </div>
-                
-                <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 4px 0;">
+
+                <hr>
 
                 <div class="action-block">
-                    <h3 class="action-title close-color"><i class="fas fa-circle-xmark"></i> Resolve &amp; Close Ticket</h3>
+                    <div class="action-title">
+                        <i class="fas fa-comment-dots"></i> Add Followup
+                    </div>
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="FOLLOWUP">
+
+                        <select name="followup_status" required>
+                            <option value="">Select Status</option>
+                            <option value="IN PROGRESS">IN PROGRESS</option>
+                        </select>
+
+                        <textarea name="followup_remarks" placeholder="Enter followup remarks..." required></textarea>
+
+                        <button type="submit" class="followup-btn">
+                            <i class="fas fa-notes-medical"></i> Update Followup
+                        </button>
+                    </form>
+                </div>
+
+                <hr>
+
+                <div class="action-block">
+                    <div class="action-title">
+                        <i class="fas fa-circle-xmark"></i> Close Request
+                    </div>
+
                     <% if("SATISFIED".equalsIgnoreCase(status)){ %>
-                        <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
-                            <input type="hidden" name="request_id" value="<%= id %>">
-                            <input type="hidden" name="action_type" value="CLOSE">
-                            
-                            <input type="text" name="resolution" placeholder="Enter resolution remarks here..." required autocomplete="off">
-                            <button type="submit" class="close-btn"><i class="fas fa-box-archive"></i> Close Request</button>
-                        </form>
+                    <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                        <input type="hidden" name="request_id" value="<%= id %>">
+                        <input type="hidden" name="action_type" value="CLOSE">
+
+                        <input type="text" name="resolution" placeholder="Resolution remarks" required>
+
+                        <button type="submit" class="close-btn">
+                            <i class="fas fa-box-archive"></i> Close Request
+                        </button>
+                    </form>
                     <% } else { %>
-                        <div class="action-lock-notice">
-                            <i class="fas fa-lock"></i> This action is locked. Tickets can only be closed once their status has changed to <strong>SATISFIED</strong>.
-                        </div>
+                    <div class="action-lock-notice">
+                        <i class="fas fa-lock"></i> Request can only be closed after status becomes SATISFIED.
+                    </div>
                     <% } %>
                 </div>
-                
             </div>
 
             <div class="timeline-section">
-                <h3 class="timeline-heading"><i class="fas fa-clock-rotate-left"></i> Activity Logs</h3>
+                <div class="timeline-heading">
+                    <i class="fas fa-clock-rotate-left"></i> Activity Timeline
+                </div>
 
-                <div class="followup-container" id="followup_<%= id %>">
+                <div class="followup-container">
                     <%
                     if(followupList != null && followupList.size() > 0){
                         for(HashMap<String,Object> f : followupList){
+                            String updatedBy = String.valueOf(f.get("updated_by"));
+                            
+                            // Check if the individual updating this record matches the original requester identity
+                            boolean isRequester = updatedBy.equalsIgnoreCase(requestedBy);
                     %>
-                    <div class="followup-box">
+                    <div class="followup-box <%= isRequester ? "followup-requester" : "followup-staff-incharge" %>">
                         <div class="followup-top">
-                            <span class="followup-status"><%= f.get("status") %></span>
+                            <span class="followup-status">
+                                <%= f.get("status") %>
+                            </span>
                             <span class="followup-date">
-                                <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
+                                <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp; | &nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
                             </span>
                         </div>
-                        <div class="followup-remark"><%= f.get("remarks") %></div>
+                        <div class="followup-remark">
+                            <%= f.get("remarks") %>
+                        </div>
                     </div>
                     <%
                         }
                     } else {
                     %>
-                    <div class="followup-box"><div class="followup-remark" style="color:#64748b;">No updates logged yet.</div></div>
+                    <div class="followup-box">
+                        <div class="followup-remark" style="color:#64748b;">
+                            No followups available.
+                        </div>
+                    </div>
                     <% } %>
                 </div>
             </div>
@@ -475,7 +566,7 @@ if(requestList != null && requestList.size() > 0){
 <div class="empty-state">
     <i class="fas fa-inbox"></i>
     <h3>No Service Requests Found</h3>
-    <p>All clean! There are currently no pending entries available inside your workspace.</p>
+    <p>No pending requests available right now.</p>
 </div>
 <%
 }
@@ -484,21 +575,19 @@ if(requestList != null && requestList.size() > 0){
 </div>
 
 <script>
-function toggleWorkspaceGrid(button) {
+function toggleWorkspaceGrid(button){
     const card = button.closest('.request-card');
     const workspace = card.querySelector('.collapsible-workspace');
-    const btnText = button.querySelector('span');
-    
-    if (workspace.classList.contains('collapsed')) {
-        workspace.classList.remove('collapsed');
-        button.classList.add('active');
-        btnText.textContent = "Hide Workspace";
-    } else {
-        workspace.classList.add('collapsed');
-        button.classList.remove('active');
-        btnText.textContent = "Open Workspace";
+
+    if(workspace.style.display === "block"){
+        workspace.style.display = "none";
+        button.innerHTML = '<i class="fas fa-chevron-down"></i> Open Workspace';
+    }else{
+        workspace.style.display = "block";
+        button.innerHTML = '<i class="fas fa-chevron-up"></i> Hide Workspace';
     }
 }
 </script>
+
 </body>
 </html>
