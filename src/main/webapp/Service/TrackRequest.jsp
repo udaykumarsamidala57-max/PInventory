@@ -130,15 +130,58 @@ body{
 
 .followup-box{
     position:relative;
-    background:#fafaf9;
-    border:1px solid #e5e5e5;
-    border-left:3px solid #0176d3;
-    border-radius:3px;
+    border-radius:4px;
     padding:10px 12px;
     margin-bottom:8px;
+    border:1px solid #d8dde6;
 }
-.followup-top{ display:flex; justify-content:between; align-items:center; gap:8px; margin-bottom:4px; }
-.followup-status{ font-size:10px; font-weight:700; background:#e0edff; color:#0176d3; padding:1px 6px; border-radius:2px; }
+
+/* REQUESTER UPDATE */
+
+.followup-requester{
+    background:#f0f9ff;
+    border-left:4px solid #0176d3;
+}
+
+/* STAFF / INCHARGE UPDATE */
+
+.followup-staff{
+    background:#fff7ed;
+    border-left:4px solid #ea580c;
+}
+
+.followup-top{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:4px;
+}
+
+.followup-status{
+    font-size:10px;
+    font-weight:700;
+    background:#e0edff;
+    color:#0176d3;
+    padding:1px 6px;
+    border-radius:2px;
+}
+
+.followup-staff .followup-status{
+    background:#ffedd5;
+    color:#c2410c;
+}
+
+.date{
+    font-size:11px;
+    color:#747472;
+    margin-left:auto;
+}
+
+.remark{
+    font-size:12px;
+    color:#181818;
+    line-height:1.4;
+}
 .date{ font-size:11px; color:#747472; margin-left: auto; }
 .remark{ font-size:12px; color:#181818; line-height:1.4; }
 
@@ -263,7 +306,18 @@ if(requestList != null && requestList.size() > 0){
             if(followupList != null && followupList.size() > 0){
                 for(HashMap<String,Object> f : followupList){
             %>
-            <div class="followup-box">
+            <%
+String updatedBy =
+String.valueOf(f.get("updated_by"));
+
+String requestedByUser =
+String.valueOf(row.get("requested_by"));
+
+boolean isRequesterUpdate =
+updatedBy.equalsIgnoreCase(requestedByUser);
+%>
+
+<div class="followup-box <%= isRequesterUpdate ? "followup-requester" : "followup-staff" %>">
                 <div class="followup-top">
                     <span class="followup-status"><%= f.get("status") %></span>
                     <span class="date">

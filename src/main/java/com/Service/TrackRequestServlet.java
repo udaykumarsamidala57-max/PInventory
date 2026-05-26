@@ -61,7 +61,7 @@ public class TrackRequestServlet extends HttpServlet {
             new ArrayList<HashMap<String,Object>>();
 
             boolean isSecretary =
-            		username.equalsIgnoreCase("Secretary");
+            		role.equalsIgnoreCase("Global");
 
             		boolean isAdmin =
             		role.equalsIgnoreCase("Admin");
@@ -123,17 +123,17 @@ public class TrackRequestServlet extends HttpServlet {
             		    "ORDER BY sr.id DESC";
             		}
 
-            PreparedStatement ps =
-            con.prepareStatement(sql);
+            		PreparedStatement ps =
+            				con.prepareStatement(sql);
 
-            if(!isSecretary){
+            				if(!isSecretary && !isAdmin){
 
-                ps.setString(1,
-                username.toUpperCase());
-            }
+            				    ps.setString(1,
+            				    username.toUpperCase());
+            				}
 
-            ResultSet rs =
-            ps.executeQuery();
+            				ResultSet rs =
+            				ps.executeQuery();
 
             while(rs.next()){
 

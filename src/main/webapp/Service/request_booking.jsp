@@ -15,12 +15,7 @@ if(sess == null || sess.getAttribute("username") == null){
 String role = (String)sess.getAttribute("role");
 String dept = (String)sess.getAttribute("department");
 
-if((!"Global".equalsIgnoreCase(role))
-&& (!"Finance".equalsIgnoreCase(dept))){
 
-    out.println("<h3 style='text-align:center;color:red;'>Access Denied</h3>");
-    return;
-}
 
 String username =
 ((String)sess.getAttribute("username")).toUpperCase();

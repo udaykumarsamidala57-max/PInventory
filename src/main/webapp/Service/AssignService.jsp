@@ -279,18 +279,7 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 
 <%@ include file="../header.jsp" %>
 
-<div class="page-header">
-    <div class="page-title">
-        <div class="icon-box"><i class="fas fa-headset"></i></div>
-        <div class="title-text">
-            <h2>Service Request Management</h2>
-            <p>Assign, monitor and track support requests</p>
-        </div>
-    </div>
-    <div class="user-chip">
-        <i class="fas fa-user-circle"></i> <%= username %>
-    </div>
-</div>
+
 
 <div class="container">
 
