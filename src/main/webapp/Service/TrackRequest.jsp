@@ -227,6 +227,13 @@ if(requestList != null && requestList.size() > 0){
             <div class="label">Request Date</div>
             <div class="value"><%= row.get("request_date") %></div>
         </div>
+        
+       
+        <div class="info-box">
+            <div class="label">Request by</div>
+            <div class="value"><font color="Brown"><%= row.get("requested_by") %></font></div>
+        </div> 
+      
         <div class="info-box">
             <div class="label">Priority</div>
             <div class="value"><%= row.get("priority") %></div>

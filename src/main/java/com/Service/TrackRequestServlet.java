@@ -47,7 +47,8 @@ public class TrackRequestServlet extends HttpServlet {
 
             String username =
             String.valueOf(
-            session.getAttribute("username"));
+            session.getAttribute("username"))
+            .trim();
 
             con = DBUtil5.getConnection();
 
@@ -55,27 +56,54 @@ public class TrackRequestServlet extends HttpServlet {
             requestList =
             new ArrayList<HashMap<String,Object>>();
 
-            String sql =
+            boolean isSecretary =
+            username.equalsIgnoreCase("Secretary");
 
-            "SELECT sr.*, " +
-            "di.incharge_name AS assigned_name " +
+            String sql = "";
 
-            "FROM service_requests sr " +
+            if(isSecretary){
 
-            "LEFT JOIN department_incharge di " +
-            "ON sr.assigned_to = di.id " +
+                sql =
 
-            "WHERE UPPER(sr.requested_by)=? " +
+                "SELECT sr.*, " +
+                "di.incharge_name AS assigned_name " +
 
-            "ORDER BY sr.id DESC";
+                "FROM service_requests sr " +
+
+                "LEFT JOIN department_incharge di " +
+                "ON sr.assigned_to = di.id " +
+
+                "ORDER BY sr.id DESC";
+
+            }else{
+
+                sql =
+
+                "SELECT sr.*, " +
+                "di.incharge_name AS assigned_name " +
+
+                "FROM service_requests sr " +
+
+                "LEFT JOIN department_incharge di " +
+                "ON sr.assigned_to = di.id " +
+
+                "WHERE UPPER(sr.requested_by)=? " +
+                "AND COALESCE(TRIM(UPPER(sr.status)),'') <> 'SATISFIED' " +
+
+                "ORDER BY sr.id DESC";
+            }
 
             PreparedStatement ps =
             con.prepareStatement(sql);
 
-            ps.setString(1,
-            username.toUpperCase());
+            if(!isSecretary){
 
-            ResultSet rs = ps.executeQuery();
+                ps.setString(1,
+                username.toUpperCase());
+            }
+
+            ResultSet rs =
+            ps.executeQuery();
 
             while(rs.next()){
 
@@ -92,7 +120,10 @@ public class TrackRequestServlet extends HttpServlet {
 
                 map.put("request_date",
                 rs.getString("request_date"));
-
+                
+                map.put("requested_by",
+                		 rs.getString("requested_by"));
+                
                 map.put("location",
                 rs.getString("location"));
 
@@ -108,18 +139,38 @@ public class TrackRequestServlet extends HttpServlet {
                 map.put("assigned_name",
                 rs.getString("assigned_name"));
 
+                map.put("requested_by",
+                rs.getString("requested_by"));
+
                 ArrayList<HashMap<String,Object>>
                 followupList =
                 new ArrayList<HashMap<String,Object>>();
 
+                String followupSql = "";
+
+                if(isSecretary){
+
+                    followupSql =
+
+                    "SELECT * FROM followups " +
+                    "WHERE request_id=? " +
+                    "ORDER BY updated_on DESC " +
+                    "LIMIT 200";
+
+                }else{
+
+                    followupSql =
+
+                    "SELECT * FROM followups " +
+                    "WHERE request_id=? " +
+                    "AND COALESCE(TRIM(UPPER(status)),'') <> 'SATISFIED' " +
+                    "ORDER BY updated_on DESC " +
+                    "LIMIT 200";
+                }
+
                 PreparedStatement ps2 =
                 con.prepareStatement(
-
-                "SELECT * FROM followups " +
-                "WHERE request_id=? " +
-                "ORDER BY updated_on DESC"
-
-                );
+                followupSql);
 
                 ps2.setInt(1, requestId);
 
@@ -177,6 +228,10 @@ public class TrackRequestServlet extends HttpServlet {
             "requestList",
             requestList);
 
+            request.setAttribute(
+            "isSecretary",
+            isSecretary);
+
         } catch (Exception e) {
 
             e.printStackTrace();
@@ -212,7 +267,8 @@ public class TrackRequestServlet extends HttpServlet {
 
             String username =
             String.valueOf(
-            session.getAttribute("username"));
+            session.getAttribute("username"))
+            .trim();
 
             int requestId =
             Integer.parseInt(
@@ -267,7 +323,7 @@ public class TrackRequestServlet extends HttpServlet {
             remarks.trim());
 
             ps.setString(3,
-            status.trim());
+            status.trim().toUpperCase());
 
             ps.setString(4,
             username);
@@ -290,7 +346,7 @@ public class TrackRequestServlet extends HttpServlet {
             );
 
             ps2.setString(1,
-            status.trim());
+            status.trim().toUpperCase());
 
             ps2.setInt(2,
             requestId);
@@ -331,6 +387,7 @@ public class TrackRequestServlet extends HttpServlet {
 
             + "/TrackRequestServlet"
             + "?msg=error"
+
             );
 
         } finally {

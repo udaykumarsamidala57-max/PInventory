@@ -1,716 +1,324 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-pageEncoding="UTF-8"%>
-
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
-
 <%
 HttpSession sess = request.getSession(false);
-
 if(sess == null || sess.getAttribute("username") == null){
-
-    response.sendRedirect(
-    request.getContextPath()+"/login.jsp");
-
+    response.sendRedirect(request.getContextPath()+"/login.jsp");
     return;
 }
-
-String username =
-((String)sess.getAttribute("username"))
-.toUpperCase();
+String username = ((String)sess.getAttribute("username")).toUpperCase();
 %>
-
 <!DOCTYPE html>
 <html>
 <head>
-
 <meta charset="UTF-8">
-
 <title>My Service Requests</title>
-
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
-
-*{
-    box-sizing:border-box;
-}
-
+*{ box-sizing:border-box; }
 body{
     margin:0;
-    font-family:Segoe UI;
-    background:#f4f6f9;
-    color:#1f2937;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background:#f3f3f3;
+    color:#181818;
 }
 
+/* HEADER (Salesforce Style) */
 .page-header{
-    background:white;
-    padding:16px 24px;
-    border-bottom:1px solid #d8dde6;
+    background:#ffffff;
+    padding:12px 24px;
+    border-bottom:1px solid #c9c9c9;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    flex-wrap:wrap;
-    gap:15px;
+    position:sticky;
+    top:0;
+    z-index:99;
 }
-
-.header-left{
-    display:flex;
-    align-items:center;
-    gap:12px;
-}
-
+.header-left{ display:flex; align-items:center; gap:12px; }
 .icon-box{
-    width:48px;
-    height:48px;
-    border-radius:14px;
-    background:linear-gradient(135deg,#0176d3,#005fb2);
+    width:40px;
+    height:40px;
+    border-radius:4px;
+    background:#0176d3;
     display:flex;
     align-items:center;
     justify-content:center;
     color:white;
-    font-size:20px;
-    box-shadow:0 4px 10px rgba(1,118,211,0.25);
+    font-size:18px;
 }
-
-.title h2{
-    margin:0;
-    color:#16325c;
-    font-size:23px;
-}
-
-.title p{
-    margin:3px 0 0;
-    color:#667085;
-    font-size:13px;
-}
-
+.title h2{ margin:0; font-size:18px; color:#0176d3; font-weight:700; }
+.title p{ margin:2px 0 0; font-size:12px; color:#514f4d; }
 .user-chip{
-    background:#eef4ff;
-    color:#0176d3;
-    padding:9px 15px;
-    border-radius:25px;
-    font-weight:700;
-    font-size:13px;
-    border:1px solid #dbeafe;
+    background:#f3f3f3;
+    color:#181818;
+    padding:6px 12px;
+    border-radius:4px;
+    font-size:12px;
+    font-weight:600;
+    border:1px solid #c9c9c9;
 }
 
-.container{
-    padding:20px;
-}
+/* CONTAINER */
+.container{ max-width:1440px; margin:auto; padding:16px; }
 
-.alert{
-    padding:14px 16px;
-    border-radius:12px;
-    margin-bottom:18px;
-    font-size:14px;
-    font-weight:700;
-}
+/* ALERTS */
+.alert{ padding:10px 16px; border-radius:4px; margin-bottom:16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;}
+.success{ background:#e1f5fe; color:#005fb2; border:1px solid #b8e3fa; }
+.error{ background:#fededb; color:#c23934; border:1px solid #faaaa3; }
 
-.success{
-    background:#ecfdf3;
-    color:#027a48;
-    border:1px solid #abefc6;
-}
-
-.error{
-    background:#fef2f2;
-    color:#b42318;
-    border:1px solid #fecdca;
-}
-
+/* COMPACT COMPONENT CARD */
 .request-card{
     background:white;
-    border-radius:18px;
-    padding:20px;
-    margin-bottom:20px;
-    border:1px solid #e5e7eb;
-    box-shadow:0 2px 10px rgba(0,0,0,0.05);
+    border-radius:4px;
+    border:1px solid #c9c9c9;
+    margin-bottom:16px;
+    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
 }
 
+/* CARD TOP BAR */
 .top-row{
+    padding:12px 16px;
+    border-bottom:1px solid #c9c9c9;
+    background:#f3f3f3;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    margin-bottom:18px;
-    gap:10px;
+}
+.request-no{ font-size:15px; font-weight:700; color:#0176d3; }
+
+/* STATUS BADGES */
+.status-badge{ padding:3px 12px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; border: 1px solid transparent;}
+.open{ background:#fff1d6; color:#8a4b00; border-color:#fcc06f;}
+.assigned{ background:#dcfce7; color:#166534; border-color:#86efac;}
+.in-progress{ background:#e0edff; color:#1d4ed8; border-color:#93c5fd;}
+.pending{ background:#fef3c7; color:#92400e; border-color:#fcd34d;}
+.completed{ background:#f3e8ff; color:#7e22ce; border-color:#d8b4fe;}
+.satisfied{ background:#d1fae5; color:#065f46; border-color:#6ee7b7;}
+.closed{ background:#e2e8f0; color:#334155; border-color:#cbd5e1;}
+
+/* COMPACT SUMMARY DATA GRID */
+.summary-section{
+    display:flex;
     flex-wrap:wrap;
+    padding:12px 16px;
+    background:#fafaf9;
+    border-bottom:1px solid #e5e5e5;
+    gap:16px;
+}
+.info-box{ flex: 1; min-width: 160px; }
+.description-box { flex: 2.5; min-width: 280px; border-left: 1px solid #e5e5e5; padding-left: 16px; }
+.label{ font-size:11px; color:#514f4d; font-weight:700; margin-bottom:2px; letter-spacing:0.5px; text-transform:uppercase;}
+.value{ font-size:13px; color:#181818; font-weight:500; }
+.description-text{ font-size:13px; color:#181818; line-height:1.4; margin-top:2px; }
+
+/* TWO-COLUMN SPLIT WORKSPACE */
+.card-split-workspace{
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    background: #fff;
 }
 
-.request-no{
-    font-size:18px;
-    font-weight:700;
-    color:#0176d3;
-}
-
-.status-badge{
-    padding:7px 14px;
-    border-radius:25px;
-    font-size:11px;
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-}
-
-.open{
-    background:#fff7e6;
-    color:#b54708;
-}
-
-.assigned{
-    background:#ecfdf3;
-    color:#027a48;
-}
-
-.in-progress{
-    background:#eef4ff;
-    color:#175cd3;
-}
-
-.pending{
-    background:#fef3c7;
-    color:#92400e;
-}
-
-.completed{
-    background:#f3e8ff;
-    color:#7e22ce;
-}
-
-.satisfied{
-    background:#dcfce7;
-    color:#166534;
-}
-
-.closed{
-    background:#e2e8f0;
-    color:#334155;
-}
-
-.info-grid{
-    display:grid;
-    grid-template-columns:
-    repeat(auto-fit,minmax(180px,1fr));
-    gap:14px;
-    margin-bottom:18px;
-}
-
-.info-box{
-    background:#f8fafc;
-    padding:14px;
-    border-radius:12px;
-    border:1px solid #edf2f7;
-}
-
-.label{
-    font-size:11px;
-    color:#667085;
-    margin-bottom:5px;
-    font-weight:700;
-    letter-spacing:0.5px;
-}
-
-.value{
-    font-size:14px;
-    font-weight:600;
-    color:#111827;
-}
-
-.description-box{
-    background:#f8fafc;
+/* LEFT COLUMN: TIMELINE */
+.timeline-column{
     padding:16px;
-    border-radius:12px;
-    margin-bottom:18px;
-    border:1px solid #edf2f7;
+    border-right: 1px solid #e5e5e5;
+    max-height: 280px;
+    overflow-y: auto;
 }
-
-.description-text{
-    font-size:14px;
-    line-height:1.7;
-    color:#374151;
-    margin-top:6px;
-}
-
-.timeline-title{
-    margin:0 0 14px;
-    color:#16325c;
-    font-size:17px;
-}
+.timeline-title, .form-title{ font-size:13px; font-weight:700; color:#181818; margin:0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;}
 
 .followup-box{
-    background:#f8fbff;
-    border-left:4px solid #0176d3;
-    border-radius:12px;
-    padding:14px;
-    margin-bottom:12px;
+    position:relative;
+    background:#fafaf9;
+    border:1px solid #e5e5e5;
+    border-left:3px solid #0176d3;
+    border-radius:3px;
+    padding:10px 12px;
+    margin-bottom:8px;
 }
+.followup-top{ display:flex; justify-content:between; align-items:center; gap:8px; margin-bottom:4px; }
+.followup-status{ font-size:10px; font-weight:700; background:#e0edff; color:#0176d3; padding:1px 6px; border-radius:2px; }
+.date{ font-size:11px; color:#747472; margin-left: auto; }
+.remark{ font-size:12px; color:#181818; line-height:1.4; }
 
-.followup-top{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:10px;
-    margin-bottom:10px;
-    flex-wrap:wrap;
-}
-
-.followup-status{
-    background:#eef4ff;
-    color:#0176d3;
-    padding:5px 12px;
-    border-radius:18px;
-    font-size:11px;
-    font-weight:700;
-}
-
-.date{
-    color:#667085;
-    font-size:12px;
-    line-height:1.5;
-}
-
-.remark{
-    font-size:13px;
-    line-height:1.7;
-    color:#344054;
-}
-
-.form-section{
-    margin-top:18px;
-    padding-top:18px;
-    border-top:1px dashed #d0d5dd;
-}
-
-.form-title{
-    font-size:15px;
-    font-weight:700;
-    color:#16325c;
-    margin-bottom:12px;
-}
-
-.form-grid{
-    display:grid;
-    grid-template-columns:1fr 2fr auto;
-    gap:12px;
-    align-items:start;
-}
-
-select,
-textarea{
+/* RIGHT COLUMN: ACTION FORM */
+.form-column{ padding:16px; background:#fafaf9; }
+.form-vertical{ display:flex; flex-direction:column; gap:10px; }
+select, textarea{
     width:100%;
-    border:1px solid #d0d5dd;
-    border-radius:12px;
-    padding:12px;
+    border:1px solid #c9c9c9;
+    border-radius:4px;
+    padding:8px 10px;
     font-size:13px;
-    outline:none;
-    transition:0.3s;
     background:white;
+    outline:none;
 }
+select:focus, textarea:focus{ border-color:#0176d3; }
+textarea{ min-height:65px; resize:none; }
 
-select:focus,
-textarea:focus{
-    border-color:#0176d3;
-    box-shadow:0 0 0 3px rgba(1,118,211,0.1);
-}
-
-textarea{
-    min-height:55px;
-    resize:vertical;
-}
-
+/* BUTTON */
 .submit-btn{
-    background:linear-gradient(135deg,#0176d3,#005fb2);
+    background:#0176d3;
     color:white;
     border:none;
-    padding:12px 20px;
-    border-radius:12px;
-    font-weight:700;
+    border-radius:4px;
+    padding:9px 16px;
+    font-size:13px;
+    font-weight:600;
     cursor:pointer;
-    transition:0.3s;
-    min-width:150px;
+    align-self: flex-end;
+    width: 100%;
+    text-align: center;
 }
+.submit-btn:hover{ background:#015a9e; }
 
-.submit-btn:hover{
-    transform:translateY(-1px);
-    box-shadow:0 5px 12px rgba(1,118,211,0.25);
+/* EMPTY STATE */
+.empty{ background:white; border:1px solid #c9c9c9; border-radius:4px; padding:60px 20px; text-align:center; }
+.empty h3{ color:#181818; margin:12px 0 4px 0; }
+.empty p{ color:#747472; margin:0; font-size:13px;}
+
+/* MOBILE RESPONSIVENESS */
+@media(max-width:900px){
+    .card-split-workspace{ grid-template-columns:1fr; }
+    .timeline-column{ border-right:none; border-bottom:1px solid #e5e5e5; max-height:auto;}
+    .description-box{ border-left:none; padding-left:0; margin-top:8px;}
+    .summary-section{ flex-direction: column; gap:10px; }
 }
-
-.empty{
-    background:white;
-    padding:70px 30px;
-    border-radius:18px;
-    text-align:center;
-    color:#667085;
-    border:1px solid #e5e7eb;
-}
-
-.empty h3{
-    margin-top:16px;
-    color:#16325c;
-}
-
-@media(max-width:768px){
-
-.container{
-    padding:14px;
-}
-
-.form-grid{
-    grid-template-columns:1fr;
-}
-
-.top-row{
-    flex-direction:column;
-    align-items:flex-start;
-}
-
-.page-header{
-    padding:16px;
-}
-
-}
-
 </style>
-
 </head>
-
 <body>
 
 <%@ include file="../header.jsp" %>
 
-<div class="page-header">
 
-    <div class="header-left">
-
-        <div class="icon-box">
-            <i class="fas fa-ticket-alt"></i>
-        </div>
-
-        <div class="title">
-            <h2>My Service Requests</h2>
-            <p>Track requests and manage follow-ups</p>
-        </div>
-
-    </div>
-
-    <div class="user-chip">
-
-        <i class="fas fa-user-circle"></i>
-
-        <%= username %>
-
-    </div>
-
-</div>
 
 <div class="container">
 
 <%
-
 String msg = request.getParameter("msg");
-
 if("success".equals(msg)){
 %>
-
-<div class="alert success">
-
-    <i class="fas fa-circle-check"></i>
-
-    Follow-up submitted successfully.
-
-</div>
-
+<div class="alert success"><i class="fas fa-circle-check"></i> Follow-up submitted successfully.</div>
 <%
 }
-
 if("error".equals(msg)){
 %>
-
-<div class="alert error">
-
-    <i class="fas fa-circle-xmark"></i>
-
-    Failed to submit follow-up.
-
-</div>
-
+<div class="alert error"><i class="fas fa-circle-xmark"></i> Failed to submit follow-up.</div>
 <%
 }
 
-ArrayList<HashMap<String,Object>> requestList =
-(ArrayList<HashMap<String,Object>>)
-request.getAttribute("requestList");
-
-if(requestList != null &&
-requestList.size() > 0){
-
-for(HashMap<String,Object> row : requestList){
-
-String status =
-String.valueOf(row.get("status"));
+ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
+if(requestList != null && requestList.size() > 0){
+    for(HashMap<String,Object> row : requestList){
+        String status = String.valueOf(row.get("status"));
 %>
 
 <div class="request-card">
-
+    <!-- Header Block -->
     <div class="top-row">
-
-        <div class="request-no">
-
-            <i class="fas fa-hashtag"></i>
-
-            <%= row.get("request_no") %>
-
-        </div>
-
-        <div class="status-badge
-        <%= status.toLowerCase()
-        .replace(" ","-") %>">
-
-            <%= status %>
-
-        </div>
-
+        <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
+        <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>"><%= status %></div>
     </div>
 
-    <div class="info-grid">
-
+    <!-- Data Summary Section -->
+    <div class="summary-section">
         <div class="info-box">
-
-            <div class="label">REQUEST DATE</div>
-
-            <div class="value">
-                <%= row.get("request_date") %>
-            </div>
-
+            <div class="label">Request Date</div>
+            <div class="value"><%= row.get("request_date") %></div>
         </div>
-
+        
+       
         <div class="info-box">
-
-            <div class="label">PRIORITY</div>
-
-            <div class="value">
-                <%= row.get("priority") %>
-            </div>
-
-        </div>
-
+            <div class="label">Request by</div>
+            <div class="value"><font color="Brown"><%= row.get("requested_by") %></font></div>
+        </div> 
+      
         <div class="info-box">
-
-            <div class="label">ASSIGNED TO</div>
-
-            <div class="value">
-
-                <%= row.get("assigned_name") != null
-                ? row.get("assigned_name")
-                : "Pending Assignment" %>
-
-            </div>
-
+            <div class="label">Priority</div>
+            <div class="value"><%= row.get("priority") %></div>
         </div>
-
         <div class="info-box">
+            <div class="label">Assigned To</div>
+            <div class="value"><%= row.get("assigned_name") != null ? row.get("assigned_name") : "Pending Assignment" %></div>
+        </div>
+        <div class="info-box">
+            <div class="label">Location</div>
+            <div class="value"><%= row.get("location") %></div>
+        </div>
+        <div class="description-box">
+            <div class="label">Description</div>
+            <div class="description-text"><%= row.get("description") %></div>
+        </div>
+    </div>
 
-            <div class="label">LOCATION</div>
-
-            <div class="value">
-                <%= row.get("location") %>
+    <!-- Workspace Area split into Timeline & Activity Action Panel -->
+    <div class="card-split-workspace">
+        
+        <!-- Timeline Columns -->
+        <div class="timeline-column">
+            <h3 class="timeline-title"><i class="fas fa-clock-rotate-left"></i> History Timeline</h3>
+            <%
+            ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
+            if(followupList != null && followupList.size() > 0){
+                for(HashMap<String,Object> f : followupList){
+            %>
+            <div class="followup-box">
+                <div class="followup-top">
+                    <span class="followup-status"><%= f.get("status") %></span>
+                    <span class="date">
+                        <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
+                    </span>
+                </div>
+                <div class="remark"><%= f.get("remarks") %></div>
             </div>
+            <%
+                }
+            } else {
+            %>
+            <div class="followup-box"><div class="remark">No logs recorded yet.</div></div>
+            <% } %>
+        </div>
 
+        <!-- Update Action Column -->
+        <div class="form-column">
+            <h3 class="form-title"><i class="fas fa-comment-dots"></i> Update Status</h3>
+            <form action="<%=request.getContextPath()%>/TrackRequestServlet" method="post" class="form-vertical">
+                <input type="hidden" name="request_id" value="<%= row.get("id") %>">
+                
+                <select name="status" required>
+                    <option value="">Select Status</option>
+                    <option value="OPEN">OPEN</option>
+                    <option value="ASSIGNED">ASSIGNED</option>
+                    <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                    <option value="SATISFIED">SATISFIED</option>
+                    <option value="CLOSED">CLOSED</option>
+                </select>
+
+                <textarea name="remarks" placeholder="Provide operational remarks..." required></textarea>
+                
+                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Update</button>
+            </form>
         </div>
 
     </div>
-
-    <div class="description-box">
-
-        <div class="label">DESCRIPTION</div>
-
-        <div class="description-text">
-
-            <%= row.get("description") %>
-
-        </div>
-
-    </div>
-
-    <h3 class="timeline-title">
-
-        <i class="fas fa-clock-rotate-left"></i>
-
-        Follow-up Timeline
-
-    </h3>
-
-<%
-
-ArrayList<HashMap<String,Object>>
-followupList =
-
-(ArrayList<HashMap<String,Object>>)
-row.get("followupList");
-
-if(followupList != null &&
-followupList.size() > 0){
-
-for(HashMap<String,Object> f
-: followupList){
-%>
-
-<div class="followup-box">
-
-    <div class="followup-top">
-
-        <div class="followup-status">
-
-            <%= f.get("status") %>
-
-        </div>
-
-        <div class="date">
-
-            <i class="fas fa-user"></i>
-
-            <%= f.get("updated_by") %>
-
-            &nbsp; | &nbsp;
-
-            <i class="fas fa-clock"></i>
-
-            <%= f.get("updated_on") %>
-
-        </div>
-
-    </div>
-
-    <div class="remark">
-
-        <%= f.get("remarks") %>
-
-    </div>
-
 </div>
 
 <%
-}
-
-}else{
+    }
+} else {
 %>
-
-<div class="followup-box">
-
-    <div class="remark">
-
-        No follow-ups available yet.
-
-    </div>
-
-</div>
-
-<%
-}
-%>
-
-<div class="form-section">
-
-    <div class="form-title">
-
-        <i class="fas fa-comment-dots"></i>
-
-        Add Follow-up
-
-    </div>
-
-    <form action="<%=request.getContextPath()%>/TrackRequestServlet"
-    method="post">
-
-    <input type="hidden"
-    name="request_id"
-    value="<%= row.get("id") %>">
-
-    <div class="form-grid">
-
-        <select name="status" required>
-
-            <option value="">
-                Select Status
-            </option>
-
-            <option value="OPEN">
-                OPEN
-            </option>
-
-            <option value="ASSIGNED">
-                ASSIGNED
-            </option>
-
-            <option value="IN PROGRESS">
-                IN PROGRESS
-            </option>
-
-            <option value="PENDING">
-                PENDING
-            </option>
-
-            <option value="COMPLETED">
-                COMPLETED
-            </option>
-
-            <option value="SATISFIED">
-                SATISFIED
-            </option>
-
-            <option value="CLOSED">
-                CLOSED
-            </option>
-
-        </select>
-
-        <textarea name="remarks"
-        placeholder="Enter follow-up remarks..."
-        required></textarea>
-
-        <button type="submit"
-        class="submit-btn">
-
-            <i class="fas fa-paper-plane"></i>
-
-            Submit
-
-        </button>
-
-    </div>
-
-    </form>
-
-</div>
-
-</div>
-
-<%
-}
-
-}else{
-%>
-
 <div class="empty">
-
-    <i class="fas fa-folder-open"
-    style="font-size:60px;
-    color:#cbd5e1;"></i>
-
+    <i class="fas fa-folder-open" style="font-size:44px; color:#cbd5e1;"></i>
     <h3>No Requests Found</h3>
-
-    <p>
-        You have not created any
-        service requests yet.
-    </p>
-
+    <p>You have not created any service requests yet.</p>
 </div>
-
 <%
 }
 %>
 
 </div>
-
 </body>
 </html>
