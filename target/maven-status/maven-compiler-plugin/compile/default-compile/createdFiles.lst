@@ -64,6 +64,7 @@ com\bean\DBUtil2.class
 com\DAO\AssetDAO.class
 com\controller\AddStock.class
 com\bean\AggregatedItem.class
+com\Service\Assign_ServiceRequestServlet.class
 com\bean\IndentItems.class
 com\controller\SendPendingIndentPDF.class
 com\bean\IndentItemFull.class

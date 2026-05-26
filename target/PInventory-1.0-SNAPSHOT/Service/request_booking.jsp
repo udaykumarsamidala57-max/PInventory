@@ -343,13 +343,15 @@ if(departments!=null){
 
 </div>
 <%
+String popupMsg = (String)session.getAttribute("msg");
 
-
-if(msg != null){
+if(popupMsg != null){
 %>
 
 <script>
-alert("<%= msg %>");
+
+alert("<%= popupMsg %>");
+
 </script>
 
 <%

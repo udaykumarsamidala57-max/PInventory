@@ -317,12 +317,12 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
             Departments
         </a>
 
-        <a href="Staff">
+        <a href="RequestBookingServlet">
             <i class="fas fa-plus-circle text-success"></i>
             Book a Request
         </a>
 
-        <a href="CategoryController">
+        <a href="">
             <i class="fas fa-search-location text-info"></i>
             Track your Request
         </a>
@@ -421,10 +421,36 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 
 </main>
 
-<footer>
-  <p>© <%= currentYear %> | SRS | Office Central |  
-  <i class="fas fa-leaf" style="color:green;"></i> Developed by
-  <i class="fas fa-leaf" style="color:green;"></i> SSS IT Department</p>
+<footer class="footer">
+
+    <div class="footer-badge">
+
+        <i class="fas fa-laptop-code"></i>
+
+        <span class="brand">
+            SRS Office Central |
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="tagline">
+            Technology Built with Purpose & Responsibility|
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="developer">
+            Developed by SSS IT Department
+        </span>
+
+        <span class="dot"></span>
+
+        <span class="year">
+            © 2026
+        </span>
+
+    </div>
+
 </footer>
 
 <script>

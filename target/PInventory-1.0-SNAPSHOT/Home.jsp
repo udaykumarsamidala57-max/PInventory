@@ -455,7 +455,7 @@
     </div>
 
     <footer>
-        <p>© <%= cal.get(Calendar.YEAR) %> Sandur Residential School. Developed by School IT Department</p>
+        <p>© <%= cal.get(Calendar.YEAR) %>| SRS Office Central |Technology Built with Purpose & Responsibility|Developed by SSS IT Department</p>
     </footer>
 </div>
 
