@@ -67,6 +67,45 @@ body{
 .success{ background:#e1f5fe; color:#005fb2; border:1px solid #b8e3fa; }
 .error{ background:#fededb; color:#c23934; border:1px solid #faaaa3; }
 
+/* FILTER CONTROLS TOOLBAR */
+.filter-toolbar {
+    background: #ffffff;
+    border: 1px solid #c9c9c9;
+    border-radius: 4px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.filter-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #514f4d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.filter-select {
+    min-width: 240px;
+    height: 34px;
+    font-size: 13px;
+    border: 1px solid #aeaeae;
+    border-radius: 4px;
+    padding: 0 12px;
+    background: #ffffff;
+    outline: none;
+}
+.filter-select:focus {
+    border-color: #0176d3;
+    box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
+}
+
 /* COMPACT COMPONENT CARD */
 .request-card{
     background:white;
@@ -74,6 +113,7 @@ body{
     border:1px solid #c9c9c9;
     margin-bottom:16px;
     box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 /* CARD TOP BAR */
@@ -85,7 +125,49 @@ body{
     justify-content:space-between;
     align-items:center;
 }
+.header-left-group { display: flex; align-items: center; gap: 12px; }
 .request-no{ font-size:15px; font-weight:700; color:#0176d3; }
+
+.header-right-group { display: flex; align-items: center; gap: 10px; }
+
+/* COLLAPSIBLE TOGGLE BUTTON */
+.toggle-details-btn {
+    background: #ffffff;
+    border: 1px solid #0176d3;
+    color: #0176d3;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.1s ease;
+}
+.toggle-details-btn:hover {
+    background: #f4f6f9;
+}
+.toggle-details-btn i {
+    transition: transform 0.2s ease;
+}
+.toggle-details-btn.active i {
+    transform: rotate(180deg);
+}
+
+/* CONVERSATION COUNTER BADGE */
+.conversation-counter {
+    background: #e2e8f0;
+    color: #334155;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid #cbd5e1;
+}
 
 /* STATUS BADGES */
 .status-badge{ padding:3px 12px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase; border: 1px solid transparent;}
@@ -103,7 +185,6 @@ body{
     flex-wrap:wrap;
     padding:12px 16px;
     background:#fafaf9;
-    border-bottom:1px solid #e5e5e5;
     gap:16px;
 }
 .info-box{ flex: 1; min-width: 160px; }
@@ -111,6 +192,20 @@ body{
 .label{ font-size:11px; color:#514f4d; font-weight:700; margin-bottom:2px; letter-spacing:0.5px; text-transform:uppercase;}
 .value{ font-size:13px; color:#181818; font-weight:500; }
 .description-text{ font-size:13px; color:#181818; line-height:1.4; margin-top:2px; }
+
+/* COLLAPSIBLE ANIMATION CONTAINER */
+.collapsible-workspace {
+    max-height: 2000px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    border-top: 1px solid #e5e5e5;
+}
+.collapsible-workspace.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    border-top: none !important;
+}
 
 /* TWO-COLUMN SPLIT WORKSPACE */
 .card-split-workspace{
@@ -137,14 +232,12 @@ body{
 }
 
 /* REQUESTER UPDATE */
-
 .followup-requester{
     background:#f0f9ff;
     border-left:4px solid #0176d3;
 }
 
 /* STAFF / INCHARGE UPDATE */
-
 .followup-staff{
     background:#fff7ed;
     border-left:4px solid #ea580c;
@@ -182,8 +275,6 @@ body{
     color:#181818;
     line-height:1.4;
 }
-.date{ font-size:11px; color:#747472; margin-left: auto; }
-.remark{ font-size:12px; color:#181818; line-height:1.4; }
 
 /* RIGHT COLUMN: ACTION FORM */
 .form-column{ padding:16px; background:#fafaf9; }
@@ -234,8 +325,6 @@ textarea{ min-height:65px; resize:none; }
 
 <%@ include file="../header.jsp" %>
 
-
-
 <div class="container">
 
 <%
@@ -252,29 +341,64 @@ if("error".equals(msg)){
 }
 
 ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object>>) request.getAttribute("requestList");
+
 if(requestList != null && requestList.size() > 0){
-    for(HashMap<String,Object> row : requestList){
-        String status = String.valueOf(row.get("status"));
+    // Collect unique assigned names to automatically populate our filtering dropdown options
+    Set<String> uniqueOwners = new TreeSet<>();
+    for(HashMap<String,Object> row : requestList) {
+        String ownerName = (row.get("assigned_name") != null) ? String.valueOf(row.get("assigned_name")).trim() : "Unassigned";
+        uniqueOwners.add(ownerName);
+    }
 %>
 
-<div class="request-card">
-    <!-- Header Block -->
+<div class="filter-toolbar">
+    <div class="filter-group">
+        <i class="fas fa-filter" style="color: #0176d3;"></i>
+        <label class="filter-label" for="ownerFilter">Filter Owner:</label>
+        <select id="ownerFilter" class="filter-select" onchange="filterRequestsByOwner(this.value)">
+            <option value="ALL">All Assigned Owners (Show All)</option>
+            <% for(String owner : uniqueOwners) { %>
+                <option value="<%= owner.toUpperCase() %>"><%= owner %></option>
+            <% } %>
+        </select>
+    </div>
+</div>
+
+<div id="requestsWrapper">
+<%
+    for(HashMap<String,Object> row : requestList){
+        String status = String.valueOf(row.get("status"));
+        String rawOwner = (row.get("assigned_name") != null) ? String.valueOf(row.get("assigned_name")) : "Unassigned";
+        ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
+        int logCount = (followupList != null) ? followupList.size() : 0;
+%>
+
+<div class="request-card" data-owner="<%= rawOwner.toUpperCase().trim() %>">
     <div class="top-row">
-        <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
-        <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>"><%= status %></div>
+        <div class="header-left-group">
+            <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
+                <i class="fas fa-chevron-down"></i>
+                <span>Open Workspace</span>
+            </button>
+            <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
+        </div>
+        <div class="header-right-group">
+            <div class="conversation-counter">
+                <i class="fas fa-comments"></i> <span><%= logCount %> Updates</span>
+            </div>
+            <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>"><%= status %></div>
+        </div>
     </div>
 
-    <!-- Data Summary Section -->
     <div class="summary-section">
         <div class="info-box">
             <div class="label">Request Date</div>
             <div class="value"><%= row.get("request_date") %></div>
         </div>
         
-       
         <div class="info-box">
             <div class="label">Request by</div>
-            <div class="value"><font color="Brown"><%= row.get("requested_by") %></font></div>
+            <div class="value" style="color: brown; font-weight: 600;"><%= row.get("requested_by") %></div>
         </div> 
       
         <div class="info-box">
@@ -283,7 +407,7 @@ if(requestList != null && requestList.size() > 0){
         </div>
         <div class="info-box">
             <div class="label">Assigned To</div>
-            <div class="value"><%= row.get("assigned_name") != null ? row.get("assigned_name") : "Pending Assignment" %></div>
+            <div class="value" style="color: #0176d3; font-weight: 600;"><%= rawOwner %></div>
         </div>
         <div class="info-box">
             <div class="label">Location</div>
@@ -295,84 +419,76 @@ if(requestList != null && requestList.size() > 0){
         </div>
     </div>
 
-    <!-- Workspace Area split into Timeline & Activity Action Panel -->
-    <div class="card-split-workspace">
-        
-        <!-- Timeline Columns -->
-        <div class="timeline-column">
-            <h3 class="timeline-title"><i class="fas fa-clock-rotate-left"></i> History Timeline</h3>
-            <%
-            ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
-            if(followupList != null && followupList.size() > 0){
-                for(HashMap<String,Object> f : followupList){
-            %>
-            <%
-String updatedBy =
-String.valueOf(f.get("updated_by"));
-
-String requestedByUser =
-String.valueOf(row.get("requested_by"));
-
-boolean isRequesterUpdate =
-updatedBy.equalsIgnoreCase(requestedByUser);
-%>
-
-<div class="followup-box <%= isRequesterUpdate ? "followup-requester" : "followup-staff" %>">
-                <div class="followup-top">
-                    <span class="followup-status"><%= f.get("status") %></span>
-                    <span class="date">
-                        <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
-                    </span>
+    <div class="collapsible-workspace collapsed">
+        <div class="card-split-workspace">
+            
+            <div class="timeline-column">
+                <h3 class="timeline-title"><i class="fas fa-clock-rotate-left"></i> History Timeline</h3>
+                <%
+                if(logCount > 0){
+                    for(HashMap<String,Object> f : followupList){
+                        String updatedBy = String.valueOf(f.get("updated_by"));
+                        String requestedByUser = String.valueOf(row.get("requested_by"));
+                        boolean isRequesterUpdate = updatedBy.equalsIgnoreCase(requestedByUser);
+                %>
+                <div class="followup-box <%= isRequesterUpdate ? "followup-requester" : "followup-staff" %>">
+                    <div class="followup-top">
+                        <span class="followup-status"><%= f.get("status") %></span>
+                        <span class="date">
+                            <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
+                        </span>
+                    </div>
+                    <div class="remark"><%= f.get("remarks") %></div>
                 </div>
-                <div class="remark"><%= f.get("remarks") %></div>
+                <%
+                    }
+                } else {
+                %>
+                <div class="followup-box"><div class="remark" style="color:#747472;">No logs recorded yet.</div></div>
+                <% } %>
             </div>
-            <%
-                }
-            } else {
-            %>
-            <div class="followup-box"><div class="remark">No logs recorded yet.</div></div>
-            <% } %>
+
+            <div class="form-column">
+                <h3 class="form-title"><i class="fas fa-comment-dots"></i> Update Status</h3>
+                <form action="<%=request.getContextPath()%>/TrackRequestServlet" method="post" class="form-vertical">
+                    <input type="hidden" name="request_id" value="<%= row.get("id") %>">
+                    
+                    <select name="status" required>
+                        <option value="">Select Status</option>
+                        <option value="OPEN">OPEN</option>
+                        <option value="IN PROGRESS">IN PROGRESS</option>
+                       
+                        <% 
+                        String requestedBy = String.valueOf(row.get("requested_by"));
+                        if (username.equalsIgnoreCase(requestedBy)) { 
+                        %>
+                        <option value="SATISFIED">SATISFIED</option>
+                        <% 
+                        } 
+                        %>
+                    </select>
+
+                    <textarea name="remarks" placeholder="Provide operational remarks..." required></textarea>
+                    <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Update</button>
+                </form>
+            </div>
+
         </div>
-
-        <!-- Update Action Column -->
-        <div class="form-column">
-            <h3 class="form-title"><i class="fas fa-comment-dots"></i> Update Status</h3>
-            <form action="<%=request.getContextPath()%>/TrackRequestServlet" method="post" class="form-vertical">
-                <input type="hidden" name="request_id" value="<%= row.get("id") %>">
-                
-              <select name="status" required>
-    <option value="">Select Status</option>
-    <option value="OPEN">OPEN</option>
-    
-    <%-- Condition: Only show ASSIGNED if the logged-in user matches the requested_by user --%>
-    
-      
-    
-    
-    <option value="IN PROGRESS">IN PROGRESS</option>
-   
-    <% 
-    String requestedBy = String.valueOf(row.get("requested_by"));
-    if (username.equalsIgnoreCase(requestedBy)) { 
-    %>
-    <option value="SATISFIED">SATISFIED</option>
-    <% 
-    } 
-    %>
-    
-</select>
-
-                <textarea name="remarks" placeholder="Provide operational remarks..." required></textarea>
-                
-                <button type="submit" class="submit-btn"><i class="fas fa-paper-plane"></i> Update</button>
-            </form>
-        </div>
-
     </div>
 </div>
 
 <%
     }
+%>
+</div>
+
+<div class="empty" id="filterEmptyState" style="display: none;">
+    <i class="fas fa-user-slash" style="font-size:44px; color:#cbd5e1;"></i>
+    <h3>No Matching Results</h3>
+    <p>There are currently no active workspace entries assigned to this manager.</p>
+</div>
+
+<%
 } else {
 %>
 <div class="empty">
@@ -385,5 +501,46 @@ updatedBy.equalsIgnoreCase(requestedByUser);
 %>
 
 </div>
+
+<script>
+function toggleWorkspaceGrid(button) {
+    const card = button.closest('.request-card');
+    const workspace = card.querySelector('.collapsible-workspace');
+    const btnText = button.querySelector('span');
+    
+    if (workspace.classList.contains('collapsed')) {
+        workspace.classList.remove('collapsed');
+        button.classList.add('active');
+        btnText.textContent = "Hide Workspace";
+    } else {
+        workspace.classList.add('collapsed');
+        button.classList.remove('active');
+        btnText.textContent = "Open Workspace";
+    }
+}
+
+function filterRequestsByOwner(selectedOwner) {
+    const cards = document.querySelectorAll('#requestsWrapper .request-card');
+    const emptyState = document.getElementById('filterEmptyState');
+    let visibleCount = 0;
+    
+    cards.forEach(card => {
+        const cardOwner = card.getAttribute('data-owner');
+        if (selectedOwner === "ALL" || cardOwner === selectedOwner) {
+            card.style.display = "block";
+            visibleCount++;
+        } else {
+            card.style.display = "none";
+        }
+    });
+    
+    // Toggle fallback layout window if filter isolates zero records
+    if (visibleCount === 0) {
+        emptyState.style.display = "block";
+    } else {
+        emptyState.style.display = "none";
+    }
+}
+</script>
 </body>
 </html>

@@ -9,7 +9,9 @@ if(sess == null || sess.getAttribute("username") == null){
 
 String role = (String)sess.getAttribute("role");
 String dept = (String)sess.getAttribute("department");
-if((!"Global".equalsIgnoreCase(role)) && (!"Finance".equalsIgnoreCase(dept))){
+if((!"Global".equalsIgnoreCase(role)) 
+	    && (!"Finance".equalsIgnoreCase(dept))
+	    && (!"Admin".equalsIgnoreCase(role))){
     out.println("<h3 style='text-align:center;color:red;'>Access Denied</h3>");
     return;
 }

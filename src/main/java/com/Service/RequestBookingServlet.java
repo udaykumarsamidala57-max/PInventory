@@ -67,8 +67,8 @@ public class RequestBookingServlet extends HttpServlet {
         try {
 
             String sql =
-            "select * from departments "
-            + "order by department_name";
+            "SELECT * FROM departments "
+            + "ORDER BY department_name";
 
             PreparedStatement ps =
             con.prepareStatement(sql);
@@ -92,6 +92,9 @@ public class RequestBookingServlet extends HttpServlet {
 
                 list.add(map);
             }
+
+            rs.close();
+            ps.close();
 
         } catch (Exception e) {
 
@@ -131,9 +134,9 @@ public class RequestBookingServlet extends HttpServlet {
             Integer.parseInt(deptId);
 
             String sql =
-            "select * from complaint_types "
-            + "where department_id=? "
-            + "order by complaint_name";
+            "SELECT * FROM complaint_types "
+            + "WHERE department_id=? "
+            + "ORDER BY complaint_name";
 
             PreparedStatement ps =
             con.prepareStatement(sql);
@@ -160,6 +163,9 @@ public class RequestBookingServlet extends HttpServlet {
                 );
             }
 
+            rs.close();
+            ps.close();
+
         } catch (Exception e) {
 
             e.printStackTrace();
@@ -180,7 +186,8 @@ public class RequestBookingServlet extends HttpServlet {
             HttpSession session =
             request.getSession(false);
 
-            if(session == null) {
+            if(session == null
+            || session.getAttribute("username") == null) {
 
                 response.sendRedirect(
                 request.getContextPath()
@@ -213,31 +220,8 @@ public class RequestBookingServlet extends HttpServlet {
             String priority =
             request.getParameter("priority");
 
-            int assignedTo = 0;
-
-            String inchargeSql =
-
-            "select id "
-            + "from department_incharge "
-            + "where department_id=? "
-            + "and status='ACTIVE' "
-            + "limit 1";
-
-            PreparedStatement ps1 =
-            con.prepareStatement(inchargeSql);
-
-            ps1.setInt(1, departmentId);
-
-            ResultSet rs = ps1.executeQuery();
-
-            if(rs.next()) {
-
-                assignedTo =
-                rs.getInt("id");
-            }
-
             /*
-             * GENERATE REQUEST NUMBER
+             * REQUEST NUMBER GENERATION
              * FORMAT : SR/2026/001
              */
 
@@ -247,9 +231,9 @@ public class RequestBookingServlet extends HttpServlet {
 
             String countSql =
 
-            "select count(*) as total "
-            + "from service_requests "
-            + "where year(request_date)=year(now())";
+            "SELECT COUNT(*) AS total "
+            + "FROM service_requests "
+            + "WHERE YEAR(request_date)=YEAR(NOW())";
 
             PreparedStatement countPs =
             con.prepareStatement(countSql);
@@ -265,6 +249,9 @@ public class RequestBookingServlet extends HttpServlet {
                 countRs.getInt("total") + 1;
             }
 
+            countRs.close();
+            countPs.close();
+
             String serialNo =
             String.format("%03d", nextNo);
 
@@ -277,11 +264,12 @@ public class RequestBookingServlet extends HttpServlet {
 
             /*
              * INSERT REQUEST
+             * assigned_to WILL BE NULL
              */
 
             String sql =
 
-            "insert into service_requests("
+            "INSERT INTO service_requests("
             + "request_no,"
             + "request_date,"
             + "requested_by,"
@@ -294,17 +282,17 @@ public class RequestBookingServlet extends HttpServlet {
             + "status"
             + ")"
 
-            + "values("
-            + "?,"     
-            + "now(),"
-            + "?,"     
-            + "?,"     
-            + "?,"     
-            + "?,"     
-            + "?,"     
-            + "?,"     
-            + "?,"     
-            + "?"      
+            + " VALUES("
+            + "?,"
+            + "NOW(),"
+            + "?,"
+            + "?,"
+            + "?,"
+            + "?,"
+            + "?,"
+            + "?,"
+            + "?,"
+            + "?"
             + ")";
 
             PreparedStatement ps =
@@ -324,11 +312,21 @@ public class RequestBookingServlet extends HttpServlet {
 
             ps.setString(7, priority);
 
-            ps.setInt(8, assignedTo);
+            /*
+             * NO DEFAULT ASSIGNMENT
+             */
+
+            ps.setNull(8, java.sql.Types.INTEGER);
+
+            /*
+             * STATUS OPEN
+             */
 
             ps.setString(9, "OPEN");
 
             int i = ps.executeUpdate();
+
+            ps.close();
 
             if(i > 0) {
 
@@ -357,8 +355,24 @@ public class RequestBookingServlet extends HttpServlet {
         }
 
         response.sendRedirect(
-        		request.getContextPath()
-        		+ "/RequestBookingServlet"
-        		);
+        request.getContextPath()
+        + "/RequestBookingServlet"
+        );
+    }
+
+    @Override
+    public void destroy() {
+
+        try {
+
+            if(con != null) {
+
+                con.close();
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
     }
 }

@@ -29,73 +29,104 @@ String username = ((String)sess.getAttribute("username")).toUpperCase();
 body{
     margin:0;
     font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background:#eaeaea; 
-    color:#161616;
+    background:#f3f3f3; 
+    color:#181818;
 }
 
 /* HEADER (Salesforce Console Style) */
 .page-header{
     background:#ffffff;
     padding:14px 24px;
-    border-bottom:2px solid #d8dde6;
+    border-bottom:1px solid #c9c9c9;
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
 .page-title{ display:flex; align-items:center; gap:14px; }
 .icon-box{
-    width:42px;
-    height:42px;
+    width:40px;
+    height:40px;
     border-radius:4px;
     background:#0176d3;
     display:flex;
     align-items:center;
     justify-content:center;
     color:white;
-    font-size:20px;
+    font-size:18px;
 }
-.title-text h2{ margin:0; font-size:20px; color:#0176d3; font-weight:700; }
-.title-text p{ margin:3px 0 0; font-size:13px; color:#444444; }
+.title-text h2{ margin:0; font-size:18px; color:#181818; font-weight:700; }
+.title-text p{ margin:3px 0 0; font-size:12px; color:#514f4d; }
 .user-chip{
     background:#ffffff;
-    color:#161616;
-    padding:8px 14px;
+    color:#181818;
+    padding:6px 12px;
     border-radius:4px;
-    font-size:13px;
+    font-size:12px;
     font-weight:600;
-    border:1px solid #b0adab;
+    border:1px solid #747474;
 }
 
 /* CONTAINER */
-.container{ padding:16px; max-width:1440px; margin:auto; }
+.container{ padding:20px; max-width:1440px; margin:auto; }
 
 /* ALERTS */
-.alert{ padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px;}
-.alert-success{ background:#e1f5fe; color:#005fb2; border:1px solid #b8e3fa; }
-.alert-error{ background:#fededb; color:#c23934; border:1px solid #faaaa3; }
+.alert{ padding:12px 16px; border-radius:4px; margin-bottom:16px; font-size:13px; font-weight:600; display:flex; align-items:center; gap:8px;}
+.alert-success{ background:#ecfdf5; color:#065f46; border:1px solid #a7f3d0; }
+.alert-error{ background:#fef2f2; color:#991b1b; border:1px solid #fecaca; }
 
-/* DENSE CARD MATRIX */
+/* SALESFORCE STYLE CARD */
 .request-card{
     background:#ffffff;
     border-radius:4px;
-    border:1px solid #b0adab;
-    margin-bottom:20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+    border:1px solid #cbd5e1;
+    margin-bottom:16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+.request-card:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.08);
 }
 
 /* CARD BAR HEADER */
 .request-top{
-    padding:10px 16px;
-    background:#f3f3f3;
-    border-bottom:1px solid #c9c9c9;
+    padding:12px 16px;
+    background:#f8fafc;
+    border-bottom:1px solid #e2e8f0;
     display:flex;
     justify-content:space-between;
     align-items:center;
 }
-.request-no{ font-size:15px; font-weight:700; color:#0176d3; }
+.header-left-group { display: flex; align-items: center; gap: 12px; }
+.request-no{ font-size:14px; font-weight:700; color:#0176d3; text-decoration: none;}
+
+/* COLLAPSIBLE TOGGLE BUTTON */
+.toggle-details-btn {
+    background: #ffffff;
+    border: 1px solid #0176d3;
+    color: #0176d3;
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.1s ease;
+}
+.toggle-details-btn:hover {
+    background: #f4f6f9;
+}
+.toggle-details-btn i {
+    transition: transform 0.2s ease;
+}
+.toggle-details-btn.active i {
+    transform: rotate(180deg);
+}
 
 /* STATUS BADGE */
-.status-badge{ padding:4px 12px; border-radius:4px; font-size:11px; font-weight:700; text-transform:uppercase; border: 1px solid transparent;}
+.status-badge{ padding:4px 10px; border-radius:3px; font-size:11px; font-weight:700; text-transform:uppercase; border: 1px solid transparent;}
 .open{ background:#fff1d6; color:#8a4b00; border-color:#fcc06f;}
 .assigned{ background:#dcfce7; color:#166534; border-color:#86efac;}
 .pending{ background:#fef3c7; color:#92400e; border-color:#fcd34d;}
@@ -103,38 +134,50 @@ body{
 .completed{ background:#f3e8ff; color:#7e22ce; border-color:#d8b4fe;}
 .closed{ background:#e2e8f0; color:#334155; border-color:#cbd5e1;}
 
+/* COLLAPSIBLE WRAPPER (Workspace Grid Specific) */
+.collapsible-workspace {
+    max-height: 2000px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out, opacity 0.2s ease-in-out;
+    border-top: 1px solid #e2e8f0;
+}
+.collapsible-workspace.collapsed {
+    max-height: 0 !important;
+    opacity: 0;
+    border-top: none !important;
+}
+
 /* HIGHLIGHTS PANEL */
 .highlights-panel{
     display:flex;
     flex-wrap:wrap;
     padding:14px 16px;
     background:#ffffff;
-    border-bottom:1px solid #c9c9c9;
     gap:20px;
 }
 .info-box{ flex:1; min-width:140px; }
-.description-box{ flex:3; min-width:320px; border-left:1px solid #d8dde6; padding-left:16px; }
-.label{ font-size:11px; color:#444444; font-weight:700; margin-bottom:4px; letter-spacing:0.5px; text-transform:uppercase;}
-.value{ font-size:14px; color:#161616; font-weight:600; line-height:1.3; }
+.description-box{ flex:3; min-width:320px; border-left:1px solid #e2e8f0; padding-left:16px; }
+.label{ font-size:11px; color:#514f4d; font-weight:700; margin-bottom:4px; letter-spacing:0.5px; text-transform:uppercase;}
+.value{ font-size:13px; color:#181818; font-weight:600; line-height:1.3; }
 
-.priority-high{ color:#c23934; font-weight:700; }
+.priority-high{ color:#ba0517; font-weight:700; }
 .priority-medium{ color:#b54708; font-weight:700; }
 .priority-low{ color:#027a48; font-weight:700; }
-.description-text{ font-size:14px; color:#161616; line-height:1.45; margin-top:4px; font-weight:500; }
+.description-text{ font-size:13px; color:#181818; line-height:1.45; margin-top:4px; font-weight:500; }
 
-/* REBALANCED CORE TWO-COLUMN WORKSPACE GRID */
+/* TWO-COLUMN WORKSPACE GRID */
 .workspace-grid{
     display:grid;
-    grid-template-columns: 320px 1fr;
+    grid-template-columns: 340px 1fr;
     background:#ffffff;
-    border-top:1px solid #e5e5e5;
 }
 
-/* UNIFIED ACTION CARD PANEL */
+/* ACTION CARD PANEL */
 .action-card-panel{
     padding:16px;
-    border-right:1px solid #d8dde6;
-    background:#f9f9fa;
+    border-right:1px solid #e2e8f0;
+    background:#f8fafc;
     display:flex;
     flex-direction:column;
     gap:20px;
@@ -145,9 +188,9 @@ body{
     gap:8px;
 }
 .action-title{ 
-    font-size:12px; 
+    font-size:11px; 
     font-weight:700; 
-    color:#161616; 
+    color:#181818; 
     margin:0 0 2px 0; 
     text-transform:uppercase; 
     letter-spacing:0.5px;
@@ -162,16 +205,16 @@ body{
 
 select, input[type="text"]{
     width:100%;
-    border:1px solid #a09e9c;
+    border:1px solid #aeaeae;
     border-radius:4px;
     padding:8px 12px;
     font-size:13px;
     background:#ffffff;
-    color:#161616;
+    color:#181818;
     outline:none;
-    height:38px;
+    height:36px;
 }
-select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2px rgba(1,118,211,0.2); }
+select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2px rgba(1,118,211,0.15); }
 
 .assign-btn{
     background:#0176d3;
@@ -183,7 +226,7 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     font-weight:700;
     cursor:pointer;
     text-align:center;
-    height:38px;
+    height:36px;
     transition: background 0.1s ease;
 }
 .assign-btn:hover{ background:#015a9e; }
@@ -198,12 +241,12 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     font-weight:700;
     cursor:pointer;
     text-align:center;
-    height:38px;
+    height:36px;
     transition: background 0.1s ease;
 }
 .close-btn:hover{ background:#1b5e20; }
 
-/* LOCKED ACCORDION COMPONENT FOR PRE-SATISFIED CONDITIONS */
+/* LOCKED COMPONENT NOTICES */
 .action-lock-notice{
     background:#f1f5f9;
     border:1px dashed #cbd5e1;
@@ -216,7 +259,7 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 }
 .action-lock-notice i { color:#94a3b8; margin-right:4px; }
 
-/* MAXIMIZED TIMELINE STREAM VIEWPORT */
+/* TIMELINE STREAM VIEWPORT */
 .timeline-section{ 
     padding:16px; 
     background:#ffffff;
@@ -225,9 +268,9 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
     flex-direction:column;
 }
 .timeline-heading{
-    font-size:12px; 
+    font-size:11px; 
     font-weight:700; 
-    color:#161616; 
+    color:#181818; 
     margin:0 0 10px 0; 
     text-transform:uppercase; 
     letter-spacing:0.5px;
@@ -235,43 +278,44 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 
 .followup-container{
     display:block;
-    height:210px; 
+    height:220px; 
     overflow-y:auto;
-    border:1px solid #c9c9c9;
+    border:1px solid #cbd5e1;
     border-radius:4px;
     padding:12px;
-    background:#f9f9fa;
+    background:#f8fafc;
 }
 
-.followup-container::-webkit-scrollbar { width: 8px; }
+.followup-container::-webkit-scrollbar { width: 6px; }
 .followup-container::-webkit-scrollbar-track { background: #f1f1f1; }
-.followup-container::-webkit-scrollbar-thumb { background: #adadad; border-radius: 4px; }
-.followup-container::-webkit-scrollbar-thumb:hover { background: #888888; }
+.followup-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+.followup-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
 .followup-box{
     background:#ffffff;
-    border:1px solid #c9c9c9;
-    border-left:4px solid #0176d3;
-    border-radius:3px;
+    border:1px solid #cbd5e1;
+    border-left:3px solid #0176d3;
+    border-radius:4px;
     padding:10px 14px;
     margin-bottom:8px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 .followup-box:last-child{ margin-bottom:0; }
 .followup-top{ display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
-.followup-status{ font-size:10px; font-weight:700; background:#e0edff; color:#0176d3; padding:2px 6px; border-radius:2px; }
-.followup-date{ font-size:12px; color:#514f4d; font-weight:500; }
-.followup-remark{ font-size:13px; color:#161616; line-height:1.4; font-weight:500; word-break: break-word; }
+.followup-status{ font-size:10px; font-weight:700; background:#e0f2fe; color:#0369a1; padding:2px 6px; border-radius:2px; }
+.followup-date{ font-size:12px; color:#64748b; font-weight:500; }
+.followup-remark{ font-size:13px; color:#181818; line-height:1.4; font-weight:500; word-break: break-word; }
 
 /* EMPTY STATE */
-.empty-state{ background:#ffffff; border:1px solid #b0adab; border-radius:4px; padding:60px 20px; text-align:center; }
+.empty-state{ background:#ffffff; border:1px solid #cbd5e1; border-radius:4px; padding:60px 20px; text-align:center; }
 .empty-state i{ font-size:40px; color:#cbd5e1; margin-bottom:12px; }
-.empty-state h3{ margin:0; font-size:16px; color:#161616; }
-.empty-state p{ color:#444444; margin-top:4px; font-size:14px; }
+.empty-state h3{ margin:0; font-size:16px; color:#181818; }
+.empty-state p{ color:#64748b; margin-top:4px; font-size:14px; }
 
 /* RESPONSIVE LAYOUT MATRIX */
 @media(max-width:1150px){
     .workspace-grid { grid-template-columns: 1fr; }
-    .action-card-panel { border-right:none; border-bottom:1px solid #d8dde6; }
+    .action-card-panel { border-right:none; border-bottom:1px solid #cbd5e1; }
     .description-box{ border-left:none; padding-left:0; margin-top:10px;}
     .highlights-panel{ flex-direction:column; gap:12px; }
 }
@@ -280,8 +324,6 @@ select:focus, input[type="text"]:focus{ border-color:#0176d3; box-shadow:0 0 0 2
 <body>
 
 <%@ include file="../header.jsp" %>
-
-
 
 <div class="container">
 
@@ -310,7 +352,13 @@ if(requestList != null && requestList.size() > 0){
 
 <div class="request-card">
     <div class="request-top">
-        <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
+        <div class="header-left-group">
+            <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
+                <i class="fas fa-chevron-down"></i>
+                <span>Open Workspace</span>
+            </button>
+            <div class="request-no"><i class="fas fa-hashtag"></i> <%= row.get("request_no") %></div>
+        </div>
         <div class="status-badge <%= status.toLowerCase().replace(" ","-") %>"><%= status %></div>
     </div>
 
@@ -318,7 +366,7 @@ if(requestList != null && requestList.size() > 0){
         <div class="info-box">
             <div class="label">Date / Creator</div>
             <div class="value"><%= row.get("request_date") %></div>
-            <div class="value" style="font-size:12px; color:#444444; font-weight:500; margin-top:2px;"><%= row.get("requested_by") %></div>
+            <div class="value" style="font-size:12px; color:#64748b; font-weight:500; margin-top:2px;"><%= row.get("requested_by") %></div>
         </div>
         <div class="info-box">
             <div class="label">Priority</div>
@@ -346,75 +394,77 @@ if(requestList != null && requestList.size() > 0){
         </div>
     </div>
 
-    <div class="workspace-grid">
-        
-        <div class="action-card-panel">
+    <div class="collapsible-workspace collapsed">
+        <div class="workspace-grid">
             
-            <div class="action-block">
-                <h3 class="action-title assign-color"><i class="fas fa-user-check"></i> Assign Owner</h3>
-                <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
-                    <input type="hidden" name="request_id" value="<%= id %>">
-                    <input type="hidden" name="action_type" value="ASSIGN">
-                    
-                    <select name="assigned_to" required>
-                        <option value="">Select Incharge Member</option>
-                        <% for(HashMap<String,Object> inc : inchargeList){ %>
-                            <option value="<%= inc.get("id") %>">
-                                <%= inc.get("incharge_name") %> — <%= inc.get("designation") %>
-                            </option>
-                        <% } %>
-                    </select>
-                    <button type="submit" class="assign-btn"><i class="fas fa-paper-plane"></i> Update Owner</button>
-                </form>
-            </div>
-            
-            <hr style="border: 0; border-top: 1px solid #d8dde6; margin: 4px 0;">
-
-            <div class="action-block">
-                <h3 class="action-title close-color"><i class="fas fa-circle-xmark"></i> Resolve &amp; Close Ticket</h3>
-                <% if("SATISFIED".equalsIgnoreCase(status)){ %>
+            <div class="action-card-panel">
+                
+                <div class="action-block">
+                    <h3 class="action-title assign-color"><i class="fas fa-user-check"></i> Assign Owner</h3>
                     <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
                         <input type="hidden" name="request_id" value="<%= id %>">
-                        <input type="hidden" name="action_type" value="CLOSE">
+                        <input type="hidden" name="action_type" value="ASSIGN">
                         
-                        <input type="text" name="resolution" placeholder="Enter resolution remarks here..." required autocomplete="off">
-                        <button type="submit" class="close-btn"><i class="fas fa-box-archive"></i> Close Request</button>
+                        <select name="assigned_to" required>
+                            <option value="">Select Incharge Member</option>
+                            <% for(HashMap<String,Object> inc : inchargeList){ %>
+                                <option value="<%= inc.get("id") %>">
+                                    <%= inc.get("incharge_name") %> — <%= inc.get("designation") %>
+                                </option>
+                            <% } %>
+                        </select>
+                        <button type="submit" class="assign-btn"><i class="fas fa-paper-plane"></i> Update Owner</button>
                     </form>
-                <% } else { %>
-                    <div class="action-lock-notice">
-                        <i class="fas fa-lock"></i> This action is locked. Tickets can only be closed once their status has changed to <strong>SATISFIED</strong>.
-                    </div>
-                <% } %>
-            </div>
-            
-        </div>
-
-        <div class="timeline-section">
-            <h3 class="timeline-heading"><i class="fas fa-clock-rotate-left"></i> Activity Logs</h3>
-
-            <div class="followup-container" id="followup_<%= id %>">
-                <%
-                if(followupList != null && followupList.size() > 0){
-                    for(HashMap<String,Object> f : followupList){
-                %>
-                <div class="followup-box">
-                    <div class="followup-top">
-                        <span class="followup-status"><%= f.get("status") %></span>
-                        <span class="followup-date">
-                            <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
-                        </span>
-                    </div>
-                    <div class="followup-remark"><%= f.get("remarks") %></div>
                 </div>
-                <%
-                    }
-                } else {
-                %>
-                <div class="followup-box"><div class="followup-remark" style="color:#444444;">No updates logged yet.</div></div>
-                <% } %>
-            </div>
-        </div>
+                
+                <hr style="border: 0; border-top: 1px solid #cbd5e1; margin: 4px 0;">
 
+                <div class="action-block">
+                    <h3 class="action-title close-color"><i class="fas fa-circle-xmark"></i> Resolve &amp; Close Ticket</h3>
+                    <% if("SATISFIED".equalsIgnoreCase(status)){ %>
+                        <form action="<%=request.getContextPath()%>/Assign_ServiceRequestServlet" method="post" class="action-form">
+                            <input type="hidden" name="request_id" value="<%= id %>">
+                            <input type="hidden" name="action_type" value="CLOSE">
+                            
+                            <input type="text" name="resolution" placeholder="Enter resolution remarks here..." required autocomplete="off">
+                            <button type="submit" class="close-btn"><i class="fas fa-box-archive"></i> Close Request</button>
+                        </form>
+                    <% } else { %>
+                        <div class="action-lock-notice">
+                            <i class="fas fa-lock"></i> This action is locked. Tickets can only be closed once their status has changed to <strong>SATISFIED</strong>.
+                        </div>
+                    <% } %>
+                </div>
+                
+            </div>
+
+            <div class="timeline-section">
+                <h3 class="timeline-heading"><i class="fas fa-clock-rotate-left"></i> Activity Logs</h3>
+
+                <div class="followup-container" id="followup_<%= id %>">
+                    <%
+                    if(followupList != null && followupList.size() > 0){
+                        for(HashMap<String,Object> f : followupList){
+                    %>
+                    <div class="followup-box">
+                        <div class="followup-top">
+                            <span class="followup-status"><%= f.get("status") %></span>
+                            <span class="followup-date">
+                                <i class="fas fa-user"></i> <%= f.get("updated_by") %> &nbsp;|&nbsp; <i class="fas fa-clock"></i> <%= f.get("updated_on") %>
+                            </span>
+                        </div>
+                        <div class="followup-remark"><%= f.get("remarks") %></div>
+                    </div>
+                    <%
+                        }
+                    } else {
+                    %>
+                    <div class="followup-box"><div class="followup-remark" style="color:#64748b;">No updates logged yet.</div></div>
+                    <% } %>
+                </div>
+            </div>
+
+        </div>
     </div>
 </div>
 
@@ -432,5 +482,23 @@ if(requestList != null && requestList.size() > 0){
 %>
 
 </div>
+
+<script>
+function toggleWorkspaceGrid(button) {
+    const card = button.closest('.request-card');
+    const workspace = card.querySelector('.collapsible-workspace');
+    const btnText = button.querySelector('span');
+    
+    if (workspace.classList.contains('collapsed')) {
+        workspace.classList.remove('collapsed');
+        button.classList.add('active');
+        btnText.textContent = "Hide Workspace";
+    } else {
+        workspace.classList.add('collapsed');
+        button.classList.remove('active');
+        btnText.textContent = "Open Workspace";
+    }
+}
+</script>
 </body>
 </html>
