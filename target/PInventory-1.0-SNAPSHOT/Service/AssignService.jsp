@@ -255,9 +255,9 @@ select:focus, textarea:focus, input[type=text]:focus{
     cursor:pointer;
 }
 
-.assign-btn{ background:#0176d3; color:white; }
-.close-btn{ background:#2e7d32; color:white; }
-.followup-btn{ background:#ea580c; color:white; }
+.assign-btn{ background:#034D8A; color:white; }
+.close-btn{ background:black; color:white; }
+.followup-btn{ background:#013057; color:white; }
 
 .assign-btn:hover{ background:#015a9e; }
 .close-btn:hover{ background:#1f6a24; }

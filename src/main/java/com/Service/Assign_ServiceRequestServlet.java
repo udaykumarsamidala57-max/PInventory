@@ -24,6 +24,12 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    /*
+     * =========================
+     * GET METHOD
+     * =========================
+     */
+
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
@@ -32,6 +38,8 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
         new ArrayList<HashMap<String,Object>>();
 
         Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
 
         try {
 
@@ -47,15 +55,14 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
             "LEFT JOIN department_incharge di " +
             "ON sr.assigned_to = di.id " +
 
-            "WHERE COALESCE(TRIM(UPPER(sr.status)),'') <> 'CLOSED' " +
+            "WHERE sr.status IS NULL " +
+            "OR UPPER(sr.status) <> 'CLOSED' " +
 
             "ORDER BY sr.id DESC";
 
-            PreparedStatement ps =
-            con.prepareStatement(sql);
+            ps = con.prepareStatement(sql);
 
-            ResultSet rs =
-            ps.executeQuery();
+            rs = ps.executeQuery();
 
             while(rs.next()) {
 
@@ -64,6 +71,9 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
                 int requestId =
                 rs.getInt("id");
+
+                int departmentId =
+                rs.getInt("department_id");
 
                 map.put("id", requestId);
 
@@ -104,7 +114,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
                 map.put(
                 "department_id",
-                rs.getInt("department_id")
+                departmentId
                 );
 
                 map.put(
@@ -116,140 +126,44 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                  * LOAD INCHARGE LIST
                  */
 
-                ArrayList<HashMap<String,Object>> inchargeList =
-                new ArrayList<HashMap<String,Object>>();
-
-                String inchargeSql =
-
-                "SELECT * " +
-                "FROM department_incharge " +
-                "WHERE department_id=? " +
-                "AND status='ACTIVE'";
-
-                PreparedStatement ps2 =
-                con.prepareStatement(inchargeSql);
-
-                ps2.setInt(
-                1,
-                rs.getInt("department_id")
-                );
-
-                ResultSet rs2 =
-                ps2.executeQuery();
-
-                while(rs2.next()) {
-
-                    HashMap<String,Object> inc =
-                    new HashMap<String,Object>();
-
-                    inc.put(
-                    "id",
-                    rs2.getInt("id")
-                    );
-
-                    inc.put(
-                    "incharge_name",
-                    rs2.getString("incharge_name")
-                    );
-
-                    inc.put(
-                    "designation",
-                    rs2.getString("designation")
-                    );
-
-                    inchargeList.add(inc);
-                }
-
-                rs2.close();
-                ps2.close();
-
                 map.put(
                 "inchargeList",
-                inchargeList
+                getInchargeList(departmentId)
                 );
 
                 /*
-                 * LOAD FOLLOWUPS
+                 * LOAD FOLLOWUP LIST
                  */
-
-                ArrayList<HashMap<String,Object>> followupList =
-                new ArrayList<HashMap<String,Object>>();
-
-                String followupSql =
-
-                "SELECT * " +
-                "FROM followups " +
-                "WHERE request_id=? " +
-                "ORDER BY updated_on DESC " +
-                "LIMIT 50";
-
-                PreparedStatement ps3 =
-                con.prepareStatement(followupSql);
-
-                ps3.setInt(1, requestId);
-
-                ResultSet rs3 =
-                ps3.executeQuery();
-
-                while(rs3.next()) {
-
-                    HashMap<String,Object> f =
-                    new HashMap<String,Object>();
-
-                    f.put(
-                    "remarks",
-                    rs3.getString("remarks")
-                    );
-
-                    f.put(
-                    "status",
-                    rs3.getString("status")
-                    );
-
-                    f.put(
-                    "updated_by",
-                    rs3.getString("updated_by")
-                    );
-
-                    Timestamp ts =
-                    rs3.getTimestamp("updated_on");
-
-                    String formattedDate = "";
-
-                    if(ts != null){
-
-                        formattedDate =
-
-                        new SimpleDateFormat(
-                        "dd MMM yyyy hh:mm a"
-                        ).format(ts);
-                    }
-
-                    f.put(
-                    "updated_on",
-                    formattedDate
-                    );
-
-                    followupList.add(f);
-                }
-
-                rs3.close();
-                ps3.close();
 
                 map.put(
                 "followupList",
-                followupList
+                getFollowupList(requestId)
                 );
 
                 requestList.add(map);
             }
 
-            rs.close();
-            ps.close();
-
         } catch (Exception e) {
 
             e.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if(rs != null)
+                    rs.close();
+
+                if(ps != null)
+                    ps.close();
+
+                if(con != null)
+                    con.close();
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+            }
         }
 
         request.setAttribute(
@@ -265,6 +179,196 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
         rd.forward(request, response);
     }
+
+    /*
+     * =========================
+     * LOAD INCHARGES
+     * =========================
+     */
+
+    private ArrayList<HashMap<String,Object>>
+    getInchargeList(int departmentId) {
+
+        ArrayList<HashMap<String,Object>> list =
+        new ArrayList<HashMap<String,Object>>();
+
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+
+            con = DBUtil5.getConnection();
+
+            String sql =
+
+            "SELECT * " +
+            "FROM department_incharge " +
+            "WHERE department_id=? " +
+            "AND status='ACTIVE'";
+
+            ps = con.prepareStatement(sql);
+
+            ps.setInt(1, departmentId);
+
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+
+                HashMap<String,Object> map =
+                new HashMap<String,Object>();
+
+                map.put(
+                "id",
+                rs.getInt("id")
+                );
+
+                map.put(
+                "incharge_name",
+                rs.getString("incharge_name")
+                );
+
+                map.put(
+                "designation",
+                rs.getString("designation")
+                );
+
+                list.add(map);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if(rs != null)
+                    rs.close();
+
+                if(ps != null)
+                    ps.close();
+
+                if(con != null)
+                    con.close();
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+            }
+        }
+
+        return list;
+    }
+
+    /*
+     * =========================
+     * LOAD FOLLOWUPS
+     * =========================
+     */
+
+    private ArrayList<HashMap<String,Object>>
+    getFollowupList(int requestId) {
+
+        ArrayList<HashMap<String,Object>> list =
+        new ArrayList<HashMap<String,Object>>();
+
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+
+            con = DBUtil5.getConnection();
+
+            String sql =
+
+            "SELECT * " +
+            "FROM followups " +
+            "WHERE request_id=? " +
+            "ORDER BY updated_on DESC " +
+            "LIMIT 50";
+
+            ps = con.prepareStatement(sql);
+
+            ps.setInt(1, requestId);
+
+            rs = ps.executeQuery();
+
+            while(rs.next()) {
+
+                HashMap<String,Object> map =
+                new HashMap<String,Object>();
+
+                map.put(
+                "remarks",
+                rs.getString("remarks")
+                );
+
+                map.put(
+                "status",
+                rs.getString("status")
+                );
+
+                map.put(
+                "updated_by",
+                rs.getString("updated_by")
+                );
+
+                Timestamp ts =
+                rs.getTimestamp("updated_on");
+
+                String formattedDate = "";
+
+                if(ts != null){
+
+                    formattedDate =
+
+                    new SimpleDateFormat(
+                    "dd MMM yyyy hh:mm a"
+                    ).format(ts);
+                }
+
+                map.put(
+                "updated_on",
+                formattedDate
+                );
+
+                list.add(map);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        } finally {
+
+            try {
+
+                if(rs != null)
+                    rs.close();
+
+                if(ps != null)
+                    ps.close();
+
+                if(con != null)
+                    con.close();
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
+            }
+        }
+
+        return list;
+    }
+
+    /*
+     * =========================
+     * POST METHOD
+     * =========================
+     */
 
     protected void doPost(HttpServletRequest request,
             HttpServletResponse response)
@@ -306,7 +410,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
             int updatedRows = 0;
 
             /*
-             * ASSIGN REQUEST
+             * ASSIGN
              */
 
             if("ASSIGN".equalsIgnoreCase(actionType)) {
@@ -328,7 +432,6 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                 con.prepareStatement(updateSql);
 
                 ps.setInt(1, assignedTo);
-
                 ps.setInt(2, requestId);
 
                 updatedRows =
@@ -336,9 +439,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
                 ps.close();
 
-                /*
-                 * FETCH STAFF NAME
-                 */
+                String staffName = "";
 
                 String nameSql =
 
@@ -346,74 +447,37 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                 "FROM department_incharge " +
                 "WHERE id=?";
 
-                PreparedStatement psName =
+                PreparedStatement ps2 =
                 con.prepareStatement(nameSql);
 
-                psName.setInt(1, assignedTo);
+                ps2.setInt(1, assignedTo);
 
-                ResultSet rsName =
-                psName.executeQuery();
+                ResultSet rs =
+                ps2.executeQuery();
 
-                String staffName =
+                if(rs.next()){
 
-                rsName.next()
+                    staffName =
+                    rs.getString("incharge_name");
+                }
 
-                ?
-
-                rsName.getString("incharge_name")
-
-                :
-
-                "Staff ID : " + assignedTo;
-
-                rsName.close();
-                psName.close();
-
-                /*
-                 * INSERT FOLLOWUP
-                 */
+                rs.close();
+                ps2.close();
 
                 if(updatedRows > 0){
 
-                    String logSql =
-
-                    "INSERT INTO followups(" +
-                    "request_id," +
-                    "remarks," +
-                    "status," +
-                    "updated_by," +
-                    "updated_on" +
-                    ") VALUES (?,?,?,?,NOW())";
-
-                    PreparedStatement psLog =
-                    con.prepareStatement(logSql);
-
-                    psLog.setInt(1, requestId);
-
-                    psLog.setString(
-                    2,
-                    "Ticket assigned to " + staffName
-                    );
-
-                    psLog.setString(
-                    3,
-                    "ASSIGNED"
-                    );
-
-                    psLog.setString(
-                    4,
+                    insertFollowup(
+                    con,
+                    requestId,
+                    "Ticket assigned to " + staffName,
+                    "ASSIGNED",
                     userSessionName
                     );
-
-                    psLog.executeUpdate();
-
-                    psLog.close();
                 }
-
             }
 
             /*
-             * ADD FOLLOWUP
+             * FOLLOWUP
              */
 
             else if("FOLLOWUP".equalsIgnoreCase(actionType)) {
@@ -424,10 +488,6 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                 String followupRemarks =
                 request.getParameter("followup_remarks");
 
-                /*
-                 * UPDATE MAIN STATUS
-                 */
-
                 String updateSql =
 
                 "UPDATE service_requests " +
@@ -437,66 +497,28 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                 PreparedStatement ps =
                 con.prepareStatement(updateSql);
 
-                ps.setString(
-                1,
-                followupStatus
-                );
-
-                ps.setInt(
-                2,
-                requestId
-                );
+                ps.setString(1, followupStatus);
+                ps.setInt(2, requestId);
 
                 updatedRows =
                 ps.executeUpdate();
 
                 ps.close();
 
-                /*
-                 * INSERT FOLLOWUP LOG
-                 */
-
                 if(updatedRows > 0){
 
-                    String logSql =
-
-                    "INSERT INTO followups(" +
-                    "request_id," +
-                    "remarks," +
-                    "status," +
-                    "updated_by," +
-                    "updated_on" +
-                    ") VALUES (?,?,?,?,NOW())";
-
-                    PreparedStatement psLog =
-                    con.prepareStatement(logSql);
-
-                    psLog.setInt(1, requestId);
-
-                    psLog.setString(
-                    2,
-                    followupRemarks
-                    );
-
-                    psLog.setString(
-                    3,
-                    followupStatus
-                    );
-
-                    psLog.setString(
-                    4,
+                    insertFollowup(
+                    con,
+                    requestId,
+                    followupRemarks,
+                    followupStatus,
                     userSessionName
                     );
-
-                    psLog.executeUpdate();
-
-                    psLog.close();
                 }
-
             }
 
             /*
-             * CLOSE REQUEST
+             * CLOSE
              */
 
             else if("CLOSE".equalsIgnoreCase(actionType)) {
@@ -515,60 +537,23 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
                 PreparedStatement ps =
                 con.prepareStatement(closeSql);
 
-                ps.setString(
-                1,
-                resolution
-                );
-
-                ps.setInt(
-                2,
-                requestId
-                );
+                ps.setString(1, resolution);
+                ps.setInt(2, requestId);
 
                 updatedRows =
                 ps.executeUpdate();
 
                 ps.close();
 
-                /*
-                 * INSERT CLOSURE LOG
-                 */
-
                 if(updatedRows > 0){
 
-                    String logSql =
-
-                    "INSERT INTO followups(" +
-                    "request_id," +
-                    "remarks," +
-                    "status," +
-                    "updated_by," +
-                    "updated_on" +
-                    ") VALUES (?,?,?,?,NOW())";
-
-                    PreparedStatement psLog =
-                    con.prepareStatement(logSql);
-
-                    psLog.setInt(1, requestId);
-
-                    psLog.setString(
-                    2,
-                    "Resolution notes : " + resolution
-                    );
-
-                    psLog.setString(
-                    3,
-                    "CLOSED"
-                    );
-
-                    psLog.setString(
-                    4,
+                    insertFollowup(
+                    con,
+                    requestId,
+                    "Resolution notes : " + resolution,
+                    "CLOSED",
                     userSessionName
                     );
-
-                    psLog.executeUpdate();
-
-                    psLog.close();
                 }
             }
 
@@ -601,16 +586,16 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
             e.printStackTrace();
 
-            if(con != null){
+            try {
 
-                try {
+                if(con != null){
 
                     con.rollback();
-
-                } catch (Exception ex) {
-
-                    ex.printStackTrace();
                 }
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
             }
 
             response.sendRedirect(
@@ -621,19 +606,54 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
         } finally {
 
-            if(con != null){
+            try {
 
-                try {
+                if(con != null){
 
                     con.setAutoCommit(true);
-
                     con.close();
-
-                } catch (Exception ex) {
-
-                    ex.printStackTrace();
                 }
+
+            } catch (Exception ex) {
+
+                ex.printStackTrace();
             }
         }
+    }
+
+    /*
+     * =========================
+     * INSERT FOLLOWUP
+     * =========================
+     */
+
+    private void insertFollowup(
+            Connection con,
+            int requestId,
+            String remarks,
+            String status,
+            String updatedBy) throws Exception {
+
+        String sql =
+
+        "INSERT INTO followups(" +
+        "request_id," +
+        "remarks," +
+        "status," +
+        "updated_by," +
+        "updated_on" +
+        ") VALUES (?,?,?,?,NOW())";
+
+        PreparedStatement ps =
+        con.prepareStatement(sql);
+
+        ps.setInt(1, requestId);
+        ps.setString(2, remarks);
+        ps.setString(3, status);
+        ps.setString(4, updatedBy);
+
+        ps.executeUpdate();
+
+        ps.close();
     }
 }
