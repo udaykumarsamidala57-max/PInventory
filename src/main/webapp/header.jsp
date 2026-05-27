@@ -47,13 +47,13 @@ int urgentCount = 0;
 /* request_no, location, description */
 List<String[]> urgentList = new ArrayList<>();
 
-Connection con = null;
-PreparedStatement ps = null;
-ResultSet rs = null;
+Connection consa = null;
+PreparedStatement psaa = null;
+ResultSet rsaa = null;
 
 try{
 
-    con = DBUtil5.getConnection();
+    consa = DBUtil5.getConnection();
 
     String sql =
         "SELECT request_no, location, description,requested_by " +
@@ -62,18 +62,18 @@ try{
         "AND (status IS NULL OR status NOT IN ('Closed','Completed')) " +
         "ORDER BY id DESC";
 
-    ps = con.prepareStatement(sql);
+    psaa = consa.prepareStatement(sql);
 
-    rs = ps.executeQuery();
+    rsaa = psaa.executeQuery();
 
-    while(rs.next()){
+    while(rsaa.next()){
 
         urgentCount++;
 
-        String reqNo = rs.getString("request_no");
-        String location = rs.getString("location");
-        String description = rs.getString("description");
-        String requested_by = rs.getString("requested_by");
+        String reqNo = rsaa.getString("request_no");
+        String location = rsaa.getString("location");
+        String description = rsaa.getString("description");
+        String requested_by = rsaa.getString("requested_by");
 
         urgentList.add(new String[]{
             reqNo,
@@ -90,15 +90,15 @@ try{
 }finally{
 
     try{
-        if(rs != null) rs.close();
+        if(rsaa != null) rsaa.close();
     }catch(Exception e){}
 
     try{
-        if(ps != null) ps.close();
+        if(psaa != null) psaa.close();
     }catch(Exception e){}
 
     try{
-        if(con != null) con.close();
+        if(consa != null) consa.close();
     }catch(Exception e){}
 }
 %>
