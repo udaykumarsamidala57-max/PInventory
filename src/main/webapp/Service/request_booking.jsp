@@ -262,21 +262,31 @@ if(msg!=null){
 <option value="">Select Department</option>
 
 <%
-ArrayList<HashMap<String,Object>> departments=
+ArrayList<HashMap<String,Object>> departments =
 (ArrayList<HashMap<String,Object>>)request.getAttribute("departments");
 
-if(departments!=null){
+Set<String> uniqueDepartments = new HashSet<String>();
 
-    for(HashMap<String,Object> d:departments){
+if(departments != null){
+
+    for(HashMap<String,Object> d : departments){
+
+        String deptName =
+        String.valueOf(d.get("department_name"));
+
+        if(!uniqueDepartments.contains(deptName)){
+
+            uniqueDepartments.add(deptName);
 %>
 
 <option value="<%=d.get("id")%>">
 
-<%=d.get("department_name")%>
+    <%=deptName%>
 
 </option>
 
 <%
+        }
     }
 }
 %>

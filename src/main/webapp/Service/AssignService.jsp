@@ -462,6 +462,9 @@ if(requestList != null && requestList.size() > 0){
                     <span style="color:#ba0517;">HIGH</span>
                 <% }else if("MEDIUM".equalsIgnoreCase(priority)){ %>
                     <span style="color:#b54708;">MEDIUM</span>
+                n<% }else if("Urgent".equalsIgnoreCase(priority)){ %>
+                    <span style="color:#red;">Urgent</span>
+                    
                 <% }else{ %>
                     <span style="color:#027a48;">LOW</span>
                 <% } %>
