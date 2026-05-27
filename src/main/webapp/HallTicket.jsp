@@ -130,8 +130,34 @@ try {
             <td class="label">Father Name</td>
             <td><%= rs.getString("father_name") %></td>
         </tr>
+        <tr>
+            <td class="label">Entrance Test Date</td>
+            <td><%= rs.getString("exam_date") %></td>
+        </tr>
     </table>
-
+    <table>
+    <tr>
+    <td>English</td><td>     &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; </td>
+    <td>Kannada</td><td>        &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;  </td>
+    <td>Hindi</td><td>         &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;   </td>
+    </tr>
+    <tr>
+    <td>Mathematics</td><td>      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;    </td>
+    <td>Science</td><td>         &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;     </td>
+    <td>Social Studies</td><td>    &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;   </td>
+    </tr>
+    </table>
+    <table>
+    <tr>
+    <td>Total</td><td>      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;    </td>
+    <td>Percentage</td><td>      &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;    </td>
+    </tr>
+    </table>
+    <br>
+   <p>
+    <b>Invigilator Signature :</b>
+    <span style="float:right; font-size:10px;">SRS | OFFICE CENTRAL</span>
+</p>
     <div class="print-btn-container">
         <button class="btn" onclick="window.print()">🖨 Print Hall Ticket</button>
     </div>

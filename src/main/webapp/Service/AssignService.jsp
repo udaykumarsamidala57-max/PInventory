@@ -255,9 +255,9 @@ select:focus, textarea:focus, input[type=text]:focus{
     cursor:pointer;
 }
 
-.assign-btn{ background:#034D8A; color:white; }
+.assign-btn{ background:#015fb2; color:white; }
 .close-btn{ background:black; color:white; }
-.followup-btn{ background:#013057; color:white; }
+.followup-btn{ background:#015fb2; color:white; }
 
 .assign-btn:hover{ background:#015a9e; }
 .close-btn:hover{ background:#1f6a24; }
@@ -364,6 +364,58 @@ select:focus, textarea:focus, input[type=text]:focus{
     .workspace-grid{ grid-template-columns:1fr; }
     .action-card-panel{ border-right:none; border-bottom:1px solid #e2e8f0; }
 }
+.urgent-blink{
+    position: relative;
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ff1a1a, #990000);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: pulseGlow 1.5s infinite ease-in-out;
+    box-shadow: 0 0 8px rgba(255,0,0,0.7);
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+.urgent-blink::before{
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 40%;
+    height: 100%;
+    background: rgba(255,255,255,0.4);
+    transform: skewX(-25deg);
+    animation: shine 2.5s infinite;
+}
+
+@keyframes pulseGlow{
+    0%{
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(255,0,0,0.5);
+    }
+    50%{
+        transform: scale(1.05);
+        box-shadow: 0 0 12px rgba(255,0,0,0.9);
+    }
+    100%{
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(255,0,0,0.5);
+    }
+}
+
+@keyframes shine{
+    0%{
+        left: -80%;
+    }
+    100%{
+        left: 140%;
+    }
+}	
 </style>
 </head>
 
@@ -459,11 +511,11 @@ if(requestList != null && requestList.size() > 0){
             <div class="label">Priority</div>
             <div class="value">
                 <% if("HIGH".equalsIgnoreCase(priority)){ %>
-                    <span style="color:#ba0517;">HIGH</span>
+                    <span style="color:#ba0517;font-size:14;">HIGH</span>
                 <% }else if("MEDIUM".equalsIgnoreCase(priority)){ %>
-                    <span style="color:#b54708;">MEDIUM</span>
+                    <span style="color:#b54708;font-size:14px;">MEDIUM</span>
                 <% }else if("Urgent".equalsIgnoreCase(priority)){ %>
-                    <span style="color:#red;">Urgent</span>
+                    <span class="urgent-blink">URGENT</span>
                     
                 <% }else{ %>
                     <span style="color:#027a48;">LOW</span>

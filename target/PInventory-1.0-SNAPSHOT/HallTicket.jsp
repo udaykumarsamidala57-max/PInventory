@@ -130,6 +130,22 @@ try {
             <td class="label">Father Name</td>
             <td><%= rs.getString("father_name") %></td>
         </tr>
+        <tr>
+            <td class="label">Entrance Test Date</td>
+            <td><%= rs.getString("exam_date") %></td>
+        </tr>
+    </table>
+    <table>
+    <tr>
+    <td>English</td><td>     &nbsp;&nbsp; </td>
+    <td>Kannada</td><td>          </td>
+    <td>Hindi</td><td>            </td>
+    </tr>
+    <tr>
+    <td>Mathematics</td><td>          </td>
+    <td>Science</td><td>              </td>
+    <td>Social Studies</td><td>       </td>
+    </tr>
     </table>
 
     <div class="print-btn-container">

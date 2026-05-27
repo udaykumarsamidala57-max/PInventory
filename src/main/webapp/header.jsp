@@ -34,6 +34,74 @@ if (sesso == null || sesso.getAttribute("username") == null) {
         breadcrumb = "Admissions";
     }
     %>
+ <%@ page import="java.sql.*" %>
+<%@ page import="com.bean.DBUtil5" %>
+
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import="com.bean.DBUtil5" %>
+
+<%
+int urgentCount = 0;
+
+/* request_no, location, description */
+List<String[]> urgentList = new ArrayList<>();
+
+Connection con = null;
+PreparedStatement ps = null;
+ResultSet rs = null;
+
+try{
+
+    con = DBUtil5.getConnection();
+
+    String sql =
+        "SELECT request_no, location, description,requested_by " +
+        "FROM service_requests " +
+        "WHERE UPPER(priority)='URGENT' " +
+        "AND (status IS NULL OR status NOT IN ('Closed','Completed')) " +
+        "ORDER BY id DESC";
+
+    ps = con.prepareStatement(sql);
+
+    rs = ps.executeQuery();
+
+    while(rs.next()){
+
+        urgentCount++;
+
+        String reqNo = rs.getString("request_no");
+        String location = rs.getString("location");
+        String description = rs.getString("description");
+        String requested_by = rs.getString("requested_by");
+
+        urgentList.add(new String[]{
+            reqNo,
+            location,
+            description,
+            requested_by
+        });
+    }
+
+}catch(Exception e){
+
+    e.printStackTrace();
+
+}finally{
+
+    try{
+        if(rs != null) rs.close();
+    }catch(Exception e){}
+
+    try{
+        if(ps != null) ps.close();
+    }catch(Exception e){}
+
+    try{
+        if(con != null) con.close();
+    }catch(Exception e){}
+}
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -189,6 +257,88 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 .text-info { color:#06b6d4; }
 .text-purple { color:#8b5cf6; }
 .text-secondary { color:#9ca3af; }
+
+.urgent-header{
+    display:inline-block;
+    margin-left:10px;
+    padding:3px 8px;
+    border-radius:14px;
+    background:#dc2626;
+    color:#fff;
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    animation:softBlink 2s infinite;
+    vertical-align:middle;
+}
+
+@keyframes softBlink{
+    0%{
+        opacity:1;
+    }
+    50%{
+        opacity:0.75;
+    }
+    100%{
+        opacity:1;
+    }
+}
+.urgent-wrapper{
+    position:relative;
+    display:inline-block;
+}
+
+.urgent-popup{
+    display:none;
+    position:absolute;
+    top:35px;
+    right:0;
+    width:320px;
+    max-height:400px;
+    overflow-y:auto;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);
+    border:1px solid #e5e7eb;
+    z-index:9999;
+    padding:10px;
+}
+
+.popup-title{
+    font-size:14px;
+    font-weight:700;
+    color:#dc2626;
+    margin-bottom:10px;
+    border-bottom:1px solid #eee;
+    padding-bottom:8px;
+}
+
+.urgent-item{
+    padding:10px;
+    border-radius:10px;
+    background:#fff5f5;
+    margin-bottom:10px;
+    border-left:4px solid #dc2626;
+}
+
+.req-no{
+    font-size:12px;
+    font-weight:700;
+    color:#111827;
+}
+
+.req-location{
+    font-size:11px;
+    color:#6b7280;
+    margin-top:4px;
+}
+
+.req-desc{
+    font-size:12px;
+    color:#374151;
+    margin-top:6px;
+    line-height:1.4;
+}
 </style>
 </head>
 
@@ -425,7 +575,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
             Welcome back, <%= users.toUpperCase() %>
         </h6>
          
-
+        
         <!-- LEFT -->
         <div class="adm-left">
             
@@ -437,7 +587,59 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
         <p style="color:#64748b; font-size:10px;">
             Current Session: <%= todayDate %>
         </p>
+ <% if ("Admin".equalsIgnoreCase(roles) || 
+ "Finance".equalsIgnoreCase(depts) || 
+ "Global".equalsIgnoreCase(roles)) { %>    
+   <% if(urgentCount > 0){ %>
+
+<div class="urgent-wrapper">
+
+    <span class="urgent-header" onclick="toggleUrgentPopup()">
+        🚨 <%= urgentCount %> Urgent Complaints
+    </span>
+
+    <div class="urgent-popup" id="urgentPopup">
+
+        <div class="popup-title">
+            Urgent Complaints
+        </div>
+
+        <% for(String[] row : urgentList){ %>
+
+            <div class="urgent-item">
+
+                <div class="req-no">
+                    <%= row[0] %>
+                </div>
+
+                <div class="req-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <%= row[1] %>
+                </div>
+                <div class="req-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                     <%= row[2] %>
+                </div>
+
+                <div class="req-desc">
+                   Req. By: <%= row[3] %>
+                </div>
+
+            </div>
+
+        <% } %>
+
     </div>
+
+</div>
+
+<% } %>
+    </div>
+   <% } %>
+   
+
+   
+
 
 </main>
 
@@ -516,6 +718,27 @@ document.querySelectorAll('.dropdown-btn').forEach(btn => {
 const toggleBtn = document.getElementById('menu-toggle');
 toggleBtn.addEventListener('click', () => {
   document.body.classList.toggle('sidebar-collapsed');
+});
+
+function toggleUrgentPopup(){
+
+    let popup = document.getElementById("urgentPopup");
+
+    if(popup.style.display === "block"){
+        popup.style.display = "none";
+    }else{
+        popup.style.display = "block";
+    }
+}
+
+document.addEventListener("click", function(event){
+
+    let wrapper = document.querySelector(".urgent-wrapper");
+
+    if(wrapper && !wrapper.contains(event.target)){
+
+        document.getElementById("urgentPopup").style.display = "none";
+    }
 });
 </script>
 
