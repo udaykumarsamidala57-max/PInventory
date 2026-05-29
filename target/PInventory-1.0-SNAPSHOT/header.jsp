@@ -616,8 +616,8 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
                     <i class="fas fa-map-marker-alt"></i>
                     <%= row[1] %>
                 </div>
-                <div class="req-location">
-                    <i class="fas fa-map-marker-alt"></i>
+                <div class="req-desc">
+                    
                      <%= row[2] %>
                 </div>
 
