@@ -482,14 +482,14 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
 
 <a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet">
     <i class="fas fa-search-location text-info"></i>
-    Assigne Incharge
+    Assign Incharge
 </a>
 
 <% } %>
 
 <a href="<%=request.getContextPath()%>/Incharge">
     <i class="fas fa-search-location text-info"></i>
-    Assigne to Me
+    Assigned to Me
 </a>
 
 
