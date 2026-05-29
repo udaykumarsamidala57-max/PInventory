@@ -57,6 +57,7 @@ com\controller\Asset\VendorController.class
 com\controller\LoadIndentItemsServlet.class
 com\controller\Asset\LocationController.class
 com\DAO\CategoryDAO.class
+com\Service\Incharge.class
 com\controller\Asset\ReportController.class
 com\bean\Indent.class
 com\controller\Asset\AuditController.class
