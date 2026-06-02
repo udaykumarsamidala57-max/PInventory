@@ -346,7 +346,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
 <div class="sidebar" id="sidebar">
   <h2><i class="fas fa-box text-primary"></i> SRS</h2>
-
+<% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
 
@@ -444,7 +444,7 @@ if ("Global".equalsIgnoreCase(roles.trim()) ||
     <%} %>
     
     
-   
+  <% } %>  
 
 <div class="sidebar-label">Service Request</div>
 
