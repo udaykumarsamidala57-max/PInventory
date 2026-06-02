@@ -516,6 +516,7 @@ for(Map<String, Object> row : requestList){
                     <option value="">-- Choose --</option>
                     <option value="OPEN">OPEN</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="COMPLETED">COMPLETED</option>
                     <%
                     String requestedBy = String.valueOf(row.get("requested_by"));
                     if(username.equalsIgnoreCase(requestedBy)){
