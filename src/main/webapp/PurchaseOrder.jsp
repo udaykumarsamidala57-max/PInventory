@@ -228,7 +228,7 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
             </td>
         </tr>
         <tr>
-            <td><strong>Vendor GSTIN:</strong></td>
+            <td><strong>Vendor GSTIN: </strong></td>
             <td><input type="text" name="vendorGSTIN" id="vendorGSTIN" readonly></td>
         </tr>
         <tr>
