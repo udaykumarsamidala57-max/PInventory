@@ -621,7 +621,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="adm-left">
        
         <div class="adm-title" id="admPageTitle">Dashboard</div>
-        <div class="adm-breadcrumb" id="admBreadcrumb">Home</div>
+      
     </div>
     
     <div style="display:flex; align-items:center; gap:16px;">

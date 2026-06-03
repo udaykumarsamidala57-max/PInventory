@@ -109,21 +109,21 @@ public class TrackRequestServlet extends HttpServlet {
 
             		}else{
 
-            		    sql =
+            			sql =
 
-            		    "SELECT sr.*, " +
-            		    "di.incharge_name AS assigned_name " +
+            				    "SELECT sr.*, " +
+            				    "di.incharge_name AS assigned_name " +
 
-            		    "FROM service_requests sr " +
+            				    "FROM service_requests sr " +
 
-            		    "LEFT JOIN department_incharge di " +
-            		    "ON sr.assigned_to = di.id " +
+            				    "LEFT JOIN department_incharge di " +
+            				    "ON sr.assigned_to = di.id " +
 
-            		    "WHERE UPPER(sr.requested_by)=? " +
+            				    "WHERE UPPER(sr.requested_by)=? " +
 
-            		    "AND COALESCE(TRIM(UPPER(sr.status)),'') <> 'SATISFIED' " +
+            				    "AND COALESCE(TRIM(UPPER(sr.status)),'') NOT IN ('SATISFIED','CLOSED') " +
 
-            		    "ORDER BY sr.id DESC";
+            				    "ORDER BY sr.id DESC";
             		}
 
             		PreparedStatement ps =

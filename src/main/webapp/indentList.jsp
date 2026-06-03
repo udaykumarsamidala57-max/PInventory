@@ -14,7 +14,6 @@ if (sess == null || sess.getAttribute("username") == null) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Indent Full Report</title>
 
-<!-- Fonts & Icons -->
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -30,22 +29,21 @@ body {
 }
 
 .main-content {
-  width: 100%;
+  width: 96%;
   max-width: 100%;
   margin: 0 auto;
-  padding: 20px;
+  padding: 20px 0;
 }
 
-/* Salesforce Style Card Base - Clear View Configuration */
+/* Salesforce Style Card Base */
 .card {
   background: #fff;
   border-radius: 4px;
-  padding: 24px;
+  padding: 20px;
   width: 100%;
   border: 1px solid #c9c9c9;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-  /* Completely open to prevent anything hiding internally */
-  overflow: visible; 
+  overflow: hidden; 
 }
 
 .header-area {
@@ -82,22 +80,22 @@ h1 {
   background: #fafaf9;
   border: 1px solid #c9c9c9;
   border-radius: 4px;
-  padding: 16px;
+  padding: 14px;
   margin-bottom: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
+  gap: 12px;
   align-items: flex-end;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .search-bar label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #514f4d;
   text-transform: uppercase;
@@ -109,14 +107,14 @@ h1 {
 .search-bar input[type="date"],
 #deptFilter {
   height: 36px;
-  padding: 0 12px;
+  padding: 0 10px;
   border: 1px solid #aeaeae;
   border-radius: 4px;
   font-family: inherit;
   font-size: 13px;
   background: #ffffff;
   outline: none;
-  min-width: 160px;
+  min-width: 150px;
 }
 
 .search-bar input:focus, 
@@ -130,23 +128,25 @@ h1 {
   flex-wrap: wrap;
   gap: 8px;
   margin-left: auto;
+  align-items: center;
+  height: 36px;
 }
 
 /* Salesforce Lightning Action Buttons */
 .btn {
   height: 36px;
-  padding: 0 16px;
+  padding: 0 14px;
   border: 1px solid #0176d3;
   background: #0176d3;
   color: white;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   transition: all 0.1s ease;
 }
 
@@ -156,6 +156,15 @@ h1 {
   background-color: #0176d3;
   border-color: #0176d3;
   color: white;
+}
+
+.btn-success {
+  background-color: #2e844a;
+  border-color: #2e844a;
+}
+.btn-success:hover {
+  background-color: #1b5e30;
+  border-color: #1b5e30;
 }
 
 .btn-secondary {
@@ -177,34 +186,54 @@ h1 {
   background-color: #f4f6f9;
 }
 
-/* Data Table Container - Unrestricted Scroll Design */
+/* High-Density Performance Layout Container */
 .table-container {
   width: 100%;
-  overflow-x: visible;
+  overflow-x: auto; /* Restores controlled local hardware accelerated scrolling */
+  scrollbar-width: thin;
 }
 
 .main-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  font-size: 12px;
+  font-size: 11px;
 }
+
+/* Flexible Matrix Min-Width Specifications */
+.main-table th:nth-child(1)  { min-width: 45px; }   /* ID */
+.main-table th:nth-child(2)  { min-width: 80px; }   /* Indent No */
+.main-table th:nth-child(3)  { min-width: 85px; }   /* Date */
+.main-table th:nth-child(4)  { min-width: 160px; }  /* Item */
+.main-table th:nth-child(5)  { min-width: 70px; }   /* Avail Qty */
+.main-table th:nth-child(6)  { min-width: 70px; }   /* Req Qty */
+.main-table th:nth-child(7)  { min-width: 55px; }   /* UOM */
+.main-table th:nth-child(8)  { min-width: 100px; }  /* Dept */
+.main-table th:nth-child(9)  { min-width: 110px; }  /* Requested By */
+.main-table th:nth-child(10) { min-width: 120px; }  /* Purpose */
+.main-table th:nth-child(11) { min-width: 95px; }   /* L1 Status */
+.main-table th:nth-child(12) { min-width: 90px; }   /* IApproveDate */
+.main-table th:nth-child(13) { min-width: 95px; }   /* L2 Status */
+.main-table th:nth-child(14) { min-width: 90px; }   /* FApproveDate */
+.main-table th:nth-child(15) { min-width: 95px; }   /* Indent Status */
+.main-table th:nth-child(16) { min-width: 90px; }   /* Action Box */
 
 .main-table th {
   background: #fafaf9;
   color: #514f4d;
-  padding: 10px 6px;
+  padding: 12px 6px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   border-bottom: 2px solid #c9c9c9;
-  font-size: 11px;
+  font-size: 10.5px;
   cursor: pointer;
   text-align: center;
+  white-space: nowrap;
 }
 
 .main-table th i {
-  margin-left: 3px;
+  margin-left: 2px;
   font-size: 9px;
   color: #747472;
 }
@@ -215,30 +244,44 @@ h1 {
   border-bottom: 1px solid #e5e5e5;
   color: #181818;
   vertical-align: middle;
-  word-break: break-word;
+  word-wrap: break-word;
+  white-space: normal; /* Safe wrapping for massive descriptions inside structural columns */
+}
+
+/* Explicit text constraints for clean grid architecture */
+.main-table td:nth-child(3),
+.main-table td:nth-child(11),
+.main-table td:nth-child(12),
+.main-table td:nth-child(13),
+.main-table td:nth-child(14) {
+  white-space: nowrap;
 }
 
 .main-table tr:hover {
   background-color: #f3f3f3;
 }
 
-/* Modern Clean Print Button Form Styling */
+/* Centered Form Handling */
 .print-form {
   margin: 0;
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
 }
 
 .print-action-btn {
   background: #ffffff;
   border: 1px solid #0176d3;
   color: #0176d3;
-  padding: 6px 10px;
+  padding: 5px 8px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   white-space: nowrap;
   transition: all 0.1s ease;
@@ -249,28 +292,9 @@ h1 {
   color: #ffffff;
 }
 
-/* Footer Link formatting */
-.form-link-container {
-  margin-top: 20px;
-  display: inline-block;
-}
-.form-link-container a {
-  text-decoration: none;
-  font-weight: 600;
-  color: #2e844a;
-  font-size: 14px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.form-link-container a:hover {
-  color: #1b5e30;
-}
-
-/* Responsive Structural Refactor Engine */
-@media (max-width: 1400px) {
-  /* On tight desktop dashboards, transition to cards early to maintain layout beauty without cramping */
-  .main-content { padding: 10px; }
+/* Responsive Adaptive Layer */
+@media (max-width: 1200px) {
+  .main-content { width: 100%; padding: 10px; }
   .card { padding: 16px; }
   .header-area { margin-bottom: 16px; padding-bottom: 12px; }
 
@@ -297,6 +321,7 @@ h1 {
     flex-direction: column;
     margin-left: 0;
     gap: 8px;
+    height: auto;
   }
 
   .btn {
@@ -329,6 +354,7 @@ h1 {
     border: none;
     border-bottom: 1px solid #f3f3f3;
     font-size: 13px;
+    white-space: normal !important;
   }
 
   .main-table td:last-child {
@@ -348,6 +374,12 @@ h1 {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .print-form {
+    justify-content: flex-end;
   }
   
   .print-action-btn {
@@ -417,17 +449,17 @@ h1 {
             <th onclick="sortTable(1)">Indent No <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(2)">Date <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(3)">Item <i class="fa fa-sort"></i></th>
-            <th>Avail. Qty</th>
-            <th>Req. Qty</th>
-            <th>UOM</th>
-            <th>Dept</th>
-            <th>Requested By</th>
-            <th>Purpose</th>
-            <th>L1 Status</th>
-            <th>IApproveDate</th>
-            <th>L2 Status</th>
-            <th>FApproveDate</th>
-            <th>Indent status</th>
+            <th onclick="sortTable(4)">Avail. Qty <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(5)">Req. Qty <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(6)">UOM <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(7)">Dept <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(8)">Requested By <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(9)">Purpose <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(10)">L1 Status <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(11)">IApproveDate <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(12)">L2 Status <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(13)">FApproveDate <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(14)">Indent status <i class="fa fa-sort"></i></th>
             <th>Action</th>
           </tr>
         </thead>
@@ -446,7 +478,7 @@ h1 {
             <td data-label="ID"><%= ind.getId() %></td>
             <td data-label="Indent No"><%= ind.getIndentNo() %></td>
             <td data-label="Date"><%= ind.getDate() %></td>
-            <td data-label="Item" style="text-align: left;"><%= ind.getItemName() %></td>
+            <td data-label="Item"><%= ind.getItemName() %></td>
             <td data-label="Avail. Qty" style="color:#FA6D16"><b><%= ind.getBalanceQty() %></b></td>
             <td data-label="Req. Qty"><%= ind.getQty() %></td>
             <td data-label="UOM"><%= ind.getUom() %></td>
@@ -456,7 +488,7 @@ h1 {
             <td data-label="L1 Status" style="<%= istatusStyle %>">
               <%= (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus %>
               <% if(ind.getApprovedBy() != null && !ind.getApprovedBy().trim().isEmpty()) { %>
-                <br><span style="font-size:11px; color:#514f4d; font-weight:normal;">By: <%= ind.getApprovedBy() %></span>
+                <br><span style="font-size:10px; color:#514f4d; font-weight:normal; display:block; line-height:1.2;">By: <%= ind.getApprovedBy() %></span>
               <% } %>
             </td>
             <td data-label="IApproveDate"><%= ind.getIapprovevdate() %></td>
@@ -478,9 +510,6 @@ h1 {
         </tbody>
       </table>
     </div>
-    
-   
-
   </div>
 </div>
 
@@ -553,7 +582,7 @@ function downloadExcel() {
       cols.forEach(cell => {
         let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
         
-        if (window.innerWidth <= 1400 && cell.tagName === 'TD') {
+        if (window.innerWidth <= 1200 && cell.tagName === 'TD') {
           const labelText = cell.getAttribute('data-label') || '';
           if (text.startsWith(labelText)) {
             text = text.substring(labelText.length).trim();
