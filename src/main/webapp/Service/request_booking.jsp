@@ -15,8 +15,6 @@ if(sess == null || sess.getAttribute("username") == null){
 String role = (String)sess.getAttribute("role");
 String dept = (String)sess.getAttribute("department");
 
-
-
 String username =
 ((String)sess.getAttribute("username")).toUpperCase();
 %>
@@ -26,6 +24,7 @@ String username =
 <head>
 
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Service Request</title>
 
@@ -38,16 +37,18 @@ String username =
 body{
     margin:0;
     background:#f3f6f9;
-    font-family:Segoe UI;
+    font-family:Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .container{
-    width:650px;
-    margin:30px auto;
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 16px 12px;
 }
 
 .card{
-
     background:white;
     border-radius:12px;
     padding:30px;
@@ -55,22 +56,19 @@ body{
 }
 
 .title{
-
-    font-size:26px;
+    font-size:24px;
     font-weight:600;
     color:#0176d3;
     margin-bottom:25px;
 }
 
 .grid{
-
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:18px;
 }
 
 .form-group{
-
     display:flex;
     flex-direction:column;
 }
@@ -80,7 +78,6 @@ body{
 }
 
 label{
-
     font-size:14px;
     margin-bottom:6px;
     font-weight:600;
@@ -90,31 +87,29 @@ label{
 input,
 select,
 textarea{
-
     padding:11px 12px;
     border:1px solid #d8dde6;
     border-radius:8px;
     font-size:14px;
     background:white;
+    width: 100%;
+    outline: none;
+    height: 42px; /* Uniform height for standard fields on touchscreen layouts */
 }
 
 input:focus,
 select:focus,
 textarea:focus{
-
-    outline:none;
     border:1px solid #0176d3;
     box-shadow:0 0 4px rgba(1,118,211,0.3);
 }
 
 textarea{
-
     height:120px;
     resize:none;
 }
 
 .btn{
-
     background:#0176d3;
     color:white;
     border:none;
@@ -123,20 +118,45 @@ textarea{
     font-size:15px;
     cursor:pointer;
     font-weight:600;
+    width: 100%;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .btn:hover{
-
     background:#015fb2;
 }
 
 .success{
-
     background:#d8f3dc;
     color:#1b4332;
     padding:12px;
     border-radius:8px;
     margin-bottom:20px;
+    font-size:14px;
+}
+
+/* RESPONSIVE MEDIA QUERIES */
+@media (max-width: 600px) {
+    .card {
+        padding: 20px 16px;
+    }
+    
+    .title {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .full {
+        grid-column: auto;
+    }
 }
 
 </style>

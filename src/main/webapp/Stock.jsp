@@ -14,116 +14,194 @@ if (sess == null || sess.getAttribute("username") == null) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-       
+        * { box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f7f9fc;
+            background: #f3f3f3;
             margin: 0;
             padding: 0;
-            overflow-x: hidden;
+            color: #181818;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .main-content {
             width: 100%;
+            max-width: 1440px;
             margin: 0 auto;
-            padding: 10px;
+            padding: 16px;
         }
 
+        /* Salesforce Style Card Base */
         .card {
-            background: #fff;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 10px auto;
+            background: #ffffff;
+            border-radius: 4px;
+            padding: 24px;
+            margin: 0 auto;
             width: 100%;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #c9c9c9;
+            box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .header-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 16px;
+        }
+
+        .icon-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            background: #0176d3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
         }
 
         h1 {
-            margin: 10px 0 20px 0;
-            text-align: center;
-            color: #333;
+            margin: 0;
+            font-size: 20px;
+            color: #0176d3;
+            font-weight: 700;
         }
 
-      
+        /* Salesforce Filter Toolbar */
         .filter-box {
-            margin: 10px 0 20px 0;
+            background: #fafaf9;
+            border: 1px solid #c9c9c9;
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 20px;
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 14px;
             align-items: center;
-            justify-content: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .filter-box label {
-            font-weight: 500;
+            font-size: 12px;
+            font-weight: 700;
+            color: #514f4d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         .filter-box select,
         .filter-box input {
-            padding: 7px 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
+            height: 36px;
+            padding: 0 12px;
+            border: 1px solid #aeaeae;
+            border-radius: 4px;
             font-family: inherit;
-            font-size: 14px;
+            font-size: 13px;
+            background: #ffffff;
+            outline: none;
+            min-width: 200px;
         }
 
+        .filter-box select:focus,
+        .filter-box input:focus {
+            border-color: #0176d3;
+            box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
+        }
+
+        .actions-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-left: auto;
+        }
+
+        /* Salesforce Lightning Action Buttons */
         .btn {
-            padding: 8px 14px;
-            border: none;
-            background: #007bff;
+            height: 36px;
+            padding: 0 16px;
+            border: 1px solid #0176d3;
+            background: #0176d3;
             color: white;
-            border-radius: 6px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: 0.3s;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.1s ease;
         }
 
-        .btn:hover { background: #0056b3; }
+        .btn:hover { background: #015a9e; border-color: #015a9e; }
 
         .btn-secondary {
-            background: #6c757d;
+            background: #ffffff;
+            border-color: #747472;
+            color: #181818;
         }
 
         .btn-secondary:hover {
-            background: #545b62;
+            background: #f4f6f9;
+            color: #181818;
+            border-color: #747472;
         }
 
         .btn-success {
-            background: #28a745;
+            background: #2e844a;
+            border-color: #2e844a;
         }
 
         .btn-success:hover {
-            background: #218838;
+            background: #1b5e30;
+            border-color: #1b5e30;
         }
 
-       
+        /* Data Presentation Layout */
         .table-container {
             width: 100%;
             overflow-x: auto;
+            border: 1px solid #c9c9c9;
+            border-radius: 4px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 900px;
+            min-width: 1000px;
             background: #fff;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         th {
-            background-color: #007bff;
-            color: white;
-            padding: 10px;
+            background-color: #fafaf9;
+            color: #514f4d;
+            padding: 12px 10px;
             text-align: left;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid #c9c9c9;
+            font-size: 11px;
         }
 
         td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #ddd;
-            color: #333;
+            padding: 10px;
+            border-bottom: 1px solid #e5e5e5;
+            color: #181818;
         }
 
         td.num, th.num {
@@ -135,42 +213,53 @@ if (sess == null || sess.getAttribute("username") == null) {
         }
 
         tr:hover {
-            background-color: #f1f1f1;
+            background-color: #f3f3f3;
         }
 
-      
+        /* Responsive Architecture */
         @media (max-width: 1024px) {
-            .card {
-                padding: 15px;
-            }
-            table {
-                font-size: 13px;
-            }
-            th, td {
-                padding: 8px;
-            }
+            .filter-box select, .filter-box input { min-width: 160px; }
         }
 
         @media (max-width: 768px) {
-            h1 {
-                font-size: 20px;
-            }
+            .main-content { padding: 10px; }
+            .card { padding: 16px; }
+            
+            .header-area { margin-bottom: 16px; padding-bottom: 12px; }
 
             .filter-box {
                 flex-direction: column;
                 align-items: stretch;
-                gap: 8px;
+                gap: 12px;
+                padding: 12px;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
             }
 
             .filter-box select,
-            .filter-box input,
-            .filter-box button {
+            .filter-box input {
                 width: 100%;
+                height: 40px;
+            }
+
+            .actions-group {
+                width: 100%;
+                flex-direction: column;
+                margin-left: 0;
+                gap: 8px;
+            }
+
+            .btn {
+                width: 100%;
+                height: 40px;
             }
 
             .table-container {
-                overflow-x: auto;
-                border-radius: 10px;
+                border: none;
             }
 
             table, thead, tbody, th, td, tr {
@@ -183,43 +272,43 @@ if (sess == null || sess.getAttribute("username") == null) {
             }
 
             tr {
-                margin-bottom: 15px;
-                border: 1px solid #ddd;
-                border-radius: 10px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                padding: 10px;
+                margin-bottom: 12px;
+                border: 1px solid #c9c9c9;
+                border-radius: 4px;
+                box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+                padding: 8px 0;
                 background: #fff;
             }
 
             td {
                 text-align: right;
-                padding: 8px 10px;
+                padding: 8px 14px;
                 position: relative;
                 border: none;
-                border-bottom: 1px solid #eee;
+                border-bottom: 1px solid #f3f3f3;
                 font-size: 13px;
+            }
+            
+            td:last-child {
+                border-bottom: none;
             }
 
             td:before {
                 content: attr(data-label);
                 position: absolute;
-                left: 10px;
-                width: 50%;
-                font-weight: 600;
+                left: 14px;
+                width: 45%;
+                font-weight: 700;
                 text-align: left;
-                color: #333;
+                color: #514f4d;
                 white-space: nowrap;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
             }
-        }
-
-        @media (max-width: 480px) {
-            h1 {
-                font-size: 18px;
-            }
-
-            .btn {
-                font-size: 13px;
-                padding: 7px;
+            
+            td.num, td.text {
+                text-align: right;
             }
         }
     </style>
@@ -230,33 +319,44 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 <div class="main-content">
     <div class="card">
-        <h1>📊 Stock Report</h1>
+        
+        <div class="header-area">
+            <div class="icon-box"><i class="fa fa-chart-pie"></i></div>
+            <h1>Stock Report</h1>
+        </div>
 
         <div class="filter-box">
-            <label>Category:</label>
-            <select id="categoryFilter">
-                <option value="">-- All --</option>
-                <%
-                    Set<String> categories = new HashSet<>();
-                    try (Connection con = DBUtil.getConnection();
-                         PreparedStatement ps = con.prepareStatement("SELECT DISTINCT Category FROM item_master");
-                         ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            categories.add(rs.getString("Category"));
-                        }
-                    } catch (Exception e) { e.printStackTrace(); }
+            <div class="filter-group">
+                <label>Category</label>
+                <select id="categoryFilter">
+                    <option value="">-- All --</option>
+                    <%
+                        Set<String> categories = new HashSet<>();
+                        try (Connection con = DBUtil.getConnection();
+                             PreparedStatement ps = con.prepareStatement("SELECT DISTINCT Category FROM item_master");
+                             ResultSet rs = ps.executeQuery()) {
+                            while (rs.next()) {
+                                categories.add(rs.getString("Category"));
+                            }
+                        } catch (Exception e) { e.printStackTrace(); }
 
-                    for (String cat : categories) {
-                %>
-                    <option value="<%= cat %>"><%= cat %></option>
-                <% } %>
-            </select>
+                        for (String cat : categories) {
+                    %>
+                        <option value="<%= cat %>"><%= cat %></option>
+                    <% } %>
+                </select>
+            </div>
 
-            <label>Item Name:</label>
-            <input type="text" id="searchBox" placeholder="Search item name...">
-            <button class="btn" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
-            <button class="btn btn-secondary" onclick="resetFilter()"><i class="fa fa-rotate-left"></i> Reset</button>
-            <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
+            <div class="filter-group">
+                <label>Item Name</label>
+                <input type="text" id="searchBox" placeholder="Search item name...">
+            </div>
+            
+            <div class="actions-group">
+                <button class="btn" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
+                <button class="btn btn-secondary" onclick="resetFilter()"><i class="fa fa-rotate-left"></i> Reset</button>
+                <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
+            </div>
         </div>
 
         <div class="table-container">
@@ -348,13 +448,24 @@ function downloadExcel() {
 
     const rows = table.querySelectorAll('tr');
     rows.forEach(row => {
-        let cols = row.querySelectorAll('th, td');
-        let rowData = [];
-        cols.forEach(cell => {
-            let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
-            rowData.push('"' + text + '"');
-        });
-        csv.push(rowData.join(','));
+        // Only target browser visible headers/data or base rows, ignoring desktop hidden attributes during evaluation
+        if(row.style.display !== 'none') {
+            let cols = row.querySelectorAll('th, td');
+            let rowData = [];
+            cols.forEach(cell => {
+                let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
+                
+                // If clean rendering parsed out mobile label definitions, strip them out from final output raw data array
+                if (window.innerWidth <= 768 && cell.tagName === 'TD') {
+                    const labelText = cell.getAttribute('data-label') || '';
+                    if (text.startsWith(labelText)) {
+                        text = text.substring(labelText.length).trim();
+                    }
+                }
+                rowData.push('"' + text + '"');
+            });
+            csv.push(rowData.join(','));
+        }
     });
 
     const csvString = csv.join('\n');

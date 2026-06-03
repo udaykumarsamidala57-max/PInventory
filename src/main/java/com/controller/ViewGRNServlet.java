@@ -14,75 +14,77 @@ public class ViewGRNServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        Connection con = null;
+        // Use LinkedHashMap to preserve the ORDER BY m.grn_id DESC sorting sequence
+        Map<Integer, Map<String, Object>> grnMap = new LinkedHashMap<>();
 
-        try {
-            con = DBUtil.getConnection();
+        // FIXED: Removed m.status to prevent database schema errors
+        String unifiedQuery = 
+            "SELECT m.grn_id, m.grn_no, m.grn_date, m.vendor_name, m.vendor_gstin, m.vendor_address, " +
+            "       m.po_id, m.invoice_no, m.invoice_date, m.received_by, m.remarks AS master_remarks, " +
+            "       i.item_description, i.qty_received, i.qty_accepted, i.qty_rejected, i.remarks AS item_remarks, " +
+            "       p.qty AS qty_ordered " +
+            "FROM grn_master m " +
+            "LEFT JOIN grn_items i ON m.grn_id = i.grn_id " +
+            "LEFT JOIN po_items p ON i.po_item_id = p.po_item_id " +
+            "ORDER BY m.grn_id DESC";
 
-            String queryGRN = "SELECT * FROM grn_master ORDER BY grn_id DESC";
-            PreparedStatement pstGRN = con.prepareStatement(queryGRN);
-            ResultSet rsGRN = pstGRN.executeQuery();
+        try (Connection con = DBUtil.getConnection();
+             PreparedStatement pst = con.prepareStatement(unifiedQuery);
+             ResultSet rs = pst.executeQuery()) {
 
-            List<Map<String, Object>> grnList = new ArrayList<>();
-
-            while (rsGRN.next()) {
-
-                Map<String, Object> master = new HashMap<>();
-                master.put("grn_id", rsGRN.getInt("grn_id"));
-                master.put("grn_no", rsGRN.getString("grn_no"));
-                master.put("grn_date", rsGRN.getDate("grn_date"));
-                master.put("vendor_name", rsGRN.getString("vendor_name"));
-                master.put("vendor_gstin", rsGRN.getString("vendor_gstin"));
-                master.put("vendor_address", rsGRN.getString("vendor_address"));
-                master.put("po_id", rsGRN.getInt("po_id"));
-                master.put("invoice_no", rsGRN.getString("invoice_no"));
-                master.put("invoice_date", rsGRN.getDate("invoice_date"));
-                master.put("received_by", rsGRN.getString("received_by"));
-                master.put("remarks", rsGRN.getString("remarks"));
-
-                PreparedStatement pstItems = con.prepareStatement(
-                        "SELECT * FROM grn_items WHERE grn_id = ?");
-                pstItems.setInt(1, rsGRN.getInt("grn_id"));
-                ResultSet rsItems = pstItems.executeQuery();
-
-                List<Map<String, Object>> items = new ArrayList<>();
-
-                while (rsItems.next()) {
-
-                    Map<String, Object> item = new HashMap<>();
-                    int po_item_id = rsItems.getInt("po_item_id");
-
-                    item.put("item_description", rsItems.getString("item_description"));
-                    item.put("qty_received", rsItems.getBigDecimal("qty_received"));
-                    item.put("qty_accepted", rsItems.getBigDecimal("qty_accepted"));
-                    item.put("qty_rejected", rsItems.getBigDecimal("qty_rejected"));
-                    item.put("grn_remarks", rsItems.getString("remarks"));
-
-                    // ⏬ NEW: Fetch ordered quantity from po_items
-                    PreparedStatement pstPOItem = con.prepareStatement(
-                            "SELECT qty FROM po_items WHERE po_item_id = ?");
-                    pstPOItem.setInt(1, po_item_id);
-                    ResultSet rsPO = pstPOItem.executeQuery();
-
-                    if (rsPO.next()) {
-                        item.put("qty_ordered", rsPO.getBigDecimal("qty"));
-                    } else {
-                        item.put("qty_ordered", "N/A");
-                    }
-
-                    items.add(item);
+            while (rs.next()) {
+                int grnId = rs.getInt("grn_id");
+                
+                // Construct the parent item structural container if it hasn't been built yet
+                if (!grnMap.containsKey(grnId)) {
+                    Map<String, Object> master = new HashMap<>();
+                    master.put("grn_id", grnId);
+                    master.put("grn_no", rs.getString("grn_no"));
+                    master.put("grn_date", rs.getDate("grn_date"));
+                    master.put("vendor_name", rs.getString("vendor_name"));
+                    master.put("vendor_gstin", rs.getString("vendor_gstin"));
+                    master.put("vendor_address", rs.getString("vendor_address"));
+                    master.put("po_id", rs.getString("po_id")); // Kept safe for numeric or alphanumeric IDs
+                    master.put("invoice_no", rs.getString("invoice_no"));
+                    master.put("invoice_date", rs.getDate("invoice_date"));
+                    master.put("received_by", rs.getString("received_by"));
+                    master.put("remarks", rs.getString("master_remarks") == null ? "" : rs.getString("master_remarks"));
+                    
+                    // FIXED: Re-introduced default application status values dynamically 
+                    master.put("status", "completed");
+                    
+                    master.put("items", new ArrayList<Map<String, Object>>());
+                    grnMap.put(grnId, master);
                 }
 
-                master.put("items", items);
-                grnList.add(master);
+                // Append child structural lines safely
+                String itemDesc = rs.getString("item_description");
+                if (itemDesc != null) {
+                    Map<String, Object> item = new HashMap<>();
+                    item.put("item_description", itemDesc);
+                    item.put("qty_received", rs.getBigDecimal("qty_received"));
+                    item.put("qty_accepted", rs.getBigDecimal("qty_accepted"));
+                    item.put("qty_rejected", rs.getBigDecimal("qty_rejected"));
+                    
+                    // FIXED: Map to 'remarks' instead of 'grn_remarks' so your JSP file can read it perfectly
+                    item.put("remarks", rs.getString("item_remarks") == null ? "" : rs.getString("item_remarks"));
+                    
+                    java.math.BigDecimal qtyOrdered = rs.getBigDecimal("qty_ordered");
+                    item.put("qty_ordered", qtyOrdered != null ? qtyOrdered : "N/A");
+
+                    List<Map<String, Object>> itemsList = (List<Map<String, Object>>) grnMap.get(grnId).get("items");
+                    itemsList.add(item);
+                }
             }
 
-            request.setAttribute("all_grns", grnList);
+            // Bind directly to view layout
+            request.setAttribute("all_grns", new ArrayList<>(grnMap.values()));
             request.getRequestDispatcher("view_grn.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error while loading GRN data");
+            // Printing the explicit error message onto screen for debugging visibility
+            request.setAttribute("error", "Database Sync Pipeline Error: " + e.getMessage());
             request.getRequestDispatcher("view_grn.jsp").forward(request, response);
         }
     }

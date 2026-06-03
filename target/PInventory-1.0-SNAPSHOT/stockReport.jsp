@@ -128,136 +128,285 @@ try {
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<link rel="stylesheet"
-href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-
+* { box-sizing: border-box; }
 body{
     font-family:'Poppins',sans-serif;
-    background:#f4f6f9;
+    background:#f3f3f3;
     margin:0;
+    color: #181818;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .main-content{
-    display:flex;
-    justify-content:center;
-    padding:20px;
+    width:100%;
+    max-width:1440px;
+    margin: 0 auto;
+    padding:16px;
 }
 
+/* Salesforce Style Card Base */
 .card{
     background:#fff;
     width:100%;
-    max-width:1250px;
-    border-radius:10px;
-    padding:20px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+    border-radius:4px;
+    padding:24px;
+    border: 1px solid #c9c9c9;
+    box-shadow:0 2px 2px 0 rgba(0,0,0,0.1);
+}
+
+.header-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e5e5;
+    padding-bottom: 16px;
+}
+
+.icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    background: #0176d3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 18px;
 }
 
 h2{
-    text-align:center;
-    color:#333;
-    margin-bottom:20px;
+    margin: 0;
+    font-size: 20px;
+    color: #0176d3;
+    font-weight: 700;
 }
 
+/* Salesforce Filter Toolbar */
 .filter-form{
-    display:flex;
-    flex-wrap:wrap;
-    gap:15px;
-    justify-content:center;
-    align-items:flex-end;
-    margin-bottom:20px;
+    background: #fafaf9;
+    border: 1px solid #c9c9c9;
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: flex-end;
 }
 
 .form-group{
     display:flex;
     flex-direction:column;
+    gap: 4px;
 }
 
 .form-group label{
-    font-weight:600;
-    margin-bottom:4px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #514f4d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
-input,select,button{
-    padding:8px 10px;
-    border-radius:6px;
-    border:1px solid #ccc;
-    min-width:150px;
+input, select, button {
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid #aeaeae;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 13px;
+    background: #ffffff;
+    outline: none;
+    min-width: 180px;
 }
 
-button{
-    border:none;
-    cursor:pointer;
-    font-weight:600;
-}
-
-.btn-primary{
-    background:#007bff;
-    color:#fff;
-}
-
-.btn-primary:hover{
-    background:#0056b3;
-}
-
-.btn-success{
-    background:#28a745;
-    color:#fff;
-}
-
-.btn-success:hover{
-    background:#218838;
+input:focus, select:focus {
+    border-color: #0176d3;
+    box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
 }
 
 .buttons{
     display:flex;
-    gap:10px;
+    gap:8px;
+    margin-left: auto;
 }
 
+/* Salesforce Lightning Action Buttons */
+button{
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.1s ease;
+    min-width: unset;
+}
+
+.btn-primary{
+    background:#0176d3;
+    color:#fff;
+    border: 1px solid #0176d3;
+}
+
+.btn-primary:hover{
+    background:#015a9e;
+    border-color: #015a9e;
+}
+
+.btn-success{
+    background:#2e844a;
+    color:#fff;
+    border: 1px solid #2e844a;
+}
+
+.btn-success:hover{
+    background:#1b5e30;
+    border-color: #1b5e30;
+}
+
+/* Data Presentation Layout */
 .table-container{
+    width: 100%;
     overflow-x:auto;
+    border: 1px solid #c9c9c9;
+    border-radius: 4px;
 }
 
 .main-table{
     width:100%;
     border-collapse:collapse;
+    min-width: 950px;
+    background: #fff;
+    font-size: 13px;
 }
 
 .main-table th{
-    background:#007bff;
-    color:#fff;
-    padding:12px;
+    background:#fafaf9;
+    color:#514f4d;
+    padding: 12px 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #c9c9c9;
+    font-size: 11px;
     position:sticky;
     top:0;
 }
 
 .main-table td{
     padding:10px;
-    text-align:center;
-    border-bottom:1px solid #ddd;
+    text-align:right; /* Alignment for uniform metric alignment */
+    border-bottom:1px solid #e5e5e5;
+    color: #181818;
+}
+
+/* Text elements layout overriding rule */
+.main-table td.txt-align-left, .main-table th.txt-align-left {
+    text-align: left;
 }
 
 .main-table tr:hover{
-    background:#f1f3f6;
+    background:#f3f3f3;
 }
 
 .balance{
-    font-weight:600;
-    color:#0d6efd;
+    font-weight:700;
+    color:#0176d3;
 }
 
+/* Responsive Architecture */
 @media(max-width:768px){
+    .main-content { padding: 10px; }
+    .card { padding: 16px; }
+    
+    .header-area { margin-bottom: 16px; padding-bottom: 12px; }
 
     .filter-form{
         flex-direction:column;
         align-items:stretch;
+        gap: 12px;
+        padding: 12px;
+    }
+
+    .form-group input, 
+    .form-group select {
+        width: 100%;
+        height: 40px;
     }
 
     .buttons{
-        justify-content:center;
+        width: 100%;
+        flex-direction:column;
+        margin-left: 0;
+        gap: 8px;
+    }
+    
+    .buttons button {
+        width: 100%;
+        height: 40px;
+    }
+
+    .table-container {
+        border: none;
+    }
+
+    table, thead, tbody, th, td, tr {
+        display: block;
+        width: 100%;
+    }
+
+    thead tr {
+        display: none;
+    }
+
+    tr {
+        margin-bottom: 12px;
+        border: 1px solid #c9c9c9;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        padding: 8px 0;
+        background: #fff;
+    }
+
+    .main-table td{
+        text-align: right;
+        padding: 8px 14px;
+        position: relative;
+        border: none;
+        border-bottom: 1px solid #f3f3f3;
+        font-size: 13px;
+    }
+    
+    .main-table td:last-child {
+        border-bottom: none;
+    }
+
+    .main-table td:before {
+        content: attr(data-label);
+        position: absolute;
+        left: 14px;
+        width: 45%;
+        font-weight: 700;
+        text-align: left;
+        color: #514f4d;
+        white-space: nowrap;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .main-table td.txt-align-left {
+        text-align: right;
     }
 }
 
@@ -267,13 +416,19 @@ button{
 
 <body>
 
+<%-- Only include the markup header if not downloading Excel sheet logs --%>
+<% if (!"excel".equals(export)) { %>
 <jsp:include page="header.jsp" />
+<% } %>
 
 <div class="main-content">
 
 <div class="card">
 
-<h2>📊 Stock Summary Report</h2>
+<div class="header-area">
+    <div class="icon-box"><i class="fa fa-chart-bar"></i></div>
+    <h2>Stock Summary Report</h2>
+</div>
 
 <form method="get" class="filter-form">
 
@@ -336,13 +491,13 @@ button{
 <thead>
 
 <tr>
-    <th>Category</th>
-    <th>Item ID</th>
-    <th>Item Name</th>
-    <th>Opening Balance</th>
-    <th>Receipts</th>
-    <th>Issues</th>
-    <th>Closing Balance</th>
+    <th class="txt-align-left">Category</th>
+    <th style="text-align: right;">Item ID</th>
+    <th class="txt-align-left">Item Name</th>
+    <th style="text-align: right;">Opening Balance</th>
+    <th style="text-align: right;">Receipts</th>
+    <th style="text-align: right;">Issues</th>
+    <th style="text-align: right;">Closing Balance</th>
 </tr>
 
 </thead>
@@ -366,21 +521,21 @@ while(rs.next()){
 
 <tr>
 
-    <td><%=rs.getString("Category")%></td>
+    <td data-label="Category" class="txt-align-left"><%=rs.getString("Category")%></td>
 
-    <td><%=rs.getInt("Item_id")%></td>
+    <td data-label="Item ID"><%=rs.getInt("Item_id")%></td>
 
-    <td style="text-align:left;">
+    <td data-label="Item Name" class="txt-align-left">
         <%=rs.getString("Item_name")%>
     </td>
 
-    <td><%=String.format("%.2f", opening)%></td>
+    <td data-label="Opening Balance"><%=String.format("%.2f", opening)%></td>
 
-    <td><%=String.format("%.2f", receipts)%></td>
+    <td data-label="Receipts"><%=String.format("%.2f", receipts)%></td>
 
-    <td><%=String.format("%.2f", issues)%></td>
+    <td data-label="Issues"><%=String.format("%.2f", issues)%></td>
 
-    <td class="balance">
+    <td data-label="Closing Balance" class="balance">
         <%=String.format("%.2f", closing)%>
     </td>
 
@@ -393,7 +548,7 @@ if(!hasData){
 %>
 
 <tr>
-    <td colspan="7" style="text-align:center;color:red;">
+    <td colspan="7" style="text-align:center; color:#c23934; font-weight: 600;">
         No Records Found
     </td>
 </tr>
@@ -412,7 +567,10 @@ if(!hasData){
 
 </div>
 
+<%-- Only include the layout footer structure if not downloading Excel sheet logs --%>
+<% if (!"excel".equals(export)) { %>
 <jsp:include page="Footer.jsp" />
+<% } %>
 
 </body>
 </html>
@@ -422,7 +580,7 @@ if(!hasData){
 }catch(Exception e){
 
     out.println(
-        "<h3 style='color:red;text-align:center;'>"+
+        "<h3 style='color:#c23934;text-align:center;margin-top:20px;'>"+
         e.getMessage()+
         "</h3>"
     );
