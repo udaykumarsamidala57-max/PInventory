@@ -529,8 +529,7 @@ for(Map<String, Object> row : requestList){
                 <textarea name="remarks" class="mobile-input" placeholder="Type what actions you performed on ground..." required></textarea>
 
                 <button type="submit" class="submit-btn">
-                    <i class="fas fa-cloud-arrow-up"></i> Submit Field Update
-                </button>
+                <i class="fas fa-cloud-arrow-up"></i> Submit Field Update</button>
             </form>
 
         </div>

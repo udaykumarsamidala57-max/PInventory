@@ -136,6 +136,7 @@ public class IssueServlet extends HttpServlet {
         String qtyIssuedStr = request.getParameter("qtyIssued");
         String department = request.getParameter("department");
         String unitPriceStr = request.getParameter("unitPrice");
+        String issueDate = request.getParameter("issueDate");
 
         if (indentId == null || itemId == null || qtyIssuedStr == null || qtyIssuedStr.isEmpty()) {
             request.setAttribute("message", "❌ Missing data for issue process!");
@@ -202,7 +203,7 @@ public class IssueServlet extends HttpServlet {
             // ✅ Insert into stock_issues
             try (PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, unit_price, total_value, issue_date) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())")) {
+                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")) {
                 ps.setString(1, issueno);
                 ps.setInt(2, Integer.parseInt(itemId));
                 ps.setString(3, issuedTo);
@@ -212,6 +213,8 @@ public class IssueServlet extends HttpServlet {
                 ps.setString(7, indentId);
                 ps.setDouble(8, unitPrice);
                 ps.setDouble(9, totalValue);
+                ps.setDate(10, java.sql.Date.valueOf(issueDate));
+
                 ps.executeUpdate();
             }
 

@@ -254,6 +254,7 @@ input[type="text"] {
                     <th>Unit Price</th>
                     <th>Purpose</th>
                     <th>Qty To Issue</th>
+                    <th>Issue Date</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -283,6 +284,9 @@ input[type="text"] {
                             <td data-label="Purpose">${i.purpose}</td>
                             <td data-label="Qty To Issue">
                                 <input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required>
+                            </td>
+                            <td data-label="Issue Date">
+                            <input type="date" name="issueDate" required>
                             </td>
                             <td data-label="Action">
                                 <input type="hidden" name="indentId" value="${i.indent_id}">

@@ -369,7 +369,7 @@ textarea.mobile-input{
 </style>
 </head>
 <body>
-
+<%@ include file="../header.jsp" %>
 <div class="mobile-app-bar">
     <i class="fas fa-screwdriver-wrench" style="color: var(--slds-brand); font-size: 18px;"></i>
     <h1>Field Operations Workspace</h1>
@@ -516,6 +516,7 @@ for(Map<String, Object> row : requestList){
                     <option value="">-- Choose --</option>
                     <option value="OPEN">OPEN</option>
                     <option value="IN PROGRESS">IN PROGRESS</option>
+                    <option value="COMPLETED">COMPLETED</option>
                     <%
                     String requestedBy = String.valueOf(row.get("requested_by"));
                     if(username.equalsIgnoreCase(requestedBy)){
@@ -528,8 +529,7 @@ for(Map<String, Object> row : requestList){
                 <textarea name="remarks" class="mobile-input" placeholder="Type what actions you performed on ground..." required></textarea>
 
                 <button type="submit" class="submit-btn">
-                    <i class="fas fa-cloud-arrow-up"></i> Submit Field Update
-                </button>
+                <i class="fas fa-cloud-arrow-up"></i> Submit Field Update</button>
             </form>
 
         </div>

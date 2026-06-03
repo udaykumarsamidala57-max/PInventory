@@ -228,7 +228,7 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
             </td>
         </tr>
         <tr>
-            <td><strong>Vendor GSTIN:</strong></td>
+            <td><strong>Vendor GSTIN: </strong></td>
             <td><input type="text" name="vendorGSTIN" id="vendorGSTIN" readonly></td>
         </tr>
         <tr>
@@ -264,6 +264,7 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
                 <th>Rate</th>
                 <th>Discount %</th>
                 <th>GST %</th>
+                <th>Total Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -281,7 +282,9 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
             <td><input type="number" step="0.01" name="rate" value="0" oninput="calculateTotals()" required></td>
             <td><input type="number" step="0.01" name="discPercent" value="0" oninput="calculateTotals()"></td>
             <td><input type="number" step="0.01" name="gstPercent" value="18" oninput="calculateTotals()"></td>
+            <td><span class="itemTotal">0.00</span></td>
             <input type="hidden" name="itemId" value="<%=item.getItemId()%>">
+            
         </tr>
         <%
             }
@@ -357,14 +360,23 @@ function calculateTotals() {
     // Calculate Items
     const rows = document.querySelectorAll('.item-row');
     rows.forEach(row => {
+
         const qty = parseFloat(row.querySelector('[name="qty"]').value) || 0;
         const rate = parseFloat(row.querySelector('[name="rate"]').value) || 0;
         const discP = parseFloat(row.querySelector('[name="discPercent"]').value) || 0;
         const gstP = parseFloat(row.querySelector('[name="gstPercent"]').value) || 0;
 
         const baseValue = qty * rate;
-        const discountedValue = baseValue - (baseValue * (discP / 100));
+
+        const discountAmt = baseValue * (discP / 100);
+        const discountedValue = baseValue - discountAmt;
+
         const gstValue = discountedValue * (gstP / 100);
+
+        const rowTotal = discountedValue + gstValue;
+
+        // Display row total
+        row.querySelector('.itemTotal').innerText = rowTotal.toFixed(2);
 
         totalPriceBase += discountedValue;
         totalGstAmt += gstValue;
