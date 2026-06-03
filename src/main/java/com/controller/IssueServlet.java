@@ -202,8 +202,8 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Insert into stock_issues
             try (PreparedStatement ps = con.prepareStatement(
-                    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, unit_price, total_value, issue_date) "
-                            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?")) {
+            	    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, unit_price, total_value, issue_date) "
+            	    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 ps.setString(1, issueno);
                 ps.setInt(2, Integer.parseInt(itemId));
                 ps.setString(3, issuedTo);
