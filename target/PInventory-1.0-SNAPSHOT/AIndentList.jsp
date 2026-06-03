@@ -42,7 +42,7 @@ var LOGIN_USER = "<%= loginUser %>";
 
 <div class="main-content">
 <div class="card">
-<h1>Approve Indent</h1>
+
 
 <% for (Map.Entry<String,List<IndentItemFull>> e : grouped.entrySet()) {
    List<IndentItemFull> items = e.getValue();

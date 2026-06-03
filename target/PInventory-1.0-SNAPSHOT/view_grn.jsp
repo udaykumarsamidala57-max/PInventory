@@ -16,17 +16,23 @@
     --slds-brand: #0176d3;
     --slds-brand-hover: #015a9e;
     --slds-text-main: #181818;
-    --slds-text-muted: #514f4d;
-    --slds-border: #c9c9c9;
-    --slds-bg-page: #f3f3f3;
+    --slds-text-muted: #5a6065;
+    --slds-border: #e1e4e8;
+    --slds-border-dark: #aeaeae;
+    --slds-bg-page: #f3f4f6;
     --slds-bg-card: #ffffff;
-    --slds-bg-strip: #fafaf9;
-    --slds-success: #2e844a;
-    --slds-success-border: #a7f3d0;
-    --slds-success-bg: #eefbee;
-    --slds-warning: #b45309;
-    --slds-warning-border: #fde68a;
-    --slds-warning-bg: #fef3c7;
+    --slds-bg-strip: #f8f9fa;
+    --slds-success: #1a7f37;
+    --slds-success-border: #acf2bd;
+    --slds-success-bg: #dafbe1;
+    --slds-warning: #9a6700;
+    --slds-warning-border: #f9e2af;
+    --slds-warning-bg: #fef5e7;
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
 }
 
 body {
@@ -36,86 +42,106 @@ body {
     padding: 0;
     color: var(--slds-text-main);
     -webkit-tap-highlight-color: transparent;
+    letter-spacing: -0.01em;
 }
 
 .main-content {
     width: 100%;
-    max-width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 24px;
 }
 
-/* Master Salesforce Card Container */
+/* Master Card Container */
 .master-card {
     background: var(--slds-bg-card);
-    border-radius: 4px;
-    padding: 24px;
+    border-radius: var(--radius-md);
+    padding: 28px;
     width: 100%;
     border: 1px solid var(--slds-border);
-    box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-    overflow: visible; 
+    box-shadow: var(--shadow-md);
 }
 
-/* Header Context Section */
+/* Header Section */
 .header-area {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 20px;
     margin-bottom: 24px;
-    border-bottom: 1px solid #e5e5e5;
-    padding-bottom: 16px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--slds-border);
     flex-wrap: wrap;
 }
 
 .header-left-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
 }
 
 .icon-box {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    background: var(--slds-brand);
+    width: 46px;
+    height: 46px;
+    border-radius: var(--radius-sm);
+    background: linear-gradient(135deg, var(--slds-brand), var(--slds-brand-hover));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 18px;
+    font-size: 20px;
+    box-shadow: 0 2px 4px rgba(1, 118, 211, 0.2);
 }
 
 h2 {
     margin: 0;
-    font-size: 20px;
-    color: var(--slds-brand);
+    font-size: 22px;
+    color: var(--slds-text-main);
     font-weight: 700;
+    letter-spacing: -0.02em;
 }
 
 .meta {
     color: var(--slds-text-muted);
     font-size: 13px;
-    margin-top: 2px;
+    margin-top: 3px;
 }
 
-/* Salesforce Dynamic Control Bar Grid */
+.record-counter-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--slds-bg-page);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--slds-border);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--slds-text-muted);
+}
+
+.record-counter-badge b {
+    color: var(--slds-brand);
+    font-size: 16px;
+}
+
+/* Dynamic Filter Bar Row Layout */
 .filter-bar {
     background: var(--slds-bg-strip);
     border: 1px solid var(--slds-border);
-    border-radius: 4px;
-    padding: 16px;
-    margin-bottom: 8px;
+    border-radius: var(--radius-md);
+    padding: 20px;
+    margin-bottom: 24px;
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 16px;
     align-items: flex-end;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .filter-bar label {
@@ -123,139 +149,196 @@ h2 {
     font-weight: 700;
     color: var(--slds-text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
+    letter-spacing: 0.8px;
 }
 
 .filter-bar .input {
-    height: 36px;
-    padding: 0 12px;
-    border: 1px solid #aeaeae;
-    border-radius: 4px;
+    height: 38px;
+    padding: 0 14px;
+    border: 1px solid var(--slds-border-dark);
+    border-radius: var(--radius-sm);
     font-family: inherit;
     font-size: 13px;
     background: #ffffff;
+    color: var(--slds-text-main);
     outline: none;
-    min-width: 160px;
+    min-width: 220px;
+    transition: all 0.15s ease;
 }
 
 .filter-bar .input:focus {
     border-color: var(--slds-brand);
-    box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
+    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.15);
 }
 
-/* Button UI Components */
+/* Button Elements */
 .btn {
-    height: 36px;
-    padding: 0 16px;
+    height: 38px;
+    padding: 0 18px;
     border: 1px solid var(--slds-brand);
     background: var(--slds-brand);
     color: white;
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 13px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    transition: all 0.1s ease;
+    gap: 8px;
+    transition: all 0.15s ease;
     white-space: nowrap;
 }
 
-.btn:hover { background: var(--slds-brand-hover); border-color: var(--slds-brand-hover); }
+.btn:hover { 
+    background: var(--slds-brand-hover); 
+    border-color: var(--slds-brand-hover);
+    transform: translateY(-1px);
+}
+.btn:active { transform: translateY(0); }
 
 .btn.secondary {
     background: #ffffff;
-    border-color: var(--slds-border);
+    border-color: var(--slds-border-dark);
     color: var(--slds-text-main);
 }
-.btn.secondary:hover { background: #f4f6f9; border-color: #747472; }
+.btn.secondary:hover { 
+    background: var(--slds-bg-strip); 
+    border-color: #747472; 
+}
 
 .btn.success {
     background: var(--slds-success);
     border-color: var(--slds-success);
 }
-.btn.success:hover { background: #1b5e30; border-color: #1b5e30; }
+.btn.success:hover { 
+    background: #146229; 
+    border-color: #146229; 
+}
 
-.btn.small { height: 32px; padding: 0 12px; font-size: 12px; }
+.btn.small { 
+    height: 34px; 
+    padding: 0 14px; 
+    font-size: 12px; 
+    border-radius: var(--radius-sm);
+}
 
 /* GRN Block Card Enclosure */
 .container {
     border: 1px solid var(--slds-border);
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     background: var(--slds-bg-card);
-    margin-bottom: 24px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    overflow: visible;
-    padding: 0;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s ease;
+    overflow: hidden;
 }
-.container:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.container:hover { 
+    box-shadow: var(--shadow-lg);
+    border-color: #ccd1d9;
+}
 
-/* Block Strip Header Row */
+/* Card Header Strip Row */
 .title {
-    background: var(--slds-bg-strip);
+    background: #ffffff;
     border-bottom: 1px solid var(--slds-border);
-    padding: 14px 20px;
+    padding: 18px 24px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 16px;
     align-items: center;
     justify-content: space-between;
 }
 
 .title-left {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--slds-brand);
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
+}
+
+.grn-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--slds-text-main);
+}
+
+.grn-label b {
+    color: var(--slds-brand);
+}
+
+.date-badge {
+    color: var(--slds-text-muted);
+    font-weight: 500;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--slds-bg-page);
+    padding: 3px 10px;
+    border-radius: 4px;
+}
+
+.vendor-subline {
+    font-size: 13px;
+    color: var(--slds-text-muted);
+    font-weight: 400;
+    width: 100%;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.vendor-subline b {
+    color: var(--slds-text-main);
+    font-weight: 600;
 }
 
 .controls-right {
     display: flex;
-    gap: 8px;
+    gap: 10px;
     align-items: center;
 }
 
-/* Contextual Metadata Information Grid */
+/* Metadata Info Grid */
 .info-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 16px;
-    padding: 16px 20px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 20px 24px;
+    background: var(--slds-bg-strip);
+    border-bottom: 1px solid var(--slds-border);
 }
 
 .info-card {
     background: #ffffff;
-    padding: 10px 12px;
-    border-radius: 4px;
-    border: 1px solid #e5e5e5;
+    padding: 12px 16px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--slds-border);
     font-size: 13px;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
 }
 
 .info-card strong {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     text-transform: uppercase;
     color: var(--slds-text-muted);
-    letter-spacing: 0.5px;
-    margin-bottom: 4px;
+    letter-spacing: 0.8px;
+    margin-bottom: 6px;
+    font-weight: 700;
 }
 
 .info-card-text {
     color: var(--slds-text-main);
-    font-weight: 500;
+    font-weight: 600;
 }
 
-/* Master Nested Table Data Grid */
+/* Table Data Container Component */
 .items-container {
-    padding: 16px 20px;
-    background: #fafaf9;
+    padding: 20px 24px;
+    background: #ffffff;
 }
 
 .items-table {
@@ -265,50 +348,51 @@ h2 {
     table-layout: auto;
     background: #ffffff;
     border: 1px solid var(--slds-border);
-    border-radius: 4px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
 }
 
 .items-table th {
     background: var(--slds-bg-strip);
     color: var(--slds-text-muted);
-    padding: 12px 10px;
+    padding: 14px 16px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     border-bottom: 2px solid var(--slds-border);
     font-size: 11px;
     text-align: left;
 }
 
 .items-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid #e5e5e5;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--slds-border);
     color: var(--slds-text-main);
     vertical-align: middle;
 }
 
 .items-table tbody tr:last-child td { border-bottom: none; }
-.items-table tbody tr:hover { background-color: #f8fafc; }
+.items-table tbody tr:hover { background-color: #fafdff; }
 
 .items-table td.cell-qordered,
 .items-table td.cell-qreceived,
 .items-table td.cell-qaccepted,
 .items-table td.cell-qrejected {
     text-align: center;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-.items-table td.cell-qaccepted { color: var(--slds-success); font-weight: 600; }
-.items-table td.cell-qrejected { color: #c23934; font-weight: 600; }
+.items-table td.cell-qaccepted { color: var(--slds-success); }
+.items-table td.cell-qrejected { color: #d9381e; }
 
-/* Standard Status Badge System */
+/* Status Badges */
 .status-badge {
     font-size: 11px;
-    padding: 2px 10px;
+    padding: 3px 12px;
     border-radius: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.8px;
     display: inline-block;
     border: 1px solid transparent;
 }
@@ -325,7 +409,7 @@ h2 {
 
 .hidden { display: none !important; }
 
-/* Structural Laptop Protections & Mobile Layout Refactor */
+/* Handheld Layout Refactor Rules */
 @media (max-width: 1024px) {
     .master-card { padding: 16px; }
     
@@ -333,19 +417,18 @@ h2 {
         flex-direction: column;
         align-items: stretch;
         gap: 12px;
-        padding: 12px;
+        padding: 16px;
     }
 
     .filter-group { width: 100%; }
-    .filter-bar .input, .btn { width: 100%; height: 40px; }
+    .filter-bar .input, .btn { width: 100%; height: 42px; }
     
-    .title { padding: 12px 16px; gap: 14px; }
+    .title { padding: 16px; gap: 14px; }
     .title-left { width: 100%; }
     .controls-right { width: 100%; justify-content: flex-start; }
-    .info-grid { padding: 12px 16px; }
+    .info-grid { padding: 16px; gap: 12px; }
 
-    /* Convert inner grid items list on handheld layouts */
-    .items-container { padding: 12px 16px; }
+    .items-container { padding: 16px; }
     
     .items-table, 
     .items-table thead, 
@@ -360,11 +443,13 @@ h2 {
     .items-table thead tr { display: none; }
 
     .items-table tr {
-        border-bottom: 1px solid var(--slds-border);
-        padding: 10px 0;
-        background: #ffffff;
+        border: 1px solid var(--slds-border);
+        border-radius: var(--radius-sm);
+        margin-bottom: 12px;
+        padding: 8px 0;
+        box-shadow: var(--shadow-sm);
     }
-    .items-table tr:last-child { border-bottom: none; }
+    .items-table tr:last-child { margin-bottom: 0; }
 
     .items-table td,
     .items-table td.cell-qordered,
@@ -372,10 +457,10 @@ h2 {
     .items-table td.cell-qaccepted,
     .items-table td.cell-qrejected {
         text-align: right;
-        padding: 8px 16px;
+        padding: 10px 16px;
         position: relative;
         border: none;
-        border-bottom: 1px solid #f3f3f3;
+        border-bottom: 1px solid #f3f4f6;
         font-size: 13px;
     }
     .items-table td:last-child { border-bottom: none; }
@@ -391,7 +476,7 @@ h2 {
         white-space: nowrap;
         font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.6px;
     }
 }
 </style>
@@ -526,16 +611,16 @@ function printGRN(grnNo){
                 <div class="icon-box"><i class="fa fa-file-invoice"></i></div>
                 <div>
                     <h2>All GRN Details</h2>
-                    <div class="meta">Filter, Expand, & Export Central Goods Receipt Register Records</div>
+                    <div class="meta">Goods Receipt Register Records</div>
                 </div>
             </div>
-            <div style="font-size:13px; color:var(--slds-text-muted); font-weight: 500;">
-                Visible Records: <b id="visible_count" style="color:var(--slds-brand); font-size:15px;">0</b>
+            <div class="record-counter-badge">
+                Visible Records: <b id="visible_count">0</b>
             </div>
         </div>
 
         <div class="filter-bar">
-            <div class="filter-group" style="flex:1; min-width:200px;">
+            <div class="filter-group" style="flex:1; min-width:220px;">
                 <label>Search PO Number</label>
                 <input id="filter_po" class="input" type="text" placeholder="Enter PO ID...">
             </div>
@@ -555,12 +640,12 @@ function printGRN(grnNo){
 
         <%
         if(request.getAttribute("error") != null){
-            out.println("<p style='color:#c23934; font-weight:600; padding:10px;'>"+request.getAttribute("error")+"</p>");
+            out.println("<p style='color:#d9381e; font-weight:600; padding:12px; background:#fdedec; border-radius:var(--radius-sm); border:1px solid #fadbd8;'>"+request.getAttribute("error")+"</p>");
             return;
         }
         List<Map<String,Object>> allGRNs=(List<Map<String,Object>>)request.getAttribute("all_grns");
         if(allGRNs==null || allGRNs.isEmpty()){
-            out.println("<p style='padding:20px; text-align:center; color:var(--slds-text-muted); font-weight:600;'>No GRN records found within the system data container.</p>");
+            out.println("<p style='padding:40px; text-align:center; color:var(--slds-text-muted); font-weight:600; font-size:14px;'>No GRN records found within the system data container.</p>");
             return;
         }
         int index=1;
@@ -582,18 +667,18 @@ function printGRN(grnNo){
             
             <div class="title">
                 <div class="title-left">
-                    <span style="color:var(--slds-text-main);">GRN <b style="color:var(--slds-brand);"><%=grnNo%></b></span>
-                    <span style="color: var(--slds-text-muted); font-weight:500; font-size:13px;"><i class="fa fa-calendar"></i> <%=grnDate%></span>
+                    <div class="grn-label">GRN <b><%=grnNo%></b></div>
+                    <div class="date-badge"><i class="fa fa-calendar"></i> <%=grnDate%></div>
                     <span class="status-badge <%=status.equalsIgnoreCase("completed")?"status-completed":"status-pending"%>">
                         <%=status.substring(0,1).toUpperCase()+status.substring(1)%>
                     </span>
-                    <div style="font-size:13px; color:var(--slds-text-muted); font-weight:400; width:100%;">
-                        <i class="fa fa-building" style="margin-right:2px;"></i> <%=vendor%> &nbsp;|&nbsp; PO: <b style="color:var(--slds-text-main);"><%=poId%></b>
+                    <div class="vendor-subline">
+                        <i class="fa fa-building" style="color: var(--slds-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO ID: <b><%=poId%></b>
                     </div>
                 </div>
                 <div class="controls-right">
                     <button class="btn small secondary" onclick="toggleItems('<%=index%>')">
-                        <i class="fa fa-eye"></i> Show / Hide Items
+                        <i class="fa fa-eye"></i> Items
                     </button>
                     <button class="btn small primary" onclick="printGRN('<%=grnNo%>')">
                         <i class="fa fa-print"></i> Print
@@ -605,19 +690,19 @@ function printGRN(grnNo){
                 <div class="info-card"><strong>Invoice Reference</strong><div class="info-card-text"><%=invoiceNo%> (<%=invoiceDate%>)</div></div>
                 <div class="info-card"><strong>Vendor GSTIN</strong><div class="info-card-text"><%=gstin%></div></div>
                 <div class="info-card"><strong>Received By Staff</strong><div class="info-card-text"><%=receivedBy%></div></div>
-                <div class="info-card"><strong>GRN Remarks / Notes</strong><div class="info-card-text"><%=remarks.isEmpty() ? "-" : remarks%></div></div>
+                <div class="info-card"><strong>GRN Remarks / Notes</strong><div class="info-card-text" style="font-weight:400; color:var(--slds-text-muted);"><%=remarks.isEmpty() ? "-" : remarks%></div></div>
             </div>
 
             <div id="items_<%=index%>" class="items-container" style="display:none">
                 <table class="items-table">
                     <thead>
                         <tr>
-                            <th style="width:40%;">Item Description</th>
-                            <th style="width:10%; text-align:center;">Qty Ordered</th>
-                            <th style="width:10%; text-align:center;">Qty Received</th>
-                            <th style="width:10%; text-align:center;">Qty Accepted</th>
-                            <th style="width:10%; text-align:center;">Qty Rejected</th>
-                            <th style="width:20%;">Remarks</th>
+                            <th style="width:35%;">Item Description</th>
+                            <th style="width:11%; text-align:center;">Qty Ordered</th>
+                            <th style="width:11%; text-align:center;">Qty Received</th>
+                            <th style="width:11%; text-align:center;">Qty Accepted</th>
+                            <th style="width:11%; text-align:center;">Qty Rejected</th>
+                            <th style="width:21%;">Remarks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -638,13 +723,13 @@ function printGRN(grnNo){
                             <td data-label="Qty Received" class="cell-qreceived"><%=qreceived%></td>
                             <td data-label="Qty Accepted" class="cell-qaccepted"><%=qaccepted%></td>
                             <td data-label="Qty Rejected" class="cell-qrejected"><%=qrejected%></td>
-                            <td data-label="Remarks" class="cell-remarks"><%=iremarks.isEmpty() ? "-" : iremarks%></td>
+                            <td data-label="Remarks" class="cell-remarks" style="color: var(--slds-text-muted);"><%=iremarks.isEmpty() ? "-" : iremarks%></td>
                         </tr>
                     <%
                         }
                     } else {
                     %>
-                        <tr><td colspan="6" style="text-align:center; color:var(--slds-text-muted); padding:16px;">No structural line items cataloged inside this voucher segment.</td></tr>
+                        <tr><td colspan="6" style="text-align:center; color:var(--slds-text-muted); padding:20px; font-weight:500;">No structural line items cataloged inside this voucher segment.</td></tr>
                     <%
                     }
                     %>

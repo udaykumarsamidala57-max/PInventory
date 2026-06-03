@@ -56,6 +56,8 @@ public class LoginServlet extends HttpServlet {
                     response.sendRedirect("Home");
                 } else if ("incharge".equalsIgnoreCase(role)||"Finance".equalsIgnoreCase(dept)) {
                     response.sendRedirect("Home");
+                } else if ("HOSTEL".equalsIgnoreCase(department)) {
+                    response.sendRedirect("TrackRequestServlet");
                 } else {
                     response.sendRedirect("Home");
                 }

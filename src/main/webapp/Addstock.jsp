@@ -30,7 +30,7 @@
 
 <div class="main-content">
   <div class="card">
-    <h2 align="center">ADD STOCK</h2>
+  
 
     <form action="AddStock" method="post" id="stockForm">
       <table class="main-table" id="stockTable">

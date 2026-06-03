@@ -611,7 +611,7 @@ function printGRN(grnNo){
                 <div class="icon-box"><i class="fa fa-file-invoice"></i></div>
                 <div>
                     <h2>All GRN Details</h2>
-                    <div class="meta">Filter, Expand, & Export Central Goods Receipt Register Records</div>
+                    <div class="meta">Goods Receipt Register Records</div>
                 </div>
             </div>
             <div class="record-counter-badge">

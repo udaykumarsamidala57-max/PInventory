@@ -4,11 +4,10 @@
 <%
     HttpSession sesso = request.getSession(false);
 
-if (sesso == null || sesso.getAttribute("username") == null) {
-    response.sendRedirect("login.jsp");
-    return;
-}
-    	
+    if (sesso == null || sesso.getAttribute("username") == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
     
     String users = (String) sesso.getAttribute("username");
     String roles = (String) sesso.getAttribute("role");
@@ -17,10 +16,7 @@ if (sesso == null || sesso.getAttribute("username") == null) {
     SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
     
-    // Safety check for initials
     String initial = (users != null && !users.isEmpty()) ? users.substring(0,1).toUpperCase() : "?";
-    
-    // Extract year for the footer specifically
     int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 %>
 <%
@@ -33,18 +29,13 @@ if (sesso == null || sesso.getAttribute("username") == null) {
     if(breadcrumb == null){
         breadcrumb = "Admissions";
     }
-    %>
- <%@ page import="java.sql.*" %>
-<%@ page import="com.bean.DBUtil5" %>
-
+%>
 <%@ page import="java.sql.*" %>
 <%@ page import="java.util.*" %>
 <%@ page import="com.bean.DBUtil5" %>
 
 <%
 int urgentCount = 0;
-
-/* request_no, location, description */
 List<String[]> urgentList = new ArrayList<>();
 
 Connection consa = null;
@@ -52,292 +43,406 @@ PreparedStatement psaa = null;
 ResultSet rsaa = null;
 
 try{
-
     consa = DBUtil5.getConnection();
 
     String sql =
-        "SELECT request_no, location, description,requested_by " +
+        "SELECT request_no, location, description, requested_by " +
         "FROM service_requests " +
         "WHERE UPPER(priority)='URGENT' " +
         "AND (status IS NULL OR status NOT IN ('Closed','Completed')) " +
         "ORDER BY id DESC";
 
     psaa = consa.prepareStatement(sql);
-
     rsaa = psaa.executeQuery();
 
     while(rsaa.next()){
-
         urgentCount++;
-
         String reqNo = rsaa.getString("request_no");
         String location = rsaa.getString("location");
         String description = rsaa.getString("description");
         String requested_by = rsaa.getString("requested_by");
 
         urgentList.add(new String[]{
-            reqNo,
-            location,
-            description,
-            requested_by
+            reqNo, location, description, requested_by
         });
     }
-
 }catch(Exception e){
-
     e.printStackTrace();
-
 }finally{
-
-    try{
-        if(rsaa != null) rsaa.close();
-    }catch(Exception e){}
-
-    try{
-        if(psaa != null) psaa.close();
-    }catch(Exception e){}
-
-    try{
-        if(consa != null) consa.close();
-    }catch(Exception e){}
+    try{ if(rsaa != null) rsaa.close(); }catch(Exception e){}
+    try{ if(psaa != null) psaa.close(); }catch(Exception e){}
+    try{ if(consa != null) consa.close(); }catch(Exception e){}
 }
 %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Office Central</title>
+<title>Office Central ERP</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-.adm-header {
-    background: linear-gradient(to right, #f8fbff, #ffffff);
-    border:1px solid #d6e2f0;
-    border-left:7px solid #002147;
-    padding:16px 22px;
-    border-radius:10px;
-    margin:10px 0 20px 0;
-
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-
-    box-shadow:0 4px 12px rgba(0,0,0,0.08);
-}
-
-.adm-left {
-    display:flex;
-    flex-direction:column;
-}
-
-.adm-breadcrumb {
-    font-size:13px;
-    color:#6c757d;
-    margin-bottom:4px;
-}
-
-.adm-title {
-    font-size:14px;
-    font-weight:700;
-    color:#002147;
-    letter-spacing:0.4px;
-}
-
-.adm-right {
-    text-align:right;
-}
-
-.adm-badge {
-    background:#002147;
-    color:#fff;
-    padding:6px 12px;
-    font-size:13px;
-    border-radius:20px;
-    letter-spacing:0.6px;
-}
-/* ... (Existing CSS) ... */
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: 'Inter', 'Poppins', sans-serif; background-color: #f6f8fa; color: #333; transition: margin-left 0.3s ease; overflow-x: hidden; min-height: 100vh; position: relative; padding-bottom: 60px; }
-.sidebar { position: fixed; top: 0; left: 0; height: 100vh; width: 250px; background: linear-gradient(180deg, #0f172a, #1e293b); color: #fff; display: flex; flex-direction: column; padding-top: 20px; box-shadow: 2px 0 10px rgba(0,0,0,0.2); z-index: 1001; transition: transform 0.3s ease; overflow-y: auto; }
-.sidebar h2 { text-align: center; font-weight: 600; font-size: 20px; margin-bottom: 25px; color: #f1f5f9; }
 
-/* Sidebar Label Separator */
+:root {
+    /* Salesforce Lighting Design System Blue Palette */
+    --bg-page: #f3f3f3;
+    --bg-sidebar: #1b2a47;
+    --bg-sidebar-hover: #223559;
+    --bg-sidebar-active: #0176d3;
+    --accent-primary: #0176d3;
+    --accent-gradient: linear-gradient(180deg, #018ed3, #0176d3);
+    
+    --text-main: #181818;
+    --text-muted: #5e5e5e;
+    --border-color: #dddbda;
+    --bg-card: #ffffff;
+    
+    /* System Utility Semantic Colors */
+    --color-success: #2e844a;
+    --color-danger: #ea001e;
+    --color-warning: #b78103;
+    --color-info: #0176d3;
+    --color-purple: #7f86e1;
+    
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    
+    --shadow-sm: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 12px 28px 0 rgba(0, 0, 0, 0.15);
+}
+
+body { 
+    font-family: 'Salesforce Sans', 'Inter', sans-serif; 
+    background-color: var(--bg-page); 
+    color: var(--text-main); 
+    transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    overflow-x: hidden; 
+    min-height: 100vh; 
+    position: relative; 
+    padding-bottom: 60px;
+    padding-left: 260px;
+    -webkit-font-smoothing: antialiased;
+}
+
+body.sidebar-collapsed {
+    padding-left: 0;
+}
+
+/* --- Salesforce Modernized Sidebar --- */
+.sidebar { 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    height: 100vh; 
+    width: 260px; 
+    background: var(--bg-sidebar); 
+    color: #ffffff; 
+    display: flex; 
+    flex-direction: column; 
+    padding: 24px 12px; 
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1); 
+    z-index: 1001; 
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    overflow-y: auto; 
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar h2 { 
+    font-weight: 700; 
+    font-size: 18px; 
+    margin-bottom: 24px; 
+    color: #ffffff; 
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: 0.5px;
+}
+
 .sidebar-label {
     font-size: 11px;
     font-weight: 700;
-    color: #64748b;
+    color: #919191;
     text-transform: uppercase;
     letter-spacing: 1.2px;
-    padding: 20px 20px 10px;
-    border-top: 1px solid rgba(255,255,255,0.05);
-    margin-top: 5px;
+    padding: 20px 12px 6px;
 }
 
-.sidebar a, .sidebar .dropdown-btn { display: flex; align-items: center; gap: 12px; color: #d1d5db; text-decoration: none; padding: 12px 20px; font-size: 15px; border-radius: 8px; transition: all 0.25s ease; background: none; border: none; width: 100%; cursor: pointer; text-align: left; }
-.sidebar a:hover, .sidebar .dropdown-btn:hover { background: linear-gradient(90deg, #2563eb, #3b82f6); color: #fff; transform: translateX(5px); }
-
-/* Admission-specific Visual Difference */
-.admission-menu {
-    background: rgba(14, 165, 233, 0.1); 
-    border-left: 4px solid #0ea5e9 !important;
-    margin: 5px 10px;
-    border-radius: 8px;
+.sidebar a, .sidebar .dropdown-btn { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    color: #e0e0e0; 
+    text-decoration: none; 
+    padding: 10px 12px; 
+    font-size: 13.5px; 
+    font-weight: 400;
+    border-radius: var(--radius-sm);
+    transition: all 0.15s ease; 
+    background: none; 
+    border: none; 
+    width: 100%; 
+    cursor: pointer; 
+    text-align: left; 
+    margin-bottom: 2px;
+    position: relative;
 }
 
-.Service-menu{
-    background: linear-gradient(135deg,
-                rgba(239, 68, 68, 0.12),
-                rgba(220, 38, 38, 0.05));
-    border-left: 4px solid #ef4444 !important;
-    margin: 6px 10px;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(239,68,68,0.08);
-    transition: all 0.3s ease;
+.sidebar a:hover, .sidebar .dropdown-btn:hover { 
+    background: var(--bg-sidebar-hover); 
+    color: #ffffff; 
 }
 
-.Service-menu:hover{
-    transform: translateY(-1px);
-    box-shadow: 0 4px 14px rgba(239,68,68,0.15);
+.sidebar .dropdown.active .dropdown-btn {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    font-weight: 600;
 }
 
-.Service-menu .dropdown-btn{
-    color: #fecaca;
-    font-weight: 700;
-    letter-spacing: 0.3px;
+.sidebar .dropdown-btn i.fa-caret-down {
+    margin-left: auto;
+    font-size: 11px;
+    transition: transform 0.2s ease;
+    color: #919191;
 }
-
-.Service-menu .dropdown-btn:hover{
-    background: linear-gradient(90deg, #dc2626, #ef4444);
+.dropdown.active .dropdown-btn i.fa-caret-down {
+    transform: rotate(180deg);
     color: #ffffff;
 }
 
-.Service-menu .dropdown-content{
-    border-left: 3px solid #ef4444;
+.dropdown-content { 
+    display: none; 
+    flex-direction: column; 
+    background: rgba(0, 0, 0, 0.12);
+    padding: 4px 0;
+    margin: 2px 0 6px 0;
+    border-radius: var(--radius-sm);
 }
 
-.Service-menu .dropdown-content a:hover{
-    background: rgba(239,68,68,0.12);
+.dropdown-content a { 
+    font-size: 13px; 
+    padding: 8px 14px 8px 34px; 
+    color: #c9c9c9; 
+    margin-bottom: 0;
 }
 
-
-/* Recruitment-specific Visual Difference */
-.recruitment-menu {
-    background: rgba(139, 92, 246, 0.1); 
-    border-left: 4px solid #8b5cf6 !important;
-    margin: 5px 10px;
-    border-radius: 8px;
+.dropdown-content a:hover {
+    color: #ffffff;
+    background: var(--bg-sidebar-active);
 }
-.recruitment-menu .dropdown-btn { color: #c4b5fd; font-weight: 600; }
 
-.dropdown-content { display: none; flex-direction: column; background: #1e293b; border-left: 3px solid #2563eb; margin-left: 10px; border-radius: 8px; }
-.dropdown-content a { font-size: 14px; padding: 8px 20px; color: #cbd5e1; }
 .dropdown.active .dropdown-content { display: flex; }
 
-header { position: fixed; top: 0; left: 250px; right: 0; height: 75px; background: #ffffff; color: #333; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; border-bottom: 1px solid #e2e8f0; z-index: 1000; box-shadow: 0 2px 15px rgba(0,0,0,0.05); transition: left 0.3s ease; }
-.header-brand-title { text-align: left; color: #0f2a4d; font-weight: 800; font-size: 28px; text-transform: uppercase; letter-spacing: 0.5px; border-left: 5px solid #fbbf24; padding-left: 15px; font-family: 'Inter', sans-serif; white-space: nowrap; }
-.toggle-btn { background: #f1f5f9; border: none; color: #0f2a4d; font-size: 20px; cursor: pointer; width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 15px; }
-.user-info-card { display: flex; align-items: center; padding: 8px 15px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; transition: all 0.3s ease; margin-left: 15px; }
-.user-initials { width: 38px; height: 38px; border-radius: 10px; background: linear-gradient(135deg, #0f2a4d, #1e40af); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; margin-right: 10px; }
-.user-meta .u-name { font-size: 13px; font-weight: 700; color: #0f2a4d; }
-.user-meta .u-role { font-size: 10px; font-weight: 600; color: #3b82f6; }
+/* --- Global Utilities Canvas Header Bar --- */
+header { 
+    position: fixed; 
+    top: 0; 
+    left: 260px; 
+    right: 0; 
+    height: 60px; 
+    background: #ffffff; 
+    color: var(--text-main); 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    padding: 0 24px; 
+    border-bottom: 1px solid var(--border-color); 
+    z-index: 1000; 
+    box-shadow: var(--shadow-sm); 
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+}
 
-main { margin-left: 250px; padding: 80px 30px 10px; transition: margin-left 0.3s ease; }
-footer { position: fixed; bottom: 0; left: 250px; right: 0; background: #ffffff; color: #64748b; text-align: center; padding: 12px 10px; font-size: 13px; border-top: 1px solid #e2e8f0; transition: left 0.3s ease; z-index: 1000; }
+.header-brand-title { 
+    color: #080707; 
+    font-weight: 900; 
+    font-size: 24px; 
+    padding-left: 14px; 
+}
+.header-brand-title span {
+    color: var(--accent-primary);
+    font-weight: 1200;
+    margin-left: 4px;
+}
+
+.toggle-btn { 
+    background: #ffffff; 
+    border: 1px solid var(--border-color); 
+    color: #747474; 
+    font-size: 14px; 
+    cursor: pointer; 
+    width: 34px; 
+    height: 34px; 
+    border-radius: var(--radius-sm); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    transition: all 0.15s ease;
+}
+.toggle-btn:hover {
+    background: #f3f3f3;
+    color: var(--text-main);
+}
+
+.user-info-card { 
+    display: flex; 
+    align-items: center; 
+    gap: 10px;
+}
+
+.user-initials { 
+    width: 34px; 
+    height: 34px; 
+    border-radius: 50%; 
+    background: #5a6e85; 
+    color: white; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-weight: 700; 
+    font-size: 13px; 
+}
+
+.user-meta { display: flex; flex-direction: column; }
+.user-meta .u-name { font-size: 13px; font-weight: 600; color: #080707; text-transform: capitalize; }
+.user-meta .u-role { font-size: 11px; color: var(--text-muted); text-transform: uppercase;}
+
+/* --- Modern Main Workspace Area --- */
+main { padding: 84px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+
+.adm-header {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    padding: 16px 24px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow-sm);
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.adm-left h6 {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+.adm-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #080707;
+}
+.adm-breadcrumb {
+    font-size: 12px;
+    color: var(--accent-primary);
+    margin-top: 2px;
+}
+
+/* --- Salesforce Classic Style Exceptions System --- */
+.urgent-wrapper { position: relative; display: inline-block; }
+.urgent-header {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    background: #fff0f0;
+    border: 1px solid #fac7c7;
+    color: var(--color-danger);
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.15s ease;
+}
+.urgent-header:hover {
+    background: #ffe5e5;
+}
+
+.urgent-popup {
+    display: none;
+    position: absolute;
+    top: 45px;
+    right: 0;
+    width: 360px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: #ffffff;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
+    z-index: 9999;
+    padding: 16px;
+}
+.popup-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #080707;
+    margin-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    text-transform: uppercase;
+}
+.urgent-item {
+    padding: 12px;
+    border-radius: var(--radius-sm);
+    background: #f9f9f9;
+    margin-bottom: 10px;
+    border: 1px solid var(--border-color);
+    border-left: 3px solid var(--color-danger);
+}
+.urgent-item:last-child { margin-bottom: 0; }
+.req-no { font-size: 12.5px; font-weight: 600; color: #080707; }
+.req-location { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
+.req-desc { font-size: 12px; color: #3e3e3e; margin-top: 6px; line-height: 1.5; }
+
+/* --- Minimal Fluid Layout System Footer --- */
+footer { 
+    position: fixed; 
+    bottom: 0; 
+    left: 260px; 
+    right: 0; 
+    background: #ffffff; 
+    color: var(--text-muted); 
+    text-align: center; 
+    padding: 14px 24px; 
+    font-size: 12px; 
+    border-top: 1px solid var(--border-color); 
+    transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    z-index: 1000; 
+}
+.footer-badge { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.footer-badge .brand { font-weight: 600; color: #080707; }
+.footer-badge .dot { width: 4px; height: 4px; background: var(--border-color); border-radius: 50%; }
+
 body.sidebar-collapsed header { left: 0; }
 body.sidebar-collapsed main { margin-left: 0; }
 body.sidebar-collapsed footer { left: 0; }
 body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
-.text-primary { color:#3b82f6; }
-.text-success { color:#22c55e; }
-.text-danger { color:#ef4444; }
-.text-warning { color:#facc15; }
-.text-info { color:#06b6d4; }
-.text-purple { color:#8b5cf6; }
-.text-secondary { color:#9ca3af; }
+/* Global Color Utility Systems */
+.text-primary { color: var(--accent-primary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-danger { color: var(--color-danger) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-info { color: var(--color-info) !important; }
+.text-purple { color: var(--color-purple) !important; }
+.text-secondary { color: var(--text-muted) !important; }
 
-.urgent-header{
-    display:inline-block;
-    margin-left:10px;
-    padding:3px 8px;
-    border-radius:14px;
-    background:#dc2626;
-    color:#fff;
-    font-size:11px;
-    font-weight:600;
-    letter-spacing:0.3px;
-    animation:softBlink 2s infinite;
-    vertical-align:middle;
-}
-
-@keyframes softBlink{
-    0%{
-        opacity:1;
-    }
-    50%{
-        opacity:0.75;
-    }
-    100%{
-        opacity:1;
-    }
-}
-.urgent-wrapper{
-    position:relative;
-    display:inline-block;
-}
-
-.urgent-popup{
-    display:none;
-    position:absolute;
-    top:35px;
-    right:0;
-    width:320px;
-    max-height:400px;
-    overflow-y:auto;
-    background:#fff;
-    border-radius:12px;
-    box-shadow:0 8px 30px rgba(0,0,0,0.15);
-    border:1px solid #e5e7eb;
-    z-index:9999;
-    padding:10px;
-}
-
-.popup-title{
-    font-size:14px;
-    font-weight:700;
-    color:#dc2626;
-    margin-bottom:10px;
-    border-bottom:1px solid #eee;
-    padding-bottom:8px;
-}
-
-.urgent-item{
-    padding:10px;
-    border-radius:10px;
-    background:#fff5f5;
-    margin-bottom:10px;
-    border-left:4px solid #dc2626;
-}
-
-.req-no{
-    font-size:12px;
-    font-weight:700;
-    color:#111827;
-}
-
-.req-location{
-    font-size:11px;
-    color:#6b7280;
-    margin-top:4px;
-}
-
-.req-desc{
-    font-size:12px;
-    color:#374151;
-    margin-top:6px;
-    line-height:1.4;
+@media (max-width: 1024px) {
+    body { padding-left: 0; }
+    header { left: 0; }
+    footer { left: 0; }
+    .sidebar { transform: translateX(-100%); }
+    body:not(.sidebar-collapsed) .sidebar { transform: translateX(0); }
+    main { padding-left: 16px; padding-right: 16px; }
 }
 </style>
 </head>
@@ -345,413 +450,279 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fas fa-box text-primary"></i> SRS</h2>
+  <h2><i class="fa-solid fa-layer-group"></i> SRS Workspace</h2>
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
-  <div class="sidebar-label">Inventory</div>
-  <a href="Home"><i class="fas fa-home text-success"></i> Dashboard</a>
+  <div class="sidebar-label">Inventory Platform</div>
+  <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
 
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-file-alt text-primary"></i> Indent <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Records <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
-      <a href="IndentlistServlet"><i class="fas fa-list text-info"></i> Indent Report</a>
+      <a href="IndentServlet"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
+      <a href="IndentlistServlet"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
-        <a href="AIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Indent</a>
+        <a href="AIndentListServlet"><i class="fa-solid fa-clipboard-check text-warning"></i> Approve Indent</a>
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
-        <a href="DIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Dining Hall Indent</a>
+        <a href="DIndentListServlet"><i class="fa-solid fa-utensils text-warning"></i> Approve Dining Indent</a>
       <% } %>
     </div>
   </div>
 
   <% if ("Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-box-open text-warning"></i> Issue <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-truck-ramp-box text-warning"></i> Stock Dispersal <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IssueServlet"><i class="fas fa-dolly text-info"></i> Issue Items</a>
-      <a href="Issuereport.jsp"><i class="fas fa-file-invoice text-danger"></i> Issue Report</a>
+      <a href="IssueServlet"><i class="fa-solid fa-dolly text-info"></i> Issue Items</a>
+      <a href="Issuereport.jsp"><i class="fa-solid fa-receipt text-danger"></i> Issue Report</a>
     </div>
   </div>
   <% } %>
 
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-shopping-cart text-danger"></i> Purchase / PO <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-cart-shopping text-danger"></i> Purchase Execution <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
-        <a href="POListServlet"><i class="fas fa-check-double text-success"></i> Approve PO</a>
-        <a href="ListPO.jsp"><i class="fas fa-clipboard-list text-warning"></i> PO Report</a>
+        <a href="POListServlet"><i class="fa-solid fa-file-circle-check text-success"></i> Approve PO</a>
+        <a href="ListPO.jsp"><i class="fa-solid fa-clipboard-list text-warning"></i> PO Report</a>
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-        <a href="IndentPO"><i class="fas fa-file-signature text-primary"></i> Create Purchase Order</a>
-        <a href="GRNServlet"><i class="fas fa-clipboard-check text-success"></i> GRN Entry</a>
-        <a href="viewGRN"><i class="fas fa-clipboard-check text-success"></i> GRN Report</a>
-        <a href="VendorMaster.jsp"><i class="fas fa-user-tie text-info"></i> Vendor Master</a>
+        <a href="IndentPO"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
+        <a href="GRNServlet"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
+        <a href="viewGRN"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
+        <a href="VendorMaster.jsp"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
       <% } %>
     </div>
   </div>
 
   <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-utensils text-warning"></i> Dining Hall <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall Operations <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="DiningHallServlet"><i class="fas fa-receipt text-primary"></i> DH Consumption Entry</a>
-      <a href="dining_dashboard.jsp"><i class="fas fa-chart-pie text-success"></i> Dashboard</a>
+      <a href="DiningHallServlet"><i class="fa-solid fa-kitchen-set text-primary"></i> DH Consumption Entry</a>
+      <a href="dining_dashboard.jsp"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
     </div>
   </div>
   <% } %>
 
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-chart-line text-purple"></i> Reports <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-chart-gantt text-purple"></i> Analytics Hub <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="Stock.jsp"><i class="fas fa-boxes text-info"></i> Stock Report</a>
-      <a href="stockReport.jsp"><i class="fas fa-book text-primary"></i> Stock Ledger Report</a>
+      <a href="Stock.jsp"><i class="fa-solid fa-boxes-stacked text-info"></i> Stock Report</a>
+      <a href="stockReport.jsp"><i class="fa-solid fa-book-open text-primary"></i> Stock Ledger Report</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-        <a href="IssueValueReport.jsp"><i class="fas fa-chart-pie text-danger"></i> Consumption Dashboard</a>
+        <a href="IssueValueReport.jsp"><i class="fa-solid fa-pie-chart text-danger"></i> Consumption Dashboard</a>
       <% } %>
     </div>
   </div>
 
-  <%
-if ("Global".equalsIgnoreCase(roles.trim()) ||
-   ("Incharge".equalsIgnoreCase(roles.trim()) 
-     && "Finance".equalsIgnoreCase(depts.trim()))) {
-%>
+  <% if ("Global".equalsIgnoreCase(roles.trim()) || ("Incharge".equalsIgnoreCase(roles.trim()) && "Finance".equalsIgnoreCase(depts.trim()))) { %>
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fas fa-cog text-secondary"></i> Masters <i class="fas fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-sliders text-secondary"></i> System Masters <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="ItemsMaster.jsp"><i class="fas fa-tags text-primary"></i> Item Master</a>
-      <a href="AddStock"><i class="fas fa-plus-square text-success"></i> Add Stock</a>
+      <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
+      <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
     </div>
   </div>
   <% } %>
 
-<% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-  <div class="sidebar-label">Asset management</div>
-  <div class="dropdown admission-menu">
-    <button class="dropdown-btn"><i class="fas fa-laptop-house text-warning"></i></i> Fixed Assets <i class="fas fa-caret-down"></i></button>
+  <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <div class="sidebar-label">Asset Tracking</div>
+  <div class="dropdown asset-menu">
+    <button class="dropdown-btn"><i class="fa-solid fa-building text-warning"></i> Fixed Assets <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-    
-    <a href="LocationController"><i class="fas fa-building"></i> Locations</a>
-    <a href="Staff"><i class="fas fa-map-marker-alt"></i>Employee</a>
-   <a href="CategoryController"><i class="fas fa-tags"></i> Categories</a>
-    <a href="AssetServlet"><i class="fas fa-boxes"></i>Asset Creation</a>
-    <a href="AssetLocationController"><i class="fas fa-map-marker-alt"></i>Asset Location</a>
-      
-      
-    </div>
-    
-    </div>
-    <%} %>
-    
-    
-  <% } %>  
-
-<div class="sidebar-label">Service Request</div>
-
-<div class="dropdown Service-menu">
-
-    <button class="dropdown-btn">
-
-   <i class="fas fa-concierge-bell text-info"></i>
-
-        <span>Service Request</span>
-
-        <i class="fas fa-caret-down" style="margin-left:auto;"></i>
-
-    </button>
-
-    <div class="dropdown-content">
-
-<% if ("Global".equalsIgnoreCase(roles) ) { %>
-
-<a href="<%=request.getContextPath()%>/MasterServlet">
-    <i class="fas fa-sitemap text-danger"></i>
-    Departments
-</a>
-
-<% } %>
-
-<a href="<%=request.getContextPath()%>/RequestBookingServlet">
-    <i class="fas fa-plus-circle text-success"></i>
-    Book a Request
-</a>
-
-<% if ("Global".equalsIgnoreCase(roles) || 
-       "A_Veeresh".equalsIgnoreCase(users) || 
-       "Admin".equalsIgnoreCase(roles)) { %>
-
-<a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet">
-    <i class="fas fa-search-location text-info"></i>
-    Assign Incharge
-</a>
-
-<% } %>
-
-<a href="<%=request.getContextPath()%>/Incharge">
-    <i class="fas fa-search-location text-info"></i>
-    Assigned to Me
-</a>
-
-
-
-   
-
-<a href="<%=request.getContextPath()%>/TrackRequestServlet">
-    <i class="fas fa-clipboard-check text-info"></i>
-    Track Your Request
-</a>
-
-<a href="<%=request.getContextPath()%>/Service/Closed.jsp">
-    <i class="fas fa-check-circle text-success"></i>
-    Closed Requests
-</a>
-
-</div>
-
-</div>
-
-
-    
-    
-    
-    <div class="sidebar-label">HR & Recruitment</div>
-  <div class="dropdown admission-menu">
-    <button class="dropdown-btn"><i class="fas fa-graduation-cap text-info"></i> Admissions <i class="fas fa-caret-down"></i></button>
-    <div class="dropdown-content">
-     <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)||"Academics".equalsIgnoreCase(depts)){ %>
-      <a href="dashboard"><i class="fas fa-home"></i> Home</a>
-      <a href="admission"><i class="fas fa-search"></i> Enquiries</a>
-      <a href="admission_report.jsp"><i class="fas fa-chart-line"></i> Dashboard</a>
-       <% } %>
-      <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
-        <a href="enter_marks.jsp"><i class="fas fa-pen"></i> Marks Entry</a>
-      <% } %>
-      <% if ("Global".equalsIgnoreCase(roles)|| "Tejkumar".equalsIgnoreCase(users)||"Academics".equalsIgnoreCase(depts)){ %>
-        <a href="marks_report.jsp"><i class="fas fa-file-invoice"></i> Tabulation</a>
-        <a href="ApproveAdmission.jsp"><i class="fas fa-user-check"></i> Approval</a>
-      <% } %>
-      <% if ("Global".equalsIgnoreCase(roles)){ %>
-        <a href="Capcity.jsp"><i class="fas fa-door-open"></i> Vacancy</a>
-      <% } %>
-      <% if ("Tejkumar".equalsIgnoreCase(users)){ %>
-        <a href="student_tc_update.jsp"><i class="fas fa-user-minus"></i> TC Update</a>
-      <% } %>
+      <a href="LocationController"><i class="fa-solid fa-map-location-dot"></i> Locations</a>
+      <a href="Staff"><i class="fa-solid fa-users-gear"></i> Employee Matrix</a>
+      <a href="CategoryController"><i class="fa-solid fa-tags"></i> Categories</a>
+      <a href="AssetServlet"><i class="fa-solid fa-cubes"></i> Asset Creation</a>
+      <a href="AssetLocationController"><i class="fa-solid fa-route"></i> Asset Relocation</a>
     </div>
   </div>
-<% if ("karthik".equalsIgnoreCase(users) || 
-       "Principal".equalsIgnoreCase(roles) || 
-       "Global".equalsIgnoreCase(roles)) { %>
-  <div class="sidebar-label">HR & Recruitment</div>
+  <% } %>
+<% } %>  
 
-   <div class="dropdown recruitment-menu">
-     <button class="dropdown-btn"><i class="fas fa-user-tie text-purple"></i> Recruitment <i class="fas fa-caret-down"></i></button>
-     <div class="dropdown-content">
-       <a href="candidateForm.jsp"><i class="fas fa-file-signature"></i> Recruitment Form</a>
-       <a href="resume"><i class="fas fa-users-viewfinder"></i> Applications</a>
-     </div>
-   </div>
-   <% } %>
-   
-   
-  <a href="Logout.jsp" style="margin-top: auto;"><i class="fas fa-sign-out-alt text-danger"></i> Logout</a>
+<div class="sidebar-label">Core Operations Desk</div>
+<div class="dropdown Service-menu">
+    <button class="dropdown-btn">
+        <i class="fa-solid fa-headset text-info"></i>
+        <span>Service Request</span>
+        <i class="fa-solid fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <% if ("Global".equalsIgnoreCase(roles) ) { %>
+        <a href="<%=request.getContextPath()%>/MasterServlet"><i class="fa-solid fa-network-wired text-danger"></i> Departments</a>
+      <% } %>
+      <a href="<%=request.getContextPath()%>/RequestBookingServlet"><i class="fa-solid fa-calendar-plus text-success"></i> Book a Request</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles)) { %>
+        <a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"><i class="fa-solid fa-user-plus text-info"></i> Assign Incharge</a>
+      <% } %>
+      <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
+      <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
+      <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
+    </div>
 </div>
 
+<div class="sidebar-label">Academic Admissions</div>
+<div class="dropdown admission-menu">
+  <button class="dropdown-btn"><i class="fa-solid fa-user-graduate text-info"></i> Admissions Desk <i class="fa-solid fa-caret-down"></i></button>
+  <div class="dropdown-content">
+   <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)||"Academics".equalsIgnoreCase(depts)){ %>
+    <a href="dashboard"><i class="fa-solid fa-house"></i> Home</a>
+    <a href="admission"><i class="fa-solid fa-magnifying-glass"></i> Enquiries</a>
+    <a href="admission_report.jsp"><i class="fa-solid fa-chart-line"></i> Dashboard</a>
+   <% } %>
+   <% if ("Academics".equalsIgnoreCase(depts)||"Global".equalsIgnoreCase(roles)){ %>
+      <a href="enter_marks.jsp"><i class="fa-solid fa-pen-to-square"></i> Marks Entry</a>
+   <% } %>
+   <% if ("Global".equalsIgnoreCase(roles)|| "Tejkumar".equalsIgnoreCase(users)||"Academics".equalsIgnoreCase(depts)){ %>
+      <a href="marks_report.jsp"><i class="fa-solid fa-print"></i> Tabulation</a>
+      <a href="ApproveAdmission.jsp"><i class="fa-solid fa-clipboard-check"></i> Approval Desk</a>
+   <% } %>
+   <% if ("Global".equalsIgnoreCase(roles)){ %>
+      <a href="Capcity.jsp"><i class="fa-solid fa-door-open"></i> Vacancy View</a>
+   <% } %>
+   <% if ("Tejkumar".equalsIgnoreCase(users)){ %>
+      <a href="student_tc_update.jsp"><i class="fa-solid fa-user-minus"></i> TC Update</a>
+   <% } %>
+  </div>
+</div>
+
+<% if ("karthik".equalsIgnoreCase(users) || "Principal".equalsIgnoreCase(roles) || "Global".equalsIgnoreCase(roles)) { %>
+<div class="sidebar-label">Talent Management</div>
+<div class="dropdown recruitment-menu">
+  <button class="dropdown-btn"><i class="fa-solid fa-briefcase text-purple"></i> Recruitment <i class="fa-solid fa-caret-down"></i></button>
+  <div class="dropdown-content">
+    <a href="candidateForm.jsp"><i class="fa-solid fa-file-invoice-dollar"></i> Recruitment Form</a>
+    <a href="resume"><i class="fa-solid fa-id-card"></i> Applications View</a>
+  </div>
+</div>
+<% } %>
+   
+<a href="Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
+</div>
 
 <header>
   <div style="display: flex; align-items: center;">
-    <button class="toggle-btn" id="menu-toggle"><i class="fas fa-bars"></i></button>
-    <div class="header-brand-title">SRS | Office Central </div>
+    <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
+    <div class="header-brand-title">SRS |<span>OFFICE CENTRAL ERP</span></div>
   </div>
 
   <div class="user-info-card">
     <div class="user-initials"><%= initial %></div>
     <div class="user-meta">
       <span class="u-name"><%= users.toLowerCase() %></span>
-      <span class="u-role"><i class="fas fa-shield-alt"></i> <%= roles %></span>
+      <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
     </div>
   </div>
 </header>
 
 <main>
-
-    <!-- 🔷 ADMISSIONS HEADER (TOP FIRST) -->
-   
-
-
    <div class="adm-header">
-    <div style="margin-top:1px;">
-        <h6 style="margin-bottom:1px;">
-            Welcome back, <%= users.toUpperCase() %>
-        </h6>
-         
-        
-        <!-- LEFT -->
-        <div class="adm-left">
-            
-            <div class="adm-title" id="admPageTitle"></div>
-        </div>
-  
+    <div class="adm-left">
+       
+        <div class="adm-title" id="admPageTitle">Dashboard</div>
+        <div class="adm-breadcrumb" id="admBreadcrumb">Home</div>
     </div>
-
-        <p style="color:#64748b; font-size:10px;">
-            Current Session: <%= todayDate %>
+    
+    <div style="display:flex; align-items:center; gap:16px;">
+        <p style="color:var(--text-main); font-size:12.5px; font-weight: 600; background: #eef4f9; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid #c9deee;">
+            <i class="fa-regular fa-calendar text-primary" style="margin-right: 6px;"></i> <%= todayDate %>
         </p>
- <% if ("Admin".equalsIgnoreCase(roles) || 
- "Finance".equalsIgnoreCase(depts) || 
- "Global".equalsIgnoreCase(roles)) { %>    
-   <% if(urgentCount > 0){ %>
 
-<div class="urgent-wrapper">
+        <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
+           <% if(urgentCount > 0){ %>
+            <div class="urgent-wrapper">
+                <span class="urgent-header" onclick="toggleUrgentPopup()">
+                    <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Urgent Action Alerts
+                </span>
 
-    <span class="urgent-header" onclick="toggleUrgentPopup()">
-        🚨 <%= urgentCount %> Urgent Complaints
-    </span>
-
-    <div class="urgent-popup" id="urgentPopup">
-
-        <div class="popup-title">
-            Urgent Complaints
-        </div>
-
-        <% for(String[] row : urgentList){ %>
-
-            <div class="urgent-item">
-
-                <div class="req-no">
-                    <%= row[0] %>
+                <div class="urgent-popup" id="urgentPopup">
+                    <div class="popup-title">Urgent Exceptions</div>
+                    <% for(String[] row : urgentList){ %>
+                        <div class="urgent-item">
+                            <div class="req-no">Ticket ID: <%= row[0] %></div>
+                            <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
+                            <div class="req-desc"><%= row[2] %></div>
+                            <div class="req-location" style="margin-top:8px; color:var(--color-danger); font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
+                        </div>
+                    <% } %>
                 </div>
-
-                <div class="req-location">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <%= row[1] %>
-                </div>
-                <div class="req-desc">
-                    
-                     <%= row[2] %>
-                </div>
-
-                <div class="req-desc">
-                   Req. By: <%= row[3] %>
-                </div>
-
             </div>
-
+            <% } %>
         <% } %>
-
     </div>
-
-</div>
-
-<% } %>
-    </div>
-   <% } %>
-   
-
-   
-
-
+   </div>
 </main>
 
-<footer class="footer">
-
+<footer>
     <div class="footer-badge">
-
-        <i class="fas fa-laptop-code"></i>
-
-        <span class="brand">
-            SRS Office Central |
-        </span>
-
+        <i class="fa-solid fa-code-branch text-primary"></i>
+        <span class="brand">SRS</span>
         <span class="dot"></span>
-
-        <span class="tagline">
-            Technology Built with Purpose & Responsibility|
-        </span>
-
+        <span class="tagline">OFFICE CENTRAL ERP</span>
         <span class="dot"></span>
-
-        <span class="developer">
-            Developed by SSS IT Department
-        </span>
-
+        <span class="developer">BY SSS IT</span>
         <span class="dot"></span>
-
-        <span class="year">
-            © 2026
-        </span>
-
+        <span class="year">© 2026</span>
     </div>
-
 </footer>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-
-    // 🔹 TITLE AUTO
     let title = document.title;
     title = title.replace(" - SANPOLY", "").trim();
-    document.getElementById("admPageTitle").innerText = title;
+    if(document.getElementById("admPageTitle")) {
+        document.getElementById("admPageTitle").innerText = title;
+    }
 
-    // 🔹 BREADCRUMB AUTO FROM URL
     let path = window.location.pathname;
     let parts = path.split("/").filter(p => p !== "");
 
     if(parts.length > 0){
-        parts.shift(); // remove project name
+        parts.shift();
     }
 
     let formatted = parts.map(p => {
-        return p
-            .replace(".jsp", "")
-            .replace(/([A-Z])/g, " $1")
-            .trim();
+        return p.replace(".jsp", "").replace(/([A-Z])/g, " $1").trim();
     });
 
     let breadcrumb = "Home";
+    formatted.forEach(p => { breadcrumb += " / " + p; });
 
-    formatted.forEach(p => {
-        breadcrumb += " / " + p;
-    });
-
-    document.getElementById("admBreadcrumb").innerText = breadcrumb;
+    if(document.getElementById("admBreadcrumb")) {
+        document.getElementById("admBreadcrumb").innerText = breadcrumb;
+    }
 });
+
 document.querySelectorAll('.dropdown-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const currentDropdown = btn.parentElement;
     document.querySelectorAll('.dropdown').forEach(drop => {
-      if (drop !== btn.parentElement) drop.classList.remove('active');
+      if (drop !== currentDropdown) drop.classList.remove('active');
     });
-    btn.parentElement.classList.toggle('active');
+    currentDropdown.classList.toggle('active');
   });
 });
 
 const toggleBtn = document.getElementById('menu-toggle');
-toggleBtn.addEventListener('click', () => {
+toggleBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
   document.body.classList.toggle('sidebar-collapsed');
 });
 
 function toggleUrgentPopup(){
-
     let popup = document.getElementById("urgentPopup");
-
-    if(popup.style.display === "block"){
-        popup.style.display = "none";
-    }else{
-        popup.style.display = "block";
-    }
+    popup.style.display = (popup.style.display === "block") ? "none" : "block";
 }
 
 document.addEventListener("click", function(event){
-
     let wrapper = document.querySelector(".urgent-wrapper");
-
-    if(wrapper && !wrapper.contains(event.target)){
-
-        document.getElementById("urgentPopup").style.display = "none";
+    if (wrapper && !wrapper.contains(event.target)){
+        let popup = document.getElementById("urgentPopup");
+        if(popup) popup.style.display = "none";
     }
 });
 </script>
-
 </body>
 </html>
-
-  
