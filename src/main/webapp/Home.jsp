@@ -394,7 +394,7 @@
     <div class="welcome-banner">
         <div class="welcome-text">
             <h1><%= greeting %>, <%= user.toUpperCase() %>!</h1>
-            <p>Inventory Performance Dashboard & Real-Time Analytics Explorer</p>
+            <p>Inventory Performance Dashboard</p>
         </div>
         <div class="date-badge">
             <i class="slate-icon far fa-calendar-alt"></i>
@@ -496,7 +496,7 @@
         </div>
     </div>
 
-    <h1 class="page-title"><i class="fas fa-search-dollar" style="color: var(--sf-text-light);"></i> Expenditure Analysis Engine</h1>
+    <h1 class="page-title"><i class="fas fa-search-dollar" style="color: var(--sf-text-light);"></i> Expenditure Analysis</h1>
     
     <!-- Parametric Configuration Controls -->
     <form class="filter-panel" method="get" action="Home">
@@ -510,20 +510,30 @@
             </select>
         </div>
         <div style="display:flex; flex-direction:column; gap:6px;">
-            <label style="font-size:12px; font-weight:600; color: var(--sf-text-muted);">Financial Year</label>
-            <select name="year">
-                <% if(years != null){ for(String y : years){ %>
-                    <option value="<%= y %>" <%= y.equals(selectedYear) ? "selected" : "" %>><%= y %></option>
-                <% }} %>
-            </select>
-        </div>
+    <label style="font-size:12px; font-weight:600; color: var(--sf-text-muted);">Financial Year</label>
+    <select name="year">
+        <% 
+            if(years != null){ 
+                for(String y : years){ 
+                    // Check if 'y' matches the selectedYear from request, 
+                    // OR if selectedYear is null/empty and 'y' is our target default year.
+                    boolean isSelected = y.equals(selectedYear) || 
+                                         ((selectedYear == null || selectedYear.trim().isEmpty()) && "2026-27".equals(y));
+        %>
+            <option value="<%= y %>" <%= isSelected ? "selected" : "" %>><%= y %></option>
+        <% 
+                }
+            } 
+        %>
+    </select>
+</div>
         <button type="submit"><i class="fas fa-sync-alt" style="margin-right: 6px;"></i>Update View</button>
     </form>
 
     <!-- Context Metric Blocks -->
     <div class="report-summary">
         <div class="summary-item" style="border-top: 3px solid #54a3f5;">
-            <h3>Active Domains</h3>
+            <h3>Active Department</h3>
             <p><%= totalRows %></p>
         </div>
         <div class="summary-item" style="border-top: 3px solid #1aa0be;">
@@ -536,7 +546,7 @@
     <!-- Tabular Breakdown Layout -->
     <div class="card" style="padding:0;">
         <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-table" style="color:var(--sf-text-light);"></i> Structured Periodic Rollup Matrix</h3>
+            <h3 class="card-title"><i class="fas fa-table" style="color:var(--sf-text-light);"></i> Month-wise Expenditure</h3>
         </div>
         <div class="table-container">
             <table style="margin: 0;">
