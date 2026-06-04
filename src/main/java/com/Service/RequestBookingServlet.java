@@ -24,355 +24,155 @@ public class RequestBookingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    Connection con = null;
+    // REMOVED: Global 'Connection con = null;' instance variable.
 
     @Override
     public void init() throws ServletException {
-
-        try {
-
-            con = DBUtil5.getConnection();
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+        // REMOVED: Opening connection here is no longer needed.
     }
 
     @Override
-    protected void doGet(HttpServletRequest request,
-                         HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String action = request.getParameter("action");
 
-        if(action != null
-        && action.equals("loadComplaintTypes")) {
-
-            loadComplaintTypes(request,response);
-
+        if (action != null && action.equals("loadComplaintTypes")) {
+            loadComplaintTypes(request, response);
         } else {
-
-            loadDepartments(request,response);
+            loadDepartments(request, response);
         }
     }
 
-    private void loadDepartments(HttpServletRequest request,
-                                 HttpServletResponse response)
+    private void loadDepartments(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        ArrayList<HashMap<String,Object>> list =
-        new ArrayList<HashMap<String,Object>>();
+        ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+        String sql = "SELECT * FROM departments ORDER BY department_name";
 
-        try {
+        // Connection is requested and closed automatically here
+        try (Connection con = DBUtil5.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-            String sql =
-            "SELECT * FROM departments "
-            + "ORDER BY department_name";
-
-            PreparedStatement ps =
-            con.prepareStatement(sql);
-
-            ResultSet rs = ps.executeQuery();
-
-            while(rs.next()) {
-
-                HashMap<String,Object> map =
-                new HashMap<String,Object>();
-
-                map.put(
-                "id",
-                rs.getInt("id")
-                );
-
-                map.put(
-                "department_name",
-                rs.getString("department_name")
-                );
-
+            while (rs.next()) {
+                HashMap<String, Object> map = new HashMap<String, Object>();
+                map.put("id", rs.getInt("id"));
+                map.put("department_name", rs.getString("department_name"));
                 list.add(map);
             }
 
-            rs.close();
-            ps.close();
-
         } catch (Exception e) {
-
             e.printStackTrace();
         }
 
         request.setAttribute("departments", list);
-
-        request.getRequestDispatcher(
-        "/Service/request_booking.jsp"
-        ).forward(request, response);
+        request.getRequestDispatcher("/Service/request_booking.jsp").forward(request, response);
     }
 
-    private void loadComplaintTypes(HttpServletRequest request,
-                                    HttpServletResponse response)
+    private void loadComplaintTypes(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
 
         response.setContentType("text/html;charset=UTF-8");
-
         PrintWriter out = response.getWriter();
 
-        try {
+        String deptId = request.getParameter("department_id");
+        if (deptId == null || deptId.equals("")) {
+            out.println("<option value=''>Select Complaint Type</option>");
+            return;
+        }
 
-            String deptId =
-            request.getParameter("department_id");
+        int departmentId = Integer.parseInt(deptId);
+        String sql = "SELECT * FROM complaint_types WHERE department_id=? ORDER BY complaint_name";
 
-            if(deptId == null || deptId.equals("")) {
-
-                out.println(
-                "<option value=''>Select Complaint Type</option>"
-                );
-
-                return;
-            }
-
-            int departmentId =
-            Integer.parseInt(deptId);
-
-            String sql =
-            "SELECT * FROM complaint_types "
-            + "WHERE department_id=? "
-            + "ORDER BY complaint_name";
-
-            PreparedStatement ps =
-            con.prepareStatement(sql);
+        // Connection is requested and closed automatically here
+        try (Connection con = DBUtil5.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
-
-            ResultSet rs = ps.executeQuery();
-
-            out.println(
-            "<option value=''>Select Complaint Type</option>"
-            );
-
-            while(rs.next()) {
-
-                out.println(
-
-                "<option value='"
-                + rs.getInt("id")
-                + "'>"
-
-                + rs.getString("complaint_name")
-
-                + "</option>"
-                );
+            try (ResultSet rs = ps.executeQuery()) {
+                out.println("<option value=''>Select Complaint Type</option>");
+                while (rs.next()) {
+                    out.println("<option value='" + rs.getInt("id") + "'>" 
+                                + rs.getString("complaint_name") + "</option>");
+                }
             }
 
-            rs.close();
-            ps.close();
-
         } catch (Exception e) {
-
             e.printStackTrace();
-
-            out.println(
-            "<option value=''>Unable To Load</option>"
-            );
+            out.println("<option value=''>Unable To Load</option>");
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest request,
-                          HttpServletResponse response)
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         try {
-
-            HttpSession session =
-            request.getSession(false);
-
-            if(session == null
-            || session.getAttribute("username") == null) {
-
-                response.sendRedirect(
-                request.getContextPath()
-                + "/login.jsp"
-                );
-
+            HttpSession session = request.getSession(false);
+            if (session == null || session.getAttribute("username") == null) {
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
 
-            String requestedBy =
-            ((String)session.getAttribute("username"))
-            .toUpperCase();
+            String requestedBy = ((String) session.getAttribute("username")).toUpperCase();
+            int departmentId = Integer.parseInt(request.getParameter("department_id"));
+            int complaintTypeId = Integer.parseInt(request.getParameter("complaint_type_id"));
+            String location = request.getParameter("location");
+            String description = request.getParameter("description");
+            String priority = request.getParameter("priority");
 
-            int departmentId =
-            Integer.parseInt(
-            request.getParameter("department_id")
-            );
-
-            int complaintTypeId =
-            Integer.parseInt(
-            request.getParameter("complaint_type_id")
-            );
-
-            String location =
-            request.getParameter("location");
-
-            String description =
-            request.getParameter("description");
-
-            String priority =
-            request.getParameter("priority");
-
-            /*
-             * REQUEST NUMBER GENERATION
-             * FORMAT : SR/2026/001
-             */
-
-            String year =
-            new SimpleDateFormat("yyyy")
-            .format(new Date());
-
-            String countSql =
-
-            "SELECT COUNT(*) AS total "
-            + "FROM service_requests "
-            + "WHERE YEAR(request_date)=YEAR(NOW())";
-
-            PreparedStatement countPs =
-            con.prepareStatement(countSql);
-
-            ResultSet countRs =
-            countPs.executeQuery();
-
+            String year = new SimpleDateFormat("yyyy").format(new Date());
+            String countSql = "SELECT COUNT(*) AS total FROM service_requests WHERE YEAR(request_date)=YEAR(NOW())";
             int nextNo = 1;
 
-            if(countRs.next()) {
+            // Connection is requested and closed automatically here
+            try (Connection con = DBUtil5.getConnection();
+                 PreparedStatement countPs = con.prepareStatement(countSql);
+                 ResultSet countRs = countPs.executeQuery()) {
 
-                nextNo =
-                countRs.getInt("total") + 1;
-            }
+                if (countRs.next()) {
+                    nextNo = countRs.getInt("total") + 1;
+                }
+                
+                String serialNo = String.format("%03d", nextNo);
+                String requestNo = "SR/" + year + "/" + serialNo;
 
-            countRs.close();
-            countPs.close();
+                String insertSql = "INSERT INTO service_requests(request_no, request_date, requested_by, "
+                        + "department_id, complaint_type_id, location, description, priority, assigned_to, status) "
+                        + "VALUES(?, NOW(), ?, ?, ?, ?, ?, ?, ?, ?)";
 
-            String serialNo =
-            String.format("%03d", nextNo);
+                try (PreparedStatement ps = con.prepareStatement(insertSql)) {
+                    ps.setString(1, requestNo);
+                    ps.setString(2, requestedBy);
+                    ps.setInt(3, departmentId);
+                    ps.setInt(4, complaintTypeId);
+                    ps.setString(5, location);
+                    ps.setString(6, description);
+                    ps.setString(7, priority);
+                    ps.setNull(8, java.sql.Types.INTEGER);
+                    ps.setString(9, "OPEN");
 
-            String requestNo =
+                    int i = ps.executeUpdate();
 
-            "SR/"
-            + year
-            + "/"
-            + serialNo;
-
-            /*
-             * INSERT REQUEST
-             * assigned_to WILL BE NULL
-             */
-
-            String sql =
-
-            "INSERT INTO service_requests("
-            + "request_no,"
-            + "request_date,"
-            + "requested_by,"
-            + "department_id,"
-            + "complaint_type_id,"
-            + "location,"
-            + "description,"
-            + "priority,"
-            + "assigned_to,"
-            + "status"
-            + ")"
-
-            + " VALUES("
-            + "?,"
-            + "NOW(),"
-            + "?,"
-            + "?,"
-            + "?,"
-            + "?,"
-            + "?,"
-            + "?,"
-            + "?,"
-            + "?"
-            + ")";
-
-            PreparedStatement ps =
-            con.prepareStatement(sql);
-
-            ps.setString(1, requestNo);
-
-            ps.setString(2, requestedBy);
-
-            ps.setInt(3, departmentId);
-
-            ps.setInt(4, complaintTypeId);
-
-            ps.setString(5, location);
-
-            ps.setString(6, description);
-
-            ps.setString(7, priority);
-
-            /*
-             * NO DEFAULT ASSIGNMENT
-             */
-
-            ps.setNull(8, java.sql.Types.INTEGER);
-
-            /*
-             * STATUS OPEN
-             */
-
-            ps.setString(9, "OPEN");
-
-            int i = ps.executeUpdate();
-
-            ps.close();
-
-            if(i > 0) {
-
-                session.setAttribute(
-                "msg",
-                "Service Request Submitted Successfully : "
-                + requestNo
-                );
-
-            } else {
-
-                session.setAttribute(
-                "msg",
-                "Failed To Submit Request"
-                );
+                    if (i > 0) {
+                        session.setAttribute("msg", "Service Request Submitted Successfully : " + requestNo);
+                    } else {
+                        session.setAttribute("msg", "Failed To Submit Request");
+                    }
+                }
             }
 
         } catch (Exception e) {
-
             e.printStackTrace();
-
-            request.setAttribute(
-            "msg",
-            "Error : " + e.getMessage()
-            );
+            request.setAttribute("msg", "Error : " + e.getMessage());
         }
 
-        response.sendRedirect(
-        request.getContextPath()
-        + "/RequestBookingServlet"
-        );
+        response.sendRedirect(request.getContextPath() + "/RequestBookingServlet");
     }
 
     @Override
     public void destroy() {
-
-        try {
-
-            if(con != null) {
-
-                con.close();
-            }
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-        }
+        // REMOVED: Clean up handled locally inside methods now
     }
 }
