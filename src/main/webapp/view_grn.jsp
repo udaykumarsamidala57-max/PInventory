@@ -7,282 +7,256 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
 * { box-sizing: border-box; }
 :root {
-    --slds-brand: #0176d3;
-    --slds-brand-hover: #015a9e;
-    --slds-text-main: #181818;
-    --slds-text-muted: #5a6065;
-    --slds-border: #e1e4e8;
-    --slds-border-dark: #aeaeae;
-    --slds-bg-page: #f3f4f6;
-    --slds-bg-card: #ffffff;
-    --slds-bg-strip: #f8f9fa;
-    --slds-success: #1a7f37;
-    --slds-success-border: #acf2bd;
-    --slds-success-bg: #dafbe1;
-    --slds-warning: #9a6700;
-    --slds-warning-border: #f9e2af;
-    --slds-warning-bg: #fef5e7;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+    /* SAP Fiori Color Tokens (Horizon/Quartz Mix) */
+    --sap-background: #f4f6f7;
+    --sap-shell-color: #354a5f;
+    --sap-text-main: #32363a;
+    --sap-text-muted: #6a6d70;
+    --sap-border-color: #e5e5e5;
+    --sap-border-dark: #b0b5b9;
+    --sap-card-bg: #ffffff;
+    --sap-strip-bg: #fafafa;
+    
+    /* SAP Semantic Functional Tokens */
+    --sap-primary: #0a6ed1;
+    --sap-primary-hover: #085caf;
+    --sap-success: #107e3e;
+    --sap-success-bg: #f0fdf4;
+    --sap-success-border: rgba(16, 126, 62, 0.2);
+    --sap-warning: #b75c00;
+    --sap-warning-bg: #fff8f0;
+    --sap-warning-border: rgba(183, 92, 0, 0.2);
+    --sap-critical: #bb0000;
+    
+    --sap-radius: 0.25rem; /* Standard SAP compact borders */
+    --sap-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: var(--slds-bg-page);
+    font-family: "72", "72full", Arial, Helvetica, sans-serif;
+    background-color: var(--sap-background);
     margin: 0;
     padding: 0;
-    color: var(--slds-text-main);
-    -webkit-tap-highlight-color: transparent;
-    letter-spacing: -0.01em;
+    color: var(--sap-text-main);
+    -webkit-font-smoothing: antialiased;
 }
 
 .main-content {
     width: 100%;
-    max-width: 1400px;
+    max-width: 1600px;
     margin: 0 auto;
-    padding: 24px;
+    padding: 2rem;
 }
 
-/* Master Card Container */
-.master-card {
-    background: var(--slds-bg-card);
-    border-radius: var(--radius-md);
-    padding: 28px;
-    width: 100%;
-    border: 1px solid var(--slds-border);
-    box-shadow: var(--shadow-md);
-}
-
-/* Header Section */
-.header-area {
+/* SAP Shell Page Header Title Bar */
+.sap-fiori-page-header {
+    background: var(--sap-card-bg);
+    padding: 1.25rem 2rem;
+    border-bottom: 1px solid var(--sap-border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 20px;
-    margin-bottom: 24px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--slds-border);
     flex-wrap: wrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
-.header-left-group {
+.sap-header-left {
     display: flex;
-    align-items: center;
-    gap: 16px;
-}
-
-.icon-box {
-    width: 46px;
-    height: 46px;
-    border-radius: var(--radius-sm);
-    background: linear-gradient(135deg, var(--slds-brand), var(--slds-brand-hover));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 20px;
-    box-shadow: 0 2px 4px rgba(1, 118, 211, 0.2);
-}
-
-h2 {
-    margin: 0;
-    font-size: 22px;
-    color: var(--slds-text-main);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-}
-
-.meta {
-    color: var(--slds-text-muted);
-    font-size: 13px;
-    margin-top: 3px;
-}
-
-.record-counter-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: var(--slds-bg-page);
-    padding: 6px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--slds-border);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--slds-text-muted);
-}
-
-.record-counter-badge b {
-    color: var(--slds-brand);
-    font-size: 16px;
-}
-
-/* Dynamic Filter Bar Row Layout */
-.filter-bar {
-    background: var(--slds-bg-strip);
-    border: 1px solid var(--slds-border);
-    border-radius: var(--radius-md);
-    padding: 20px;
-    margin-bottom: 24px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: flex-end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.filter-bar label {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--slds-text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-}
-
-.filter-bar .input {
-    height: 38px;
-    padding: 0 14px;
-    border: 1px solid var(--slds-border-dark);
-    border-radius: var(--radius-sm);
-    font-family: inherit;
-    font-size: 13px;
-    background: #ffffff;
-    color: var(--slds-text-main);
-    outline: none;
-    min-width: 220px;
-    transition: all 0.15s ease;
-}
-
-.filter-bar .input:focus {
-    border-color: var(--slds-brand);
-    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.15);
-}
-
-/* Button Elements */
-.btn {
-    height: 38px;
-    padding: 0 18px;
-    border: 1px solid var(--slds-brand);
-    background: var(--slds-brand);
-    color: white;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-}
-
-.btn:hover { 
-    background: var(--slds-brand-hover); 
-    border-color: var(--slds-brand-hover);
-    transform: translateY(-1px);
-}
-.btn:active { transform: translateY(0); }
-
-.btn.secondary {
-    background: #ffffff;
-    border-color: var(--slds-border-dark);
-    color: var(--slds-text-main);
-}
-.btn.secondary:hover { 
-    background: var(--slds-bg-strip); 
-    border-color: #747472; 
-}
-
-.btn.success {
-    background: var(--slds-success);
-    border-color: var(--slds-success);
-}
-.btn.success:hover { 
-    background: #146229; 
-    border-color: #146229; 
-}
-
-.btn.small { 
-    height: 34px; 
-    padding: 0 14px; 
-    font-size: 12px; 
-    border-radius: var(--radius-sm);
-}
-
-/* GRN Block Card Enclosure */
-.container {
-    border: 1px solid var(--slds-border);
-    border-radius: var(--radius-md);
-    background: var(--slds-bg-card);
-    margin-bottom: 20px;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s ease;
-    overflow: hidden;
-}
-.container:hover { 
-    box-shadow: var(--shadow-lg);
-    border-color: #ccd1d9;
-}
-
-/* Card Header Strip Row */
-.title {
-    background: #ffffff;
-    border-bottom: 1px solid var(--slds-border);
-    padding: 18px 24px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.title-left {
-    display: flex;
-    flex-wrap: wrap;
     align-items: center;
     gap: 14px;
 }
 
-.grn-label {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--slds-text-main);
+.sap-icon-wrapper {
+    font-size: 1.5rem;
+    color: var(--sap-shell-color);
 }
 
-.grn-label b {
-    color: var(--slds-brand);
+h2 {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 400;
+    color: var(--sap-text-main);
 }
 
-.date-badge {
-    color: var(--slds-text-muted);
+.meta {
+    color: var(--sap-text-muted);
+    font-size: 0.825rem;
+    margin-top: 2px;
+}
+
+.sap-counter-badge {
+    font-size: 0.875rem;
     font-weight: 500;
-    font-size: 13px;
+    color: var(--sap-text-muted);
+    background: var(--sap-background);
+    padding: 0.35rem 0.85rem;
+    border-radius: 1rem;
+    border: 1px solid var(--sap-border-color);
+}
+
+.sap-counter-badge b {
+    color: var(--sap-primary);
+    font-weight: 700;
+}
+
+/* SAP Smart Filter Bar Control Row */
+.sap-filter-bar {
+    background: var(--sap-card-bg);
+    border: 1px solid var(--sap-border-color);
+    border-radius: var(--sap-radius);
+    padding: 1.25rem;
+    margin: 1.5rem 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    box-shadow: var(--sap-shadow);
+}
+
+.sap-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.sap-filter-bar label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--sap-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sap-filter-bar .input {
+    height: 2rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--sap-border-dark);
+    border-radius: var(--sap-radius);
+    font-family: inherit;
+    font-size: 0.875rem;
+    background: #ffffff;
+    color: var(--sap-text-main);
+    outline: none;
+    min-width: 220px;
+}
+
+.sap-filter-bar .input:focus {
+    border-color: var(--sap-primary);
+}
+
+/* SAP Form Action Controls Framework */
+.sap-btn {
+    height: 2rem;
+    padding: 0 1rem;
+    border: 1px solid transparent;
+    border-radius: var(--sap-radius);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    background: var(--slds-bg-page);
-    padding: 3px 10px;
-    border-radius: 4px;
+    transition: background-color 0.1s, border-color 0.1s;
+    white-space: nowrap;
 }
 
-.vendor-subline {
-    font-size: 13px;
-    color: var(--slds-text-muted);
-    font-weight: 400;
+.sap-btn-primary {
+    background-color: var(--sap-primary);
+    color: #ffffff;
+}
+.sap-btn-primary:hover {
+    background-color: var(--sap-primary-hover);
+}
+
+.sap-btn-transparent {
+    background-color: transparent;
+    border-color: var(--sap-primary);
+    color: var(--sap-primary);
+}
+.sap-btn-transparent:hover {
+    background-color: rgba(10, 110, 209, 0.05);
+}
+
+.sap-btn-ghost {
+    background-color: transparent;
+    border-color: var(--sap-border-dark);
+    color: var(--sap-text-main);
+}
+.sap-btn-ghost:hover {
+    background-color: var(--sap-background);
+    border-color: #747472;
+}
+
+.sap-btn-success {
+    background-color: transparent;
+    border-color: var(--sap-success);
+    color: var(--sap-success);
+}
+.sap-btn-success:hover {
+    background-color: var(--sap-success-bg);
+}
+
+/* SAP Object Page Dynamic List Block Container */
+.sap-object-container {
+    border: 1px solid var(--sap-border-color);
+    border-radius: var(--sap-radius);
+    background: var(--sap-card-bg);
+    margin-bottom: 1.5rem;
+    box-shadow: var(--sap-shadow);
+    overflow: hidden;
+}
+
+/* SAP Card Component Section Row */
+.sap-card-header {
+    background: var(--sap-strip-bg);
+    border-bottom: 1px solid var(--sap-border-color);
+    padding: 1rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sap-card-header-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+.sap-grn-id {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--sap-shell-color);
+}
+
+.sap-grn-id b {
+    color: var(--sap-primary);
+}
+
+.sap-date-indicator {
+    color: var(--sap-text-muted);
+    font-weight: 500;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--sap-background);
+    padding: 0.2rem 0.5rem;
+    border-radius: 2px;
+}
+
+.sap-subline-entity {
+    font-size: 0.85rem;
+    color: var(--sap-text-muted);
     width: 100%;
     margin-top: 4px;
     display: flex;
@@ -290,193 +264,182 @@ h2 {
     gap: 6px;
 }
 
-.vendor-subline b {
-    color: var(--slds-text-main);
+.sap-subline-entity b {
+    color: var(--sap-text-main);
     font-weight: 600;
 }
 
-.controls-right {
+.sap-card-header-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
 }
 
-/* Metadata Info Grid */
-.info-grid {
+/* SAP Object Block Layout Grid Details */
+.sap-info-matrix {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-    gap: 16px;
-    padding: 20px 24px;
-    background: var(--slds-bg-strip);
-    border-bottom: 1px solid var(--slds-border);
-}
-
-.info-card {
+    gap: 1.25rem;
+    padding: 1rem 1.5rem;
     background: #ffffff;
-    padding: 12px 16px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--slds-border);
-    font-size: 13px;
-    box-shadow: inset 0 1px 2px rgba(0,0,0,0.01);
+    border-bottom: 1px solid var(--sap-border-color);
 }
 
-.info-card strong {
+.sap-info-cell {
+    font-size: 0.875rem;
+}
+
+.sap-info-cell strong {
     display: block;
-    font-size: 10px;
+    font-size: 0.75rem;
     text-transform: uppercase;
-    color: var(--slds-text-muted);
-    letter-spacing: 0.8px;
-    margin-bottom: 6px;
-    font-weight: 700;
-}
-
-.info-card-text {
-    color: var(--slds-text-main);
+    color: var(--sap-text-muted);
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
     font-weight: 600;
 }
 
-/* Table Data Container Component */
-.items-container {
-    padding: 20px 24px;
+.sap-info-cell-value {
+    color: var(--sap-text-main);
+    font-weight: 600;
+}
+
+/* SAP Responsive Standard Layout Table View */
+.sap-table-view {
+    padding: 1rem 1.5rem;
     background: #ffffff;
 }
 
-.items-table {
+.sap-fiori-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
-    table-layout: auto;
+    font-size: 0.875rem;
     background: #ffffff;
-    border: 1px solid var(--slds-border);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
+    border: 1px solid var(--sap-border-color);
 }
 
-.items-table th {
-    background: var(--slds-bg-strip);
-    color: var(--slds-text-muted);
-    padding: 14px 16px;
-    font-weight: 700;
+.sap-fiori-table th {
+    background: var(--sap-strip-bg);
+    color: var(--sap-text-muted);
+    padding: 0.75rem 1rem;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
-    border-bottom: 2px solid var(--slds-border);
-    font-size: 11px;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid var(--sap-border-color);
+    font-size: 0.75rem;
     text-align: left;
 }
 
-.items-table td {
-    padding: 14px 16px;
-    border-bottom: 1px solid var(--slds-border);
-    color: var(--slds-text-main);
+.sap-fiori-table td {
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--sap-border-color);
+    color: var(--sap-text-main);
     vertical-align: middle;
 }
 
-.items-table tbody tr:last-child td { border-bottom: none; }
-.items-table tbody tr:hover { background-color: #fafdff; }
+.sap-fiori-table tbody tr:last-child td { border-bottom: none; }
+.sap-fiori-table tbody tr:hover { background-color: #f7f9fa; }
 
-.items-table td.cell-qordered,
-.items-table td.cell-qreceived,
-.items-table td.cell-qaccepted,
-.items-table td.cell-qrejected {
+.sap-fiori-table td.cell-qordered,
+.sap-fiori-table td.cell-qreceived,
+.sap-fiori-table td.cell-qaccepted,
+.sap-fiori-table td.cell-qrejected {
     text-align: center;
     font-weight: 600;
 }
 
-.items-table td.cell-qaccepted { color: var(--slds-success); }
-.items-table td.cell-qrejected { color: #d9381e; }
+.sap-fiori-table td.cell-qaccepted { color: var(--sap-success); }
+.sap-fiori-table td.cell-qrejected { color: var(--sap-critical); }
 
-/* Status Badges */
-.status-badge {
-    font-size: 11px;
-    padding: 3px 12px;
-    border-radius: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+/* SAP Functional Status Badges */
+.sap-status-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
     display: inline-block;
     border: 1px solid transparent;
 }
 .status-completed {
-    background: var(--slds-success-bg);
-    color: var(--slds-success);
-    border-color: var(--slds-success-border);
+    background: var(--sap-success-bg);
+    color: var(--sap-success);
+    border-color: var(--sap-success-border);
 }
 .status-pending {
-    background: var(--slds-warning-bg);
-    color: var(--slds-warning);
-    border-color: var(--slds-warning-border);
+    background: var(--sap-warning-bg);
+    color: var(--sap-warning);
+    border-color: var(--sap-warning-border);
 }
 
 .hidden { display: none !important; }
 
-/* Handheld Layout Refactor Rules */
+/* SAP Adaptive Micro-Layout Media Handlers */
 @media (max-width: 1024px) {
-    .master-card { padding: 16px; }
+    .main-content { padding: 1rem; }
     
-    .filter-bar {
+    .sap-filter-bar {
         flex-direction: column;
         align-items: stretch;
-        gap: 12px;
-        padding: 16px;
+        gap: 0.85rem;
+        padding: 1rem;
     }
 
-    .filter-group { width: 100%; }
-    .filter-bar .input, .btn { width: 100%; height: 42px; }
+    .sap-filter-group { width: 100%; }
+    .sap-filter-bar .input, .sap-btn { width: 100%; }
     
-    .title { padding: 16px; gap: 14px; }
-    .title-left { width: 100%; }
-    .controls-right { width: 100%; justify-content: flex-start; }
-    .info-grid { padding: 16px; gap: 12px; }
+    .sap-card-header { padding: 1rem; gap: 0.85rem; }
+    .sap-card-header-left { width: 100%; }
+    .sap-card-header-actions { width: 100%; }
+    .sap-info-matrix { padding: 1rem; gap: 0.85rem; }
 
-    .items-container { padding: 16px; }
+    .sap-table-view { padding: 1rem; }
     
-    .items-table, 
-    .items-table thead, 
-    .items-table tbody, 
-    .items-table th, 
-    .items-table td, 
-    .items-table tr {
+    .sap-fiori-table, 
+    .sap-fiori-table thead, 
+    .sap-fiori-table tbody, 
+    .sap-fiori-table th, 
+    .sap-fiori-table td, 
+    .sap-fiori-table tr {
         display: block;
         width: 100%;
     }
 
-    .items-table thead tr { display: none; }
+    .sap-fiori-table thead tr { display: none; }
 
-    .items-table tr {
-        border: 1px solid var(--slds-border);
-        border-radius: var(--radius-sm);
-        margin-bottom: 12px;
-        padding: 8px 0;
-        box-shadow: var(--shadow-sm);
+    .sap-fiori-table tr {
+        border: 1px solid var(--sap-border-color);
+        border-radius: var(--sap-radius);
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0;
     }
-    .items-table tr:last-child { margin-bottom: 0; }
+    .sap-fiori-table tr:last-child { margin-bottom: 0; }
 
-    .items-table td,
-    .items-table td.cell-qordered,
-    .items-table td.cell-qreceived,
-    .items-table td.cell-qaccepted,
-    .items-table td.cell-qrejected {
+    .sap-fiori-table td,
+    .sap-fiori-table td.cell-qordered,
+    .sap-fiori-table td.cell-qreceived,
+    .sap-fiori-table td.cell-qaccepted,
+    .sap-fiori-table td.cell-qrejected {
         text-align: right;
-        padding: 10px 16px;
+        padding: 0.6rem 1rem;
         position: relative;
         border: none;
-        border-bottom: 1px solid #f3f4f6;
-        font-size: 13px;
+        border-bottom: 1px solid var(--sap-background);
+        font-size: 0.85rem;
     }
-    .items-table td:last-child { border-bottom: none; }
+    .sap-fiori-table td:last-child { border-bottom: none; }
 
-    .items-table td:before {
+    .sap-fiori-table td:before {
         content: attr(data-label);
         position: absolute;
-        left: 16px;
+        left: 1rem;
         width: 45%;
-        font-weight: 700;
+        font-weight: 600;
         text-align: left;
-        color: var(--slds-text-muted);
+        color: var(--sap-text-muted);
         white-space: nowrap;
-        font-size: 11px;
+        font-size: 0.75rem;
         text-transform: uppercase;
-        letter-spacing: 0.6px;
+        letter-spacing: 0.5px;
     }
 }
 </style>
@@ -528,8 +491,8 @@ function toggleItems(id){
     section.style.display=(section.style.display==='none'||section.style.display==='')?'block':'none';
 }
 
-function expandAll(){document.querySelectorAll('.grn-card:not(.hidden) .items-container').forEach(c=>c.style.display='block');}
-function collapseAll(){document.querySelectorAll('.grn-card .items-container').forEach(c=>c.style.display='none');}
+function expandAll(){document.querySelectorAll('.grn-card:not(.hidden) .sap-table-view').forEach(c=>c.style.display='block');}
+function collapseAll(){document.querySelectorAll('.grn-card .sap-table-view').forEach(c=>c.style.display='none');}
 function csvSafe(s){if(s===null||s===undefined)return'';var str=String(s);if(str.indexOf('"')!==-1) str=str.replace(/"/g,'""'); if(str.search(/("|,|\n)/g)!==-1) str='"'+str+'"'; return str;}
 
 function downloadCSV(){ 
@@ -550,7 +513,7 @@ function downloadCSV(){
             receivedBy:card.getAttribute('data-receivedby')||'', 
             grnRemarks:card.getAttribute('data-remarks')||'' 
         }; 
-        var itemRows=card.querySelectorAll('.items-table tbody tr.item-row'); 
+        var itemRows=card.querySelectorAll('.sap-fiori-table tbody tr.item-row'); 
         if(itemRows.length===0){ 
             rows.push([csvSafe(meta.grnNo),csvSafe(meta.grnDate),csvSafe(meta.vendor),csvSafe(meta.gstin),csvSafe(meta.address),csvSafe(meta.po),csvSafe(meta.invoiceNo),csvSafe(meta.invoiceDate),csvSafe(meta.receivedBy),csvSafe(meta.grnRemarks),'','','','','',''].join(',')); 
         }else{ 
@@ -603,147 +566,145 @@ function printGRN(grnNo){
 <body>
 <%@ include file="header.jsp" %>
 
-<div class="main-content">
-    <div class="master-card">
-        
-        <div class="header-area">
-            <div class="header-left-group">
-                <div class="icon-box"><i class="fa fa-file-invoice"></i></div>
-                <div>
-                    <h2>All GRN Details</h2>
-                    <div class="meta">Goods Receipt Register Records</div>
-                </div>
-            </div>
-            <div class="record-counter-badge">
-                Visible Records: <b id="visible_count">0</b>
-            </div>
+<div class="sap-fiori-page-header">
+    <div class="sap-header-left">
+        <div class="sap-icon-wrapper"><i class="fa-solid fa-boxes-packing"></i></div>
+        <div>
+            <h2>All GRN Details</h2>
+            <div class="meta">Goods Receipt Register Records</div>
         </div>
-
-        <div class="filter-bar">
-            <div class="filter-group" style="flex:1; min-width:220px;">
-                <label>Search PO Number</label>
-                <input id="filter_po" class="input" type="text" placeholder="Enter PO ID...">
-            </div>
-            <div class="filter-group">
-                <label>From Date</label>
-                <input id="filter_from" class="input" type="date">
-            </div>
-            <div class="filter-group">
-                <label>To Date</label>
-                <input id="filter_to" class="input" type="date">
-            </div>
-            
-            <button id="btn_expand_all" class="btn small primary"><i class="fa fa-angles-down"></i> Expand All</button>
-            <button id="btn_collapse_all" class="btn small secondary"><i class="fa fa-angles-up"></i> Collapse All</button>
-            <button id="btn_download_csv" class="btn small success"><i class="fa fa-file-excel"></i> Download CSV</button>
-        </div>
-
-        <%
-        if(request.getAttribute("error") != null){
-            out.println("<p style='color:#d9381e; font-weight:600; padding:12px; background:#fdedec; border-radius:var(--radius-sm); border:1px solid #fadbd8;'>"+request.getAttribute("error")+"</p>");
-            return;
-        }
-        List<Map<String,Object>> allGRNs=(List<Map<String,Object>>)request.getAttribute("all_grns");
-        if(allGRNs==null || allGRNs.isEmpty()){
-            out.println("<p style='padding:40px; text-align:center; color:var(--slds-text-muted); font-weight:600; font-size:14px;'>No GRN records found within the system data container.</p>");
-            return;
-        }
-        int index=1;
-        for(Map<String,Object> grn:allGRNs){
-            String grnNo=grn.get("grn_no")==null?"":grn.get("grn_no").toString();
-            String grnDate=grn.get("grn_date")==null?"":grn.get("grn_date").toString();
-            String vendor=grn.get("vendor_name")==null?"":grn.get("vendor_name").toString();
-            String gstin=grn.get("vendor_gstin")==null?"":grn.get("vendor_gstin").toString();
-            String address=grn.get("vendor_address")==null?"":grn.get("vendor_address").toString();
-            String poId=grn.get("po_id")==null?"":grn.get("po_id").toString();
-            String invoiceNo=grn.get("invoice_no")==null?"":grn.get("invoice_no").toString();
-            String invoiceDate=grn.get("invoice_date")==null?"":grn.get("invoice_date").toString();
-            String receivedBy=grn.get("received_by")==null?"":grn.get("received_by").toString();
-            String remarks=grn.get("remarks")==null?"":grn.get("remarks").toString();
-            String status=grn.get("status")==null?"completed":grn.get("status").toString();
-        %>
-
-        <div class="container grn-card" data-grn="<%=grnNo%>" data-date="<%=grnDate%>" data-vendor="<%=vendor%>" data-gstin="<%=gstin%>" data-address="<%=address%>" data-po="<%=poId%>" data-invoice="<%=invoiceNo%>" data-invdate="<%=invoiceDate%>" data-receivedby="<%=receivedBy%>" data-remarks="<%=remarks%>">
-            
-            <div class="title">
-                <div class="title-left">
-                    <div class="grn-label">GRN <b><%=grnNo%></b></div>
-                    <div class="date-badge"><i class="fa fa-calendar"></i> <%=grnDate%></div>
-                    <span class="status-badge <%=status.equalsIgnoreCase("completed")?"status-completed":"status-pending"%>">
-                        <%=status.substring(0,1).toUpperCase()+status.substring(1)%>
-                    </span>
-                    <div class="vendor-subline">
-                        <i class="fa fa-building" style="color: var(--slds-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO ID: <b><%=poId%></b>
-                    </div>
-                </div>
-                <div class="controls-right">
-                    <button class="btn small secondary" onclick="toggleItems('<%=index%>')">
-                        <i class="fa fa-eye"></i> Items
-                    </button>
-                    <button class="btn small primary" onclick="printGRN('<%=grnNo%>')">
-                        <i class="fa fa-print"></i> Print
-                    </button>
-                </div>
-            </div>
-
-            <div class="info-grid">
-                <div class="info-card"><strong>Invoice Reference</strong><div class="info-card-text"><%=invoiceNo%> (<%=invoiceDate%>)</div></div>
-                <div class="info-card"><strong>Vendor GSTIN</strong><div class="info-card-text"><%=gstin%></div></div>
-                <div class="info-card"><strong>Received By Staff</strong><div class="info-card-text"><%=receivedBy%></div></div>
-                <div class="info-card"><strong>GRN Remarks / Notes</strong><div class="info-card-text" style="font-weight:400; color:var(--slds-text-muted);"><%=remarks.isEmpty() ? "-" : remarks%></div></div>
-            </div>
-
-            <div id="items_<%=index%>" class="items-container" style="display:none">
-                <table class="items-table">
-                    <thead>
-                        <tr>
-                            <th style="width:35%;">Item Description</th>
-                            <th style="width:11%; text-align:center;">Qty Ordered</th>
-                            <th style="width:11%; text-align:center;">Qty Received</th>
-                            <th style="width:11%; text-align:center;">Qty Accepted</th>
-                            <th style="width:11%; text-align:center;">Qty Rejected</th>
-                            <th style="width:21%;">Remarks</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <%
-                    List<Map<String,Object>> items=(List<Map<String,Object>>)grn.get("items");
-                    if(items!=null && !items.isEmpty()){
-                        for(Map<String,Object> item:items){
-                            String desc=item.get("item_description")==null?"":item.get("item_description").toString();
-                            String qordered=item.get("qty_ordered")==null?"":item.get("qty_ordered").toString();
-                            String qreceived=item.get("qty_received")==null?"":item.get("qty_received").toString();
-                            String qaccepted=item.get("qty_accepted")==null?"":item.get("qty_accepted").toString();
-                            String qrejected=item.get("qty_rejected")==null?"":item.get("qty_rejected").toString();
-                            String iremarks=item.get("remarks")==null?"":item.get("remarks").toString();
-                    %>
-                        <tr class="item-row" data-desc="<%=desc.replaceAll("\"","''")%>" data-qordered="<%=qordered%>" data-qreceived="<%=qreceived%>" data-qaccepted="<%=qaccepted%>" data-qrejected="<%=qrejected%>" data-remarks="<%=iremarks.replaceAll("\"","''")%>">
-                            <td data-label="Item Description" class="cell-desc" style="font-weight:600;"><%=desc%></td>
-                            <td data-label="Qty Ordered" class="cell-qordered"><%=qordered%></td>
-                            <td data-label="Qty Received" class="cell-qreceived"><%=qreceived%></td>
-                            <td data-label="Qty Accepted" class="cell-qaccepted"><%=qaccepted%></td>
-                            <td data-label="Qty Rejected" class="cell-qrejected"><%=qrejected%></td>
-                            <td data-label="Remarks" class="cell-remarks" style="color: var(--slds-text-muted);"><%=iremarks.isEmpty() ? "-" : iremarks%></td>
-                        </tr>
-                    <%
-                        }
-                    } else {
-                    %>
-                        <tr><td colspan="6" style="text-align:center; color:var(--slds-text-muted); padding:20px; font-weight:500;">No structural line items cataloged inside this voucher segment.</td></tr>
-                    <%
-                    }
-                    %>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <%
-        index++;
-        }
-        %>
-
     </div>
+    <div class="sap-counter-badge">
+        Visible Records: <b id="visible_count">0</b>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="sap-filter-bar">
+        <div class="sap-filter-group" style="flex:1; min-width:220px;">
+            <label>Search PO Number</label>
+            <input id="filter_po" class="input" type="text" placeholder="Enter PO ID...">
+        </div>
+        <div class="sap-filter-group">
+            <label>From Date</label>
+            <input id="filter_from" class="input" type="date">
+        </div>
+        <div class="sap-filter-group">
+            <label>To Date</label>
+            <input id="filter_to" class="input" type="date">
+        </div>
+        
+        <button id="btn_expand_all" class="sap-btn sap-btn-transparent"><i class="fa fa-angles-down"></i> Expand All</button>
+        <button id="btn_collapse_all" class="sap-btn sap-btn-ghost"><i class="fa fa-angles-up"></i> Collapse All</button>
+        <button id="btn_download_csv" class="sap-btn sap-btn-success"><i class="fa fa-file-excel"></i> Download CSV</button>
+    </div>
+
+    <%
+    if(request.getAttribute("error") != null){
+        out.println("<p style='color:var(--sap-critical); font-weight:600; padding:12px; background:#fff5f5; border-radius:var(--sap-radius); border:1px solid rgba(187,0,0,0.15); font-size:0.875rem;'>"+request.getAttribute("error")+"</p>");
+        return;
+    }
+    List<Map<String,Object>> allGRNs=(List<Map<String,Object>>)request.getAttribute("all_grns");
+    if(allGRNs==null || allGRNs.isEmpty()){
+        out.println("<p style='padding:40px; text-align:center; color:var(--sap-text-muted); font-weight:500; font-size:0.875rem;'>No GRN records found within the system data container.</p>");
+        return;
+    }
+    int index=1;
+    for(Map<String,Object> grn:allGRNs){
+        String grnNo=grn.get("grn_no")==null?"":grn.get("grn_no").toString();
+        String grnDate=grn.get("grn_date")==null?"":grn.get("grn_date").toString();
+        String vendor=grn.get("vendor_name")==null?"":grn.get("vendor_name").toString();
+        String gstin=grn.get("vendor_gstin")==null?"":grn.get("vendor_gstin").toString();
+        String address=grn.get("vendor_address")==null?"":grn.get("vendor_address").toString();
+        String poId=grn.get("po_id")==null?"":grn.get("po_id").toString();
+        String invoiceNo=grn.get("invoice_no")==null?"":grn.get("invoice_no").toString();
+        String invoiceDate=grn.get("invoice_date")==null?"":grn.get("invoice_date").toString();
+        String receivedBy=grn.get("received_by")==null?"":grn.get("received_by").toString();
+        String remarks=grn.get("remarks")==null?"":grn.get("remarks").toString();
+        String status=grn.get("status")==null?"completed":grn.get("status").toString();
+    %>
+
+    <div class="sap-object-container grn-card" data-grn="<%=grnNo%>" data-date="<%=grnDate%>" data-vendor="<%=vendor%>" data-gstin="<%=gstin%>" data-address="<%=address%>" data-po="<%=poId%>" data-invoice="<%=invoiceNo%>" data-invdate="<%=invoiceDate%>" data-receivedby="<%=receivedBy%>" data-remarks="<%=remarks%>">
+        
+        <div class="sap-card-header">
+            <div class="sap-card-header-left">
+                <div class="sap-grn-id">GRN <b><%=grnNo%></b></div>
+                <div class="sap-date-indicator"><i class="fa fa-calendar"></i> <%=grnDate%></div>
+                <span class="sap-status-badge <%=status.equalsIgnoreCase("completed")?"status-completed":"status-pending"%>">
+                    <%=status.substring(0,1).toUpperCase()+status.substring(1)%>
+                </span>
+                <div class="sap-subline-entity">
+                    <i class="fa fa-building" style="color: var(--sap-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO ID: <b><%=poId%></b>
+                </div>
+            </div>
+            <div class="sap-card-header-actions">
+                <button class="sap-btn sap-btn-ghost" onclick="toggleItems('<%=index%>')">
+                    <i class="fa fa-eye"></i> Items
+                </button>
+                <button class="sap-btn sap-btn-primary" onclick="printGRN('<%=grnNo%>')">
+                    <i class="fa fa-print"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <div class="sap-info-matrix">
+            <div class="sap-info-cell"><strong>Invoice Reference</strong><div class="sap-info-cell-value"><%=invoiceNo%> (<%=invoiceDate%>)</div></div>
+            <div class="sap-info-cell"><strong>Vendor GSTIN</strong><div class="sap-info-cell-value"><%=gstin%></div></div>
+            <div class="sap-info-cell"><strong>Received By Staff</strong><div class="sap-info-cell-value"><%=receivedBy%></div></div>
+            <div class="sap-info-cell"><strong>GRN Remarks / Notes</strong><div class="sap-info-cell-value" style="font-weight:400; color:var(--sap-text-muted);"><%=remarks.isEmpty() ? "-" : remarks%></div></div>
+        </div>
+
+        <div id="items_<%=index%>" class="sap-table-view" style="display:none">
+            <table class="sap-fiori-table">
+                <thead>
+                    <tr>
+                        <th style="width:35%;">Item Description</th>
+                        <th style="width:11%; text-align:center;">Qty Ordered</th>
+                        <th style="width:11%; text-align:center;">Qty Received</th>
+                        <th style="width:11%; text-align:center;">Qty Accepted</th>
+                        <th style="width:11%; text-align:center;">Qty Rejected</th>
+                        <th style="width:21%;">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <%
+                List<Map<String,Object>> items=(List<Map<String,Object>>)grn.get("items");
+                if(items!=null && !items.isEmpty()){
+                    for(Map<String,Object> item:items){
+                        String desc=item.get("item_description")==null?"":item.get("item_description").toString();
+                        String qordered=item.get("qty_ordered")==null?"":item.get("qty_ordered").toString();
+                        String qreceived=item.get("qty_received")==null?"":item.get("qty_received").toString();
+                        String qaccepted=item.get("qty_accepted")==null?"":item.get("qty_accepted").toString();
+                        String qrejected=item.get("qty_rejected")==null?"":item.get("qty_rejected").toString();
+                        String iremarks=item.get("remarks")==null?"":item.get("remarks").toString();
+                %>
+                    <tr class="item-row" data-desc="<%=desc.replaceAll("\"","''")%>" data-qordered="<%=qordered%>" data-qreceived="<%=qreceived%>" data-qaccepted="<%=qaccepted%>" data-qrejected="<%=qrejected%>" data-remarks="<%=iremarks.replaceAll("\"","''")%>">
+                        <td data-label="Item Description" class="cell-desc" style="font-weight:600;"><%=desc%></td>
+                        <td data-label="Qty Ordered" class="cell-qordered"><%=qordered%></td>
+                        <td data-label="Qty Received" class="cell-qreceived"><%=qreceived%></td>
+                        <td data-label="Qty Accepted" class="cell-qaccepted"><%=qaccepted%></td>
+                        <td data-label="Qty Rejected" class="cell-qrejected"><%=qrejected%></td>
+                        <td data-label="Remarks" class="cell-remarks" style="color: var(--sap-text-muted);"><%=iremarks.isEmpty() ? "-" : iremarks%></td>
+                    </tr>
+                <%
+                    }
+                } else {
+                %>
+                    <tr><td colspan="6" style="text-align:center; color:var(--sap-text-muted); padding:20px; font-weight:500;">No structural line items cataloged inside this voucher segment.</td></tr>
+                <%
+                }
+                %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <%
+    index++;
+    }
+    %>
+
 </div>
 </body>
 </html>

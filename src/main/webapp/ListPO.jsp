@@ -86,167 +86,322 @@
 %>
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Order List</title>
     <style>
+        /* SAP Horizon (Morning Horizon) System Design Tokens */
+        :root {
+            --sap-background: #f5f6f7;
+            --sap-shell-bg: #1c2d42;
+            --sap-card-bg: #ffffff;
+            --sap-text-color: #1d2d3e;
+            --sap-subtitle-color: #6a7b8c;
+            --sap-border-color: #e2e5e9;
+            --sap-primary-btn: #0070f2;
+            --sap-primary-btn-hover: #005bc4;
+            --sap-secondary-btn: #ffffff;
+            --sap-secondary-btn-border: #b3b9c1;
+            --sap-secondary-btn-hover: #f5f6f7;
+            --sap-list-hover-bg: #eed0c42; /* Clean 3% dark alpha overlay */
+            
+            /* SAP Semantic Metric Color Tokens */
+            --sap-state-success-bg: #e5f5ed;
+            --sap-state-success-text: #107e3e;
+            --sap-state-warning-bg: #fef0db;
+            --sap-state-warning-text: #b16500;
+            --sap-state-error-bg: #ffebeb;
+            --sap-state-error-text: #bb0000;
+            --sap-state-info-bg: #e8f4ff;
+            --sap-state-info-text: #0a6ed1;
+        }
+
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            background: #eef3f8;
+            font-family: "72", "72full", Arial, Helvetica, sans-serif;
             margin: 0;
             padding: 0;
+            background-color: var(--sap-background);
+            color: var(--sap-text-color);
+            font-size: 0.875rem;
+            min-height: 100vh;
         }
 
-        h2 {
-            margin: 15px;
-            color: #2c3e50;
-            text-align: center;
+        .sap-fiori-container {
+            padding: 1rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            box-sizing: border-box;
         }
 
-        table.main-table {
-            width: 98%;
-            margin: 10px auto;
-            border-collapse: collapse;
-            border: 2px solid #b0c4de;
-            background: #fff;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-            border-radius: 6px;
+        /* SAP Fiori Object Header Module blueprint */
+        .sap-object-header {
+            background: var(--sap-card-bg);
+            padding: 1.25rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--sap-border-color);
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.03);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
 
-        table.main-table thead {
-            background: #0f2a4d;
-            color: white;
-            font-size: 16px;
+        .sap-icon-tile {
+            background: #e8f4ff;
+            color: #0a6ed1;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            border: 1px solid #cedfe2;
         }
 
-        table.main-table td, th {
-            border: 1px solid #dcdcdc;
-            padding: 8px;
-            text-align: center;
-            font-size: 14px;
+        .sap-object-header__title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--sap-text-color);
+            margin: 0;
         }
 
-        .items-block {
-            width: 95%;
-            margin: 10px auto;
-            padding: 10px;
-            background: #f9fbff;
-            border-left: 4px solid #3498db;
-            border-radius: 10px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-            display: none;
+        .sap-object-header__subtitle {
+            font-size: 0.75rem;
+            color: var(--sap-subtitle-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+            display: block;
+            margin-bottom: 0.125rem;
         }
 
-        .items-table {
+        /* SAP Filter Dynamic Filter Bar / Toolbar Component */
+        .sap-filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            background: var(--sap-card-bg);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--sap-border-color);
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+
+        .sap-filter-bar input, .sap-filter-bar select {
+            padding: 0 0.75rem;
+            height: 2.25rem;
+            border: 1px solid var(--sap-secondary-btn-border);
+            border-radius: 0.25rem;
+            font-family: inherit;
+            font-size: 0.875rem;
+            background: var(--sap-card-bg);
+            color: var(--sap-text-color);
+            box-sizing: border-box;
+            transition: border-color 0.1s;
+        }
+
+        .sap-filter-bar input:focus, .sap-filter-bar select:focus {
+            border-color: var(--sap-primary-btn);
+            outline: none;
+        }
+
+        .sap-filter-bar input[type="text"] {
+            min-width: 280px;
+        }
+
+        /* SAP Fiori Responsive Table Module */
+        .sap-card-table {
+            background: var(--sap-card-bg);
+            border: 1px solid var(--sap-border-color);
+            border-radius: 0.5rem;
+            box-shadow: 0 0.125rem 0.5rem rgba(0,0,0,0.02);
+            overflow: hidden;
+            padding: 1rem;
+        }
+
+        .table-responsive-container {
+            overflow-x: auto;
+            border: 1px solid var(--sap-border-color);
+            border-radius: 0.25rem;
+        }
+
+        table.sap-ui-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 13px;
+            font-size: 0.875rem;
+            text-align: left;
+            background: var(--sap-card-bg);
         }
 
-        .items-table th {
-            background: #e6f0ff;
-            color: #333;
-            padding: 6px;
-            border: 1px solid #aac4ef;
+        table.sap-ui-table th, table.sap-ui-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--sap-border-color);
+            vertical-align: middle;
         }
 
-        .items-table td {
-            border: 1px solid #ccd9ea;
-            padding: 6px;
-            text-align: center;
+        table.sap-ui-table th {
+            background: #f7f9fa;
+            color: var(--sap-text-color);
+            font-weight: 600;
+            font-size: 0.8125rem;
+            text-transform: none;
+            letter-spacing: normal;
+            height: 2.5rem;
         }
 
-     
-        .toggle-btn {
-            background: #2176bd;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 5px;
+        table.sap-ui-table tbody tr.sap-master-row:hover td {
+            background-color: rgba(0, 112, 242, 0.04);
             cursor: pointer;
-            font-size: 13px;
-            display: inline-block;
-            transition: background 0.3s ease, transform 0.2s ease;
         }
 
-        .toggle-btn:hover {
-            background: #1a5f99;
-            transform: scale(1.05);
+        /* SAP Object Status / Badging States */
+        .sap-object-status {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.25rem 0.75rem;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border-radius: 0.25rem;
         }
 
-        .content {
-            margin: 0; /* ✅ removed left space */
-            padding: 20px;
-        }
+        .sap-state-approved { background: var(--sap-state-success-bg); color: var(--sap-state-success-text); }
+        .sap-state-open { background: var(--sap-state-info-bg); color: var(--sap-state-info-text); }
+        .sap-state-pending { background: var(--sap-state-warning-bg); color: var(--sap-state-warning-text); }
+        .sap-state-closed { background: #f0f2f5; color: #556b82; }
+        .sap-state-rejected, .sap-state-cancelled { background: var(--sap-state-error-bg); color: var(--sap-state-error-text); }
 
-       
-        .toolbar {
-            width: 98%;
-            margin: 10px auto;
-            text-align: right;
-            flex-wrap: wrap;
-        }
-
-        .toolbar input, .toolbar select, .toolbar button {
-            padding: 6px 10px;
-            border-radius: 5px;
-            border: 1px solid #bbb;
-            margin: 5px;
-            font-size: 13px;
-        }
-
-        .toolbar button {
-            background: #28a745;
-            color: white;
-            border: none;
+        /* SAP Standard Button Engine Layout controls */
+        .sap-btn {
+            background: var(--sap-secondary-btn);
+            color: var(--sap-primary-btn);
+            border: 1px solid var(--sap-primary-btn);
+            padding: 0 1rem;
+            height: 2.25rem;
+            border-radius: 0.25rem;
             cursor: pointer;
-            transition: background 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            transition: all 0.1s ease-in-out;
         }
 
-        .toolbar button:hover {
-            background: #218838;
+        .sap-btn:hover {
+            background: #e8f4ff;
+            border-color: var(--sap-primary-btn-hover);
         }
 
-       
+        .sap-btn-emphasized {
+            background: var(--sap-primary-btn);
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .sap-btn-emphasized:hover {
+            background: var(--sap-primary-btn-hover);
+            color: #ffffff;
+        }
+
+        .sap-btn-transparent {
+            background: transparent;
+            border-color: transparent;
+            color: var(--sap-text-color);
+        }
+        .sap-btn-transparent:hover {
+            background: var(--sap-secondary-btn-hover);
+            color: var(--sap-primary-btn);
+        }
+
+        .sap-action-flex-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.375rem;
+        }
+
+        /* SAP Hierarchical Grid Expandable Sections blueprint */
+        .sap-nested-row {
+            background: #f8fafc;
+        }
+
+        .sap-items-block {
+            padding: 1.25rem;
+            background: #ffffff;
+            border: 1px solid var(--sap-border-color);
+            border-radius: 0.375rem;
+            margin: 0.5rem 0;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+        }
+
+        .sap-items-block h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.9375rem;
+            color: var(--sap-text-color);
+            font-weight: 600;
+        }
+
+        .sap-nested-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8125rem;
+        }
+
+        .sap-nested-table th {
+            background: #f0f2f5;
+            color: var(--sap-text-color);
+            border: 1px solid var(--sap-border-color);
+            height: 2.25rem;
+        }
+
+        .sap-nested-table td {
+            border: 1px solid var(--sap-border-color);
+            padding: 0.625rem 0.875rem;
+            background: #ffffff;
+        }
+
+        /* Responsive UI Design Adjustments */
         @media screen and (max-width: 1024px) {
-            .content { margin: 0; padding: 10px; }
-            table.main-table { font-size: 13px; width: 100%; }
-            table.main-table th, table.main-table td { padding: 6px; }
-            .toolbar { text-align: center; }
+            .sap-fiori-container { padding: 1rem; }
+            .sap-filter-bar { flex-direction: column; align-items: stretch; }
+            .sap-filter-bar input, .sap-filter-bar select { width: 100%; }
         }
 
         @media screen and (max-width: 768px) {
-            h2 { font-size: 18px; }
-            table.main-table, .items-table { font-size: 12px; }
-            .toolbar input, .toolbar select, .toolbar button { width: 100%; margin: 4px 0; }
-            .toggle-btn { padding: 5px 8px; font-size: 12px; display: block; margin: auto; }
-        }
-
-        @media screen and (max-width: 480px) {
-            h2 { font-size: 16px; }
-            table.main-table thead { font-size: 13px; }
-            table.main-table td, th { padding: 4px; font-size: 11px; }
-            .toolbar { display: block; }
-            .toolbar input, .toolbar select, .toolbar button { width: 100%; }
-            .items-block { font-size: 12px; padding: 8px; }
-        }
-        
-        button {
-            background: #2176bd;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            display: inline-block;
-            transition: background 0.3s ease, transform 0.2s ease;
-        }
-        button:hover {
-            background: red;
+            table.sap-ui-table, table.sap-ui-table thead, table.sap-ui-table tbody, table.sap-ui-table tr, table.sap-ui-table td {
+                display: block;
+            }
+            table.sap-ui-table thead { display: none; }
+            table.sap-ui-table tr.sap-master-row {
+                margin-bottom: 0.75rem;
+                border: 1px solid var(--sap-border-color);
+                border-radius: 0.375rem;
+                padding: 0.5rem 0;
+            }
+            table.sap-ui-table td {
+                border: none;
+                border-bottom: 1px solid #f0f2f5;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.625rem 1rem;
+            }
+            table.sap-ui-table td:last-child { border-bottom: none; }
+            table.sap-ui-table td:before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: var(--sap-subtitle-color);
+                font-size: 0.75rem;
+            }
+            .sap-action-flex-group { width: 100%; justify-content: flex-end; }
         }
     </style>
 
@@ -254,12 +409,16 @@
         function toggleItems(poNumber) {
             var block = document.getElementById('items-' + poNumber);
             var btn = document.getElementById('btn-' + poNumber);
+            var parentRow = document.getElementById('row-nested-' + poNumber);
+            
             if (block.style.display === "none" || block.style.display === "") {
                 block.style.display = "block";
-                btn.innerText = "Hide Items";
+                parentRow.style.display = "";
+                btn.innerText = "Hide Line Items";
             } else {
                 block.style.display = "none";
-                btn.innerText = "View Items";
+                parentRow.style.display = "none";
+                btn.innerText = "View Line Items";
             }
         }
 
@@ -270,17 +429,15 @@
             let fromDate = document.getElementById("fromDate").value;
             let toDate = document.getElementById("toDate").value;
 
-            let rows = document.querySelectorAll(".main-table tbody tr");
+            let rows = document.querySelectorAll(".sap-ui-table tbody tr.sap-master-row");
 
             rows.forEach((row) => {
-                let cells = row.querySelectorAll("td");
-                if (cells.length < 7) return;
-
-                let poNum = cells[0].innerText.toLowerCase();
-                let date = cells[1].innerText.trim();
-                let vendor = cells[2].innerText.toLowerCase();
-                let approval = cells[4].innerText;
-                let status = cells[5].innerText;
+                let poNum = row.getAttribute("data-ponum").toLowerCase();
+                let date = row.getAttribute("data-podate");
+                let vendor = row.getAttribute("data-vendor").toLowerCase();
+                let approval = row.getAttribute("data-approval");
+                let status = row.getAttribute("data-status");
+                
                 let poDate = new Date(date);
                 let include = true;
 
@@ -290,7 +447,19 @@
                 if (fromDate && poDate < new Date(fromDate)) include = false;
                 if (toDate && poDate > new Date(toDate)) include = false;
 
-                row.style.display = include ? "" : "none";
+                let nestedRow = document.getElementById("row-nested-" + row.getAttribute("data-ponum"));
+                if (include) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                    if(nestedRow) {
+                        nestedRow.style.display = "none";
+                        let btn = document.getElementById('btn-' + row.getAttribute("data-ponum"));
+                        if(btn) btn.innerText = "View Line Items";
+                        let block = document.getElementById('items-' + row.getAttribute("data-ponum"));
+                        if(block) block.style.display = "none";
+                    }
+                }
             });
         }
 
@@ -304,11 +473,11 @@
         }
 
         function downloadExcel() {
-            let table = document.querySelector(".main-table").outerHTML;
+            let table = document.querySelector(".sap-ui-table").outerHTML;
             let blob = new Blob(["\ufeff" + table], { type: "application/vnd.ms-excel" });
             let link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
-            link.download = "PO_List.xls";
+            link.download = "PO_List_SAP_Format.xls";
             link.click();
         }
     </script>
@@ -317,11 +486,18 @@
 <body>
 <jsp:include page="header.jsp" />
 
-<h2>Purchase Orders</h2>
-<div class="content">
+<div class="sap-fiori-container">
 
-    <div class="toolbar">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search PO No. or Vendor">
+    <div class="sap-object-header">
+        <div class="sap-icon-tile">PO</div>
+        <div>
+            <span class="sap-object-header__subtitle">Procurement Operations</span>
+            <h1 class="sap-object-header__title">Manage Purchase Orders</h1>
+        </div>
+    </div>
+
+    <div class="sap-filter-bar">
+        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Object ID or Vendor Vendor...">
         <input type="date" id="fromDate" onchange="filterTable()">
         <input type="date" id="toDate" onchange="filterTable()">
         <select id="approvalFilter" onchange="filterTable()">
@@ -331,91 +507,118 @@
             <option value="Rejected">Rejected</option>
         </select>
         <select id="statusFilter" onchange="filterTable()">
-            <option value="">All Status</option>
+            <option value="">All Statuses</option>
             <option value="Open">Open</option>
             <option value="Closed">Closed</option>
             <option value="Cancelled">Cancelled</option>
         </select>
-        <button onclick="filterTable()">Search</button>
-        <button onclick="clearFilters()">Clear</button>
-        <button onclick="downloadExcel()">Download</button>
+        <button class="sap-btn sap-btn-emphasized" onclick="filterTable()">Go</button>
+        <button class="sap-btn sap-btn-transparent" onclick="clearFilters()">Clear</button>
+        <button class="sap-btn" onclick="downloadExcel()">Export Excel</button>
     </div>
 
-    <table class="main-table">
-        <thead>
-            <tr>
-                <th>PO Number</th>
-                <th>Date</th>
-                <th>Vendor</th>
-                <th>Total Amount</th>
-                <th>Approval</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        <%
-            if (!poList.isEmpty()) {
-                for (PO po : poList) {
-        %>
-            <tr>
-                <td><%= po.poNumber %></td>
-                <td><%= po.poDate %></td>
-                <td><%= po.vendorName %></td>
-                <td><%= po.totalAmount %></td>
-                <td><%= po.approval %></td>
-                <td><%= po.status %></td>
-                <td>
-                    <button class="toggle-btn" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
-                    <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
-                            <input type="hidden" name="poNumber" value="<%= po.poNumber %>">
-                            <button  />View/Print</button>
-                        </form>
-                </td>
-                
-            </tr>
-            <tr>
-                <td colspan="7">
-                    <div class="items-block" id="items-<%=po.poNumber%>">
-                        <h4>Items for PO: <%= po.poNumber %></h4>
-                        <% if (!po.items.isEmpty()) { %>
-                        <table class="items-table">
-                            <tr>
-                                <th>Item ID</th>
-                                <th>Description</th>
-                                <th>PO Qty</th>
-                                <th>Received Qty</th>
-                                <th>Balance</th>
-                                <th>Rate</th>
-                                <th>Discount %</th>
-                                <th>GST %</th>
-                            </tr>
-                            <% for (POItem item : po.items) { %>
-                            <tr>
-                                <td><%= item.itemId %></td>
-                                <td><%= item.description %></td>
-                                <td><%= item.qty %></td>
-                                <td><%= item.receivedQty %></td>
-                                <td><%= item.balanceQty %></td>
-                                <td><%= item.rate %></td>
-                                <td><%= item.discount %></td>
-                                <td><%= item.gst %></td>
-                            </tr>
-                            <% } %>
-                        </table>
-                        <% } else { %>
-                        <p style="color:red;">No items found for this PO.</p>
-                        <% } %>
-                    </div>
-                </td>
-            </tr>
-        <%  } } else { %>
-            <tr>
-                <td colspan="7" style="text-align:center; color:red;">No Purchase Orders Found</td>
-            </tr>
-        <% } %>
-        </tbody>
-    </table>
+    <div class="sap-card-table">
+        <div class="table-responsive-container">
+            <table class="sap-ui-table">
+                <thead>
+                    <tr>
+                        <th>Purchase Order No.</th>
+                        <th>Purchase Date</th>
+                        <th>Vendor Name</th>
+                        <th>Total Net Value</th>
+                        <th>Approval Status</th>
+                        <th>Overall Status</th>
+                        <th style="width: 15%; text-align: right;">Control Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <%
+                    if (!poList.isEmpty()) {
+                        for (PO po : poList) {
+                            String approvalClass = "sap-state-pending";
+                            if("Approved".equalsIgnoreCase(po.approval)) approvalClass = "sap-state-approved";
+                            if("Rejected".equalsIgnoreCase(po.approval)) approvalClass = "sap-state-rejected";
+
+                            String statusClass = "sap-state-open";
+                            if("Closed".equalsIgnoreCase(po.status)) statusClass = "sap-state-closed";
+                            if("Cancelled".equalsIgnoreCase(po.status)) statusClass = "sap-state-cancelled";
+                %>
+                    <tr class="sap-master-row" 
+                        data-ponum="<%= po.poNumber %>" 
+                        data-podate="<%= po.poDate %>" 
+                        data-vendor="<%= po.vendorName %>" 
+                        data-approval="<%= po.approval %>" 
+                        data-status="<%= po.status %>">
+                        <td data-label="Purchase Order No." style="font-weight: 600; color: #0a6ed1;"><%= po.poNumber %></td>
+                        <td data-label="Document Date"><%= po.poDate %></td>
+                        <td data-label="Vendor Supplier"><%= po.vendorName %></td>
+                        <td data-label="Total Net Value" style="font-weight: 600;"><%= String.format("%.2f", po.totalAmount) %></td>
+                        <td data-label="Approval Status">
+                            <span class="sap-object-status <%= approvalClass %>"><%= po.approval %></span>
+                        </td>
+                        <td data-label="Overall Status">
+                            <span class="sap-object-status <%= statusClass %>"><%= po.status %></span>
+                        </td>
+                        <td data-label="Control Actions" style="text-align: right;">
+                            <div class="sap-action-flex-group">
+                                <button class="sap-btn sap-btn-transparent" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
+                                <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0; display:inline-block;">
+                                    <input type="hidden" name="poNumber" value="<%= po.poNumber %>">
+                                    <button class="sap-btn" type="submit">Print PDF</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="sap-nested-row" id="row-nested-<%= po.poNumber %>" style="display: none;">
+                        <td colspan="7" style="padding: 0 1rem;">
+                            <div class="sap-items-block" id="items-<%=po.poNumber%>" style="display: none;">
+                                <h4>Purchase Order Items [PO: <%= po.poNumber %>]</h4>
+                                <% if (!po.items.isEmpty()) { %>
+                                <div class="table-responsive-container">
+                                    <table class="sap-nested-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item ID</th>
+                                                <th>Detailed Description</th>
+                                                <th>Order Qty</th>
+                                                <th>Delivered Qty</th>
+                                                <th>Balance Qty</th>
+                                                <th>Net Value Rate</th>
+                                                <th>Discount %</th>
+                                                <th>Tax (GST) %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% for (POItem item : po.items) { %>
+                                            <tr>
+                                                <td style="font-weight: 600;"><%= item.itemId %></td>
+                                                <td><%= item.description %></td>
+                                                <td><%= item.qty %></td>
+                                                <td><%= item.receivedQty %></td>
+                                                <td style="font-weight: 600; color: <%= item.balanceQty > 0 ? "var(--sap-state-warning-text)" : "inherit" %>;"><%= item.balanceQty %></td>
+                                                <td><%= String.format("%.2f", item.rate) %></td>
+                                                <td><%= item.discount %></td>
+                                                <td><%= item.gst %></td>
+                                            </tr>
+                                            <% } %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% } else { %>
+                                <p style="color: var(--sap-state-error-text); margin: 0; font-weight: 600;">System alert: No sub-allocation line items found matching this Purchase Document context.</p>
+                                <% } %>
+                            </div>
+                        </td>
+                    </tr>
+                <%  } } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--sap-state-error-text); padding: 2rem; font-weight: 600;">Zero matching records discovered inside database matrix index</td>
+                    </tr>
+                <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
 <jsp:include page="Footer.jsp" />
