@@ -24,11 +24,11 @@ public class RequestBookingServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    // REMOVED: Global 'Connection con = null;' instance variable.
+ 
 
     @Override
     public void init() throws ServletException {
-        // REMOVED: Opening connection here is no longer needed.
+       
     }
 
     @Override

@@ -64,24 +64,24 @@ public class Incharge extends HttpServlet {
          */
 
         String sql =
-                "SELECT " +
-                "sr.id, " +
-                "sr.request_no, " +
-                "DATE_FORMAT(sr.request_date,'%d %b %Y %h:%i %p') AS request_date, " +
-                "sr.requested_by, " +
-                "sr.location, " +
-                "sr.description, " +
-                "sr.priority, " +
-                "sr.status, " +
-                "di.incharge_name AS assigned_name, " +
-                "di.employee_id " +
-                "FROM service_requests sr " +
-                "LEFT JOIN department_incharge di " +
-                "ON sr.assigned_to = di.id " +
-                "WHERE UPPER(TRIM(di.incharge_name)) = ? " +
-                "AND (sr.status IS NULL " +
-                "OR UPPER(TRIM(sr.status)) <> 'SATISFIED') " +
-                "ORDER BY sr.id DESC";
+        	    "SELECT " +
+        	    "sr.id, " +
+        	    "sr.request_no, " +
+        	    "DATE_FORMAT(sr.request_date,'%d %b %Y %h:%i %p') AS request_date, " +
+        	    "sr.requested_by, " +
+        	    "sr.location, " +
+        	    "sr.description, " +
+        	    "sr.priority, " +
+        	    "sr.status, " +
+        	    "di.incharge_name AS assigned_name, " +
+        	    "di.employee_id " +
+        	    "FROM service_requests sr " +
+        	    "LEFT JOIN department_incharge di " +
+        	    "ON sr.assigned_to = di.id " +
+        	    "WHERE UPPER(TRIM(di.incharge_name)) = ? " +
+        	    "AND (sr.status IS NULL " +
+        	    "OR UPPER(TRIM(sr.status)) NOT IN ('SATISFIED', 'CLOSED')) " +
+        	    "ORDER BY sr.id DESC";
 
         /*
          * FOLLOWUP QUERY
