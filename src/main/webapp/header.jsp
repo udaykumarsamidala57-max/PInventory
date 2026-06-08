@@ -523,6 +523,13 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="dropdown-content">
       <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
+      <a href="StockVerificationServlet">
+    <i class="fas fa-clipboard-check text-success"></i> New Audit
+</a>
+
+<a href="StockAuditReportServlet">
+    <i class="fas fa-chart-bar text-info"></i> Audit Report
+</a>
     </div>
   </div>
   <% } %>

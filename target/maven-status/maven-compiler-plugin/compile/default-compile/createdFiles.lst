@@ -46,6 +46,7 @@ com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\controller\HRA\CandidateServlet.class
 com\controller\Asset\CategoryController.class
 com\DAO\TransferDAO.class
+com\controller\StockAuditReportServlet.class
 com\controller\Admissions\SaveMarksServlet.class
 com\controller\PO$1MergedItem.class
 com\controller\Admissions\UpdateTCStatusServlet.class
@@ -75,6 +76,7 @@ com\controller\Admissions\UpdateAdmissionStatusServlet.class
 com\controller\PO.class
 com\bean\Addstock.class
 com\bean\PO.class
+com\controller\SaveStockVerificationServlet.class
 com\controller\HRA\resume.class
 com\controller\SendOTPServlet.class
 com\bean\Asset.class

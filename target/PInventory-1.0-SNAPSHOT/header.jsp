@@ -460,6 +460,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="dropdown-content">
       <a href="IndentServlet"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
       <a href="IndentlistServlet"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
+      <a href="InventoryItems.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
         <a href="AIndentListServlet"><i class="fa-solid fa-clipboard-check text-warning"></i> Approve Indent</a>
       <% } %>
