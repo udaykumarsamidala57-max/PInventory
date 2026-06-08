@@ -344,7 +344,7 @@ function cancelEdit(id){
                     <input type="text" name="building" autocomplete="off">
                 </div>
                 <div class="form-group">
-                    <label>Floor Axis Identifier</label>
+                    <label>Floor </label>
                     <input type="text" name="floor_name" autocomplete="off">
                 </div>
                 <div class="form-group">
@@ -376,7 +376,7 @@ function cancelEdit(id){
                         <th style="width: 15%;">Floor Track</th>
                         <th style="width: 15%;">Room Index</th>
                         <th style="width: 22%;">Context Description</th>
-                        <th style="width: 20%;">Broker Actions</th>
+                        <th style="width: 20%;">Transfered By</th>
                     </tr>
                 </thead>
                 <tbody>
