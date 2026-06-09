@@ -1,4 +1,6 @@
 <%@page import="java.util.*, java.util.stream.*"%>
+<%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     List<Map<String,Object>> reportList = (List<Map<String,Object>>)request.getAttribute("reportList");
     if(reportList == null) reportList = new ArrayList<>();
@@ -343,21 +345,16 @@
 
     <div class="filter-grid">
 
-        <div class="filter-item">
-            <label class="slds-form-element__label">From Date</label>
-            <input type="date"
-                   name="from_date"
-                   class="slds-input"
-                   value="<%= request.getParameter("from_date") != null ? request.getParameter("from_date") : "" %>">
-        </div>
+       <div class="filter-item">
+    <label class="slds-form-element__label">
+        Month
+    </label>
 
-        <div class="filter-item">
-            <label class="slds-form-element__label">To Date</label>
-            <input type="date"
-                   name="to_date"
-                   class="slds-input"
-                   value="<%= request.getParameter("to_date") != null ? request.getParameter("to_date") : "" %>">
-        </div>
+    <input type="month"
+           name="report_month"
+           class="slds-input"
+           value="<%= request.getParameter("report_month") != null ? request.getParameter("report_month") : "" %>">
+</div>
 
         <div class="filter-item">
             <label class="slds-form-element__label">Session</label>
@@ -412,11 +409,23 @@ for(Map.Entry<String, Map<String, List<Map<String, Object>>>> dateEntry : groupe
 <%
     }
 %>
+<%
+String formattedDate = dateEntry.getKey();
+
+try{
+    LocalDate dt = LocalDate.parse(dateEntry.getKey());
+    formattedDate = dt.format(
+        DateTimeFormatter.ofPattern("dd MMMM yyyy")
+    );
+}catch(Exception e){
+    // keep original value
+}
+%>
 
 <td style="vertical-align:top; width:25%; padding: 8px; border: 1px solid #d8dde6;">
 
     <div style="font-weight:bold; background:#eef4ff; color:#16325c; padding:8px; border-radius:4px; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:18px;"><%= dateEntry.getKey() %></span>
+        <span style="font-size:18px;"><%= formattedDate %></span>
         <span style="background:#fff; padding:2px 6px; border-radius:10px; font-size:18px; border:1px solid #cbd5e1;"><%= String.format("%.2f", dayTotal) %></span>
     </div>
 
@@ -441,7 +450,7 @@ for(Map.Entry<String, Map<String, List<Map<String, Object>>>> dateEntry : groupe
     <div id="session-modal-<%= modalCounter %>" class="custom-modal" onclick="if(event.target === this) toggleModal('session-modal-<%= modalCounter %>', false)">
         <div class="custom-modal-content">
             <div class="custom-modal-header">
-                <h3><%= dateEntry.getKey() %> &mdash; <%= sessionEntry.getKey() %></h3>
+                <h3 align="center">  <%= formattedDate %></h3>
                 <button type="button" class="close-modal-btn" onclick="toggleModal('session-modal-<%= modalCounter %>', false)">&times;</button>
             </div>
             <div class="custom-modal-body">

@@ -501,7 +501,8 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall Operations <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <a href="DiningHallServlet"><i class="fa-solid fa-kitchen-set text-primary"></i> DH Consumption Entry</a>
-      <a href="dining_dashboard.jsp"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
+      
+      <a href="DiningHallConsumptionReportServlet"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
     </div>
   </div>
   <% } %>

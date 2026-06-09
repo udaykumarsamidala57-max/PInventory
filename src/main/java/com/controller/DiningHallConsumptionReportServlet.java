@@ -1,5 +1,5 @@
 package com.controller;
-
+import java.time.YearMonth;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -19,17 +19,43 @@ public class DiningHallConsumptionReportServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        String fromDate =
-                request.getParameter("from_date");
+    	String reportMonth =
+    	        request.getParameter("report_month");
 
-        String toDate =
-                request.getParameter("to_date");
+    	String session =
+    	        request.getParameter("session");
 
-        String session =
-                request.getParameter("session");
+    	String fromDate = null;
+    	String toDate = null;
+
+    	if(reportMonth != null &&
+    	        !reportMonth.trim().isEmpty()) {
+
+    	    YearMonth ym =
+    	            YearMonth.parse(reportMonth);
+
+    	    fromDate =
+    	            ym.atDay(1).toString();
+
+    	    toDate =
+    	            ym.atEndOfMonth().toString();
+    	}
 
         List<Map<String,Object>> reportList =
                 new ArrayList<Map<String,Object>>();
+
+        // Don't load report initially
+        if(reportMonth == null ||
+                reportMonth.trim().isEmpty()) {
+
+            request.setAttribute("reportList", reportList);
+
+            request.getRequestDispatcher(
+                    "dining_hall_consumption_report.jsp")
+                    .forward(request, response);
+
+            return;
+        }
 
         try(Connection con = DBUtil.getConnection()) {
 
