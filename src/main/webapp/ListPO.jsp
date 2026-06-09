@@ -1,7 +1,7 @@
 <%@ page import="java.sql.*, java.util.*" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="com.bean.DBUtil" %>
-
+<%@ page import="java.util.stream.Collectors" %>
 <%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
