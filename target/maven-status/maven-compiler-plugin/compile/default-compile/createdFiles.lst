@@ -12,6 +12,7 @@ com\controller\DiningHallServlet.class
 com\controller\Asset\AssetServlet.class
 com\bean\Indentlist.class
 com\controller\Admissions\UploadCSVServlet.class
+com\controller\DiningHallConsumptionReportServlet.class
 com\controller\IndentlistServlet.class
 com\controller\Asset\EmployeeController.class
 com\controller\Asset\DashboardController.class

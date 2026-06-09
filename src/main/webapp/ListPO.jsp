@@ -484,143 +484,279 @@
 </head>
 
 <body>
+
 <jsp:include page="header.jsp" />
 
 <div class="sap-fiori-container">
 
+    <!-- Object Header -->
     <div class="sap-object-header">
-        <div class="sap-icon-tile">PO</div>
+        <div class="sap-icon-tile">DH</div>
         <div>
-            <span class="sap-object-header__subtitle">Procurement Operations</span>
-            <h1 class="sap-object-header__title">Manage Purchase Orders</h1>
+            <span class="sap-object-header__subtitle">
+                Dining Operations
+            </span>
+            <h1 class="sap-object-header__title">
+                Dining Hall Consumption Report
+            </h1>
         </div>
     </div>
 
-    <div class="sap-filter-bar">
-        <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search Object ID or Vendor Vendor...">
-        <input type="date" id="fromDate" onchange="filterTable()">
-        <input type="date" id="toDate" onchange="filterTable()">
-        <select id="approvalFilter" onchange="filterTable()">
-            <option value="">All Approvals</option>
-            <option value="Approved">Approved</option>
-            <option value="Pending">Pending</option>
-            <option value="Rejected">Rejected</option>
-        </select>
-        <select id="statusFilter" onchange="filterTable()">
-            <option value="">All Statuses</option>
-            <option value="Open">Open</option>
-            <option value="Closed">Closed</option>
-            <option value="Cancelled">Cancelled</option>
-        </select>
-        <button class="sap-btn sap-btn-emphasized" onclick="filterTable()">Go</button>
-        <button class="sap-btn sap-btn-transparent" onclick="clearFilters()">Clear</button>
-        <button class="sap-btn" onclick="downloadExcel()">Export Excel</button>
-    </div>
+    <!-- Filter Bar -->
+    <form method="get"
+          action="DiningHallConsumptionReportServlet"
+          class="sap-filter-bar">
 
+        <input type="date"
+               name="from_date"
+               value="<%= request.getParameter("from_date") != null ? request.getParameter("from_date") : "" %>">
+
+        <input type="date"
+               name="to_date"
+               value="<%= request.getParameter("to_date") != null ? request.getParameter("to_date") : "" %>">
+
+        <select name="session">
+            <option value="">All Sessions</option>
+
+            <% for(String s : Arrays.asList("BREAKFAST","LUNCH","SNACKS","DINNER")) { %>
+
+                <option value="<%= s %>"
+                    <%= s.equals(request.getParameter("session")) ? "selected" : "" %>>
+                    <%= s %>
+                </option>
+
+            <% } %>
+        </select>
+
+        <button type="submit"
+                class="sap-btn sap-btn-emphasized">
+            Run Report
+        </button>
+
+    </form>
+
+    <!-- Main Card -->
     <div class="sap-card-table">
+
         <div class="table-responsive-container">
+
             <table class="sap-ui-table">
+
                 <thead>
                     <tr>
-                        <th>Purchase Order No.</th>
-                        <th>Purchase Date</th>
-                        <th>Vendor Name</th>
-                        <th>Total Net Value</th>
-                        <th>Approval Status</th>
-                        <th>Overall Status</th>
-                        <th style="width: 15%; text-align: right;">Control Actions</th>
+                        <th>Date</th>
+                        <th>Session</th>
+                        <th>Total Consumption Value</th>
+                        <th style="text-align:right;">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
-                <tbody>
-                <%
-                    if (!poList.isEmpty()) {
-                        for (PO po : poList) {
-                            String approvalClass = "sap-state-pending";
-                            if("Approved".equalsIgnoreCase(po.approval)) approvalClass = "sap-state-approved";
-                            if("Rejected".equalsIgnoreCase(po.approval)) approvalClass = "sap-state-rejected";
 
-                            String statusClass = "sap-state-open";
-                            if("Closed".equalsIgnoreCase(po.status)) statusClass = "sap-state-closed";
-                            if("Cancelled".equalsIgnoreCase(po.status)) statusClass = "sap-state-cancelled";
+                <tbody>
+
+                <%
+                double grandTotal = 0;
+                int rowNo = 1;
+
+                for(Map.Entry<String,
+                        Map<String,List<Map<String,Object>>>> dateEntry
+                        : groupedData.entrySet()) {
+
+                    for(Map.Entry<String,List<Map<String,Object>>> sessionEntry
+                            : dateEntry.getValue().entrySet()) {
+
+                        List<Map<String,Object>> items =
+                                sessionEntry.getValue();
+
+                        double sessionTotal =
+                                items.stream()
+                                .mapToDouble(r ->
+                                    ((Number)r.get("value"))
+                                    .doubleValue())
+                                .sum();
+
+                        grandTotal += sessionTotal;
+
+                        String rowId = "ROW" + rowNo++;
                 %>
-                    <tr class="sap-master-row" 
-                        data-ponum="<%= po.poNumber %>" 
-                        data-podate="<%= po.poDate %>" 
-                        data-vendor="<%= po.vendorName %>" 
-                        data-approval="<%= po.approval %>" 
-                        data-status="<%= po.status %>">
-                        <td data-label="Purchase Order No." style="font-weight: 600; color: #0a6ed1;"><%= po.poNumber %></td>
-                        <td data-label="Document Date"><%= po.poDate %></td>
-                        <td data-label="Vendor Supplier"><%= po.vendorName %></td>
-                        <td data-label="Total Net Value" style="font-weight: 600;"><%= String.format("%.2f", po.totalAmount) %></td>
-                        <td data-label="Approval Status">
-                            <span class="sap-object-status <%= approvalClass %>"><%= po.approval %></span>
-                        </td>
-                        <td data-label="Overall Status">
-                            <span class="sap-object-status <%= statusClass %>"><%= po.status %></span>
-                        </td>
-                        <td data-label="Control Actions" style="text-align: right;">
-                            <div class="sap-action-flex-group">
-                                <button class="sap-btn sap-btn-transparent" id="btn-<%=po.poNumber%>" onclick="toggleItems('<%=po.poNumber%>')">View Items</button>
-                                <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0; display:inline-block;">
-                                    <input type="hidden" name="poNumber" value="<%= po.poNumber %>">
-                                    <button class="sap-btn" type="submit">Print PDF</button>
-                                </form>
+
+                <tr class="sap-master-row">
+
+                    <td data-label="Date"
+                        style="font-weight:600;color:#0a6ed1;">
+                        <%= dateEntry.getKey() %>
+                    </td>
+
+                    <td data-label="Session">
+                        <%= sessionEntry.getKey() %>
+                    </td>
+
+                    <td data-label="Total Value">
+
+                        <span class="sap-object-status sap-state-approved">
+                            ₹ <%= String.format("%.2f", sessionTotal) %>
+                        </span>
+
+                    </td>
+
+                    <td data-label="Actions"
+                        style="text-align:right;">
+
+                        <div class="sap-action-flex-group">
+
+                            <button
+                                type="button"
+                                class="sap-btn sap-btn-transparent"
+                                id="btn-<%= rowId %>"
+                                onclick="toggleItems('<%= rowId %>')">
+
+                                View Items
+
+                            </button>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                <!-- Nested Row -->
+
+                <tr class="sap-nested-row"
+                    id="row-nested-<%= rowId %>"
+                    style="display:none;">
+
+                    <td colspan="4"
+                        style="padding:0 1rem;">
+
+                        <div class="sap-items-block"
+                             id="items-<%= rowId %>"
+                             style="display:none;">
+
+                            <h4>
+                                Consumption Items
+                                [<%= dateEntry.getKey() %> -
+                                <%= sessionEntry.getKey() %>]
+                            </h4>
+
+                            <div class="table-responsive-container">
+
+                                <table class="sap-nested-table">
+
+                                    <thead>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th>UOM</th>
+                                            <th>Quantity</th>
+                                            <th>Value</th>
+                                        </tr>
+                                    </thead>
+
+                                    <tbody>
+
+                                    <% for(Map<String,Object> item : items) { %>
+
+                                        <tr>
+                                            <td>
+                                                <%= item.get("item_name") %>
+                                            </td>
+
+                                            <td>
+                                                <%= item.get("uom") %>
+                                            </td>
+
+                                            <td>
+                                                <%= item.get("qty") %>
+                                            </td>
+
+                                            <td>
+                                                ₹ <%= item.get("value") %>
+                                            </td>
+                                        </tr>
+
+                                    <% } %>
+
+                                    </tbody>
+
+                                </table>
+
                             </div>
-                        </td>
-                    </tr>
-                    <tr class="sap-nested-row" id="row-nested-<%= po.poNumber %>" style="display: none;">
-                        <td colspan="7" style="padding: 0 1rem;">
-                            <div class="sap-items-block" id="items-<%=po.poNumber%>" style="display: none;">
-                                <h4>Purchase Order Items [PO: <%= po.poNumber %>]</h4>
-                                <% if (!po.items.isEmpty()) { %>
-                                <div class="table-responsive-container">
-                                    <table class="sap-nested-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Item ID</th>
-                                                <th>Detailed Description</th>
-                                                <th>Order Qty</th>
-                                                <th>Delivered Qty</th>
-                                                <th>Balance Qty</th>
-                                                <th>Net Value Rate</th>
-                                                <th>Discount %</th>
-                                                <th>Tax (GST) %</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% for (POItem item : po.items) { %>
-                                            <tr>
-                                                <td style="font-weight: 600;"><%= item.itemId %></td>
-                                                <td><%= item.description %></td>
-                                                <td><%= item.qty %></td>
-                                                <td><%= item.receivedQty %></td>
-                                                <td style="font-weight: 600; color: <%= item.balanceQty > 0 ? "var(--sap-state-warning-text)" : "inherit" %>;"><%= item.balanceQty %></td>
-                                                <td><%= String.format("%.2f", item.rate) %></td>
-                                                <td><%= item.discount %></td>
-                                                <td><%= item.gst %></td>
-                                            </tr>
-                                            <% } %>
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <% } else { %>
-                                <p style="color: var(--sap-state-error-text); margin: 0; font-weight: 600;">System alert: No sub-allocation line items found matching this Purchase Document context.</p>
-                                <% } %>
-                            </div>
-                        </td>
-                    </tr>
-                <%  } } else { %>
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: var(--sap-state-error-text); padding: 2rem; font-weight: 600;">Zero matching records discovered inside database matrix index</td>
-                    </tr>
-                <% } %>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                <% } } %>
+
                 </tbody>
+
+                <tfoot>
+
+                    <tr style="
+                        background:#f7f9fa;
+                        font-weight:700;">
+
+                        <td colspan="2">
+                            Grand Total
+                        </td>
+
+                        <td colspan="2"
+                            style="text-align:right;">
+
+                            <span class="sap-object-status sap-state-open">
+                                ₹ <%= String.format("%.2f", grandTotal) %>
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+                </tfoot>
+
             </table>
+
         </div>
+
     </div>
+
 </div>
 
+<script>
+
+function toggleItems(id) {
+
+    var block =
+        document.getElementById('items-' + id);
+
+    var row =
+        document.getElementById('row-nested-' + id);
+
+    var btn =
+        document.getElementById('btn-' + id);
+
+    if(block.style.display === "none" ||
+       block.style.display === "") {
+
+        block.style.display = "block";
+        row.style.display = "";
+
+        btn.innerText = "Hide Items";
+
+    } else {
+
+        block.style.display = "none";
+        row.style.display = "none";
+
+        btn.innerText = "View Items";
+    }
+}
+
+</script>
+
 <jsp:include page="Footer.jsp" />
+
 </body>
 </html>
