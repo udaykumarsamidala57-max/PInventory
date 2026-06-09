@@ -206,15 +206,16 @@ public class DiningHallServlet extends HttpServlet {
                     }
                 }
 
-                // ✅ Ledger entry
+                
                 try (PreparedStatement ps3 = con.prepareStatement(
-                        "INSERT INTO stock_ledger (item_id,trans_type,trans_id,trans_date,qty,running_balance,remarks) VALUES (?,?,?,CURRENT_DATE(),?,?,?)")) {
+                        "INSERT INTO stock_ledger (item_id,trans_type,trans_id,trans_date,qty,running_balance,remarks) VALUES (?,?,?,?,?,?,?)")) {
                     ps3.setInt(1, itemId);
                     ps3.setString(2, "ISSUE");
                     ps3.setInt(3, issueId);
-                    ps3.setDouble(4, qtyIssued);
-                    ps3.setDouble(5, newBalance);
-                    ps3.setString(6, remarks);
+                    ps3.setString(4, issueDate);
+                    ps3.setDouble(5, qtyIssued);
+                    ps3.setDouble(6, newBalance);
+                    ps3.setString(7, remarks);
                     ps3.executeUpdate();
                 }
 
