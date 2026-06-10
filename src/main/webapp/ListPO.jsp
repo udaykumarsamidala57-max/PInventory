@@ -549,17 +549,11 @@ try {
     </script>
 </head>
 <body>
-
+<%@ include file="header.jsp" %>
 <div class="sap-fiori-container">
 
     <div class="sap-object-header">
-        <div class="sap-header-content">
-            <div class="sap-icon-tile">PO</div>
-            <div>
-                <span class="sap-object-header__subtitle">Operations Management</span>
-                <h2 class="sap-object-header__title">Purchase Order Tracker Dashboard</h2>
-            </div>
-        </div>
+       
         <div>
             <button type="button" class="action-btn excel-btn" onclick="exportToExcel()">Export Master Sheets</button>
         </div>
