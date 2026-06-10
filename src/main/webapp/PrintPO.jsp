@@ -1,5 +1,7 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
+<%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 
 <%
     HttpSession sess = request.getSession(false);
@@ -155,8 +157,17 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
 
 <table>
     <tr>
+    <%
+String poDate = rsPO.getString("po_date");
+
+String formattedDate = "";
+if(poDate != null && !poDate.trim().isEmpty()){
+    formattedDate = LocalDate.parse(poDate)
+                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+}
+%>
         <td><b>PO Number:</b> <%= rsPO.getString("po_number") %><br>
-        <b>Date:</b> <%= rsPO.getString("po_date") %></td>
+        <b>Date:</b> <%= formattedDate %></td>
     </tr>
     <tr>
         <td>
