@@ -22,6 +22,7 @@ com\bean\DBUtil5.class
 com\controller\AIndentListServlet.class
 com\Service\RequestBookingServlet.class
 com\controller\HRA\viewResumeFile.class
+com\Service\Satisfied.class
 com\controller\PurchaseOrderServlet.class
 com\DAO\MaintenanceDAO.class
 com\controller\Admissions\DashboardServlet.class

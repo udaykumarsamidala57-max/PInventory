@@ -1,6 +1,8 @@
 <%@ page import="java.sql.*" %>
 <%@ page import="com.bean.DBUtil" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ page import="java.time.LocalDate" %>
+<%@ page import="java.time.format.DateTimeFormatter" %>
 <%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
@@ -176,9 +178,19 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
             }
 %>
 
+
+<%
+String poDate = indentDate;
+
+String formattedDate = "";
+if(poDate != null && !poDate.trim().isEmpty()){
+    formattedDate = LocalDate.parse(poDate)
+                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+}
+%>
     <div class="indent-info">
         <p><b>Indent No:</b> <%= indentNumber %></p>
-        <p><b>Indent Date:</b> <%= indentDate %></p>
+        <p><b>Indent Date:</b> <%= formattedDate %></p>
         <p><b>Department:</b> <%= department %></p>
         <p><b>Requested By:</b> <%= requestedBy %></p>
         <p style="grid-column: 1 / span 2;"><b>Purpose:</b> <%= purpose %></p>
