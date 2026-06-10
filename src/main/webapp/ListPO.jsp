@@ -1,111 +1,44 @@
-<%@ page import="java.sql.*, java.util.*" %>
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="com.bean.DBUtil" %>
-<%@ page import="java.util.stream.Collectors" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.*" %>
+<%@ page import ="com.bean.DBUtil" %>
 <%
-    HttpSession sess = request.getSession(false);
-    if (sess == null || sess.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
-        return;
-    }
+Connection con = null;
+PreparedStatement psMaster = null;
+PreparedStatement psItems = null;
+ResultSet rsMaster = null;
+ResultSet rsItems = null;
 
-    Class.forName("com.mysql.cj.jdbc.Driver");
-    Connection con = DBUtil.getConnection();
+try {
+    con = DBUtil.getConnection();
 
-    PreparedStatement ps = null, psItems = null;
-    ResultSet rs = null, rsItems = null;
-
-    class POItem {
-        int itemId;
-        String description;
-        double qty, receivedQty, balanceQty, rate, discount, gst;
-    }
-
-    class PO {
-        int poId;
-        String poNumber, poDate, vendorName, approval, status;
-        double totalAmount;
-        List<POItem> items = new ArrayList<>();
-    }
-
-    List<PO> poList = new ArrayList<>();
-
-    try {
-        String sql = "SELECT * FROM po_master ORDER BY po_date DESC";
-        ps = con.prepareStatement(sql);
-        rs = ps.executeQuery();
-
-        while (rs.next()) {
-            PO po = new PO();
-            po.poId = rs.getInt("PO_id");
-            po.poNumber = rs.getString("po_number");
-            po.poDate = rs.getString("po_date");
-            po.vendorName = rs.getString("vendor_name");
-            po.totalAmount = rs.getDouble("total_amount");
-            po.approval = rs.getString("Approval");
-            po.status = rs.getString("po_status");
-
-            String itemSQL =
-                "SELECT i.po_item_id, i.item_id, i.description, i.qty, i.rate, " +
-                "i.discount_percent, i.gst_percent, " +
-                "COALESCE(SUM(g.qty_received), 0) AS received_qty " +
-                "FROM po_items i " +
-                "LEFT JOIN grn_items g ON i.po_item_id = g.po_item_id " +
-                "WHERE i.PO_id = ? " +
-                "GROUP BY i.po_item_id";
-
-            psItems = con.prepareStatement(itemSQL);
-            psItems.setInt(1, po.poId);
-            rsItems = psItems.executeQuery();
-
-            while (rsItems.next()) {
-                POItem item = new POItem();
-                item.itemId = rsItems.getInt("item_id");
-                item.description = rsItems.getString("description");
-                item.qty = rsItems.getDouble("qty");
-                item.receivedQty = rsItems.getDouble("received_qty");
-                item.balanceQty = item.qty - item.receivedQty;
-                item.rate = rsItems.getDouble("rate");
-                item.discount = rsItems.getDouble("discount_percent");
-                item.gst = rsItems.getDouble("gst_percent");
-                po.items.add(item);
-            }
-
-            poList.add(po);
-            if (rsItems != null) rsItems.close();
-            if (psItems != null) psItems.close();
-        }
-
-    } catch (Exception e) {
-        e.printStackTrace();
-    } finally {
-        try { if (rs != null) rs.close(); } catch (Exception ex) {}
-        try { if (ps != null) ps.close(); } catch (Exception ex) {}
-        try { if (con != null) con.close(); } catch (Exception ex) {}
-    }
+    String masterSql =
+            "SELECT * FROM (" +
+            "   SELECT * FROM po_master " +
+            "   ORDER BY PO_id DESC " +
+            "   LIMIT 200" +
+            ") t " +
+            "ORDER BY PO_id ASC";
+    psMaster = con.prepareStatement(masterSql);
+    rsMaster = psMaster.executeQuery();
 %>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Purchase Order List</title>
+    <title>Purchase Order Report</title>
     <style>
-        /* SAP Horizon (Morning Horizon) System Design Tokens */
+        /* SAP Horizon System Design Tokens */
         :root {
-            --sap-background: #f5f6f7;
-            --sap-shell-bg: #1c2d42;
+            --sap-background: #edf0f2;
             --sap-card-bg: #ffffff;
             --sap-text-color: #1d2d3e;
-            --sap-subtitle-color: #6a7b8c;
-            --sap-border-color: #e2e5e9;
+            --sap-subtitle-color: #516273;
+            --sap-border-color: #d1d5db;
             --sap-primary-btn: #0070f2;
             --sap-primary-btn-hover: #005bc4;
             --sap-secondary-btn: #ffffff;
             --sap-secondary-btn-border: #b3b9c1;
-            --sap-secondary-btn-hover: #f5f6f7;
-            --sap-list-hover-bg: #eed0c42; /* Clean 3% dark alpha overlay */
             
             /* SAP Semantic Metric Color Tokens */
             --sap-state-success-bg: #e5f5ed;
@@ -129,13 +62,13 @@
         }
 
         .sap-fiori-container {
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             max-width: 1600px;
             margin: 0 auto;
             box-sizing: border-box;
         }
 
-        /* SAP Fiori Object Header Module blueprint */
+        /* SAP Fiori Object Header Module */
         .sap-object-header {
             background: var(--sap-card-bg);
             padding: 1.25rem 1.5rem;
@@ -143,6 +76,13 @@
             border: 1px solid var(--sap-border-color);
             box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.03);
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .sap-header-content {
             display: flex;
             align-items: center;
             gap: 1rem;
@@ -178,43 +118,51 @@
             margin-bottom: 0.125rem;
         }
 
-        /* SAP Filter Dynamic Filter Bar / Toolbar Component */
+        /* SAP Fiori Filter Bar Component */
         .sap-filter-bar {
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 0.5rem;
-            flex-wrap: wrap;
             background: var(--sap-card-bg);
-            padding: 0.75rem 1rem;
             border: 1px solid var(--sap-border-color);
-            border-radius: 0.375rem;
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
             margin-bottom: 1rem;
+            box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.02);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1.5rem;
         }
 
-        .sap-filter-bar input, .sap-filter-bar select {
-            padding: 0 0.75rem;
+        .sap-filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+        }
+
+        .sap-filter-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--sap-subtitle-color);
+        }
+
+        .sap-filter-input {
             height: 2.25rem;
+            padding: 0 0.5rem;
             border: 1px solid var(--sap-secondary-btn-border);
             border-radius: 0.25rem;
             font-family: inherit;
             font-size: 0.875rem;
-            background: var(--sap-card-bg);
             color: var(--sap-text-color);
             box-sizing: border-box;
-            transition: border-color 0.1s;
-        }
-
-        .sap-filter-bar input:focus, .sap-filter-bar select:focus {
-            border-color: var(--sap-primary-btn);
+            background: #ffffff;
             outline: none;
+            min-width: 180px;
         }
 
-        .sap-filter-bar input[type="text"] {
-            min-width: 280px;
+        .sap-filter-input:focus {
+            border-color: var(--sap-primary-btn);
         }
 
-        /* SAP Fiori Responsive Table Module */
+        /* SAP Fiori Responsive Table Card Layout */
         .sap-card-table {
             background: var(--sap-card-bg);
             border: 1px solid var(--sap-border-color);
@@ -242,140 +190,194 @@
             padding: 0.75rem 1rem;
             border-bottom: 1px solid var(--sap-border-color);
             vertical-align: middle;
+            text-align: center;
         }
 
         table.sap-ui-table th {
-            background: #f7f9fa;
+            background: #f3f5f7;
             color: var(--sap-text-color);
             font-weight: 600;
             font-size: 0.8125rem;
-            text-transform: none;
-            letter-spacing: normal;
             height: 2.5rem;
         }
 
         table.sap-ui-table tbody tr.sap-master-row:hover td {
-            background-color: rgba(0, 112, 242, 0.04);
-            cursor: pointer;
+            background-color: rgba(0, 112, 242, 0.03);
         }
 
-        /* SAP Object Status / Badging States */
-        .sap-object-status {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0.25rem 0.75rem;
-            font-weight: 600;
-            font-size: 0.75rem;
-            border-radius: 0.25rem;
-        }
-
-        .sap-state-approved { background: var(--sap-state-success-bg); color: var(--sap-state-success-text); }
-        .sap-state-open { background: var(--sap-state-info-bg); color: var(--sap-state-info-text); }
-        .sap-state-pending { background: var(--sap-state-warning-bg); color: var(--sap-state-warning-text); }
-        .sap-state-closed { background: #f0f2f5; color: #556b82; }
-        .sap-state-rejected, .sap-state-cancelled { background: var(--sap-state-error-bg); color: var(--sap-state-error-text); }
-
-        /* SAP Standard Button Engine Layout controls */
-        .sap-btn {
+        /* SAP Fiori Layout Buttons */
+        .action-btn {
             background: var(--sap-secondary-btn);
             color: var(--sap-primary-btn);
             border: 1px solid var(--sap-primary-btn);
-            padding: 0 1rem;
-            height: 2.25rem;
+            padding: 0 0.75rem;
+            height: 2rem;
             border-radius: 0.25rem;
             cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
+            font-size: 0.8125rem;
+            font-weight: 600;
             font-family: inherit;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
             transition: all 0.1s ease-in-out;
+            margin: 2px;
         }
 
-        .sap-btn:hover {
+        .action-btn:hover {
             background: #e8f4ff;
-            border-color: var(--sap-primary-btn-hover);
         }
 
-        .sap-btn-emphasized {
+        .excel-btn {
+            background: #107e3e;
+            color: #ffffff;
+            border-color: transparent;
+        }
+
+        .excel-btn:hover {
+            background: #0b592b;
+            color: #ffffff;
+        }
+
+        .approve-btn {
             background: var(--sap-primary-btn);
             color: #ffffff;
             border-color: transparent;
         }
 
-        .sap-btn-emphasized:hover {
+        .approve-btn:hover {
             background: var(--sap-primary-btn-hover);
             color: #ffffff;
         }
 
-        .sap-btn-transparent {
-            background: transparent;
-            border-color: transparent;
+        .expand-btn, .clear-btn, .print-btn {
             color: var(--sap-text-color);
-        }
-        .sap-btn-transparent:hover {
-            background: var(--sap-secondary-btn-hover);
-            color: var(--sap-primary-btn);
+            border: 1px solid var(--sap-secondary-btn-border);
         }
 
-        .sap-action-flex-group {
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            gap: 0.375rem;
+        .expand-btn:hover, .clear-btn:hover, .print-btn:hover {
+            background: #f0f2f5;
         }
 
-        /* SAP Hierarchical Grid Expandable Sections blueprint */
+        /* Nested Line Item Allocation Grid */
         .sap-nested-row {
             background: #f8fafc;
         }
 
-        .sap-items-block {
+        .items-block {
             padding: 1.25rem;
             background: #ffffff;
             border: 1px solid var(--sap-border-color);
+            border-left: 4px solid var(--sap-primary-btn);
             border-radius: 0.375rem;
-            margin: 0.5rem 0;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.01);
+            margin: 0.5rem auto;
+            width: 96%;
+            box-sizing: border-box;
+            display: none;
+            animation: slideDown 0.3s ease-out;
         }
 
-        .sap-items-block h4 {
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .items-block h4 {
             margin: 0 0 0.75rem 0;
             font-size: 0.9375rem;
             color: var(--sap-text-color);
             font-weight: 600;
+            text-align: left;
+            border-bottom: 1px solid var(--sap-border-color);
+            padding-bottom: 0.5rem;
         }
 
-        .sap-nested-table {
+        .items-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 0.8125rem;
+            margin-top: 10px;
         }
 
-        .sap-nested-table th {
+        .items-table th {
             background: #f0f2f5;
             color: var(--sap-text-color);
             border: 1px solid var(--sap-border-color);
             height: 2.25rem;
+            font-weight: 600;
         }
 
-        .sap-nested-table td {
+        .items-table td {
             border: 1px solid var(--sap-border-color);
             padding: 0.625rem 0.875rem;
             background: #ffffff;
+            text-align: center;
         }
 
-        /* Responsive UI Design Adjustments */
+        .items-table tr:hover td {
+            background: #f8fafc;
+        }
+
+        .summary-box {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #fdfdfd;
+            border: 1px solid var(--sap-border-color);
+            border-radius: 0.25rem;
+            text-align: left;
+        }
+
+        .summary-line {
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            color: var(--sap-subtitle-color);
+        }
+
+        .summary-value {
+            font-weight: 700;
+            min-width: 120px;
+            text-align: right;
+        }
+
+        .no-data {
+            text-align: center;
+            color: var(--sap-state-error-text);
+            padding: 1.5rem;
+            font-weight: 600;
+            background: var(--sap-state-error-bg);
+            border: 1px dashed var(--sap-state-error-text);
+            border-radius: 0.25rem;
+            margin: 10px 0;
+        }
+
+        .sap-flex-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        /* Responsive Breakpoints Rules */
         @media screen and (max-width: 1024px) {
             .sap-fiori-container { padding: 1rem; }
-            .sap-filter-bar { flex-direction: column; align-items: stretch; }
-            .sap-filter-bar input, .sap-filter-bar select { width: 100%; }
+            .sap-filter-bar { gap: 1rem; }
         }
 
         @media screen and (max-width: 768px) {
+            .sap-object-header { flex-direction: column; align-items: flex-start; }
+            .sap-filter-bar { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+            .sap-filter-input { min-width: 100%; }
+            .sap-flex-cell { width: 100%; justify-content: flex-end; }
+            
             table.sap-ui-table, table.sap-ui-table thead, table.sap-ui-table tbody, table.sap-ui-table tr, table.sap-ui-table td {
                 display: block;
             }
@@ -393,6 +395,7 @@
                 justify-content: space-between;
                 align-items: center;
                 padding: 0.625rem 1rem;
+                text-align: right;
             }
             table.sap-ui-table td:last-child { border-bottom: none; }
             table.sap-ui-table td:before {
@@ -400,363 +403,311 @@
                 font-weight: 600;
                 color: var(--sap-subtitle-color);
                 font-size: 0.75rem;
+                float: left;
             }
-            .sap-action-flex-group { width: 100%; justify-content: flex-end; }
         }
     </style>
 
     <script>
-        function toggleItems(poNumber) {
-            var block = document.getElementById('items-' + poNumber);
-            var btn = document.getElementById('btn-' + poNumber);
-            var parentRow = document.getElementById('row-nested-' + poNumber);
-            
+        function toggleItems(id) {
+            const block = document.getElementById("items-" + id);
+            const btn = document.getElementById("btn-" + id);
+            const parentRow = document.getElementById("row-nested-" + id);
+
             if (block.style.display === "none" || block.style.display === "") {
                 block.style.display = "block";
-                parentRow.style.display = "";
-                btn.innerText = "Hide Line Items";
+                if (parentRow) parentRow.style.display = "";
+                btn.value = "Hide Items";
             } else {
                 block.style.display = "none";
-                parentRow.style.display = "none";
-                btn.innerText = "View Line Items";
+                if (parentRow) parentRow.style.display = "none";
+                btn.value = "Show Items";
             }
         }
 
-        function filterTable() {
-            let input = document.getElementById("searchInput").value.toLowerCase();
-            let statusFilter = document.getElementById("statusFilter").value;
-            let approvalFilter = document.getElementById("approvalFilter").value;
-            let fromDate = document.getElementById("fromDate").value;
-            let toDate = document.getElementById("toDate").value;
+        function filterByDates() {
+            const fromInput = document.getElementById("filterFromDate").value;
+            const toInput = document.getElementById("filterToDate").value;
 
-            let rows = document.querySelectorAll(".sap-ui-table tbody tr.sap-master-row");
+            if (!fromInput || !toInput) {
+                alert("Please select both From and To dates.");
+                return;
+            }
 
-            rows.forEach((row) => {
-                let poNum = row.getAttribute("data-ponum").toLowerCase();
-                let date = row.getAttribute("data-podate");
-                let vendor = row.getAttribute("data-vendor").toLowerCase();
-                let approval = row.getAttribute("data-approval");
-                let status = row.getAttribute("data-status");
-                
-                let poDate = new Date(date);
-                let include = true;
+            const fromDate = new Date(fromInput);
+            fromDate.setHours(0, 0, 0, 0);
 
-                if (input && !poNum.includes(input) && !vendor.includes(input)) include = false;
-                if (approvalFilter && approval !== approvalFilter) include = false;
-                if (statusFilter && status !== statusFilter) include = false;
-                if (fromDate && poDate < new Date(fromDate)) include = false;
-                if (toDate && poDate > new Date(toDate)) include = false;
+            const toDate = new Date(toInput);
+            toDate.setHours(23, 59, 59, 999);
 
-                let nestedRow = document.getElementById("row-nested-" + row.getAttribute("data-ponum"));
-                if (include) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                    if(nestedRow) {
-                        nestedRow.style.display = "none";
-                        let btn = document.getElementById('btn-' + row.getAttribute("data-ponum"));
-                        if(btn) btn.innerText = "View Line Items";
-                        let block = document.getElementById('items-' + row.getAttribute("data-ponum"));
-                        if(block) block.style.display = "none";
+            if (fromDate > toDate) {
+                alert("From Date cannot be greater than To Date.");
+                return;
+            }
+
+            const rows = document.querySelectorAll(".sap-master-row");
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const rawIsoDateStr = row.getAttribute("data-raw-date");
+                const nestedId = row.getAttribute("data-nested-id");
+                const nestedRow = document.getElementById("row-nested-" + nestedId);
+
+                if (rawIsoDateStr && rawIsoDateStr !== "") {
+                    const rowDate = new Date(rawIsoDateStr);
+                    rowDate.setHours(0, 0, 0, 0);
+
+                    if (rowDate >= fromDate && rowDate <= toDate) {
+                        row.style.display = "";
+                        visibleCount++;
+                    } else {
+                        row.style.display = "none";
+                        if (nestedRow) nestedRow.style.display = "none";
+                        
+                        const itemBtn = document.getElementById("btn-" + nestedId);
+                        if (itemBtn) itemBtn.value = "Show Items";
+
+                        const itemBlock = document.getElementById("items-" + nestedId);
+                        if (itemBlock) itemBlock.style.display = "none";
                     }
+                } else {
+                    row.style.display = "";
+                    visibleCount++;
                 }
             });
+
+            const noDataFallbackRow = document.getElementById("js-nodata-fallback");
+            if (visibleCount === 0) {
+                if (!noDataFallbackRow) {
+                    const tbody = document.querySelector(".sap-ui-table tbody");
+                    const fallbackTr = document.createElement("tr");
+                    fallbackTr.id = "js-nodata-fallback";
+                    fallbackTr.innerHTML = '<td colspan="8" class="no-data">No Purchase Orders Found within selected dates.</td>';
+                    tbody.appendChild(fallbackTr);
+                } else {
+                    noDataFallbackRow.style.display = "";
+                }
+            } else {
+                if (noDataFallbackRow) noDataFallbackRow.style.display = "none";
+            }
         }
 
-        function clearFilters() {
-            document.getElementById("searchInput").value = "";
-            document.getElementById("statusFilter").value = "";
-            document.getElementById("approvalFilter").value = "";
-            document.getElementById("fromDate").value = "";
-            document.getElementById("toDate").value = "";
-            filterTable();
+        function clearDateFilters() {
+            document.getElementById("filterFromDate").value = "";
+            document.getElementById("filterToDate").value = "";
+
+            document.querySelectorAll(".sap-master-row").forEach(row => {
+                row.style.display = "";
+            });
+
+            const noDataFallbackRow = document.getElementById("js-nodata-fallback");
+            if (noDataFallbackRow) noDataFallbackRow.style.display = "none";
         }
 
-        function downloadExcel() {
-            let table = document.querySelector(".sap-ui-table").outerHTML;
-            let blob = new Blob(["\ufeff" + table], { type: "application/vnd.ms-excel" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "PO_List_SAP_Format.xls";
+        function exportToExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "PURCHASE ORDERS EXPORT REPORT\r\n";
+            csvContent += "Generated On," + new Date().toLocaleString() + "\r\n\r\n";
+            csvContent += "PO Number,PO Date,Vendor Name,Status,Approval Status,Total Amount\r\n";
+
+            const rows = document.querySelectorAll(".sap-master-row");
+            if (rows.length === 0) {
+                alert("No records found.");
+                return;
+            }
+
+            let recordCount = 0;
+            rows.forEach(row => {
+                if (row.style.display === "none") return;
+
+                const poNumber = '"' + (row.querySelector('[data-label="PO Number"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+                const poDate = '"' + (row.querySelector('[data-label="PO Date"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+                const vendorName = '"' + (row.querySelector('[data-label="Vendor Name"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+                const status = '"' + (row.querySelector('[data-label="Status"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+                const approval = '"' + (row.querySelector('[data-label="Approval Status"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+                const totalAmount = '"' + (row.querySelector('[data-label="Total Amount"]')?.textContent || '').trim().replace(/"/g, '""') + '"';
+
+                csvContent += poNumber + "," + poDate + "," + vendorName + "," + status + "," + approval + "," + totalAmount + "\r\n";
+                recordCount++;
+            });
+
+            if (recordCount === 0) {
+                alert("No data available for export.");
+                return;
+            }
+
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "Purchase_Orders_Report_" + new Date().toISOString().substring(0, 10) + ".csv";
+            document.body.appendChild(link);
             link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
         }
     </script>
 </head>
-
 <body>
-
-<jsp:include page="header.jsp" />
 
 <div class="sap-fiori-container">
 
-    <!-- Object Header -->
     <div class="sap-object-header">
-        <div class="sap-icon-tile">DH</div>
+        <div class="sap-header-content">
+            <div class="sap-icon-tile">PO</div>
+            <div>
+                <span class="sap-object-header__subtitle">Operations Management</span>
+                <h2 class="sap-object-header__title">Purchase Order Tracker Dashboard</h2>
+            </div>
+        </div>
         <div>
-            <span class="sap-object-header__subtitle">
-                Dining Operations
-            </span>
-            <h1 class="sap-object-header__title">
-                Dining Hall Consumption Report
-            </h1>
+            <button type="button" class="action-btn excel-btn" onclick="exportToExcel()">Export Master Sheets</button>
         </div>
     </div>
 
-    <!-- Filter Bar -->
-    <form method="get"
-          action="DiningHallConsumptionReportServlet"
-          class="sap-filter-bar">
+    <div class="sap-filter-bar">
+        <div class="sap-filter-group">
+            <label for="filterFromDate">PO From Date</label>
+            <input type="date" id="filterFromDate" class="sap-filter-input">
+        </div>
+        <div class="sap-filter-group">
+            <label for="filterToDate">PO To Date</label>
+            <input type="date" id="filterToDate" class="sap-filter-input">
+        </div>
+        <div class="sap-flex-cell">
+            <button type="button" class="action-btn approve-btn" onclick="filterByDates()">Go</button>
+            <button type="button" class="action-btn clear-btn" onclick="clearDateFilters()">Clear</button>
+        </div>
+    </div>
 
-        <input type="date"
-               name="from_date"
-               value="<%= request.getParameter("from_date") != null ? request.getParameter("from_date") : "" %>">
-
-        <input type="date"
-               name="to_date"
-               value="<%= request.getParameter("to_date") != null ? request.getParameter("to_date") : "" %>">
-
-        <select name="session">
-            <option value="">All Sessions</option>
-
-            <% for(String s : Arrays.asList("BREAKFAST","LUNCH","SNACKS","DINNER")) { %>
-
-                <option value="<%= s %>"
-                    <%= s.equals(request.getParameter("session")) ? "selected" : "" %>>
-                    <%= s %>
-                </option>
-
-            <% } %>
-        </select>
-
-        <button type="submit"
-                class="sap-btn sap-btn-emphasized">
-            Run Report
-        </button>
-
-    </form>
-
-    <!-- Main Card -->
     <div class="sap-card-table">
-
         <div class="table-responsive-container">
-
             <table class="sap-ui-table">
-
                 <thead>
                     <tr>
-                        <th>Date</th>
-                        <th>Session</th>
-                        <th>Total Consumption Value</th>
-                        <th style="text-align:right;">
-                            Actions
-                        </th>
+                        <th>PO Number</th>
+                        <th>PO Date</th>
+                        <th>Vendor Name</th>
+                        <th>Status</th>
+                        <th>Approval Status</th>
+                        <th>Total Amount</th>
+                        <th>Line Items Grid</th>
+                        <th>Print Action</th>
                     </tr>
                 </thead>
-
                 <tbody>
-
                 <%
-                double grandTotal = 0;
-                int rowNo = 1;
-
-                for(Map.Entry<String,
-                        Map<String,List<Map<String,Object>>>> dateEntry
-                        : groupedData.entrySet()) {
-
-                    for(Map.Entry<String,List<Map<String,Object>>> sessionEntry
-                            : dateEntry.getValue().entrySet()) {
-
-                        List<Map<String,Object>> items =
-                                sessionEntry.getValue();
-
-                        double sessionTotal =
-                                items.stream()
-                                .mapToDouble(r ->
-                                    ((Number)r.get("value"))
-                                    .doubleValue())
-                                .sum();
-
-                        grandTotal += sessionTotal;
-
-                        String rowId = "ROW" + rowNo++;
+                while(rsMaster.next()){
+                    int poId = rsMaster.getInt("PO_id");
+                    String origDateStr = rsMaster.getString("PO_date");
+                    String poNumStr = rsMaster.getString("po_number");
                 %>
-
-                <tr class="sap-master-row">
-
-                    <td data-label="Date"
-                        style="font-weight:600;color:#0a6ed1;">
-                        <%= dateEntry.getKey() %>
-                    </td>
-
-                    <td data-label="Session">
-                        <%= sessionEntry.getKey() %>
-                    </td>
-
-                    <td data-label="Total Value">
-
-                        <span class="sap-object-status sap-state-approved">
-                            ₹ <%= String.format("%.2f", sessionTotal) %>
-                        </span>
-
-                    </td>
-
-                    <td data-label="Actions"
-                        style="text-align:right;">
-
-                        <div class="sap-action-flex-group">
-
-                            <button
-                                type="button"
-                                class="sap-btn sap-btn-transparent"
-                                id="btn-<%= rowId %>"
-                                onclick="toggleItems('<%= rowId %>')">
-
-                                View Items
-
-                            </button>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                <!-- Nested Row -->
-
-                <tr class="sap-nested-row"
-                    id="row-nested-<%= rowId %>"
-                    style="display:none;">
-
-                    <td colspan="4"
-                        style="padding:0 1rem;">
-
-                        <div class="sap-items-block"
-                             id="items-<%= rowId %>"
-                             style="display:none;">
-
-                            <h4>
-                                Consumption Items
-                                [<%= dateEntry.getKey() %> -
-                                <%= sessionEntry.getKey() %>]
-                            </h4>
-
-                            <div class="table-responsive-container">
-
-                                <table class="sap-nested-table">
-
-                                    <thead>
-                                        <tr>
-                                            <th>Item Name</th>
-                                            <th>UOM</th>
-                                            <th>Quantity</th>
-                                            <th>Value</th>
-                                        </tr>
-                                    </thead>
-
-                                    <tbody>
-
-                                    <% for(Map<String,Object> item : items) { %>
-
-                                        <tr>
-                                            <td>
-                                                <%= item.get("item_name") %>
-                                            </td>
-
-                                            <td>
-                                                <%= item.get("uom") %>
-                                            </td>
-
-                                            <td>
-                                                <%= item.get("qty") %>
-                                            </td>
-
-                                            <td>
-                                                ₹ <%= item.get("value") %>
-                                            </td>
-                                        </tr>
-
-                                    <% } %>
-
-                                    </tbody>
-
-                                </table>
-
-                            </div>
-
-                        </div>
-
-                    </td>
-
-                </tr>
-
-                <% } } %>
-
-                </tbody>
-
-                <tfoot>
-
-                    <tr style="
-                        background:#f7f9fa;
-                        font-weight:700;">
-
-                        <td colspan="2">
-                            Grand Total
+                    <tr class="sap-master-row" data-raw-date="<%= origDateStr %>" data-nested-id="<%= poId %>">
+                        <td data-label="PO Number" style="font-weight:600; color:var(--sap-primary-btn);"><%= poNumStr %></td>
+                        <td data-label="PO Date"><%= origDateStr %></td>
+                        <td data-label="Vendor Name" style="text-align:left;"><%= rsMaster.getString("vendor_name") %></td>
+                        <td data-label="Status"><%= rsMaster.getString("po_status") %></td>
+                        <td data-label="Approval Status"><%= rsMaster.getString("Approval") %></td>
+                        <td data-label="Total Amount" style="font-weight:700; text-align:right; color:var(--sap-text-color);"><%= rsMaster.getString("total_amount") %></td>
+                        <td data-label="Line Items Grid">
+                            <input type="button" id="btn-<%= poId %>" class="action-btn expand-btn" value="Show Items" onclick="toggleItems(<%= poId %>)">
                         </td>
-
-                        <td colspan="2"
-                            style="text-align:right;">
-
-                            <span class="sap-object-status sap-state-open">
-                                ₹ <%= String.format("%.2f", grandTotal) %>
-                            </span>
-
+                        <td data-label="Print">
+                            <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
+                                <input type="hidden" name="poNumber" value="<%= poNumStr %>">
+                                <input type="submit" value="View / Print" class="action-btn print-btn" />
+                            </form>
                         </td>
-
                     </tr>
 
-                </tfoot>
+                    <tr id="row-nested-<%= poId %>" class="sap-nested-row" style="display:none;">
+                        <td colspan="8">
+                            <div id="items-<%= poId %>" class="items-block">
+                                <h4>Item Details Breakdown Matrix</h4>
+                                <table class="items-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Sl No</th>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Rate</th>
+                                            <th>Amount</th>
+                                            <th>Discount</th>
+                                            <th>GST</th>
+                                            <th>Net Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <%
+                                    String itemSql = "SELECT * FROM po_items WHERE PO_id=? ORDER BY sl_no";
+                                    psItems = con.prepareStatement(itemSql);
+                                    psItems.setInt(1, poId);
+                                    rsItems = psItems.executeQuery();
 
+                                    while(rsItems.next()){
+                                    %>
+                                        <tr>
+                                            <td><%= rsItems.getInt("sl_no") %></td>
+                                            <td style="text-align:left;"><%= rsItems.getString("description") %></td>
+                                            <td style="text-align:right;"><%= rsItems.getBigDecimal("qty") %></td>
+                                            <td style="text-align:right;"><%= rsItems.getBigDecimal("rate") %></td>
+                                            <td style="text-align:right;"><%= rsItems.getBigDecimal("amount") %></td>
+                                            <td style="text-align:right;"><%= rsItems.getBigDecimal("discount_value") %></td>
+                                            <td style="text-align:right;"><%= rsItems.getBigDecimal("gst_value") %></td>
+                                            <td style="text-align:right; font-weight:600;"><%= rsItems.getBigDecimal("net_amount") %></td>
+                                        </tr>
+                                    <%
+                                    }
+                                    rsItems.close();
+                                    psItems.close();
+                                    %>
+                                    </tbody>
+                                </table>
+
+                                <div class="summary-box">
+                                    <div class="summary-line">
+                                        <span class="summary-label">Total Discount :</span>
+                                        <span class="summary-value js-txt-tdis"><%= rsMaster.getString("total_dis") %></span>
+                                    </div>
+                                    <div class="summary-line">
+                                        <span class="summary-label">Total Tax(GST):</span>
+                                        <span class="summary-value js-txt-tgst"><%= rsMaster.getString("total_gst") %></span>
+                                    </div>
+                                    <div class="summary-line" style="border-top:1px solid var(--sap-border-color); padding-top:0.5rem; margin-top:0.5rem;">
+                                        <span class="summary-label" style="color:var(--sap-text-color);">Net Value:</span>
+                                        <span class="summary-value" style="color:var(--sap-primary-btn); font-size:1rem;"><%= rsMaster.getString("total_amount") %></span>
+                                    </div>
+                                    
+                                    <p style="margin:1rem 0 0 0; font-size:0.8125rem;">
+                                        <b style="color:var(--sap-subtitle-color);">Terms & Conditions: </b>
+                                        <span><%= rsMaster.getString("terms_conditions") %></span>
+                                    </p>
+                                </div>
+
+                            </div>
+                        </td>
+                    </tr>
+                <%
+                }
+                %>
+                </tbody>
             </table>
-
         </div>
-
     </div>
-
 </div>
-
-<script>
-
-function toggleItems(id) {
-
-    var block =
-        document.getElementById('items-' + id);
-
-    var row =
-        document.getElementById('row-nested-' + id);
-
-    var btn =
-        document.getElementById('btn-' + id);
-
-    if(block.style.display === "none" ||
-       block.style.display === "") {
-
-        block.style.display = "block";
-        row.style.display = "";
-
-        btn.innerText = "Hide Items";
-
-    } else {
-
-        block.style.display = "none";
-        row.style.display = "none";
-
-        btn.innerText = "View Items";
-    }
-}
-
-</script>
-
-<jsp:include page="Footer.jsp" />
 
 </body>
 </html>
+<%
+}
+catch(Exception e){
+    out.println("<div class='no-data'>Runtime Database Exception Occurred: " + e.getMessage() + "</div>");
+}
+finally{
+    if(rsItems!=null) try { rsItems.close(); } catch(Exception e){}
+    if(psItems!=null) try { psItems.close(); } catch(Exception e){}
+    if(rsMaster!=null) try { rsMaster.close(); } catch(Exception e){}
+    if(psMaster!=null) try { psMaster.close(); } catch(Exception e){}
+    if(con!=null) try { con.close(); } catch(Exception e){}
+}
+%>
