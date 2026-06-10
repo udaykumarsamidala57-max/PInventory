@@ -36,9 +36,9 @@ String username = ((String)sess.getAttribute("username")).toUpperCase();
 
 body{
     margin:0;
-    font-family:Segoe UI;
-    background:#f3f3f3;
-    color:#181818;
+    font-family:Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background:#f3f4f6;
+    color:#1f2937;
 }
 
 .container{
@@ -47,32 +47,55 @@ body{
     padding:20px;
 }
 
-/* FILTER PANEL */
+/* ENTERPRISE FILTER BAR CONTROL PANEL */
 .filter-wrapper {
     background: white;
-    border: 1px solid #d8dde6;
-    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
     padding: 16px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
     display: flex;
     align-items: center;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .filter-wrapper label {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
-    color: #475569;
+    color: #4b5563;
     text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .filter-select {
-    max-width: 300px;
+    min-width: 220px;
     background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
-/* ALERT */
+.filter-select:focus {
+    border-color: #0176d3;
+}
+
+/* ALERT MESSAGES */
 .alert{
     padding:12px 16px;
     border-radius:4px;
@@ -93,7 +116,7 @@ body{
     border:1px solid #fecaca;
 }
 
-/* CARD */
+/* REQUEST RECORD CARDS */
 .request-card{
     background:white;
     border:1px solid #d8dde6;
@@ -124,7 +147,7 @@ body{
     color:#0176d3;
 }
 
-/* TOGGLE */
+/* EXPANSION INTERFACES */
 .toggle-details-btn{
     border:1px solid #0176d3;
     background:white;
@@ -140,7 +163,7 @@ body{
     background:#eef4ff;
 }
 
-/* STATUS */
+/* SYSTEM STATUS BADGES */
 .status-badge{
     padding:4px 12px;
     border-radius:20px;
@@ -154,9 +177,9 @@ body{
 .in-progress{ background:#dbeafe; color:#1d4ed8; }
 .pending{ background:#fef3c7; color:#92400e; }
 .satisfied{ background:#e0f2fe; color:#0369a1; }
-.closed{ background:#e2e8f0; color:#334155; }
+.closed{ background:#e2e2e2; color:#334155; }
 
-/* SUMMARY */
+/* DATA CONTAINER SEGMENTS */
 .highlights-panel{
     padding:16px;
     display:flex;
@@ -192,7 +215,7 @@ body{
     line-height:1.5;
 }
 
-/* WORKSPACE */
+/* COLLAPSED TASK WORKSPACES */
 .collapsible-workspace{
     display:none;
     border-top:1px solid #e2e8f0;
@@ -203,7 +226,7 @@ body{
     grid-template-columns:360px 1fr;
 }
 
-/* LEFT PANEL */
+/* COMPONENT CONTROL LAYOUTS */
 .action-card-panel{
     background:#f8fafc;
     border-right:1px solid #e2e8f0;
@@ -245,7 +268,7 @@ select:focus, textarea:focus, input[type=text]:focus{
     border-color:#0176d3;
 }
 
-/* BUTTONS */
+/* EXECUTION TRIGGERS */
 .assign-btn, .close-btn, .followup-btn{
     border:none;
     border-radius:4px;
@@ -263,7 +286,7 @@ select:focus, textarea:focus, input[type=text]:focus{
 .close-btn:hover{ background:#1f6a24; }
 .followup-btn:hover{ background:#c2410c; }
 
-/* TIMELINE ASYMMETRIC COLOR STYLING */
+/* ACTION RECORD TRACKS */
 .timeline-section{
     padding:16px;
 }
@@ -288,7 +311,6 @@ select:focus, textarea:focus, input[type=text]:focus{
     margin-bottom:10px;
 }
 
-/* Base Variant 1: Original Request Creator Styling */
 .followup-requester {
     border-left: 4px solid #0176d3;
     background: #ffffff;
@@ -298,7 +320,6 @@ select:focus, textarea:focus, input[type=text]:focus{
     color: #0369a1;
 }
 
-/* Base Variant 2: Staff Handling Updates */
 .followup-staff-incharge {
     border-left: 4px solid #ea580c;
     background: #fffaf7;
@@ -336,7 +357,6 @@ select:focus, textarea:focus, input[type=text]:focus{
     line-height:1.4;
 }
 
-/* LOCK */
 .action-lock-notice{
     background:#f1f5f9;
     border:1px dashed #cbd5e1;
@@ -346,7 +366,6 @@ select:focus, textarea:focus, input[type=text]:focus{
     color:#64748b;
 }
 
-/* EMPTY STATES */
 .empty-state{
     background:white;
     border:1px solid #d8dde6;
@@ -364,6 +383,8 @@ select:focus, textarea:focus, input[type=text]:focus{
     .workspace-grid{ grid-template-columns:1fr; }
     .action-card-panel{ border-right:none; border-bottom:1px solid #e2e8f0; }
 }
+
+/* URGENT PRIORITY HIGHLIGHTER */
 .urgent-blink{
     position: relative;
     display: inline-block;
@@ -371,14 +392,13 @@ select:focus, textarea:focus, input[type=text]:focus{
     border-radius: 20px;
     background: linear-gradient(135deg, #ff1a1a, #990000);
     color: #fff;
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     text-transform: uppercase;
     animation: pulseGlow 1.5s infinite ease-in-out;
     box-shadow: 0 0 8px rgba(255,0,0,0.7);
     overflow: hidden;
-    font-family: Arial, sans-serif;
 }
 
 .urgent-blink::before{
@@ -394,27 +414,14 @@ select:focus, textarea:focus, input[type=text]:focus{
 }
 
 @keyframes pulseGlow{
-    0%{
-        transform: scale(1);
-        box-shadow: 0 0 5px rgba(255,0,0,0.5);
-    }
-    50%{
-        transform: scale(1.05);
-        box-shadow: 0 0 12px rgba(255,0,0,0.9);
-    }
-    100%{
-        transform: scale(1);
-        box-shadow: 0 0 5px rgba(255,0,0,0.5);
-    }
+    0% { transform: scale(1); box-shadow: 0 0 5px rgba(255,0,0,0.5); }
+    50% { transform: scale(1.05); box-shadow: 0 0 12px rgba(255,0,0,0.9); }
+    100% { transform: scale(1); box-shadow: 0 0 5px rgba(255,0,0,0.5); }
 }
 
 @keyframes shine{
-    0%{
-        left: -80%;
-    }
-    100%{
-        left: 140%;
-    }
+    0% { left: -80%; }
+    100% { left: 140%; }
 }	
 </style>
 </head>
@@ -448,40 +455,55 @@ ArrayList<HashMap<String,Object>> requestList = (ArrayList<HashMap<String,Object
 
 if(requestList != null && requestList.size() > 0){
     
-    // Extract unique Assigned Owners from data list to build dynamic drop-down options
+    // Extract unique Assigned Owners and unique Statuses from data list
     Set<String> uniqueOwners = new TreeSet<>();
+    Set<String> uniqueStatuses = new TreeSet<>();
+    
     for(HashMap<String,Object> row : requestList) {
         String owner = row.get("assigned_name") != null ? String.valueOf(row.get("assigned_name")).trim() : "Unassigned";
         uniqueOwners.add(owner);
+        
+        String statVal = row.get("status") != null ? String.valueOf(row.get("status")).trim() : "OPEN";
+        uniqueStatuses.add(statVal);
     }
 %>
 
-<!-- Dynamic UI Owner Filter Block -->
 <div class="filter-wrapper">
-    <label for="ownerFilter"><i class="fas fa-filter"></i> Filter By Owner:</label>
-    <select id="ownerFilter" class="filter-select" onchange="filterRequestsByOwner()">
-        <option value="ALL">All Owners (<%= requestList.size() %>)</option>
-        <% for(String ownerName : uniqueOwners) { %>
-            <option value="<%= ownerName %>"><%= ownerName %></option>
-        <% } %>
-    </select>
+    <div class="filter-group">
+        <label for="ownerFilter"><i class="fas fa-user-tie"></i> Filter By Owner:</label>
+        <select id="ownerFilter" class="filter-select" onchange="executeCombinedMatrixFilter()">
+            <option value="ALL">All Owners</option>
+            <% for(String ownerName : uniqueOwners) { %>
+                <option value="<%= ownerName %>"><%= ownerName %></option>
+            <% } %>
+        </select>
+    </div>
+
+    <div class="filter-group">
+        <label for="statusFilter"><i class="fas fa-bars-progress"></i> Filter By Status:</label>
+        <select id="statusFilter" class="filter-select" onchange="executeCombinedMatrixFilter()">
+            <option value="ALL">All Statuses</option>
+            <% for(String statusName : uniqueStatuses) { %>
+                <option value="<%= statusName %>"><%= statusName %></option>
+            <% } %>
+        </select>
+    </div>
 </div>
 
 <div id="requestCardsContainer">
 <%
     for(HashMap<String,Object> row : requestList){
         String id = String.valueOf(row.get("id"));
-        String status = String.valueOf(row.get("status"));
+        String status = row.get("status") != null ? String.valueOf(row.get("status")).trim() : "OPEN";
         String priority = String.valueOf(row.get("priority"));
         String requestedBy = String.valueOf(row.get("requested_by"));
-        String assignedOwner = row.get("assigned_name") != null ? String.valueOf(row.get("assigned_name")) : "Unassigned";
+        String assignedOwner = row.get("assigned_name") != null ? String.valueOf(row.get("assigned_name")).trim() : "Unassigned";
 
         ArrayList<HashMap<String,Object>> inchargeList = (ArrayList<HashMap<String,Object>>) row.get("inchargeList");
         ArrayList<HashMap<String,Object>> followupList = (ArrayList<HashMap<String,Object>>) row.get("followupList");
 %>
 
-<!-- Attached an explicit data-attribute matching the assigned owner context -->
-<div class="request-card" data-owner="<%= assignedOwner.trim() %>">
+<div class="request-card" data-owner="<%= assignedOwner %>" data-status="<%= status %>">
     <div class="request-top">
         <div class="header-left-group">
             <button type="button" class="toggle-details-btn" onclick="toggleWorkspaceGrid(this)">
@@ -511,14 +533,13 @@ if(requestList != null && requestList.size() > 0){
             <div class="label">Priority</div>
             <div class="value">
                 <% if("HIGH".equalsIgnoreCase(priority)){ %>
-                    <span style="color:#ba0517;font-size:14;">HIGH</span>
+                    <span style="color:#ba0517; font-weight:700;">HIGH</span>
                 <% }else if("MEDIUM".equalsIgnoreCase(priority)){ %>
-                    <span style="color:#b54708;font-size:14px;">MEDIUM</span>
+                    <span style="color:#b54708; font-weight:700;">MEDIUM</span>
                 <% }else if("Urgent".equalsIgnoreCase(priority)){ %>
                     <span class="urgent-blink">URGENT</span>
-                    
                 <% }else{ %>
-                    <span style="color:#027a48;">LOW</span>
+                    <span style="color:#027a48; font-weight:700;">LOW</span>
                 <% } %>
             </div>
         </div>
@@ -666,11 +687,10 @@ if(requestList != null && requestList.size() > 0){
 %>
 </div>
 
-<!-- Fallback block for filtered out records -->
 <div id="filterEmptyState" class="empty-state" style="display:none; margin-top:20px;">
     <i class="fas fa-filter"></i>
     <h3>No Matches Found</h3>
-    <p>No active service requests are assigned to this owner profile.</p>
+    <p>No active service requests match the specified combination of owner and workflow status.</p>
 </div>
 
 <%
@@ -701,17 +721,27 @@ function toggleWorkspaceGrid(button){
     }
 }
 
-// Client side filtering logic
-function filterRequestsByOwner() {
+/**
+ * Cross-Matrix Filtering Engine
+ * Evaluates both filters concurrently so selecting an owner and status narrows down properly.
+ */
+function executeCombinedMatrixFilter() {
     const selectedOwner = document.getElementById("ownerFilter").value;
+    const selectedStatus = document.getElementById("statusFilter").value;
+    
     const cards = document.querySelectorAll(".request-card");
     const emptyState = document.getElementById("filterEmptyState");
     let visibleCount = 0;
 
     cards.forEach(card => {
         const cardOwner = card.getAttribute("data-owner");
+        const cardStatus = card.getAttribute("data-status");
         
-        if (selectedOwner === "ALL" || cardOwner === selectedOwner) {
+        // Evaluate verification criteria for both properties simultaneously
+        const matchOwner = (selectedOwner === "ALL" || cardOwner === selectedOwner);
+        const matchStatus = (selectedStatus === "ALL" || cardStatus === selectedStatus);
+        
+        if (matchOwner && matchStatus) {
             card.style.display = "block";
             visibleCount++;
         } else {
@@ -719,7 +749,7 @@ function filterRequestsByOwner() {
         }
     });
 
-    // Handle display of secondary fallback state when zero matches return
+    // Toggle contextual fallback notification
     if (visibleCount === 0) {
         emptyState.style.display = "block";
     } else {

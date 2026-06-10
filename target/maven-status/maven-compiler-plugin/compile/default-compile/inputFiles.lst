@@ -52,9 +52,9 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\Addstock.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\SendOTPServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Service\Incharge.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Service\RequestReportServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\MaintenanceController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\AssetDAO.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Service\Satisfied.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\IndentServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil4.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\PO.java
