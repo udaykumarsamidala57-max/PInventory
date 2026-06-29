@@ -568,6 +568,9 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
       <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
       <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
+      <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
+      
+      
     </div>
 </div>
 

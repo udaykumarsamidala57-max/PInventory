@@ -23,8 +23,6 @@ public class SaveStockVerificationServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-
-
     @Override
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
@@ -96,7 +94,8 @@ public class SaveStockVerificationServlet extends HttpServlet {
                     "WHERE Sub_Category IS NOT NULL ";
 
             if (category != null &&
-                    !category.trim().isEmpty()) {
+                    !category.trim().isEmpty() &&
+                    !category.equals("ALL")) {
 
                 subSql +=
                         "AND Category=? ";
@@ -109,7 +108,8 @@ public class SaveStockVerificationServlet extends HttpServlet {
                     con.prepareStatement(subSql);
 
             if (category != null &&
-                    !category.trim().isEmpty()) {
+                    !category.trim().isEmpty() &&
+                    !category.equals("ALL")) {
 
                 psSub.setString(1, category);
             }
@@ -125,61 +125,67 @@ public class SaveStockVerificationServlet extends HttpServlet {
             }
 
             /* --------------------------
-             * STOCK QUERY
+             * INCORPORATED NEW STOCK QUERY
              * -------------------------- */
 
             String itemSql =
-                    "SELECT " +
-                    "i.Item_id, " +
-                    "i.Item_name, " +
-                    "i.Category, " +
-                    "i.Sub_Category, " +
-                    "i.UOM, " +
+                "SELECT " +
+                "im.Item_id, " +
+                "im.Item_name, " +
+                "im.Category, " +
+                "im.Sub_Category, " + // Retained for compatibility with the view logic
+                "im.UOM, " +          // Retained for compatibility with the view logic
+            
+                // Opening Balance
+                "COALESCE(( " +
+                "   SELECT sl1.running_balance " +
+                "   FROM stock_ledger sl1 " +
+                "   WHERE sl1.item_id = im.Item_id " +
+                "   AND sl1.trans_date < ? " +
+                "   ORDER BY sl1.trans_date DESC, sl1.ledger_id DESC " +
+                "   LIMIT 1 " +
+                "),0) AS opening_balance, " +
+            
+                // Receipts
+                "COALESCE(( " +
+                "   SELECT SUM(sl2.qty) " +
+                "   FROM stock_ledger sl2 " +
+                "   WHERE sl2.item_id = im.Item_id " +
+                "   AND sl2.trans_type='RECEIPT' " +
+                "   AND sl2.trans_date BETWEEN ? AND ? " +
+                "),0) AS receipts, " +
+            
+                // Issues
+                "COALESCE(( " +
+                "   SELECT SUM(sl3.qty) " +
+                "   FROM stock_ledger sl3 " +
+                "   WHERE sl3.item_id = im.Item_id " +
+                "   AND sl3.trans_type='ISSUE' " +
+                "   AND sl3.trans_date BETWEEN ? AND ? " +
+                "),0) AS issues, " +
+            
+                // Closing Balance
+                "COALESCE(( " +
+                "   SELECT sl4.running_balance " +
+                "   FROM stock_ledger sl4 " +
+                "   WHERE sl4.item_id = im.Item_id " +
+                "   AND sl4.trans_date <= ? " +
+                "   ORDER BY sl4.trans_date DESC, sl4.ledger_id DESC " +
+                "   LIMIT 1 " +
+                "),0) AS closing_balance " +
+            
+                "FROM item_master im " +
+                "WHERE 1=1 "; // Simplifies appending dynamic filters
 
-                    "COALESCE(SUM(CASE " +
-                    "WHEN s.trans_date < ? " +
-                    "THEN CASE " +
-                    "WHEN s.trans_type='RECEIPT' THEN s.qty " +
-                    "ELSE -s.qty END " +
-                    "ELSE 0 END),0) AS opening_qty, " +
-
-                    "COALESCE(SUM(CASE " +
-                    "WHEN s.trans_date BETWEEN ? AND ? " +
-                    "AND s.trans_type='RECEIPT' " +
-                    "THEN s.qty ELSE 0 END),0) AS purchase_qty, " +
-
-                    "COALESCE(SUM(CASE " +
-                    "WHEN s.trans_date BETWEEN ? AND ? " +
-                    "AND s.trans_type='ISSUE' " +
-                    "THEN s.qty ELSE 0 END),0) AS consume_qty " +
-
-                    "FROM item_master i " +
-                    "LEFT JOIN stock_ledger s " +
-                    "ON i.Item_id = s.item_id " +
-                    "WHERE 1=1 ";
-
-            if (category != null &&
-                    !category.trim().isEmpty()) {
-
-                itemSql +=
-                        "AND i.Category=? ";
+            if (category != null && !category.trim().isEmpty() && !category.equals("ALL")) {
+                itemSql += "AND im.Category=? ";
+            }
+            
+            if (subCategory != null && !subCategory.trim().isEmpty() && !subCategory.equals("ALL")) {
+                itemSql += "AND im.Sub_Category=? ";
             }
 
-            if (subCategory != null &&
-                    !subCategory.trim().isEmpty()) {
-
-                itemSql +=
-                        "AND i.Sub_Category=? ";
-            }
-
-            itemSql +=
-                    "GROUP BY " +
-                    "i.Item_id, " +
-                    "i.Item_name, " +
-                    "i.Category, " +
-                    "i.Sub_Category, " +
-                    "i.UOM " +
-                    "ORDER BY i.Item_name";
+            itemSql += "ORDER BY im.Category, im.Item_name";
 
             PreparedStatement ps =
                     con.prepareStatement(itemSql);
@@ -192,23 +198,22 @@ public class SaveStockVerificationServlet extends HttpServlet {
             java.sql.Date toSqlDate =
                     java.sql.Date.valueOf(toDate);
 
-            ps.setDate(idx++, fromSqlDate);
+            // Set parameters matching your subqueries
+            ps.setDate(idx++, fromSqlDate); // opening_balance (< ?)
 
-            ps.setDate(idx++, fromSqlDate);
-            ps.setDate(idx++, toSqlDate);
+            ps.setDate(idx++, fromSqlDate); // receipts (BETWEEN ?)
+            ps.setDate(idx++, toSqlDate);   // receipts (AND ?)
 
-            ps.setDate(idx++, fromSqlDate);
-            ps.setDate(idx++, toSqlDate);
+            ps.setDate(idx++, fromSqlDate); // issues (BETWEEN ?)
+            ps.setDate(idx++, toSqlDate);   // issues (AND ?)
 
-            if (category != null &&
-                    !category.trim().isEmpty()) {
+            ps.setDate(idx++, toSqlDate);   // closing_balance (<= ?)
 
+            if (category != null && !category.trim().isEmpty() && !category.equals("ALL")) {
                 ps.setString(idx++, category);
             }
 
-            if (subCategory != null &&
-                    !subCategory.trim().isEmpty()) {
-
+            if (subCategory != null && !subCategory.trim().isEmpty() && !subCategory.equals("ALL")) {
                 ps.setString(idx++, subCategory);
             }
 
@@ -220,61 +225,25 @@ public class SaveStockVerificationServlet extends HttpServlet {
 
             while (rs.next()) {
 
-                double opening =
-                        rs.getDouble(
-                                "opening_qty");
-
-                double purchase =
-                        rs.getDouble(
-                                "purchase_qty");
-
-                double consume =
-                        rs.getDouble(
-                                "consume_qty");
-
-                double balance =
-                        opening +
-                        purchase -
-                        consume;
+                double opening = rs.getDouble("opening_balance");
+                double purchase = rs.getDouble("receipts");
+                double consume = rs.getDouble("issues");
+                double balance = rs.getDouble("closing_balance");
 
                 Map<String, Object> row =
                         new HashMap<String, Object>();
 
-                row.put(
-                        "item_id",
-                        rs.getInt("Item_id"));
-
-                row.put(
-                        "item_name",
-                        rs.getString("Item_name"));
-
-                row.put(
-                        "category",
-                        rs.getString("Category"));
-
-                row.put(
-                        "subcategory",
-                        rs.getString("Sub_Category"));
-
-                row.put(
-                        "uom",
-                        rs.getString("UOM"));
-
-                row.put(
-                        "opening_qty",
-                        opening);
-
-                row.put(
-                        "purchase_qty",
-                        purchase);
-
-                row.put(
-                        "consume_qty",
-                        consume);
-
-                row.put(
-                        "balance_qty",
-                        balance);
+                row.put("item_id", rs.getInt("Item_id"));
+                row.put("item_name", rs.getString("Item_name"));
+                row.put("category", rs.getString("Category"));
+                row.put("subcategory", rs.getString("Sub_Category"));
+                row.put("uom", rs.getString("UOM"));
+                
+                // Mapped to existing keys so your UI/JSP doesn't break
+                row.put("opening_qty", opening);
+                row.put("purchase_qty", purchase);
+                row.put("consume_qty", consume);
+                row.put("balance_qty", balance); 
 
                 itemList.add(row);
             }
@@ -314,9 +283,7 @@ public class SaveStockVerificationServlet extends HttpServlet {
                             response);
 
         } catch (Exception e) {
-
             e.printStackTrace();
-
             throw new ServletException(e);
         }
     }
@@ -329,8 +296,6 @@ public class SaveStockVerificationServlet extends HttpServlet {
     	String verifiedBy =
                 (String) request.getSession()
                 .getAttribute("username");
-
-      
 
         String remarks =
                 request.getParameter("overall_remarks");
@@ -373,9 +338,7 @@ public class SaveStockVerificationServlet extends HttpServlet {
                     psHeader.getGeneratedKeys();
 
             if (rs.next()) {
-
-                verificationId =
-                        rs.getInt(1);
+                verificationId = rs.getInt(1);
             }
 
             String detailSql =
@@ -401,48 +364,24 @@ public class SaveStockVerificationServlet extends HttpServlet {
                         Double.parseDouble(
                                 physicalQtys[i]);
 
-                psDetail.setInt(
-                        1,
-                        verificationId);
-
-                psDetail.setInt(
-                        2,
-                        Integer.parseInt(
-                                itemIds[i]));
-
-                psDetail.setDouble(
-                        3,
-                        systemQty);
-
-                psDetail.setDouble(
-                        4,
-                        physicalQty);
-
-                psDetail.setDouble(
-                        5,
-                        physicalQty - systemQty);
-
-                psDetail.setString(
-                        6,
-                        remarksList != null &&
-                        remarksList.length > i
-                        ? remarksList[i]
-                        : "");
+                psDetail.setInt(1, verificationId);
+                psDetail.setInt(2, Integer.parseInt(itemIds[i]));
+                psDetail.setDouble(3, systemQty);
+                psDetail.setDouble(4, physicalQty);
+                psDetail.setDouble(5, physicalQty - systemQty);
+                psDetail.setString(6, remarksList != null && remarksList.length > i ? remarksList[i] : "");
 
                 psDetail.addBatch();
             }
 
             psDetail.executeBatch();
-
             con.commit();
 
             response.sendRedirect(
                     "StockVerificationServlet");
 
         } catch (Exception e) {
-
             e.printStackTrace();
-
             throw new ServletException(e);
         }
     }

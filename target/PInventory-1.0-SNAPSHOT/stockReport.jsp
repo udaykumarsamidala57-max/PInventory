@@ -50,56 +50,47 @@ try {
 
     // Main Query
     String sql =
-    "SELECT " +
-    "im.Item_id, " +
-    "im.Item_name, " +
-    "im.Category, " +
+    		"SELECT " +
+    		"im.Item_id, " +
+    		"im.Item_name, " +
+    		"im.Category, " +
 
-    // Opening Balance
-    "COALESCE(( " +
-    "   SELECT sl1.running_balance " +
-    "   FROM stock_ledger sl1 " +
-    "   WHERE sl1.item_id = im.Item_id " +
-    "   AND sl1.trans_date < ? " +
-    "   ORDER BY sl1.trans_date DESC, sl1.ledger_id DESC " +
-    "   LIMIT 1 " +
-    "),0) AS opening_balance, " +
+    		/* Opening Balance */
+    		"COALESCE(( " +
+    		"   SELECT SUM(CASE " +
+    		"       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
+    		"       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
+    		"       ELSE 0 END) " +
+    		"   FROM stock_ledger sl " +
+    		"   WHERE sl.item_id = im.Item_id " +
+    		"   AND sl.trans_date < ? " +
+    		"),0) AS opening_balance, " +
 
-    // Receipts
-    "COALESCE(( " +
-    "   SELECT SUM(sl2.qty) " +
-    "   FROM stock_ledger sl2 " +
-    "   WHERE sl2.item_id = im.Item_id " +
-    "   AND sl2.trans_type='RECEIPT' " +
-    "   AND sl2.trans_date BETWEEN ? AND ? " +
-    "),0) AS receipts, " +
+    		/* Receipts */
+    		"COALESCE(( " +
+    		"   SELECT SUM(sl.qty) " +
+    		"   FROM stock_ledger sl " +
+    		"   WHERE sl.item_id = im.Item_id " +
+    		"   AND sl.trans_type='RECEIPT' " +
+    		"   AND sl.trans_date BETWEEN ? AND ? " +
+    		"),0) AS receipts, " +
 
-    // Issues
-    "COALESCE(( " +
-    "   SELECT SUM(sl3.qty) " +
-    "   FROM stock_ledger sl3 " +
-    "   WHERE sl3.item_id = im.Item_id " +
-    "   AND sl3.trans_type='ISSUE' " +
-    "   AND sl3.trans_date BETWEEN ? AND ? " +
-    "),0) AS issues, " +
+    		/* Issues */
+    		"COALESCE(( " +
+    		"   SELECT SUM(sl.qty) " +
+    		"   FROM stock_ledger sl " +
+    		"   WHERE sl.item_id = im.Item_id " +
+    		"   AND sl.trans_type='ISSUE' " +
+    		"   AND sl.trans_date BETWEEN ? AND ? " +
+    		"),0) AS issues " +
 
-    // Closing Balance
-    "COALESCE(( " +
-    "   SELECT sl4.running_balance " +
-    "   FROM stock_ledger sl4 " +
-    "   WHERE sl4.item_id = im.Item_id " +
-    "   AND sl4.trans_date <= ? " +
-    "   ORDER BY sl4.trans_date DESC, sl4.ledger_id DESC " +
-    "   LIMIT 1 " +
-    "),0) AS closing_balance " +
+    		"FROM item_master im ";
 
-    "FROM item_master im ";
+    		if(category != null && !category.equals("ALL")){
+    		    sql += "WHERE im.Category=? ";
+    		}
 
-    if (category != null && !category.equals("ALL")) {
-        sql += "WHERE im.Category=? ";
-    }
-
-    sql += "ORDER BY im.Category, im.Item_name";
+    		sql += "ORDER BY im.Category, im.Item_name";
 
     ps = conn.prepareStatement(sql);
 
