@@ -78,7 +78,17 @@
                                 <input type="hidden" name="item_id" value="<%=row.get("item_id")%>">
                             </td>
                             <td><%=row.get("uom")%></td>
-                            <td class="slds-text-align_right"><%=row.getOrDefault("opening_qty", 0.0)%></td>
+                            <td class="slds-text-align_right">
+<%
+double opening = Double.parseDouble(row.getOrDefault("opening_qty", 0.0).toString());
+
+if(opening < 0){
+    out.print("(" + String.format("%.2f", Math.abs(opening)) + ")");
+}else{
+    out.print(String.format("%.2f", opening));
+}
+%>
+</td>
                             <td class="slds-text-align_right"><%=row.getOrDefault("purchase_qty", 0.0)%></td>
                             <td class="slds-text-align_right"><%=row.getOrDefault("consume_qty", 0.0)%></td>
                             <td class="slds-text-align_right">
