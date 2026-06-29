@@ -94,6 +94,8 @@ try {
 
     ps = conn.prepareStatement(sql);
 
+    ps = conn.prepareStatement(sql);
+
     ps.setString(1, fromDate);
 
     ps.setString(2, fromDate);
@@ -102,11 +104,11 @@ try {
     ps.setString(4, fromDate);
     ps.setString(5, toDate);
 
-    ps.setString(6, toDate);
-
     if (category != null && !category.equals("ALL")) {
-        ps.setString(7, category);
+        ps.setString(6, category);
     }
+
+    
 
     rs = ps.executeQuery();
 %>
@@ -506,7 +508,7 @@ while(rs.next()){
     double opening = rs.getDouble("opening_balance");
     double receipts = rs.getDouble("receipts");
     double issues = rs.getDouble("issues");
-    double closing = rs.getDouble("closing_balance");
+    double closing = opening + receipts - issues;
 
 %>
 

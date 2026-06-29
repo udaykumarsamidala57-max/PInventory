@@ -522,7 +522,12 @@ while(rs.next()){
         <%=rs.getString("Item_name")%>
     </td>
 
-    <td data-label="Opening Balance"><%=String.format("%.2f", opening)%></td>
+    <td data-label="Opening Balance">
+<%= opening < 0
+        ? "(" + String.format("%.2f", Math.abs(opening)) + ")"
+        : String.format("%.2f", opening)
+%>
+</td>
 
     <td data-label="Receipts"><%=String.format("%.2f", receipts)%></td>
 

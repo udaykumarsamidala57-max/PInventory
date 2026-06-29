@@ -129,14 +129,31 @@ public class DiningHallServlet extends HttpServlet {
                 double unitPrice = 0.0;
                 double currentBalance = 0.0;
 
-                // ✅ Get current stock & price
+                // Get stock directly from ledger
                 try (PreparedStatement psStock = con.prepareStatement(
-                        "SELECT COALESCE(balance_qty,0), COALESCE(last_price,0) FROM stock WHERE item_id=?")) {
+                    "SELECT " +
+                    "COALESCE(SUM(CASE WHEN trans_type='RECEIPT' THEN qty ELSE 0 END),0) - " +
+                    "COALESCE(SUM(CASE WHEN trans_type='ISSUE' THEN qty ELSE 0 END),0) AS balance " +
+                    "FROM stock_ledger WHERE item_id=?")) {
+
                     psStock.setInt(1, itemId);
+
                     try (ResultSet rs = psStock.executeQuery()) {
                         if (rs.next()) {
-                            currentBalance = rs.getDouble(1);
-                            unitPrice = rs.getDouble(2);
+                            currentBalance = rs.getDouble("balance");
+                        }
+                    }
+                }
+
+                // Get last price
+                try (PreparedStatement psPrice = con.prepareStatement(
+                    "SELECT COALESCE(last_price,0) FROM stock WHERE item_id=?")) {
+
+                    psPrice.setInt(1, itemId);
+
+                    try (ResultSet rs = psPrice.executeQuery()) {
+                        if (rs.next()) {
+                            unitPrice = rs.getDouble(1);
                         }
                     }
                 }
