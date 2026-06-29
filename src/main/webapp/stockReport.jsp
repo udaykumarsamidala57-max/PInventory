@@ -12,7 +12,10 @@ if (sess == null || sess.getAttribute("username") == null) {
 String fromDate = request.getParameter("fromDate");
 String toDate = request.getParameter("toDate");
 String category = request.getParameter("category");
+
+String subCategory = request.getParameter("subCategory");
 String export = request.getParameter("export");
+
 
 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
@@ -48,69 +51,85 @@ try {
 
     rsCat = psCat.executeQuery();
 
-    // Main Query
-    String sql =
-    		"SELECT " +
-    		"im.Item_id, " +
-    		"im.Item_name, " +
-    		"im.Category, " +
+    subCategory = request.getParameter("subCategory");
 
-    		/* Opening Balance */
-    		"COALESCE(( " +
-    		"   SELECT SUM(CASE " +
-    		"       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
-    		"       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
-    		"       ELSE 0 END) " +
-    		"   FROM stock_ledger sl " +
-    		"   WHERE sl.item_id = im.Item_id " +
-    		"   AND sl.trans_date < ? " +
-    		"),0) AS opening_balance, " +
+ // Main Query
+ String sql =
+     "SELECT " +
+     "im.Item_id, " +
+     "im.Item_name, " +
+     "im.Category, " +
+     "im.Sub_Category, " +
 
-    		/* Receipts */
-    		"COALESCE(( " +
-    		"   SELECT SUM(sl.qty) " +
-    		"   FROM stock_ledger sl " +
-    		"   WHERE sl.item_id = im.Item_id " +
-    		"   AND sl.trans_type='RECEIPT' " +
-    		"   AND sl.trans_date BETWEEN ? AND ? " +
-    		"),0) AS receipts, " +
+     /* Opening Balance */
+     "COALESCE(( " +
+     "   SELECT SUM(CASE " +
+     "       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
+     "       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
+     "       ELSE 0 END) " +
+     "   FROM stock_ledger sl " +
+     "   WHERE sl.item_id = im.Item_id " +
+     "   AND sl.trans_date < ? " +
+     "),0) AS opening_balance, " +
 
-    		/* Issues */
-    		"COALESCE(( " +
-    		"   SELECT SUM(sl.qty) " +
-    		"   FROM stock_ledger sl " +
-    		"   WHERE sl.item_id = im.Item_id " +
-    		"   AND sl.trans_type='ISSUE' " +
-    		"   AND sl.trans_date BETWEEN ? AND ? " +
-    		"),0) AS issues " +
+     /* Receipts */
+     "COALESCE(( " +
+     "   SELECT SUM(sl.qty) " +
+     "   FROM stock_ledger sl " +
+     "   WHERE sl.item_id = im.Item_id " +
+     "   AND sl.trans_type='RECEIPT' " +
+     "   AND sl.trans_date BETWEEN ? AND ? " +
+     "),0) AS receipts, " +
 
-    		"FROM item_master im ";
+     /* Issues */
+     "COALESCE(( " +
+     "   SELECT SUM(sl.qty) " +
+     "   FROM stock_ledger sl " +
+     "   WHERE sl.item_id = im.Item_id " +
+     "   AND sl.trans_type='ISSUE' " +
+     "   AND sl.trans_date BETWEEN ? AND ? " +
+     "),0) AS issues " +
 
-    		if(category != null && !category.equals("ALL")){
-    		    sql += "WHERE im.Category=? ";
-    		}
+     "FROM item_master im ";
 
-    		sql += "ORDER BY im.Category, im.Item_name";
+ boolean hasWhere = false;
 
-    ps = conn.prepareStatement(sql);
+ if (category != null && !category.equals("ALL")) {
+     sql += "WHERE im.Category = ? ";
+     hasWhere = true;
+ }
 
-    ps = conn.prepareStatement(sql);
+ if (subCategory != null && !subCategory.equals("ALL")) {
+     sql += hasWhere
+             ? "AND im.Sub_Category = ? "
+             : "WHERE im.Sub_Category = ? ";
+ }
 
-    ps.setString(1, fromDate);
+ sql += "ORDER BY im.Category, im.Sub_Category, im.Item_name";
 
-    ps.setString(2, fromDate);
-    ps.setString(3, toDate);
+ ps = conn.prepareStatement(sql);
 
-    ps.setString(4, fromDate);
-    ps.setString(5, toDate);
+ // Date Parameters
+ ps.setString(1, fromDate);
 
-    if (category != null && !category.equals("ALL")) {
-        ps.setString(6, category);
-    }
+ ps.setString(2, fromDate);
+ ps.setString(3, toDate);
 
-    
+ ps.setString(4, fromDate);
+ ps.setString(5, toDate);
 
-    rs = ps.executeQuery();
+ // Filter Parameters
+ int paramIndex = 6;
+
+ if (category != null && !category.equals("ALL")) {
+     ps.setString(paramIndex++, category);
+ }
+
+ if (subCategory != null && !subCategory.equals("ALL")) {
+     ps.setString(paramIndex++, subCategory);
+ }
+
+ rs = ps.executeQuery();
 %>
 
 <!DOCTYPE html>
@@ -458,6 +477,9 @@ button{
         </select>
     </div>
 
+
+
+
     <div class="form-group buttons">
 
         <button type="submit" class="btn-primary">
@@ -485,6 +507,7 @@ button{
 
 <tr>
     <th class="txt-align-left">Category</th>
+     <th class="txt-align-left">Sub Category</th>
     <th style="text-align: right;">Item ID</th>
     <th class="txt-align-left">Item Name</th>
     <th style="text-align: right;">Opening Balance</th>
@@ -515,6 +538,9 @@ while(rs.next()){
 <tr>
 
     <td data-label="Category" class="txt-align-left"><%=rs.getString("Category")%></td>
+    <td data-label="Sub Category" class="txt-align-left">
+    <%=rs.getString("Sub_Category")%>
+</td>
 
     <td data-label="Item ID"><%=rs.getInt("Item_id")%></td>
 
