@@ -19,7 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.bean.DBUtil6;
 
-// Maps this single servlet to intercept both tree rendering and dynamic image streaming requests
 @WebServlet(urlPatterns = {"/EmployeeTree", "/EmployeePhoto"})
 public class EmployeeTreeServlet extends HttpServlet {
 
@@ -32,6 +31,7 @@ public class EmployeeTreeServlet extends HttpServlet {
         String designation;
         String department;
         Integer reportingTo;
+        String tire; 
     }
 
     @Override
@@ -39,22 +39,15 @@ public class EmployeeTreeServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
 
-        // 1. Determine which endpoint the browser is targeting
         String servletPath = request.getServletPath();
 
         if ("/EmployeePhoto".equals(servletPath)) {
-            // Route dynamically to the photo streaming logic
             streamEmployeePhoto(request, response);
         } else {
-            // Default route: Build and display the Organization Chart Tree
             renderEmployeeTree(request, response);
         }
     }
 
-    /**
-     * ROUTE A: Fetches employee records, builds the organizational nesting structure,
-     * and forwards the generated tree markup to your JSP view.
-     */
     private void renderEmployeeTree(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             
@@ -62,7 +55,7 @@ public class EmployeeTreeServlet extends HttpServlet {
 
         try (Connection con = DBUtil6.getConnection();
              PreparedStatement ps = con.prepareStatement(
-                     "SELECT emp_id, emp_code, emp_name, designation, department, reporting_to "
+                     "SELECT emp_id, emp_code, emp_name, designation, department, reporting_to, tire "
                    + "FROM employee_master "
                    + "WHERE status='Active' "
                    + "ORDER BY emp_name");
@@ -75,6 +68,7 @@ public class EmployeeTreeServlet extends HttpServlet {
                 emp.empName = rs.getString("emp_name");
                 emp.designation = rs.getString("designation");
                 emp.department = rs.getString("department");
+                emp.tire = rs.getString("tire"); 
 
                 int reportingTo = rs.getInt("reporting_to");
                 if (rs.wasNull() || reportingTo == 0) {
@@ -103,7 +97,10 @@ public class EmployeeTreeServlet extends HttpServlet {
 
                 if (isRoot) {
                     rootFound = true;
-                    treeHtml.append("<li>");
+                    
+                    String listClass = isVerticalTier(emp.tire) ? " class='compact-vertical-tier' " : "";
+                    treeHtml.append("<li").append(listClass).append(">");
+                    
                     appendEmployeeCard(treeHtml, emp, request.getContextPath());
                     buildTree(treeHtml, emp.empId, employees, request.getContextPath(), new HashSet<Integer>());
                     treeHtml.append("</li>");
@@ -112,7 +109,8 @@ public class EmployeeTreeServlet extends HttpServlet {
 
             if (!rootFound && !employees.isEmpty()) {
                 Employee emp = employees.get(0);
-                treeHtml.append("<li>");
+                String listClass = isVerticalTier(emp.tire) ? " class='compact-vertical-tier' " : "";
+                treeHtml.append("<li").append(listClass).append(">");
                 appendEmployeeCard(treeHtml, emp, request.getContextPath());
                 treeHtml.append("</li>");
             }
@@ -128,10 +126,6 @@ public class EmployeeTreeServlet extends HttpServlet {
         }
     }
 
-    /**
-     * ROUTE B: Streams raw image binary arrays directly from your longblob column 
-     * back to the frontend image tags.
-     */
     private void streamEmployeePhoto(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             
@@ -141,9 +135,8 @@ public class EmployeeTreeServlet extends HttpServlet {
         }
 
         response.reset();
-        response.setContentType("image/jpeg"); // Signals a visual payload stream
+        response.setContentType("image/jpeg"); 
 
-        // Tailored directly to your validated database table schema
         String sql = "SELECT photo FROM employee_master WHERE emp_id = ?";
 
         try (Connection con = DBUtil6.getConnection();
@@ -154,17 +147,15 @@ public class EmployeeTreeServlet extends HttpServlet {
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     InputStream is = rs.getBinaryStream("photo");
-                    
                     if (is != null) {
                         OutputStream os = response.getOutputStream();
                         byte[] buffer = new byte[4096];
                         int bytesRead;
-                        
                         while ((bytesRead = is.read(buffer)) != -1) {
                             os.write(buffer, 0, bytesRead);
                         }
                         os.flush();
-                        return; // Done processing binary response
+                        return;
                     }
                 }
             }
@@ -172,7 +163,6 @@ public class EmployeeTreeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
-        // Fallback: If no custom photo blob exists, output your local web asset placeholder instead
         request.getRequestDispatcher("/images/user.png").forward(request, response);
     }
 
@@ -196,12 +186,20 @@ public class EmployeeTreeServlet extends HttpServlet {
             }
 
             if (parentId.equals(emp.reportingTo)) {
-                if (!found) {
-                    html.append("<ul>");
-                    found = true;
-                }
+            	if (!found) {
 
-                html.append("<li>");
+            	    if (hasTier4Children(parentId, employees)) {
+            	        html.append("<ul class='vertical-tier'>");
+            	    } else {
+            	        html.append("<ul>");
+            	    }
+
+            	    found = true;
+            	}
+
+                String listClass = isVerticalTier(emp.tire) ? " class='compact-vertical-tier' " : "";
+                html.append("<li").append(listClass).append(">");
+                
                 appendEmployeeCard(html, emp, contextPath);
                 buildTree(html, emp.empId, employees, contextPath, new HashSet<Integer>(visited));
                 html.append("</li>");
@@ -218,10 +216,10 @@ public class EmployeeTreeServlet extends HttpServlet {
             Employee emp,
             String contextPath) {
 
-        html.append("<div class='emp'>");
+        String tierValue = (emp.tire == null) ? "" : emp.tire.trim();
+        html.append("<div class='emp' data-tier='").append(tierValue).append("'>");
         html.append("<div class='emp-img-container'>");
         
-        // This targets the exact same servlet via our multi-url array mapping pattern
         html.append("<img src='")
             .append(contextPath)
             .append("/EmployeePhoto?id=")
@@ -232,6 +230,7 @@ public class EmployeeTreeServlet extends HttpServlet {
             
         html.append("</div>"); 
 
+        html.append("<div class='emp-details-wrapper'>"); // Added details wrapper for row transformation
         html.append("<div class='emp-name'>")
             .append(emp.empName == null ? "" : emp.empName)
             .append("</div>");
@@ -243,7 +242,35 @@ public class EmployeeTreeServlet extends HttpServlet {
         html.append("<div class='emp-id'>")
             .append(emp.empCode == null ? "" : emp.empCode)
             .append("</div>");
+        html.append("</div>"); // Close details wrapper
 
         html.append("</div>");
+    }
+
+    private boolean isVerticalTier(String tireStr) {
+        if (tireStr == null || tireStr.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            int tierNum = Integer.parseInt(tireStr.replaceAll("[^0-9]", ""));
+            return tierNum >= 4;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
+    private boolean hasTier4Children(
+            Integer parentId,
+            List<Employee> employees) {
+
+        for (Employee emp : employees) {
+
+            if (parentId.equals(emp.reportingTo)
+                    && isVerticalTier(emp.tire)) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 }

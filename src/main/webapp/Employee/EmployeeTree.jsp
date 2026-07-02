@@ -37,7 +37,7 @@ h2 {
 }
 
 .tree{
-    display: table; /* Ensures the tree centers properly and respects inner elements */
+    display: table;
     margin: 0 auto;
 }
 
@@ -55,7 +55,9 @@ h2 {
     padding: 20px 10px 0 10px;
 }
 
-/* Connectors using pseudo elements */
+/* ========================================================
+   STANDARD HORIZONTAL CONNECTORS (TIERS 1-3)
+   ======================================================== */
 .tree li::before,
 .tree li::after{
     content: '';
@@ -107,7 +109,84 @@ h2 {
     transform: translateX(-50%);
 }
 
-/* Employee Card Styling */
+/* ========================================================
+   COMPACT VERTICAL LISTING OVERRIDES (TIER 4+)
+   ======================================================== */
+
+/* Switch container from horizontal flex row to a vertical list block */
+.tree li.compact-vertical-tier > ul {
+    flex-direction: column;
+    align-items: center;
+    padding-top: 10px;
+}
+
+/* Remove horizontal connector bars completely for Tier 4 list nodes */
+.tree li.compact-vertical-tier > ul > li::before,
+.tree li.compact-vertical-tier > ul > li::after {
+    border: none !important;
+}
+
+/* Main single tracking line going straight down through the center of the list */
+.tree li.compact-vertical-tier > ul::before {
+    left: 50%;
+    top: 0;
+    height: 100%;
+    border-left: 2px solid #cbd5e1;
+    transform: translateX(-50%);
+}
+
+/* Spacing layout for the vertical list items */
+.tree li.compact-vertical-tier > ul > li {
+    padding: 6px 0;
+    display: block;
+    width: auto;
+}
+
+/* Transform the Card itself into a tiny, space-saving row banner */
+.tree li.compact-vertical-tier > ul > li .emp {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    width: 240px;                  /* Slightly wider bounding layout */
+    padding: 6px 12px;             /* Tight padding to fit more cards */
+    text-align: left;
+    border-left: 4px solid #3b82f6; /* Decorative indicator strip */
+}
+
+/* Minimize Avatar Container inside Tier 4 List */
+.tree li.compact-vertical-tier > ul > li .emp-img-container {
+    width: 32px;
+    height: 32px;
+    margin: 0 12px 0 0; /* Shifted next to details instead of top centered */
+    border: 1.5px solid #3b82f6;
+}
+
+/* Align text fields cleanly inside row layout */
+.tree li.compact-vertical-tier > ul > li .emp-details-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow: hidden;
+}
+
+/* Shrink text sizes for micro presentation */
+.tree li.compact-vertical-tier > ul > li .emp-name {
+    font-size: 13px;
+    margin-bottom: 1px;
+}
+
+.tree li.compact-vertical-tier > ul > li .emp-desg {
+    font-size: 11px;
+    margin-bottom: 0px;
+}
+
+.tree li.compact-vertical-tier > ul > li .emp-id {
+    font-size: 10px;
+}
+
+/* ========================================================
+   STANDARD EMPLOYEE CARD STYLING (TIERS 1-3)
+   ======================================================== */
 .emp{
     display: inline-block;
     width: 180px;
@@ -122,27 +201,31 @@ h2 {
 }
 
 .emp:hover {
-    transform: translateY(-5px);
+    transform: translateY(-3px);
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     border-color: #3b82f6;
 }
 
-/* Fixed Image Container to prevent collapsing */
 .emp-img-container {
     width: 65px;
     height: 65px;
     margin: 0 auto 10px auto;
     position: relative;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid #3b82f6;
+    background-color: #f0f4f8; 
 }
 
 .emp img{
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    object-fit: cover; /* Prevents stretching */
-    border: 3px solid #3b82f6;
-    background-color: #f0f4f8; /* Placeholder color while loading */
+    object-fit: cover; 
+}
+
+.emp-details-wrapper {
+    width: 100%;
 }
 
 .emp-name{
@@ -187,6 +270,49 @@ h2 {
         font-size: 11px;
     }
 }
+/* Tier 4+ employees display vertically */
+
+.compact-vertical-tier > ul{
+    display:block !important;
+    padding-top:15px;
+}
+
+.compact-vertical-tier > ul > li{
+    display:block;
+    padding:8px 0;
+    margin:0 auto;
+}
+
+/* Tier 4 staff vertical layout */
+
+.vertical-tier{
+    display:block !important;
+    padding-top:15px;
+    position:relative;
+}
+
+.vertical-tier > li{
+    display:block;
+    width:100%;
+    margin:8px auto;
+    padding-top:10px;
+}
+
+/* Remove horizontal lines */
+.vertical-tier > li::before,
+.vertical-tier > li::after{
+    display:none;
+}
+
+/* Draw single vertical line */
+.vertical-tier::before{
+    content:'';
+    position:absolute;
+    left:50%;
+    top:0;
+    bottom:0;
+    border-left:2px solid #cbd5e1;
+}
 </style>
 
 </head>
@@ -215,11 +341,25 @@ h2 {
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const images = document.querySelectorAll('.emp img');
+    
+    // A clean, high-resolution SVG profile user placeholder embedded directly into the script
+    const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>";
+
     images.forEach(img => {
+        // Handle immediate issues if src attributes evaluate to empty strings
+        if(!img.getAttribute('src') || img.getAttribute('src').trim() === "" || img.getAttribute('src').endsWith("?id=0")) {
+            img.src = defaultAvatar;
+            if(img.parentElement) {
+                img.parentElement.style.borderColor = '#cbd5e1';
+            }
+        }
+
+        // Catches database loading issues or 404 stream dropouts
         img.onerror = function() {
-            // Replaces broken image paths with a reliable UI placeholder
-            this.src = 'https://cdn-images.mailchimp.com/icons/social-block/color-link-128.png'; 
-            this.style.borderColor = '#cbd5e1'; 
+            this.src = defaultAvatar; 
+            if(this.parentElement) {
+                this.parentElement.style.borderColor = '#cbd5e1'; 
+            }
         };
     });
 });
