@@ -22,6 +22,7 @@ com\bean\DBUtil5.class
 com\controller\AIndentListServlet.class
 com\Service\RequestBookingServlet.class
 com\controller\HRA\viewResumeFile.class
+com\Employee\EmployeeTreeServlet.class
 com\Service\RequestReportServlet.class
 com\controller\PurchaseOrderServlet.class
 com\DAO\MaintenanceDAO.class
@@ -48,6 +49,7 @@ com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\controller\HRA\CandidateServlet.class
 com\controller\Asset\CategoryController.class
 com\DAO\TransferDAO.class
+com\bean\DBUtil6.class
 com\controller\StockAuditReportServlet.class
 com\controller\Admissions\SaveMarksServlet.class
 com\controller\PO$1MergedItem.class
@@ -64,6 +66,7 @@ com\Service\Incharge.class
 com\controller\Asset\ReportController.class
 com\bean\Indent.class
 com\controller\Asset\AuditController.class
+com\Employee\EmployeeTreeServlet$Employee.class
 com\bean\DBUtil2.class
 com\DAO\AssetDAO.class
 com\controller\AddStock.class
@@ -75,6 +78,7 @@ com\controller\SendPendingIndentPDF.class
 com\bean\IndentItemFull.class
 com\controller\IssueApprove.class
 com\controller\Admissions\UpdateAdmissionStatusServlet.class
+com\Employee\Employee.class
 com\controller\PO.class
 com\bean\Addstock.class
 com\bean\PO.class

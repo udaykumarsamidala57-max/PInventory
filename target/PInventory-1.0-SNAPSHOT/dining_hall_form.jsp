@@ -42,6 +42,9 @@ table.main-table select { padding: 4px; font-size: 14px; }
               <option value="">-- Select --</option>
               <option>Morning Drink</option><option>Break Fast</option><option>Lunch</option>
               <option>Snacks</option><option>Dinner</option><option>Staff Tea</option><option>Special Event</option>
+              <%if("Global".equalsIgnoreCase(role)){ %>
+              <option>Adjustment</option>
+              <%} %>
             </select>
           </td></tr>
         <tr><td><label>Issue Date:</label></td><td><input type="date" name="issue_date" id="issue_date" required></td></tr>
