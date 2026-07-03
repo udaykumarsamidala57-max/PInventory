@@ -294,6 +294,30 @@ h2 {
 .emp.tier3-card .emp-id{
     font-size:9px;
 }
+/* Tier 2 - Medium Size */
+
+.emp.tier2-card{
+    width:160px;
+    padding:12px 8px;
+}
+
+.emp.tier2-card .emp-img-container{
+    width:58px;
+    height:58px;
+    margin-bottom:9px;
+}
+
+.emp.tier2-card .emp-name{
+    font-size:13px;
+}
+
+.emp.tier2-card .emp-desg{
+    font-size:11px;
+}
+
+.emp.tier2-card .emp-id{
+    font-size:10px;
+}
 /* Tier 4+ employees display vertically */
 
 .compact-vertical-tier > ul{
