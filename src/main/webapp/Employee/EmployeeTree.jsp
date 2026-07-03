@@ -198,6 +198,7 @@ h2 {
     position: relative;
     z-index: 10;
     transition: all 0.3s ease;
+    cursor: pointer; /* Added to indicate clickability */
 }
 
 .emp:hover {
@@ -447,6 +448,107 @@ h2 {
     border-left:2px solid #cbd5e1;
 }
 
+/* ==========================================================
+   MODAL / POPUP CSS CODES
+   ========================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.6); /* Blurred translucent dark mask */
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-card {
+    background: #ffffff;
+    width: 460px;
+    padding: 30px 24px;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    text-align: center;
+    position: relative;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.active .modal-card {
+    transform: scale(1);
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+}
+
+.modal-close-btn:hover {
+    color: #475569;
+}
+
+.modal-img-container {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto 20px auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #3b82f6;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25);
+}
+
+.modal-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modal-name {
+    font-size: 40px;
+    font-weight: 1200;
+    color: #1e293b;
+    margin-bottom: 6px;
+}
+
+.modal-desg {
+    font-size: 14px;
+    color: #3b82f6;
+    font-weight: 1000;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modal-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 15px 0;
+}
+
+.modal-id {
+    font-size: 13px;
+    color: #64748b;
+}
+
 </style>
 
 </head>
@@ -472,15 +574,27 @@ h2 {
     </div>
 </div>
 
+<div class="modal-overlay" id="employeeModal">
+    <div class="modal-card">
+        <button class="modal-close-btn" id="closeModalBtn">&times;</button>
+        <div class="modal-img-container">
+            <img id="modalImg" src="" alt="Employee Profile">
+        </div>
+        <div class="modal-name" id="modalName">Employee Name</div>
+        <div class="modal-desg" id="modalDesg">Designation</div>
+        <div class="modal-divider"></div>
+        <div class="modal-id" id="modalId">Employee ID: 0000</div>
+    </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const images = document.querySelectorAll('.emp img');
     
-    // A clean, high-resolution SVG profile user placeholder embedded directly into the script
+    // Default fallback SVG profile container image
     const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>";
 
     images.forEach(img => {
-        // Handle immediate issues if src attributes evaluate to empty strings
         if(!img.getAttribute('src') || img.getAttribute('src').trim() === "" || img.getAttribute('src').endsWith("?id=0")) {
             img.src = defaultAvatar;
             if(img.parentElement) {
@@ -488,13 +602,65 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        // Catches database loading issues or 404 stream dropouts
         img.onerror = function() {
             this.src = defaultAvatar; 
             if(this.parentElement) {
                 this.parentElement.style.borderColor = '#cbd5e1'; 
             }
         };
+    });
+
+    // ==========================================================
+    // POPUP MODAL JAVASCRIPT LOGIC
+    // ==========================================================
+    const modal = document.getElementById('employeeModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    
+    const modalImg = document.getElementById('modalImg');
+    const modalName = document.getElementById('modalName');
+    const modalDesg = document.getElementById('modalDesg');
+    const modalId = document.getElementById('modalId');
+
+    // Event Delegation: Listens to any click inside the tree view component
+    document.querySelector('.tree').addEventListener('click', function(e) {
+        // Find if the click or any of its parents is an active ".emp" node element card
+        const empCard = e.target.closest('.emp');
+        
+        if (empCard) {
+            // Extract textual and graphic information safely from inside the targeted card
+            const imgEl = empCard.querySelector('img');
+            const nameEl = empCard.querySelector('.emp-name');
+            const desgEl = empCard.querySelector('.emp-desg');
+            const idEl = empCard.querySelector('.emp-id');
+
+            // Apply fields directly into the matching Popup components
+            modalImg.src = imgEl ? imgEl.src : defaultAvatar;
+            modalName.textContent = nameEl ? nameEl.textContent : 'N/A';
+            modalDesg.textContent = desgEl ? desgEl.textContent : 'N/A';
+            modalId.textContent = idEl ? idEl.textContent : 'ID: N/A';
+
+            // Show popup layout view window frame safely
+            modal.classList.add('active');
+        }
+    });
+
+    // Close functionality when hitting the 'X' button
+    closeModalBtn.addEventListener('click', function() {
+        modal.classList.remove('active');
+    });
+
+    // Close functionality when clicking outside the White Card box on the overlay background mask
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+        }
+    });
+
+    // Accessibility: Allows exiting out using standard physical computer keyboard 'Escape' button
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+            modal.classList.remove('active');
+        }
     });
 });
 </script>
