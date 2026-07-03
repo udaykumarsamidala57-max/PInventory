@@ -217,7 +217,15 @@ public class EmployeeTreeServlet extends HttpServlet {
             String contextPath) {
 
         String tierValue = (emp.tire == null) ? "" : emp.tire.trim();
-        html.append("<div class='emp' data-tier='").append(tierValue).append("'>");
+        html.append("<div class='emp");
+
+        if ("3".equals(tierValue)) {
+            html.append(" tier3-card");
+        }
+
+        html.append("' data-tier='")
+            .append(tierValue)
+            .append("'>");
         html.append("<div class='emp-img-container'>");
         
         html.append("<img src='")

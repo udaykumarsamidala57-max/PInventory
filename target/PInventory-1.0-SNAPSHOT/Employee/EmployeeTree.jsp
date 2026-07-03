@@ -270,6 +270,30 @@ h2 {
         font-size: 11px;
     }
 }
+/* Tier 3 - Horizontal but smaller */
+
+.emp.tier3-card{
+    width:140px;
+    padding:10px 6px;
+}
+
+.emp.tier3-card .emp-img-container{
+    width:50px;
+    height:50px;
+    margin-bottom:8px;
+}
+
+.emp.tier3-card .emp-name{
+    font-size:12px;
+}
+
+.emp.tier3-card .emp-desg{
+    font-size:10px;
+}
+
+.emp.tier3-card .emp-id{
+    font-size:9px;
+}
 /* Tier 4+ employees display vertically */
 
 .compact-vertical-tier > ul{
@@ -283,28 +307,21 @@ h2 {
     margin:0 auto;
 }
 
-/* Tier 4 staff vertical layout */
+/* ==========================================================
+   TIER 4+ EMPLOYEES - COMPACT VERTICAL LIST
+   ========================================================== */
 
+/* Parent UL becomes vertical */
 .vertical-tier{
-    display:block !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center;
+    gap:6px;
     padding-top:15px;
     position:relative;
 }
 
-.vertical-tier > li{
-    display:block;
-    width:100%;
-    margin:8px auto;
-    padding-top:10px;
-}
-
-/* Remove horizontal lines */
-.vertical-tier > li::before,
-.vertical-tier > li::after{
-    display:none;
-}
-
-/* Draw single vertical line */
+/* Center vertical line */
 .vertical-tier::before{
     content:'';
     position:absolute;
@@ -312,7 +329,100 @@ h2 {
     top:0;
     bottom:0;
     border-left:2px solid #cbd5e1;
+    transform:translateX(-50%);
 }
+
+/* Child LI */
+.vertical-tier > li{
+    display:block !important;
+    padding:4px 0 !important;
+    margin:0 !important;
+    width:auto;
+    position:relative;
+}
+
+/* Remove default tree horizontal connectors */
+.vertical-tier > li::before,
+.vertical-tier > li::after{
+    display:none !important;
+}
+
+/* Small connector from line to card */
+.vertical-tier > li .emp::before{
+    content:'';
+    position:absolute;
+    left:-12px;
+    top:50%;
+    width:12px;
+    border-top:2px solid #cbd5e1;
+    transform:translateY(-50%);
+}
+
+/* Compact employee card */
+.vertical-tier > li .emp{
+    width:240px !important;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    text-align:left;
+    padding:6px 10px;
+    border-left:4px solid #3b82f6;
+    border-radius:8px;
+    background:#fff;
+    position:relative;
+}
+
+/* Small photo */
+.vertical-tier > li .emp-img-container{
+    width:35px !important;
+    height:35px !important;
+    margin:0 10px 0 0 !important;
+    flex-shrink:0;
+    border:2px solid #3b82f6;
+}
+
+/* Details section */
+.vertical-tier > li .emp-details-wrapper{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    overflow:hidden;
+}
+
+/* Smaller text */
+.vertical-tier > li .emp-name{
+    font-size:12px;
+    font-weight:700;
+    margin-bottom:1px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.vertical-tier > li .emp-desg{
+    font-size:10px;
+    margin-bottom:1px;
+    color:#2563eb;
+}
+
+.vertical-tier > li .emp-id{
+    font-size:9px;
+    color:#64748b;
+}
+
+/* Remove nested horizontal tree layout */
+.vertical-tier ul{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center;
+    padding-top:8px;
+}
+
+.vertical-tier ul::before{
+    left:50%;
+    border-left:2px solid #cbd5e1;
+}
+
 </style>
 
 </head>

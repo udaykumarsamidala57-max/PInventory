@@ -270,6 +270,30 @@ h2 {
         font-size: 11px;
     }
 }
+/* Tier 3 - Horizontal but smaller */
+
+.emp.tier3-card{
+    width:140px;
+    padding:10px 6px;
+}
+
+.emp.tier3-card .emp-img-container{
+    width:50px;
+    height:50px;
+    margin-bottom:8px;
+}
+
+.emp.tier3-card .emp-name{
+    font-size:12px;
+}
+
+.emp.tier3-card .emp-desg{
+    font-size:10px;
+}
+
+.emp.tier3-card .emp-id{
+    font-size:9px;
+}
 /* Tier 4+ employees display vertically */
 
 .compact-vertical-tier > ul{
@@ -398,6 +422,7 @@ h2 {
     left:50%;
     border-left:2px solid #cbd5e1;
 }
+
 </style>
 
 </head>
