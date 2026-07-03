@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.Collections;
+import java.util.Comparator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -178,32 +180,72 @@ public class EmployeeTreeServlet extends HttpServlet {
         }
 
         visited.add(parentId);
-        boolean found = false;
+
+        List<Employee> childEmployees = new ArrayList<Employee>();
 
         for (Employee emp : employees) {
-            if (emp.reportingTo == null || emp.empId.equals(emp.reportingTo)) {
+
+            if (emp.reportingTo == null
+                    || emp.empId.equals(emp.reportingTo)) {
                 continue;
             }
 
             if (parentId.equals(emp.reportingTo)) {
-            	if (!found) {
-
-            	    if (hasTier4Children(parentId, employees)) {
-            	        html.append("<ul class='vertical-tier'>");
-            	    } else {
-            	        html.append("<ul>");
-            	    }
-
-            	    found = true;
-            	}
-
-                String listClass = isVerticalTier(emp.tire) ? " class='compact-vertical-tier' " : "";
-                html.append("<li").append(listClass).append(">");
-                
-                appendEmployeeCard(html, emp, contextPath);
-                buildTree(html, emp.empId, employees, contextPath, new HashSet<Integer>(visited));
-                html.append("</li>");
+                childEmployees.add(emp);
             }
+        }
+
+        Collections.sort(childEmployees, new Comparator<Employee>() {
+
+            @Override
+            public int compare(Employee e1, Employee e2) {
+
+                int order1 = getTier3Order(e1);
+                int order2 = getTier3Order(e2);
+
+                if (order1 != order2) {
+                    return Integer.compare(order1, order2);
+                }
+
+                String name1 = e1.empName == null ? "" : e1.empName;
+                String name2 = e2.empName == null ? "" : e2.empName;
+
+                return name1.compareToIgnoreCase(name2);
+            }
+        });
+
+        boolean found = false;
+
+        for (Employee emp : childEmployees) {
+
+            if (!found) {
+
+                if (hasTier4Children(parentId, employees)) {
+                    html.append("<ul class='vertical-tier'>");
+                } else {
+                    html.append("<ul>");
+                }
+
+                found = true;
+            }
+
+            String listClass =
+                    isVerticalTier(emp.tire)
+                            ? " class='compact-vertical-tier' "
+                            : "";
+
+            html.append("<li").append(listClass).append(">");
+
+            appendEmployeeCard(html, emp, contextPath);
+
+            buildTree(
+                    html,
+                    emp.empId,
+                    employees,
+                    contextPath,
+                    new HashSet<Integer>(visited));
+
+            html.append("</li>");
         }
 
         if (found) {
@@ -285,5 +327,52 @@ public class EmployeeTreeServlet extends HttpServlet {
         }
 
         return false;
+    }
+    private int getTier3Order(Employee emp) {
+
+        if (emp == null || !"3".equals(emp.tire)) {
+            return 999;
+        }
+
+        String designation =
+                emp.designation == null
+                        ? ""
+                        : emp.designation.trim();
+
+        switch (designation) {
+
+            case "English HOD":
+                return 1;
+
+            case "Kannada HOD":
+                return 2;
+
+            case "Hindi HOD":
+                return 3;
+
+            case "Maths HOD":
+                return 4;
+
+            case "Chemistry HOD":
+                return 5;
+
+            case "Physics HOD":
+                return 6;
+
+            case "Biology HOD":
+                return 7;
+
+            case "Social HOD":
+                return 8;
+
+            case "CS HOD":
+                return 9;
+
+            case "Coordinator (Boarding)":
+                return 10;
+
+            default:
+                return 999;
+        }
     }
 }
