@@ -112,21 +112,17 @@ h2 {
 /* ========================================================
    COMPACT VERTICAL LISTING OVERRIDES (TIER 4+)
    ======================================================== */
-
-/* Switch container from horizontal flex row to a vertical list block */
 .tree li.compact-vertical-tier > ul {
     flex-direction: column;
     align-items: center;
     padding-top: 10px;
 }
 
-/* Remove horizontal connector bars completely for Tier 4 list nodes */
 .tree li.compact-vertical-tier > ul > li::before,
 .tree li.compact-vertical-tier > ul > li::after {
     border: none !important;
 }
 
-/* Main single tracking line going straight down through the center of the list */
 .tree li.compact-vertical-tier > ul::before {
     left: 50%;
     top: 0;
@@ -135,33 +131,29 @@ h2 {
     transform: translateX(-50%);
 }
 
-/* Spacing layout for the vertical list items */
 .tree li.compact-vertical-tier > ul > li {
     padding: 6px 0;
     display: block;
     width: auto;
 }
 
-/* Transform the Card itself into a tiny, space-saving row banner */
 .tree li.compact-vertical-tier > ul > li .emp {
     display: flex;
     align-items: center;
     flex-direction: row;
-    width: 240px;                  /* Slightly wider bounding layout */
-    padding: 6px 12px;             /* Tight padding to fit more cards */
+    width: 240px;                  
+    padding: 6px 12px;             
     text-align: left;
-    border-left: 4px solid #3b82f6; /* Decorative indicator strip */
+    border-left: 4px solid #3b82f6; 
 }
 
-/* Minimize Avatar Container inside Tier 4 List */
 .tree li.compact-vertical-tier > ul > li .emp-img-container {
     width: 32px;
     height: 32px;
-    margin: 0 12px 0 0; /* Shifted next to details instead of top centered */
+    margin: 0 12px 0 0; 
     border: 1.5px solid #3b82f6;
 }
 
-/* Align text fields cleanly inside row layout */
 .tree li.compact-vertical-tier > ul > li .emp-details-wrapper {
     display: flex;
     flex-direction: column;
@@ -169,7 +161,6 @@ h2 {
     overflow: hidden;
 }
 
-/* Shrink text sizes for micro presentation */
 .tree li.compact-vertical-tier > ul > li .emp-name {
     font-size: 13px;
     margin-bottom: 1px;
@@ -198,7 +189,7 @@ h2 {
     position: relative;
     z-index: 10;
     transition: all 0.3s ease;
-    cursor: pointer; /* Added to indicate clickability */
+    cursor: pointer; 
 }
 
 .emp:hover {
@@ -251,7 +242,6 @@ h2 {
     color: #64748b;
 }
 
-/* Responsive Scaling */
 @media(max-width: 768px){
     .emp{
         width: 140px;
@@ -271,7 +261,6 @@ h2 {
         font-size: 11px;
     }
 }
-/* Tier 3 - Horizontal but smaller */
 
 .emp.tier3-card{
     width:140px;
@@ -295,7 +284,6 @@ h2 {
 .emp.tier3-card .emp-id{
     font-size:9px;
 }
-/* Tier 2 - Medium Size */
 
 .emp.tier2-card{
     width:160px;
@@ -319,7 +307,6 @@ h2 {
 .emp.tier2-card .emp-id{
     font-size:10px;
 }
-/* Tier 4+ employees display vertically */
 
 .compact-vertical-tier > ul{
     display:block !important;
@@ -335,8 +322,6 @@ h2 {
 /* ==========================================================
    TIER 4+ EMPLOYEES - COMPACT VERTICAL LIST
    ========================================================== */
-
-/* Parent UL becomes vertical */
 .vertical-tier{
     display:flex !important;
     flex-direction:column !important;
@@ -346,7 +331,6 @@ h2 {
     position:relative;
 }
 
-/* Center vertical line */
 .vertical-tier::before{
     content:'';
     position:absolute;
@@ -357,7 +341,6 @@ h2 {
     transform:translateX(-50%);
 }
 
-/* Child LI */
 .vertical-tier > li{
     display:block !important;
     padding:4px 0 !important;
@@ -366,13 +349,11 @@ h2 {
     position:relative;
 }
 
-/* Remove default tree horizontal connectors */
 .vertical-tier > li::before,
 .vertical-tier > li::after{
     display:none !important;
 }
 
-/* Small connector from line to card */
 .vertical-tier > li .emp::before{
     content:'';
     position:absolute;
@@ -383,7 +364,6 @@ h2 {
     transform:translateY(-50%);
 }
 
-/* Compact employee card */
 .vertical-tier > li .emp{
     width:180px !important;
     min-height:48px;
@@ -397,7 +377,6 @@ h2 {
     position:relative;
 }
 
-/* Small photo */
 .vertical-tier > li .emp-img-container{
     width:35px !important;
     height:35px !important;
@@ -406,7 +385,6 @@ h2 {
     border:2px solid #3b82f6;
 }
 
-/* Details section */
 .vertical-tier > li .emp-details-wrapper{
     display:flex;
     flex-direction:column;
@@ -414,7 +392,6 @@ h2 {
     overflow:hidden;
 }
 
-/* Smaller text */
 .vertical-tier > li .emp-name{
     font-size:12px;
     font-weight:700;
@@ -435,7 +412,6 @@ h2 {
     color:#64748b;
 }
 
-/* Remove nested horizontal tree layout */
 .vertical-tier ul{
     display:flex !important;
     flex-direction:column !important;
@@ -457,7 +433,7 @@ h2 {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(15, 23, 42, 0.6); /* Blurred translucent dark mask */
+    background: rgba(15, 23, 42, 0.6); 
     backdrop-filter: blur(4px);
     display: flex;
     justify-content: center;
@@ -549,6 +525,60 @@ h2 {
     color: #64748b;
 }
 
+/* ==========================================================
+   UPDATED MULTI-NODE DEPARTMENT WRAPPER SYSTEM
+   ========================================================== */
+.dept-group-wrapper{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center;
+    min-width:max-content;
+}
+
+/* Department Title Graphic Banner badge */
+.department-header{
+    display:block;
+
+    width:100%;
+    min-width:300px;
+
+    margin:0 auto 15px auto;
+    padding:8px 15px;
+
+    background:#f0fdf4;
+    color:#166534;
+
+    border:1px solid #bbf7d0;
+    border-radius:8px;
+
+    font-size:16px;
+    font-weight:700;
+
+    text-transform:uppercase;
+    letter-spacing:.5px;
+
+    text-align:center;
+
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+
+/* Sub-row container displaying multiple child cards side-by-side */
+.inner-tier-container {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: center !important;
+    padding-top: 0 !important;
+    margin: 0 !important;
+    gap: 16px;
+}
+
+.inner-tier-container::before {
+    display: none !important; /* Disables standard tree layout absolute line interceptors */
+}
+
+.inner-tier-container > li {
+    padding-top: 5px !important;
+}
 </style>
 
 </head>
@@ -590,8 +620,6 @@ h2 {
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const images = document.querySelectorAll('.emp img');
-    
-    // Default fallback SVG profile container image
     const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>";
 
     images.forEach(img => {
@@ -610,9 +638,6 @@ document.addEventListener("DOMContentLoaded", function() {
         };
     });
 
-    // ==========================================================
-    // POPUP MODAL JAVASCRIPT LOGIC
-    // ==========================================================
     const modal = document.getElementById('employeeModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
     
@@ -621,42 +646,34 @@ document.addEventListener("DOMContentLoaded", function() {
     const modalDesg = document.getElementById('modalDesg');
     const modalId = document.getElementById('modalId');
 
-    // Event Delegation: Listens to any click inside the tree view component
     document.querySelector('.tree').addEventListener('click', function(e) {
-        // Find if the click or any of its parents is an active ".emp" node element card
         const empCard = e.target.closest('.emp');
         
         if (empCard) {
-            // Extract textual and graphic information safely from inside the targeted card
             const imgEl = empCard.querySelector('img');
             const nameEl = empCard.querySelector('.emp-name');
             const desgEl = empCard.querySelector('.emp-desg');
             const idEl = empCard.querySelector('.emp-id');
 
-            // Apply fields directly into the matching Popup components
             modalImg.src = imgEl ? imgEl.src : defaultAvatar;
             modalName.textContent = nameEl ? nameEl.textContent : 'N/A';
             modalDesg.textContent = desgEl ? desgEl.textContent : 'N/A';
             modalId.textContent = idEl ? idEl.textContent : 'ID: N/A';
 
-            // Show popup layout view window frame safely
             modal.classList.add('active');
         }
     });
 
-    // Close functionality when hitting the 'X' button
     closeModalBtn.addEventListener('click', function() {
         modal.classList.remove('active');
     });
 
-    // Close functionality when clicking outside the White Card box on the overlay background mask
     modal.addEventListener('click', function(e) {
         if (e.target === modal) {
             modal.classList.remove('active');
         }
     });
 
-    // Accessibility: Allows exiting out using standard physical computer keyboard 'Escape' button
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape' && modal.classList.contains('active')) {
             modal.classList.remove('active');
