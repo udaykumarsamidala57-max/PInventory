@@ -1,5 +1,4 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8"
-    pageEncoding="UTF-8"%>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -14,7 +13,7 @@
 }
 
 body{
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', 'Inter', Arial, sans-serif;
     background: #f5f7fa;
     padding: 30px;
     color: #333;
@@ -110,69 +109,122 @@ h2 {
 }
 
 /* ========================================================
-   COMPACT VERTICAL LISTING OVERRIDES (TIER 4+)
+   TIER 4+ VERTICAL REPORTING CHAIN 
    ======================================================== */
-.tree li.compact-vertical-tier > ul {
-    flex-direction: column;
-    align-items: center;
-    padding-top: 10px;
+.vertical-group-container {
+    width: 100%;
+    display: block !important;
 }
 
-.tree li.compact-vertical-tier > ul > li::before,
-.tree li.compact-vertical-tier > ul > li::after {
-    border: none !important;
+.tree ul.vertical-tier {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-top: 15px !important;
+    position: relative;
+    gap: 10px;
 }
 
-.tree li.compact-vertical-tier > ul::before {
-    left: 50%;
+/* Clean central backbone line for vertical cards */
+.tree ul.vertical-tier::before {
+    content: '';
+    position: absolute;
     top: 0;
+    left: 50%;
+    width: 0;
     height: 100%;
     border-left: 2px solid #cbd5e1;
     transform: translateX(-50%);
 }
 
-.tree li.compact-vertical-tier > ul > li {
-    padding: 6px 0;
-    display: block;
-    width: auto;
+.tree ul.vertical-tier > li.compact-vertical-tier:last-child::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -20px;
+    width: 4px;
+    height: 40px;
+    background: #fff;
+    transform: translateX(-50%);
+    z-index: 2;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    width: 240px;                  
-    padding: 6px 12px;             
-    text-align: left;
-    border-left: 4px solid #3b82f6; 
+.tree ul.vertical-tier > li.compact-vertical-tier {
+    position: relative;
+    display: block !important;
+    padding: 4px 0 !important;
+    margin: 0 !important;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp-img-container {
-    width: 32px;
-    height: 32px;
-    margin: 0 12px 0 0; 
-    border: 1.5px solid #3b82f6;
+/* Completely remove stray connector styles from inheriting inside vertical list */
+.tree ul.vertical-tier > li.compact-vertical-tier::before,
+.tree ul.vertical-tier > li.compact-vertical-tier::after {
+    display: none !important;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp-details-wrapper {
+/* Horizontal line attaching central line to the side card */
+.tree ul.vertical-tier > li.compact-vertical-tier .emp::before {
+    content: '';
+    position: absolute;
+    left: -16px;
+    top: 50%;
+    width: 16px;
+    border-top: 2px solid #cbd5e1;
+    transform: translateY(-50%);
+}
+
+/* Compact Sidebar list card details */
+.tree ul.vertical-tier > li.compact-vertical-tier .emp {
+    width: 200px !important;
+    min-height: 46px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    text-align: left !important;
+    padding: 6px 10px !important;
+    border-left: 3px solid #4f6ef7 !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    position: relative;
+}
+
+.tree ul.vertical-tier > li.compact-vertical-tier .emp-img-container {
+    width: 32px !important;
+    height: 32px !important;
+    margin: 0 10px 0 0 !important;
+    flex-shrink: 0;
+    border: 2px solid #4f6ef7 !important;
+}
+
+.tree ul.vertical-tier > li.compact-vertical-tier .emp-details-wrapper {
     display: flex;
     flex-direction: column;
     justify-content: center;
     overflow: hidden;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp-name {
-    font-size: 13px;
+.tree ul.vertical-tier > li.compact-vertical-tier .emp-name {
+    font-size: 12px !important;
+    font-weight: 700;
     margin-bottom: 1px;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp-desg {
-    font-size: 11px;
-    margin-bottom: 0px;
+.tree ul.vertical-tier > li.compact-vertical-tier .emp-desg {
+    font-size: 10px !important;
+    color: #2563eb;
+    margin-bottom: 1px;
 }
 
-.tree li.compact-vertical-tier > ul > li .emp-id {
-    font-size: 10px;
+.tree ul.vertical-tier > li.compact-vertical-tier .emp-id {
+    font-size: 9px !important;
+    color: #64748b;
+}
+
+.tree ul.vertical-tier ul {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    padding-top: 10px !important;
 }
 
 /* ========================================================
@@ -242,187 +294,31 @@ h2 {
     color: #64748b;
 }
 
-@media(max-width: 768px){
-    .emp{
-        width: 140px;
-        padding: 10px 5px;
-    }
-
-    .emp-img-container {
-        width: 50px;
-        height: 50px;
-    }
-    
-    .emp-name {
-        font-size: 12px;
-    }
-    
-    .emp-desg {
-        font-size: 11px;
-    }
-}
-
-.emp.tier3-card{
-    width:140px;
-    padding:10px 6px;
-}
-
-.emp.tier3-card .emp-img-container{
-    width:50px;
-    height:50px;
-    margin-bottom:8px;
-}
-
-.emp.tier3-card .emp-name{
-    font-size:12px;
-}
-
-.emp.tier3-card .emp-desg{
-    font-size:10px;
-}
-
-.emp.tier3-card .emp-id{
-    font-size:9px;
-}
-
 .emp.tier2-card{
     width:160px;
     padding:12px 8px;
 }
-
 .emp.tier2-card .emp-img-container{
     width:58px;
     height:58px;
     margin-bottom:9px;
 }
+.emp.tier2-card .emp-name{ font-size:13px; }
+.emp.tier2-card .emp-desg{ font-size:11px; }
+.emp.tier2-card .emp-id{ font-size:10px; }
 
-.emp.tier2-card .emp-name{
-    font-size:13px;
+.emp.tier3-card{
+    width:140px;
+    padding:10px 6px;
 }
-
-.emp.tier2-card .emp-desg{
-    font-size:11px;
+.emp.tier3-card .emp-img-container{
+    width:50px;
+    height:50px;
+    margin-bottom:8px;
 }
-
-.emp.tier2-card .emp-id{
-    font-size:10px;
-}
-
-.compact-vertical-tier > ul{
-    display:block !important;
-    padding-top:15px;
-}
-
-.compact-vertical-tier > ul > li{
-    display:block;
-    padding:8px 0;
-    margin:0 auto;
-}
-
-/* ==========================================================
-   TIER 4+ EMPLOYEES - COMPACT VERTICAL LIST
-   ========================================================== */
-.vertical-tier{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center;
-    gap:6px;
-    padding-top:15px;
-    position:relative;
-}
-
-.vertical-tier::before{
-    content:'';
-    position:absolute;
-    left:50%;
-    top:0;
-    bottom:0;
-    border-left:2px solid #cbd5e1;
-    transform:translateX(-50%);
-}
-
-.vertical-tier > li{
-    display:block !important;
-    padding:4px 0 !important;
-    margin:0 !important;
-    width:auto;
-    position:relative;
-}
-
-.vertical-tier > li::before,
-.vertical-tier > li::after{
-    display:none !important;
-}
-
-.vertical-tier > li .emp::before{
-    content:'';
-    position:absolute;
-    left:-12px;
-    top:50%;
-    width:12px;
-    border-top:2px solid #cbd5e1;
-    transform:translateY(-50%);
-}
-
-.vertical-tier > li .emp{
-    width:180px !important;
-    min-height:48px;
-    display:flex;
-    align-items:center;
-    text-align:left;
-    padding:6px 10px;
-    border-left:4px solid #3b82f6;
-    border-radius:8px;
-    background:#fff;
-    position:relative;
-}
-
-.vertical-tier > li .emp-img-container{
-    width:35px !important;
-    height:35px !important;
-    margin:0 10px 0 0 !important;
-    flex-shrink:0;
-    border:2px solid #3b82f6;
-}
-
-.vertical-tier > li .emp-details-wrapper{
-    display:flex;
-    flex-direction:column;
-    justify-content:center;
-    overflow:hidden;
-}
-
-.vertical-tier > li .emp-name{
-    font-size:12px;
-    font-weight:700;
-    margin-bottom:1px;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.vertical-tier > li .emp-desg{
-    font-size:10px;
-    margin-bottom:1px;
-    color:#2563eb;
-}
-
-.vertical-tier > li .emp-id{
-    font-size:9px;
-    color:#64748b;
-}
-
-.vertical-tier ul{
-    display:flex !important;
-    flex-direction:column !important;
-    align-items:center;
-    padding-top:8px;
-}
-
-.vertical-tier ul::before{
-    left:50%;
-    border-left:2px solid #cbd5e1;
-}
+.emp.tier3-card .emp-name{ font-size:12px; }
+.emp.tier3-card .emp-desg{ font-size:10px; }
+.emp.tier3-card .emp-id{ font-size:9px; }
 
 /* ==========================================================
    MODAL / POPUP CSS CODES
@@ -499,8 +395,8 @@ h2 {
 }
 
 .modal-name {
-    font-size: 40px;
-    font-weight: 1200;
+    font-size: 22px;
+    font-weight: 700;
     color: #1e293b;
     margin-bottom: 6px;
 }
@@ -508,7 +404,7 @@ h2 {
 .modal-desg {
     font-size: 14px;
     color: #3b82f6;
-    font-weight: 1000;
+    font-weight: 600;
     margin-bottom: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -526,35 +422,33 @@ h2 {
 }
 
 /* ==========================================================
-   UPDATED MULTI-NODE DEPARTMENT WRAPPER SYSTEM
+   MULTI-NODE DEPARTMENT WRAPPER SYSTEM
    ========================================================== */
-.dept-group-wrapper {
-    display: inline-flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    padding: 0 15px !important;
+.dept-group-wrapper{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center;
+    min-width:max-content;
 }
 
-/* Department Title Graphic Banner badge */
-.department-header {
-    display: block;
-    width: 140px;
-    margin: 0 auto 15px auto;
-    padding: 5px 10px;
-    background: #f0fdf4;
-    color: #166534;
-    border: 1px solid #bbf7d0;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    text-align: center;
-    position: relative;
-    z-index: 15;
+.department-header{
+    display:block;
+    width:100%;
+    min-width:300px;
+    margin:0 auto 15px auto;
+    padding:8px 15px;
+    background:#f0fdf4;
+    color:#166534;
+    border:1px solid #bbf7d0;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+    text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
-/* Sub-row container displaying multiple child cards side-by-side */
 .inner-tier-container {
     display: flex !important;
     flex-direction: row !important;
@@ -565,14 +459,40 @@ h2 {
 }
 
 .inner-tier-container::before {
-    display: none !important; /* Disables standard tree layout absolute line interceptors */
+    display: none !important;
 }
 
 .inner-tier-container > li {
     padding-top: 5px !important;
 }
-</style>
 
+/* Separator Badge CSS */
+.tier-separator{
+    width:100%;
+    margin:20px 0;
+    text-align:center;
+    position: relative;
+    z-index: 5;
+}
+
+.tier-separator::before,
+.tier-separator::after{
+    display:none !important;
+}
+
+.tier-separator span{
+    display:inline-block;
+    padding:6px 14px;
+    background:#f8fafc;
+    border:1px solid #cbd5e1;
+    border-radius:20px;
+    font-size:11px;
+    font-weight:700;
+    color:#475569;
+    text-transform:uppercase;
+    letter-spacing:.5px;
+}
+</style>
 </head>
 <body>
 
@@ -611,28 +531,30 @@ h2 {
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    const images = document.querySelectorAll('.emp img');
     const defaultAvatar = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2394a3b8'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z'/></svg>";
 
-    images.forEach(img => {
-        if(!img.getAttribute('src') || img.getAttribute('src').trim() === "" || img.getAttribute('src').endsWith("?id=0")) {
-            img.src = defaultAvatar;
-            if(img.parentElement) {
-                img.parentElement.style.borderColor = '#cbd5e1';
+    function sanitizeImages() {
+        const images = document.querySelectorAll('.emp img');
+        images.forEach(img => {
+            let currentSrc = img.getAttribute('src');
+            if(!currentSrc || currentSrc.trim() === "" || currentSrc.endsWith("?id=0") || currentSrc.endsWith("id=null")) {
+                img.src = defaultAvatar;
+                if(img.parentElement) {
+                    img.parentElement.style.borderColor = '#cbd5e1';
+                }
             }
-        }
-
-        img.onerror = function() {
-            this.src = defaultAvatar; 
-            if(this.parentElement) {
-                this.parentElement.style.borderColor = '#cbd5e1'; 
-            }
-        };
-    });
+            img.onerror = function() {
+                this.src = defaultAvatar; 
+                if(this.parentElement) {
+                    this.parentElement.style.borderColor = '#cbd5e1'; 
+                }
+            };
+        });
+    }
+    sanitizeImages();
 
     const modal = document.getElementById('employeeModal');
     const closeModalBtn = document.getElementById('closeModalBtn');
-    
     const modalImg = document.getElementById('modalImg');
     const modalName = document.getElementById('modalName');
     const modalDesg = document.getElementById('modalDesg');
@@ -640,14 +562,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
     document.querySelector('.tree').addEventListener('click', function(e) {
         const empCard = e.target.closest('.emp');
-        
         if (empCard) {
             const imgEl = empCard.querySelector('img');
             const nameEl = empCard.querySelector('.emp-name');
             const desgEl = empCard.querySelector('.emp-desg');
             const idEl = empCard.querySelector('.emp-id');
 
-            modalImg.src = imgEl ? imgEl.src : defaultAvatar;
+            modalImg.src = (imgEl && imgEl.src) ? imgEl.src : defaultAvatar;
             modalName.textContent = nameEl ? nameEl.textContent : 'N/A';
             modalDesg.textContent = desgEl ? desgEl.textContent : 'N/A';
             modalId.textContent = idEl ? idEl.textContent : 'ID: N/A';

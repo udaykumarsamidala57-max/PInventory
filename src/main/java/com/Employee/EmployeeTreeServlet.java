@@ -37,8 +37,7 @@ public class EmployeeTreeServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(HttpServletRequest request,
-            HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String servletPath = request.getServletPath();
@@ -53,7 +52,7 @@ public class EmployeeTreeServlet extends HttpServlet {
     private void renderEmployeeTree(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
             
-        List<Employee> employees = new ArrayList<Employee>();
+        List<Employee> employees = new ArrayList<>();
 
         try (Connection con = DBUtil6.getConnection();
              PreparedStatement ps = con.prepareStatement(
@@ -82,7 +81,7 @@ public class EmployeeTreeServlet extends HttpServlet {
             }
 
             StringBuilder treeHtml = new StringBuilder();
-            Set<Integer> allIds = new HashSet<Integer>();
+            Set<Integer> allIds = new HashSet<>();
 
             for (Employee emp : employees) {
                 allIds.add(emp.empId);
@@ -104,7 +103,7 @@ public class EmployeeTreeServlet extends HttpServlet {
                     treeHtml.append("<li").append(listClass).append(">");
                     
                     appendEmployeeCard(treeHtml, emp, request.getContextPath());
-                    buildTree(treeHtml, emp.empId, employees, request.getContextPath(), new HashSet<Integer>());
+                    buildTree(treeHtml, emp.empId, employees, request.getContextPath(), new HashSet<>());
                     treeHtml.append("</li>");
                 }
             }
@@ -132,12 +131,10 @@ public class EmployeeTreeServlet extends HttpServlet {
             throws ServletException, IOException {
             
         String empIdParam = request.getParameter("id");
-        if (empIdParam == null || empIdParam.trim().isEmpty()) {
+        if (empIdParam == null || empIdParam.trim().isEmpty() || "null".equals(empIdParam)) {
+            fallbackToDefaultImage(request, response);
             return;
         }
-
-        response.reset();
-        response.setContentType("image/jpeg"); 
 
         String sql = "SELECT photo FROM employee_master WHERE emp_id = ?";
 
@@ -150,13 +147,16 @@ public class EmployeeTreeServlet extends HttpServlet {
                 if (rs.next()) {
                     InputStream is = rs.getBinaryStream("photo");
                     if (is != null) {
-                        OutputStream os = response.getOutputStream();
-                        byte[] buffer = new byte[4096];
-                        int bytesRead;
-                        while ((bytesRead = is.read(buffer)) != -1) {
-                            os.write(buffer, 0, bytesRead);
+                        response.reset();
+                        response.setContentType("image/jpeg");
+                        try (OutputStream os = response.getOutputStream()) {
+                            byte[] buffer = new byte[4096];
+                            int bytesRead;
+                            while ((bytesRead = is.read(buffer)) != -1) {
+                                os.write(buffer, 0, bytesRead);
+                            }
+                            os.flush();
                         }
-                        os.flush();
                         return;
                     }
                 }
@@ -165,6 +165,12 @@ public class EmployeeTreeServlet extends HttpServlet {
             e.printStackTrace();
         }
 
+        fallbackToDefaultImage(request, response);
+    }
+
+    private void fallbackToDefaultImage(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        response.reset();
         request.getRequestDispatcher("/images/user.png").forward(request, response);
     }
 
@@ -181,8 +187,7 @@ public class EmployeeTreeServlet extends HttpServlet {
 
         visited.add(parentId);
 
-        List<Employee> childEmployees = new ArrayList<Employee>();
-
+        List<Employee> childEmployees = new ArrayList<>();
         for (Employee emp : employees) {
             if (emp.reportingTo == null || emp.empId.equals(emp.reportingTo)) {
                 continue;
@@ -192,158 +197,119 @@ public class EmployeeTreeServlet extends HttpServlet {
             }
         }
 
-        // Sort children by Tier -> Department -> Tier 3 custom order -> Name
+        if (childEmployees.isEmpty()) {
+            return;
+        }
+
         Collections.sort(childEmployees, new Comparator<Employee>() {
             @Override
             public int compare(Employee e1, Employee e2) {
                 int t1 = 0, t2 = 0;
-                try { if(e1.tire != null) t1 = Integer.parseInt(e1.tire.replaceAll("[^0-9]", "")); } catch(Exception ex){}
-                try { if(e2.tire != null) t2 = Integer.parseInt(e2.tire.replaceAll("[^0-9]", "")); } catch(Exception ex){}
-                
+                try { if (e1.tire != null) t1 = Integer.parseInt(e1.tire.replaceAll("[^0-9]", "")); } catch (Exception ex) {}
+                try { if (e2.tire != null) t2 = Integer.parseInt(e2.tire.replaceAll("[^0-9]", "")); } catch (Exception ex) {}
+
                 if (t1 != t2) {
                     return Integer.compare(t1, t2);
                 }
 
-                // If both are Tier 3, prioritize grouping by Department name
                 if (t1 == 3) {
                     String d1 = e1.department == null ? "" : e1.department.trim();
                     String d2 = e2.department == null ? "" : e2.department.trim();
-                    int deptComp = d1.compareToIgnoreCase(d2);
-                    if (deptComp != 0) {
-                        return deptComp;
-                    }
-                    
+                    int deptCompare = d1.compareToIgnoreCase(d2);
+                    if (deptCompare != 0) return deptCompare;
+
                     int order1 = getTier3Order(e1);
                     int order2 = getTier3Order(e2);
-                    if (order1 != order2) {
-                        return Integer.compare(order1, order2);
-                    }
+                    if (order1 != order2) return Integer.compare(order1, order2);
                 }
 
-                String name1 = e1.empName == null ? "" : e1.empName;
-                String name2 = e2.empName == null ? "" : e2.empName;
-                return name1.compareToIgnoreCase(name2);
+                String n1 = e1.empName == null ? "" : e1.empName;
+                String n2 = e2.empName == null ? "" : e2.empName;
+                return n1.compareToIgnoreCase(n2);
             }
         });
 
-        boolean found = false;
+        // Separate standard components vs vertical block components
+        List<Employee> standardComponents = new ArrayList<>();
+        List<Employee> verticalComponents = new ArrayList<>();
+
+        for (Employee e : childEmployees) {
+            if (isVerticalTier(e.tire)) {
+                verticalComponents.add(e);
+            } else {
+                standardComponents.add(e);
+            }
+        }
+
+        html.append("<ul>");
+
+        // 1. Output Standard Layout Nodes (Tiers 1-3 Departments)
         String lastSeenDept = null;
         boolean inDeptBlock = false;
 
-        for (Employee emp : childEmployees) {
-            String currentTier = emp.tire != null ? emp.tire.trim() : "";
-            boolean isTier3 = "3".equals(currentTier);
+        for (Employee emp : standardComponents) {
+            String currentDept = (emp.department == null || emp.department.trim().isEmpty()) ? "GENERAL" : emp.department.trim();
 
-            if (!found) {
-                if (hasTier4Children(parentId, employees)) {
-                    html.append("<ul class='vertical-tier'>");
-                } else {
-                    html.append("<ul>");
-                }
-                found = true;
-            }
-
-            if (isTier3) {
-                String currentDept = (emp.department == null || emp.department.trim().isEmpty()) ? "GENERAL" : emp.department.trim();
-                
-                // If department changes, close the previous block and start a new one
-                if (!currentDept.equalsIgnoreCase(lastSeenDept)) {
-                    if (inDeptBlock) {
-                        html.append("</ul>"); // close inner-tier-container
-                        html.append("</li>"); // close department wrapper li
-                    }
-                    
-                    html.append("<li class='dept-group-wrapper'>");
-                    html.append("<div class='department-header'>").append(currentDept).append("</div>");
-                    html.append("<ul class='inner-tier-container'>"); // Open list to display nodes under this header
-                    
-                    lastSeenDept = currentDept;
-                    inDeptBlock = true;
-                }
-            } else {
-                // If we hit a non-tier-3 item after tier-3 items, safely clear the active grouping container
+            if (!currentDept.equalsIgnoreCase(lastSeenDept)) {
                 if (inDeptBlock) {
-                    html.append("</ul>");
-                    html.append("</li>");
-                    inDeptBlock = false;
-                    lastSeenDept = null;
+                    html.append("</ul></li>");
                 }
+                html.append("<li class='dept-group-wrapper'>");
+                html.append("<div class='department-header'>").append(currentDept).append("</div>");
+                html.append("<ul class='inner-tier-container'>");
+                lastSeenDept = currentDept;
+                inDeptBlock = true;
             }
 
-            String listClass = isVerticalTier(emp.tire) ? " class='compact-vertical-tier' " : "";
-            
-            // Only prepend normal `<li>` structural items if it's not a Tier-3 node (handled by the sub-container wrapper)
-            if (!isTier3) {
-                html.append("<li").append(listClass).append(">");
-            } else {
-                html.append("<li>");
-            }
-
+            html.append("<li>");
             appendEmployeeCard(html, emp, contextPath);
-
-            buildTree(
-                    html,
-                    emp.empId,
-                    employees,
-                    contextPath,
-                    new HashSet<Integer>(visited));
-
+            buildTree(html, emp.empId, employees, contextPath, new HashSet<>(visited));
             html.append("</li>");
         }
 
-        // Close any dangling sub-containers safely before finishing the execution loop
         if (inDeptBlock) {
-            html.append("</ul>");
-            html.append("</li>");
+            html.append("</ul></li>");
         }
 
-        if (found) {
-            html.append("</ul>");
+        // 2. Output Dedicated Vertical Tier 4+ Block (Separated cleanly below standard tree segments)
+        if (!verticalComponents.isEmpty()) {
+            html.append("<li class='vertical-group-container'>");
+            html.append("<div class='tier-separator'><span>Team Members</span></div>");
+            html.append("<ul class='vertical-tier'>");
+
+            for (Employee emp : verticalComponents) {
+                html.append("<li class='compact-vertical-tier'>");
+                appendEmployeeCard(html, emp, contextPath);
+                buildTree(html, emp.empId, employees, contextPath, new HashSet<>(visited));
+                html.append("</li>");
+            }
+
+            html.append("</ul></li>");
         }
+
+        html.append("</ul>");
     }
 
-    private void appendEmployeeCard(
-            StringBuilder html,
-            Employee emp,
-            String contextPath) {
+    private void appendEmployeeCard(StringBuilder html, Employee emp, String contextPath) {
+        String tierValue = (emp.tire == null) ? "" : emp.tire.trim();
 
-    	String tierValue = (emp.tire == null) ? "" : emp.tire.trim();
-
-    	html.append("<div class='emp");
-
-    	if ("2".equals(tierValue)) {
-    	    html.append(" tier2-card");
-    	} else if ("3".equals(tierValue)) {
-    	    html.append(" tier3-card");
-    	}
-
-        html.append("' data-tier='")
-            .append(tierValue)
-            .append("'>");
-        html.append("<div class='emp-img-container'>");
+        html.append("<div class='emp");
+        if ("2".equals(tierValue)) {
+            html.append(" tier2-card");
+        } else if ("3".equals(tierValue)) {
+            html.append(" tier3-card");
+        }
+        html.append("' data-tier='").append(tierValue).append("'>");
         
-        html.append("<img src='")
-            .append(contextPath)
-            .append("/EmployeePhoto?id=")
-            .append(emp.empId)
-            .append("' alt='")
-            .append(emp.empName == null ? "Employee" : emp.empName)
-            .append("'>");
-            
+        html.append("<div class='emp-img-container'>");
+        html.append("<img src='").append(contextPath).append("/EmployeePhoto?id=").append(emp.empId)
+            .append("' alt='").append(emp.empName == null ? "Employee" : emp.empName).append("'>");
         html.append("</div>"); 
 
         html.append("<div class='emp-details-wrapper'>"); 
-        html.append("<div class='emp-name'>")
-            .append(emp.empName == null ? "" : emp.empName)
-            .append("</div>");
-
-        html.append("<div class='emp-desg'>")
-            .append(emp.designation == null ? "" : emp.designation)
-            .append("</div>");
-
-        html.append("<div class='emp-id'>")
-            .append(emp.empCode == null ? "" : emp.empCode)
-            .append("</div>");
+        html.append("<div class='emp-name'>").append(emp.empName == null ? "" : emp.empName).append("</div>");
+        html.append("<div class='emp-desg'>").append(emp.designation == null ? "" : emp.designation).append("</div>");
+        html.append("<div class='emp-id'>").append(emp.empCode == null ? "" : emp.empCode).append("</div>");
         html.append("</div>"); 
 
         html.append("</div>");
@@ -361,22 +327,11 @@ public class EmployeeTreeServlet extends HttpServlet {
         }
     }
     
-    private boolean hasTier4Children(Integer parentId, List<Employee> employees) {
-        for (Employee emp : employees) {
-            if (parentId.equals(emp.reportingTo) && isVerticalTier(emp.tire)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private int getTier3Order(Employee emp) {
         if (emp == null || !"3".equals(emp.tire)) {
             return 999;
         }
-
         String designation = emp.designation == null ? "" : emp.designation.trim();
-
         switch (designation) {
             case "English HOD": return 1;
             case "Kannada HOD": return 2;
