@@ -66,6 +66,7 @@ com\Service\Incharge.class
 com\controller\Asset\ReportController.class
 com\bean\Indent.class
 com\controller\Asset\AuditController.class
+com\controller\Asset\StaffIssuedAssetsServlet.class
 com\Employee\EmployeeTreeServlet$Employee.class
 com\bean\DBUtil2.class
 com\DAO\AssetDAO.class

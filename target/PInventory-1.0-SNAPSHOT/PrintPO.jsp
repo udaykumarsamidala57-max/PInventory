@@ -216,7 +216,7 @@ if(poDate != null && !poDate.trim().isEmpty()){
             <td style="text-align:center;"><%= sl++ %></td>
             <td><%= rsItems.getString("description") %></td>
             <td style="text-align:center;"><%= rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-" %></td>
-            <td style="text-align:right;"><%= rsItems.getInt("qty") %></td>
+            <td style="text-align:right;"><%= rsItems.getDouble("qty") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("rate") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("amount") %></td>
             <td style="text-align:right;"><%= rsItems.getDouble("discount_percent") %></td>

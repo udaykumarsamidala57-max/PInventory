@@ -545,6 +545,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="CategoryController"><i class="fa-solid fa-tags"></i> Categories</a>
       <a href="AssetServlet"><i class="fa-solid fa-cubes"></i> Asset Creation</a>
       <a href="AssetLocationController"><i class="fa-solid fa-route"></i> Asset Relocation</a>
+      <a href="StaffIssued"><i class="fa-solid fa-route"></i> Staff Issued Items</a>
     </div>
   </div>
   <% } %>
