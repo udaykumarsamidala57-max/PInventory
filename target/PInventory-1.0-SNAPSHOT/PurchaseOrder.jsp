@@ -313,6 +313,34 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
             <span id="grandTotal">0.00</span>
         </div>
     </div>
+    <!-- Terms & Conditions -->
+<table class="form-section">
+    <tr>
+        <td style="width:25%;"><strong>Terms & Conditions</strong></td>
+        <td>
+            <textarea name="termsConditions" rows="6" style="width:100%;">
+1. Delivery should be completed within the agreed time.
+2. Goods are subject to inspection and approval by the School.
+3. GST should be charged as applicable.
+4. Any damaged or defective items shall be replaced by the supplier at no extra cost.
+5. Payment will be released after successful delivery and verification.
+            </textarea>
+        </td>
+    </tr>
+
+    <tr>
+        <td><strong>General Conditions</strong></td>
+        <td>
+            <textarea name="generalConditions" rows="6" style="width:100%;">
+1. Purchase Order Number should be mentioned on all invoices and delivery challans.
+2. All disputes are subject to the jurisdiction of the School's location.
+3. Supplier shall comply with all applicable statutory regulations.
+4. The School reserves the right to cancel this Purchase Order if delivery terms are not met.
+5. This Purchase Order is valid only when signed by the authorized signatory.
+            </textarea>
+        </td>
+    </tr>
+</table>
 
     <div style="text-align:center; margin-top:20px;">
         <input type="submit" class="submit-btn" value="Submit Purchase Order">

@@ -28,6 +28,7 @@ com\controller\PurchaseOrderServlet.class
 com\DAO\MaintenanceDAO.class
 com\controller\Admissions\DashboardServlet.class
 com\controller\GRNServlet.class
+com\controller\UpdateConsumptionByDateServlet.class
 com\bean\GRNItem.class
 com\controller\MealSummaryServlet.class
 com\bean\POItems.class
@@ -78,6 +79,7 @@ com\bean\IndentItems.class
 com\controller\SendPendingIndentPDF.class
 com\bean\IndentItemFull.class
 com\controller\IssueApprove.class
+com\controller\FetchConsumptionByDateServlet.class
 com\controller\Admissions\UpdateAdmissionStatusServlet.class
 com\Employee\Employee.class
 com\controller\PO.class

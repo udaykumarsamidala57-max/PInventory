@@ -5,6 +5,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil2.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\resume.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\UpdateAdmissionStatusServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\PurchaseOrderServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\FetchConsumptionByDateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\AIndentListServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\AddStock.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\LoadIndentItemsServlet.java
@@ -72,6 +73,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\LocationDAO.ja
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\DIndentListServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\StockAuditReportServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\IndentItem.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\UpdateConsumptionByDateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\PO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\viewResumeFile.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\AllocationDAO.java
