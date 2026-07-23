@@ -451,7 +451,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
 <div class="sidebar" id="sidebar">
   <h2><i class="fa-solid fa-layer-group"></i> SRS Workspace</h2>
-<% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
+
   <div class="sidebar-label">Inventory Platform</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
 
