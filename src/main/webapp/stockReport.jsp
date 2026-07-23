@@ -439,7 +439,7 @@ button{
 
 <div class="header-area">
     <div class="icon-box"><i class="fa fa-chart-bar"></i></div>
-    <h2>Stock Summary Report</h2>
+    <h2>Stock Summary Reports</h2>
 </div>
 
 <form method="get" class="filter-form">
