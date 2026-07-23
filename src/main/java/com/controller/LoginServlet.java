@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
         String uname = request.getParameter("username");
         String pass = request.getParameter("password");
         String dept = request.getParameter("department");
-        String branch = request.getParameter("branch");
+       
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -40,7 +40,7 @@ public class LoginServlet extends HttpServlet {
             Class.forName("com.mysql.cj.jdbc.Driver");
             con = DBUtil.getConnection();
 
-            ps = con.prepareStatement("SELECT role,department,branch FROM users WHERE username=? AND password=?");
+            ps = con.prepareStatement("SELECT role,department FROM users WHERE username=? AND password=?");
             ps.setString(1, uname);
             ps.setString(2, pass);
             rs = ps.executeQuery();
@@ -52,7 +52,7 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("username", uname);
                 session.setAttribute("role", role);
                 session.setAttribute("department", department);
-                session.setAttribute("department", branch);
+              
                 
                 // Redirect based on role
                 if ("Global".equalsIgnoreCase(role)) {
