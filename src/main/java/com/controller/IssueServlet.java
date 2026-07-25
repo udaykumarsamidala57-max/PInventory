@@ -132,6 +132,7 @@ public class IssueServlet extends HttpServlet {
             throws ServletException, IOException {
 
         String indentId = request.getParameter("indentId");
+        String indentNo = request.getParameter("indentNo");
         String itemId = request.getParameter("itemId");
         String qtyIssuedStr = request.getParameter("qtyIssued");
         String department = request.getParameter("department");
@@ -202,15 +203,15 @@ public class IssueServlet extends HttpServlet {
 
             // ✅ Insert into stock_issues
             try (PreparedStatement ps = con.prepareStatement(
-            	    "INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_id, unit_price, total_value, issue_date) "
-            	    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
+            		"INSERT INTO stock_issues (issueno, item_id, issued_to, department, qty_issued, remarks, indent_no, unit_price, total_value, issue_date) "
+            				+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")) {
                 ps.setString(1, issueno);
                 ps.setInt(2, Integer.parseInt(itemId));
                 ps.setString(3, issuedTo);
                 ps.setString(4, department);
                 ps.setDouble(5, qtyIssued);
-                ps.setString(6, "Issued against indent " + indentId);
-                ps.setString(7, indentId);
+                ps.setString(6, "Issued against indent " + indentNo);
+                ps.setString(7, indentNo);
                 ps.setDouble(8, unitPrice);
                 ps.setDouble(9, totalValue);
                 ps.setDate(10, java.sql.Date.valueOf(issueDate));

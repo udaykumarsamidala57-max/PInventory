@@ -289,6 +289,7 @@ input[type="text"] {
                             <input type="date" name="issueDate" required>
                             </td>
                             <td data-label="Action">
+                                <input type="hidden" name="indentNo" value="${i.indent_no}">
                                 <input type="hidden" name="indentId" value="${i.indent_id}">
                                 <input type="hidden" name="itemId" value="${i.item_id}">
                                 <input type="hidden" name="department" value="${i.department}">
