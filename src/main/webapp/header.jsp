@@ -470,15 +470,19 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts)) { %>
+  <% if ("Global".equalsIgnoreCase(roles) ||
+       "Store".equalsIgnoreCase(depts) ||
+       "finance".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-truck-ramp-box text-warning"></i> Stock Dispersal <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+       <% if ("Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts)) { %>
       <a href="IssueServlet"><i class="fa-solid fa-dolly text-info"></i> Issue Items</a>
+       <% } %>
       <a href="Issuereport.jsp"><i class="fa-solid fa-receipt text-danger"></i> Issue Report</a>
     </div>
   </div>
-  <% } %>
+   <% } %>
 
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-cart-shopping text-danger"></i> Purchase Execution <i class="fa-solid fa-caret-down"></i></button>
