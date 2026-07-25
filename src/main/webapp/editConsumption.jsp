@@ -8,12 +8,11 @@
         return;
     }
 
-    // 2. Fetch User attributes
+    // 2. Access Control Check
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
-    String dept = (String) sess.getAttribute("department"); // or "dept" depending on your session key
+    String dept = (String) sess.getAttribute("department");
 
-    // 3. Access Control Check
     if (!"Global".equalsIgnoreCase(role) && !"Dining Hall".equalsIgnoreCase(dept)) {
         response.setContentType("text/html");
         response.getWriter().println("<h3 style='color:red; font-family:sans-serif; text-align:center; margin-top:20px;'>Access Denied</h3>");
@@ -50,7 +49,6 @@
             background: #ffffff;
         }
 
-        /* Custom styling for inputs inside tables */
         .slds-table input[type="text"], 
         .slds-table input[type="number"] {
             height: 2rem;
@@ -104,7 +102,6 @@
             var price = parseFloat(priceInput.value) || 0;
             totalInput.value = (qty * price).toFixed(2);
             
-            // Auto-check row selection when quantity changes
             autoCheckRow(index);
         }
 
@@ -115,7 +112,6 @@
             }
         }
 
-        // Toggle all checkboxes
         function toggleSelectAll(selectAllCheckbox) {
             var checkboxes = document.querySelectorAll('.select-row');
             checkboxes.forEach(function(cb) {
@@ -123,7 +119,6 @@
             });
         }
 
-        // Ensure at least one checkbox is selected before form submission
         function validateSelection() {
             var selected = document.querySelectorAll('.select-row:checked');
             if (selected.length === 0) {
@@ -138,7 +133,7 @@
             var maxDate = today.toISOString().split('T')[0];
 
             var min = new Date();
-            min.setDate(today.getDate() - 14);
+            min.setDate(today.getDate() - 45);
             var minDate = min.toISOString().split('T')[0];
 
             var dateInput = document.getElementById("selected_date");
@@ -155,14 +150,11 @@
 </head>
 
 <body>
-    <!-- SLDS Scope Wrapper wraps everything including header.jsp -->
     <div class="slds-scope">
-        
-        <!-- Header Include -->
         <jsp:include page="header.jsp" />
 
         <div class="main-content">
-            <!-- Notification Toast -->
+            <!-- Toast Notifications -->
             <c:if test="${param.msg == 'updated'}">
                 <div class="slds-notify_container slds-is-relative slds-m-bottom_medium">
                     <div class="slds-notify slds-notify_toast slds-theme_success" role="status">
@@ -241,7 +233,7 @@
                                 <tbody>
                                     <c:forEach var="item" items="${consumption_list}" varStatus="status">
                                         <tr class="slds-hint-parent">
-                                            <!-- Selection Checkbox -->
+                                            <!-- Selection Checkbox + Hidden Inputs Inside TD -->
                                             <td class="slds-text-align_center">
                                                 <div class="slds-checkbox">
                                                     <input type="checkbox" name="selected_issue_id" value="${item.issue_id}" 
@@ -250,12 +242,10 @@
                                                         <span class="slds-checkbox_faux"></span>
                                                     </label>
                                                 </div>
+                                                <input type="hidden" name="issue_id" value="${item.issue_id}">
+                                                <input type="hidden" name="item_id" value="${item.item_id}">
+                                                <input type="hidden" name="po_item_id" value="${item.po_item_id}">
                                             </td>
-
-                                            <!-- Hidden Inputs -->
-                                            <input type="hidden" name="issue_id" value="${item.issue_id}">
-                                            <input type="hidden" name="item_id" value="${item.item_id}">
-                                            <input type="hidden" name="po_item_id" value="${item.po_item_id}">
 
                                             <td><input type="text" value="${item.issueno}" readonly tabindex="-1" /></td>
                                             <td><input type="text" value="${item.item_name}" readonly tabindex="-1" /></td>
@@ -270,7 +260,7 @@
                                                        onchange="autoCheckRow(${status.index})" />
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" id="qty_${status.index}" name="qty_issued_${item.issue_id}"
+                                                <input type="number" step="0.01" min="0" id="qty_${status.index}" name="qty_issued_${item.issue_id}"
                                                        value="${item.qty_issued}" onkeyup="calculateRowTotal(${status.index})"
                                                        onchange="calculateRowTotal(${status.index})" required />
                                             </td>

@@ -174,6 +174,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             gap: 8px;
             transition: all 0.1s ease;
             white-space: nowrap;
+            text-decoration: none;
         }
 
         .btn:hover { 
@@ -189,6 +190,19 @@ if (sess == null || sess.getAttribute("username") == null) {
         .btn-secondary:hover {
             background: #f4f6f9;
             border-color: #747472;
+        }
+
+        .btn-print {
+            height: 30px;
+            padding: 0 10px;
+            font-size: 12px;
+            background: #0176d3;
+            color: #ffffff;
+            border: 1px solid #0176d3;
+            border-radius: 4px;
+        }
+        .btn-print:hover {
+            background: #015a9e;
         }
 
         /* Table Container Layout */
@@ -339,7 +353,10 @@ if (sess == null || sess.getAttribute("username") == null) {
                 if (row.style.display !== 'none') {
                     let cols = row.querySelectorAll('th, td');
                     let rowData = [];
-                    cols.forEach(cell => {
+                    cols.forEach((cell, index) => {
+                        // Skip the last column (Action/Print column) in Excel Export
+                        if (index === cols.length - 1) return;
+
                         let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
                         
                         if (window.innerWidth <= 1024 && cell.tagName === 'TD') {
@@ -406,7 +423,7 @@ if (sess == null || sess.getAttribute("username") == null) {
             <table id="issueTable" class="main-table">
                 <thead>
                     <tr>
-                        <th class="text">Issue No</th>
+                        <th class="text">Indent No</th>
                         <th class="text">Item ID</th>
                         <th class="text">Item Name</th>
                         <th class="text">Issued To</th>
@@ -416,6 +433,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                         <th class="num">Total Value (₹)</th>
                         <th class="num">Issue Date</th>
                         <th class="text">Remarks</th>
+                        <th class="num">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -430,7 +448,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                     try {
                         con = DBUtil.getConnection();
                         StringBuilder query = new StringBuilder(
-                            "SELECT si.issue_id, si.issueno, si.item_id, im.Item_name, " +
+                            "SELECT si.indent_no, si.issueno, si.item_id, im.Item_name, " +
                             "si.issued_to, si.department, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
                             "FROM stock_issues si JOIN item_master im ON si.item_id = im.Item_id "
                         );
@@ -451,26 +469,39 @@ if (sess == null || sess.getAttribute("username") == null) {
                         int count = 0;
                         while (rs.next()) {
                             count++;
+                            String indentNo = rs.getString("indent_no");
+                            String itemName = rs.getString("Item_name");
+                            Object qty = rs.getBigDecimal("qty_issued");
+                            Object unitPrice = rs.getBigDecimal("unit_price") != null ? rs.getBigDecimal("unit_price") : 0;
+                            Object totalValue = rs.getBigDecimal("total_value") != null ? rs.getBigDecimal("total_value") : 0;
                 %>
                     <tr>
-                        <td data-label="Issue No" class="text" style="font-weight: 600; color: #0176d3;"><%= rs.getString("issueno") %></td>
+                        <td data-label="Indent No" class="text" style="font-weight: 600; color: #0176d3;"><%= indentNo %></td>
                         <td data-label="Item ID" class="text"><%= rs.getInt("item_id") %></td>
-                        <td data-label="Item Name" class="text" style="font-weight: 600;"><%= rs.getString("Item_name") %></td>
+                        <td data-label="Item Name" class="text" style="font-weight: 600;"><%= itemName %></td>
                         <td data-label="Issued To" class="text"><%= rs.getString("issued_to") %></td>
                         <td data-label="Department" class="text"><%= rs.getString("department") %></td>
-                        <td data-label="Qty Issued" class="num" style="font-weight: 600;"><%= rs.getBigDecimal("qty_issued") %></td>
-                        <td data-label="Unit Price (₹)" class="num"><%= rs.getBigDecimal("unit_price") != null ? rs.getBigDecimal("unit_price") : 0 %></td>
-                        <td data-label="Total Value (₹)" class="num" style="color: #2e844a; font-weight: 700;"><%= rs.getBigDecimal("total_value") != null ? rs.getBigDecimal("total_value") : 0 %></td>
+                        <td data-label="Qty Issued" class="num" style="font-weight: 600;"><%= qty %></td>
+                        <td data-label="Unit Price (₹)" class="num"><%= unitPrice %></td>
+                        <td data-label="Total Value (₹)" class="num" style="color: #2e844a; font-weight: 700;"><%= totalValue %></td>
                         <td data-label="Issue Date" class="num"><%= rs.getTimestamp("issue_date") %></td>
                         <td data-label="Remarks" class="text"><%= rs.getString("remarks") != null ? rs.getString("remarks") : "-" %></td>
+                        <td data-label="Action" class="num">
+    <a href="printissue.jsp?indentNo=<%= java.net.URLEncoder.encode(indentNo != null ? indentNo : "", "UTF-8") %>" 
+       target="_blank" 
+       class="btn btn-print" 
+       title="Print Issue Voucher">
+        <i class="fa fa-print"></i> Print Voucher
+    </a>
+</td>
                     </tr>
                 <%
                         }
                         if (count == 0) {
-                            out.println("<tr><td colspan='10' style='text-align:center; color:#c23934; font-weight:600;'>No stock issues found.</td></tr>");
+                            out.println("<tr><td colspan='11' style='text-align:center; color:#c23934; font-weight:600;'>No stock issues found.</td></tr>");
                         }
                     } catch (Exception e) {
-                        out.println("<tr><td colspan='10' style='color:#c23934; font-weight:600;'>Error: " + e.getMessage() + "</td></tr>");
+                        out.println("<tr><td colspan='11' style='color:#c23934; font-weight:600;'>Error: " + e.getMessage() + "</td></tr>");
                     } finally {
                         if (rs != null) try { rs.close(); } catch (Exception ignored) {}
                         if (ps != null) try { ps.close(); } catch (Exception ignored) {}
