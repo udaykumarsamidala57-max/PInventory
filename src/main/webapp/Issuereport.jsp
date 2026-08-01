@@ -7,6 +7,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
+String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -446,7 +447,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                     String toDate = request.getParameter("toDate");
 
                     try {
-                        con = DBUtil.getConnection();
+                        con = DBUtil.getConnection(branch);
                         StringBuilder query = new StringBuilder(
                             "SELECT si.indent_no, si.issueno, si.item_id, im.Item_name, " +
                             "si.issued_to, si.department, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
