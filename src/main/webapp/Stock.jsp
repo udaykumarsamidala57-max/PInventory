@@ -7,6 +7,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
+String branch = (String) sess.getAttribute("branch");
 %>
 <html lang="en">
 <head>
@@ -332,7 +333,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                     <option value="">-- All --</option>
                     <%
                         Set<String> categories = new HashSet<>();
-                        try (Connection con = DBUtil.getConnection();
+                        try (Connection con = DBUtil.getConnection(branch);
                              PreparedStatement ps = con.prepareStatement("SELECT DISTINCT Category FROM item_master");
                              ResultSet rs = ps.executeQuery()) {
                             while (rs.next()) {
@@ -378,7 +379,7 @@ if (sess == null || sess.getAttribute("username") == null) {
                 </thead>
                 <tbody>
                 <%
-                    try (Connection con = DBUtil.getConnection();
+                    try (Connection con = DBUtil.getConnection(branch);
                          PreparedStatement ps = con.prepareStatement(
                             "SELECT s.item_id, i.Item_name, i.Category, i.Sub_Category, i.UOM, " +
                             "s.total_received, s.total_issued, s.balance_qty, s.last_price, s.last_updated " +

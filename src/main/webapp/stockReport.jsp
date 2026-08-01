@@ -8,7 +8,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
-
+String branch = (String) sess.getAttribute("branch");
 String fromDate = request.getParameter("fromDate");
 String toDate = request.getParameter("toDate");
 String category = request.getParameter("category");
@@ -40,7 +40,7 @@ ResultSet rs = null, rsCat = null;
 
 try {
 
-    conn = DBUtil.getConnection();
+    conn = DBUtil.getConnection(branch);
 
     // Category List
     psCat = conn.prepareStatement(

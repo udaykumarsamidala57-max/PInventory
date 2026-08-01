@@ -6,6 +6,8 @@ if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
+String grnNo = request.getParameter("grnNo");
+String branch = (String) sess.getAttribute("branch");
 %>
 <html>
 <head>
