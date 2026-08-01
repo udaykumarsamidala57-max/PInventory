@@ -2,6 +2,13 @@
 <%@page import="com.bean.DBUtil"%>
 
 <%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+String branch = (String) sess.getAttribute("branch");
+
 Connection con = null;
 PreparedStatement ps = null;
 ResultSet rs = null;
@@ -10,7 +17,7 @@ String category = request.getParameter("category");
 String subCategory = request.getParameter("subcategory");
 
 try {
-    con = DBUtil.getConnection();
+    con = DBUtil.getConnection(branch);
 %>
 
 <!DOCTYPE html>
