@@ -28,10 +28,12 @@ public class IndentlistServlet extends HttpServlet {
 
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+
 
         List<IndentItemFull> list = new ArrayList<>();
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             StringBuilder listSql = new StringBuilder();
 

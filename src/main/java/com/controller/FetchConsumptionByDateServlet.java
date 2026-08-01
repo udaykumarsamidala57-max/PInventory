@@ -16,6 +16,17 @@ public class FetchConsumptionByDateServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String selectedDate = request.getParameter("selected_date");
 
@@ -30,7 +41,7 @@ public class FetchConsumptionByDateServlet extends HttpServlet {
         ResultSet rs = null;
 
         try {
-            con = DBUtil.getConnection();
+            con = DBUtil.getConnection(branch);
 
             String sql = "SELECT d.issue_id, d.issueno, d.item_id, d.po_item_id, "
                        + "d.department, d.issued_to, d.qty_issued, d.issue_date, "

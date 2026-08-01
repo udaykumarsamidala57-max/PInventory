@@ -18,6 +18,16 @@ public class StockAuditReportServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -28,7 +38,7 @@ public class StockAuditReportServlet extends HttpServlet {
 
         try {
 
-            con = DBUtil.getConnection();
+            con = DBUtil.getConnection(branch);
 
             // Load available months
             String monthSql =

@@ -17,8 +17,18 @@ public class IssueServlet extends HttpServlet {
             throws ServletException, IOException {
 
         List<Map<String, Object>> indentList = new ArrayList<>();
+        
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
 
-        try (Connection con = DBUtil.getConnection()) {
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // ✅ Generate next issue number
             String nextNo = "1";
@@ -130,6 +140,16 @@ public class IssueServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String indentId = request.getParameter("indentId");
         String indentNo = request.getParameter("indentNo");
@@ -152,7 +172,7 @@ public class IssueServlet extends HttpServlet {
         double totalValue = qtyIssued * unitPrice;
         String issueno = "0";
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             con.setAutoCommit(false);
 
             // ✅ Generate next issue number

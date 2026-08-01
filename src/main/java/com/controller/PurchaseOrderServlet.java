@@ -23,13 +23,16 @@ public class PurchaseOrderServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         List<POItems> indentList = new ArrayList<>();
         Map<String, String[]> vendorMap = new LinkedHashMap<>();
         String nextPONumber = "PO0001";
         String[] selectedIds = request.getParameterValues("selectedIds");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // --- 1. Generate next PO number ---
             try (Statement stNext = con.createStatement();
@@ -94,6 +97,15 @@ public class PurchaseOrderServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String[] itemNames = request.getParameterValues("itemName");
         String[] itemIds = request.getParameterValues("itemId");
@@ -130,7 +142,7 @@ public class PurchaseOrderServlet extends HttpServlet {
 
         Connection con = null;
         try {
-            con = DBUtil.getConnection();
+            con = DBUtil.getConnection(branch);
             con.setAutoCommit(false); // ✅ Transaction start
 
             // STEP 1: Club same items

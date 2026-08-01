@@ -27,6 +27,8 @@ public class AIndentListServlet extends HttpServlet {
 
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+
 
         if (!"Global".equalsIgnoreCase(role)
                 && !"Incharge".equalsIgnoreCase(role)
@@ -46,7 +48,7 @@ public class AIndentListServlet extends HttpServlet {
                         "WHERE Indentnext='Issue' AND status='Approved' " +
                         "GROUP BY item_id";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(pendingSql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -81,7 +83,7 @@ public class AIndentListServlet extends HttpServlet {
         // ✅ Order by oldest first
         listSql.append("ORDER BY i.indent_id ASC");
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(listSql.toString())) {
 
             if (!"Global".equalsIgnoreCase(role) && !"Admin".equalsIgnoreCase(role)) {
@@ -135,6 +137,7 @@ public class AIndentListServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String branch = (String) sess.getAttribute("branch");
 
         String user = (String) sess.getAttribute("username");
         String action = request.getParameter("action");
@@ -146,8 +149,8 @@ public class AIndentListServlet extends HttpServlet {
         }
 
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
-
-        try (Connection con = DBUtil.getConnection()) {
+        
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // ---------- 🟢 EDIT ----------
             if ("edit".equalsIgnoreCase(action)) {

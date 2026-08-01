@@ -23,10 +23,20 @@ import com.itextpdf.text.pdf.PdfWriter;
 
 @WebServlet("/SendPendingIndentPDF")
 public class SendPendingIndentPDF extends HttpServlet {
-
+	String branch;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         response.setContentType("text/html;charset=UTF-8");
         String toEmail = request.getParameter("email");
@@ -47,7 +57,13 @@ public class SendPendingIndentPDF extends HttpServlet {
 
     // -------------------- MAIN LOGIC --------------------
     public static void sendPendingIndentReport(String toEmail) {
+    	
+    	
         java.util.List<Map<String, Object>> pendingIndents = new ArrayList<>();
+        
+        
+
+      String branch ="SRS";
 
         String sql = """
         	    SELECT indent_no, indent_date, item_name, qty, department, requested_by, purpose
@@ -57,7 +73,7 @@ public class SendPendingIndentPDF extends HttpServlet {
         	    ORDER BY indent_id DESC
         	    """;
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 

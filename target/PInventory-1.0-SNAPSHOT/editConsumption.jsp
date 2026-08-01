@@ -133,7 +133,7 @@
             var maxDate = today.toISOString().split('T')[0];
 
             var min = new Date();
-            min.setDate(today.getDate() - 14);
+            min.setDate(today.getDate() - 45);
             var minDate = min.toISOString().split('T')[0];
 
             var dateInput = document.getElementById("selected_date");

@@ -15,6 +15,16 @@ public class MealSummaryServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+        
         String mealDate = request.getParameter("meal_date");
         String session = request.getParameter("session");
         String message = "";
@@ -26,7 +36,7 @@ public class MealSummaryServlet extends HttpServlet {
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // Compute values from dining_hall_consumption
             String sumSql = "SELECT COUNT(DISTINCT item_id) AS total_items, "

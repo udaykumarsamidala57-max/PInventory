@@ -15,8 +15,18 @@ public class LoadIndentItemsServlet extends HttpServlet {
 
         String indentId = request.getParameter("indentId");
         List<Map<String, Object>> items = new ArrayList<>();
+        
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
 
-        try (Connection con = DBUtil.getConnection();
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(
                  "SELECT im.Item_id, im.Category, im.Sub_Category, im.Item_name, ii.qty_requested " +
                  "FROM indent ii JOIN item_master im ON ii.item_id = im.Item_id " +

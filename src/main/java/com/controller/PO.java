@@ -1,3 +1,6 @@
+
+
+
 package com.controller;
 
 import java.io.IOException;
@@ -28,13 +31,16 @@ public class PO extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         List<POItems> indentList = new ArrayList<>();
         Map<String, String[]> vendorMap = new LinkedHashMap<>();
         String nextPONumber = "PO0001";
         String[] selectedIds = request.getParameterValues("selectedIds");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // --- Generate next PO number ---
             Statement stNext = con.createStatement();
@@ -96,6 +102,16 @@ public class PO extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String[] itemNames = request.getParameterValues("itemName");
         String[] itemIds = request.getParameterValues("itemId");
@@ -119,7 +135,7 @@ public class PO extends HttpServlet {
             throw new ServletException("PO Creation Error: No items found to process.");
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // =====================================================
             // STEP 1: CLUB MULTIPLE RECORDS OF SAME ITEM

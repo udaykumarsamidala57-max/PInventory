@@ -18,13 +18,23 @@ public class GRNServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+        
         String poNumber = request.getParameter("po_number");
         if (poNumber == null || poNumber.isEmpty()) {
             request.getRequestDispatcher("GRNForm.jsp").forward(request, response);
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             int poId;
             String vendorName;
 
@@ -93,6 +103,16 @@ public class GRNServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String poNumber  = request.getParameter("po_number");
         String invoiceNo = request.getParameter("invoice_no");
@@ -108,7 +128,7 @@ public class GRNServlet extends HttpServlet {
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             con.setAutoCommit(false);
 
             // --- Get PO ID ---

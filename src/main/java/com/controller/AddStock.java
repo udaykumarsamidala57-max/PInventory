@@ -21,8 +21,9 @@ public class AddStock extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String branch = (String) sess.getAttribute("branch");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             List<Map<String, String>> items = new ArrayList<>();
             String sql = "SELECT Item_id, Category, Sub_Category, Item_name, UOM FROM item_master";
@@ -59,7 +60,7 @@ public class AddStock extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
+        String branch = (String) sess.getAttribute("branch");
         String username = (String) sess.getAttribute("username");
 
         String itemIds = request.getParameter("itemIds");
@@ -78,7 +79,7 @@ public class AddStock extends HttpServlet {
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             con.setAutoCommit(false);
 
             // 1️⃣ Insert or Update stock (handle both new and existing records)

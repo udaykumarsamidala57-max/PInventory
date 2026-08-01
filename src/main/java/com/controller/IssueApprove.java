@@ -23,8 +23,11 @@ public class IssueApprove extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
         String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+
+        
         if (!"Global".equalsIgnoreCase(role)) {
             response.setContentType("text/html");
             response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
@@ -44,7 +47,7 @@ public class IssueApprove extends HttpServlet {
                      "AND s.balance_qty >= i.qty " +
                      "ORDER BY i.indent_id DESC";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -89,6 +92,7 @@ public class IssueApprove extends HttpServlet {
             return;
         }
 
+        String branch = (String) sess.getAttribute("branch");
         String role = (String) sess.getAttribute("role");
         if (!"Global".equalsIgnoreCase(role)) {
             response.sendRedirect("login.jsp");
@@ -100,7 +104,7 @@ public class IssueApprove extends HttpServlet {
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
 
         if ("approve".equalsIgnoreCase(action) && idStr != null) {
-            try (Connection con = DBUtil.getConnection()) {
+            try (Connection con = DBUtil.getConnection(branch)) {
                 String sql = "UPDATE indent " +
                              "SET status = 'Approved', " +
                              "Indentnext = 'Issue', " +

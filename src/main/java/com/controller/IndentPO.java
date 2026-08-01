@@ -31,12 +31,15 @@ public class IndentPO extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         List<IndentItems> indentList = new ArrayList<>();
 
         String sql = "SELECT * FROM indent WHERE POStatus IS NULL AND Indentnext = 'PO' ORDER BY indent_id DESC";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
         	     PreparedStatement ps = con.prepareStatement(sql);
         	     ResultSet rs = ps.executeQuery()) {
 

@@ -15,11 +15,21 @@ public class VerifyOtpServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String email = request.getParameter("email");
         String otpInput = request.getParameter("otp");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             PreparedStatement ps = con.prepareStatement("SELECT username, role, department, otp, otp_expiry FROM users WHERE mail=?");
             ps.setString(1, email);
             ResultSet rs = ps.executeQuery();

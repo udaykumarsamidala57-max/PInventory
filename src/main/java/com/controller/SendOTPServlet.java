@@ -20,13 +20,23 @@ public class SendOTPServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String email = request.getParameter("email");
         Random rand = new Random();
         int otp = 100000 + rand.nextInt(900000);
         LocalDateTime expiry = LocalDateTime.now().plusMinutes(5);
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             PreparedStatement check = con.prepareStatement("SELECT * FROM users WHERE mail=?");
             check.setString(1, email);

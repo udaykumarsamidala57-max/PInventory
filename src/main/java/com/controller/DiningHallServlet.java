@@ -21,8 +21,9 @@ public class DiningHallServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String branch = (String) sess.getAttribute("branch");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             // ✅ Next issue number
             int nextIssueNo = 1;
             String sqlNext = "SELECT COALESCE(MAX(CAST(SUBSTRING(issueno, 4) AS UNSIGNED)), 0) + 1 AS next_no FROM dining_hall_consumption";
@@ -102,6 +103,13 @@ public class DiningHallServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
 
         String issueno = request.getParameter("issueno");
         String issuedTo = request.getParameter("issued_to");
@@ -118,7 +126,7 @@ public class DiningHallServlet extends HttpServlet {
             return;
         }
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             con.setAutoCommit(false);
 
             for (int i = 0; i < itemIds.length; i++) {

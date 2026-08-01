@@ -13,6 +13,16 @@ public class ViewGRNServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         // Use LinkedHashMap to preserve the ORDER BY m.grn_id DESC sorting sequence
         Map<Integer, Map<String, Object>> grnMap = new LinkedHashMap<>();
@@ -28,7 +38,7 @@ public class ViewGRNServlet extends HttpServlet {
             "LEFT JOIN po_items p ON i.po_item_id = p.po_item_id " +
             "ORDER BY m.grn_id DESC";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement pst = con.prepareStatement(unifiedQuery);
              ResultSet rs = pst.executeQuery()) {
 

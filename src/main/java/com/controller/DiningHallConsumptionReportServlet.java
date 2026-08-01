@@ -18,7 +18,16 @@ public class DiningHallConsumptionReportServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
 
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        
     	String reportMonth =
     	        request.getParameter("report_month");
 
@@ -57,7 +66,7 @@ public class DiningHallConsumptionReportServlet extends HttpServlet {
             return;
         }
 
-        try(Connection con = DBUtil.getConnection()) {
+        try(Connection con = DBUtil.getConnection(branch)) {
 
             String sql =
                     "SELECT DATE(d.issue_date) issue_day, " +

@@ -26,8 +26,9 @@ public class IndentServlet extends HttpServlet {
         String role = (String) sess.getAttribute("role");
         String deptSession = (String) sess.getAttribute("department");
         String selectedDept = request.getParameter("selectedDept");
-
-        try (Connection con = DBUtil.getConnection()) {
+        String branch = (String) sess.getAttribute("branch");
+        
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             int nextIndentNo = 1;
             String sqlNext = "SELECT next_val + 1 AS next_no FROM id_sequences WHERE seq_name = 'indent_no'";
@@ -132,6 +133,7 @@ public class IndentServlet extends HttpServlet {
             return;
         }
 
+        String branch = (String) sess.getAttribute("branch");
         String user = (String) sess.getAttribute("username");
         String role = (String) sess.getAttribute("role");
         String deptSession = (String) sess.getAttribute("department");
@@ -177,7 +179,7 @@ public class IndentServlet extends HttpServlet {
         String finalIndentNo = "";
 
         try {
-            con = DBUtil.getConnection();
+            con = DBUtil.getConnection(branch);
             con.setAutoCommit(false);
 
             con.prepareStatement(

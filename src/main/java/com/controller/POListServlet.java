@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.bean.DBUtil;
 import com.bean.PO;
@@ -25,13 +26,23 @@ public class POListServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String deleteId = request.getParameter("delete_id");
         String approveId = request.getParameter("Approve_id");
 
         // ✅ Handle Deletion
         if (deleteId != null) {
-            try (Connection con = DBUtil.getConnection();
+            try (Connection con = DBUtil.getConnection(branch);
                  PreparedStatement ps1 = con.prepareStatement("DELETE FROM po_items WHERE po_no=?");
                  PreparedStatement ps2 = con.prepareStatement("DELETE FROM po_master WHERE po_number=?")) {
 
@@ -50,7 +61,7 @@ public class POListServlet extends HttpServlet {
 
         // ✅ Handle Approval
         if (approveId != null) {
-            try (Connection con = DBUtil.getConnection();
+            try (Connection con = DBUtil.getConnection(branch);
                  PreparedStatement ps = con.prepareStatement(
                          "UPDATE po_master SET Approval=? WHERE po_number=?")) {
 
@@ -68,7 +79,7 @@ public class POListServlet extends HttpServlet {
         // ✅ Fetch Purchase Orders and their items
         List<PO> poList = new ArrayList<>();
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              Statement stmt = con.createStatement();
              ResultSet rs = stmt.executeQuery(
                      "SELECT * FROM po_master " +

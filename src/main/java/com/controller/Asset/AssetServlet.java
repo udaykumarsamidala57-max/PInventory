@@ -10,6 +10,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -137,7 +139,16 @@ public class AssetServlet extends HttpServlet {
         // Assuming your table is named 'vendors' based on your schema structure
         String vendorSql = "SELECT id, name FROM vendors ORDER BY name ASC";
         
-        try (Connection conn = DBUtil.getConnection();
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+        
+        try (Connection conn = DBUtil.getConnection(branch);
              PreparedStatement ps = conn.prepareStatement(vendorSql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {

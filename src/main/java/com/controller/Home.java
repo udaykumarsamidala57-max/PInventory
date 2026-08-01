@@ -22,6 +22,9 @@ public class Home extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String role = (String) sess.getAttribute("role");
+        String depts = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         Map<String, Integer> deptPendingMap = new LinkedHashMap<>();
         Map<String, Integer> totalDeptMap = new LinkedHashMap<>();
@@ -31,7 +34,7 @@ public class Home extends HttpServlet {
         List<Map<String, Object>> topQty = new ArrayList<>();
 
         // ===================== DASHBOARD COUNTS =====================
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // ✅ Department Pending
             try (PreparedStatement ps = con.prepareStatement(
@@ -162,8 +165,10 @@ public class Home extends HttpServlet {
 
         Map<String, double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
+        
+        
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // ✅ Departments dropdown
             List<String> departments = new ArrayList<>();

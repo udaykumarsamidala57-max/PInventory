@@ -15,6 +15,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.bean.DBUtil;
 
@@ -27,6 +28,16 @@ public class SaveStockVerificationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
 
         String category =
                 request.getParameter("category");
@@ -56,7 +67,7 @@ public class SaveStockVerificationServlet extends HttpServlet {
         String toDate =
                 ym.atEndOfMonth().toString();
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             /* --------------------------
              * CATEGORY LIST
@@ -305,6 +316,17 @@ public class SaveStockVerificationServlet extends HttpServlet {
             HttpServletResponse response)
             throws ServletException, IOException {
     	
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        String branch = (String) sess.getAttribute("branch");
+    	
     	String verifiedBy =
                 (String) request.getSession()
                 .getAttribute("username");
@@ -324,7 +346,7 @@ public class SaveStockVerificationServlet extends HttpServlet {
         String[] remarksList =
                 request.getParameterValues("remarks");
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             con.setAutoCommit(false);
 

@@ -24,6 +24,7 @@ public class DIndentListServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
+        String branch = (String) sess.getAttribute("branch");
 
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
@@ -46,7 +47,7 @@ public class DIndentListServlet extends HttpServlet {
                         "WHERE Indentnext='Issue' AND status='Approved' " +
                         "GROUP BY item_id";
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(pendingSql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -76,7 +77,7 @@ public class DIndentListServlet extends HttpServlet {
         // ✅ Order by oldest first
         listSql.append("ORDER BY i.indent_id ASC");
 
-        try (Connection con = DBUtil.getConnection();
+        try (Connection con = DBUtil.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(listSql.toString())) {
 
             if (false) {
@@ -130,7 +131,7 @@ public class DIndentListServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-
+        String branch = (String) sess.getAttribute("branch");
         String user = (String) sess.getAttribute("username");
         String action = request.getParameter("action");
         String idStr = request.getParameter("id");
@@ -142,7 +143,7 @@ public class DIndentListServlet extends HttpServlet {
 
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
 
             // ---------- 🟢 EDIT ----------
             if ("edit".equalsIgnoreCase(action)) {
