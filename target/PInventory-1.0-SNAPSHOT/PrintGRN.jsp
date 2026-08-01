@@ -10,6 +10,7 @@
     }
 
     String grnNo = request.getParameter("grnNo");
+    String branch = (String) sess.getAttribute("branch");
 %>
 
 <!DOCTYPE html>
@@ -112,7 +113,7 @@ h3{
 
 <%
 if (grnNo != null && !grnNo.trim().isEmpty()) {
-    try (Connection con = DBUtil.getConnection()) {
+    try (Connection con = DBUtil.getConnection(branch)) {
 
         // Fetch GRN details with PO number
         PreparedStatement pst = con.prepareStatement(

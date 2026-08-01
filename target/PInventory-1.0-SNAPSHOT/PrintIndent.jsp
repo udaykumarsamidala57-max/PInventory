@@ -11,6 +11,7 @@
     }
 
     String indentNumber = request.getParameter("IndentNumber");
+    String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
 <html>
@@ -145,7 +146,7 @@
 if (indentNumber != null && !indentNumber.trim().isEmpty()) {
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con = DBUtil.getConnection();
+        Connection con = DBUtil.getConnection(branch);
 
         PreparedStatement pst = con.prepareStatement(
             "SELECT i.indent_no, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +

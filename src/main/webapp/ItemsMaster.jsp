@@ -3,15 +3,16 @@
 <%@ page import="com.bean.DBUtil" %>
 
 <%
-    
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
         return;
     }
+    
     String role = (String) sess.getAttribute("role");
     String dept = (String) sess.getAttribute("department");
     String branch = (String) sess.getAttribute("branch");
+    
     if ((!"Global".equalsIgnoreCase(role) &&  !"Finance".equalsIgnoreCase(dept))) {
 
     	    out.println("<h3 style='color:red;text-align:center;'>Access Denied! You are not authorized.</h3>");

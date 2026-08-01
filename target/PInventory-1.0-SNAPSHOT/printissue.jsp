@@ -7,7 +7,7 @@
         out.println("Invalid Indent Number.");
         return;
     }
-
+    
     Connection con = null;
     PreparedStatement ps = null;
     ResultSet rs = null;
@@ -16,6 +16,16 @@
     String department = "";
     Timestamp issueDate = null;
     double grandTotal = 0.0;
+%>
+<%
+    HttpSession sess = request.getSession(false);
+    if (sess == null || sess.getAttribute("username") == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+
+    String grnNo = request.getParameter("grnNo");
+    String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
 <html>
@@ -94,7 +104,7 @@
 
     <%
         try {
-            con = DBUtil.getConnection();
+            con = DBUtil.getConnection(branch);
             String sql = "SELECT si.indent_no, si.item_id, im.Item_name, si.issued_to, " +
                          "si.department, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
                          "FROM stock_issues si JOIN item_master im ON si.item_id = im.Item_id " +
