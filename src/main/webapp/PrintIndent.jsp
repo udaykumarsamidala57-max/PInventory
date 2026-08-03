@@ -364,6 +364,7 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
             <span class="info-label">Requested By:</span>
             <span class="info-value"><%= (requestedBy != null && !requestedBy.isEmpty()) ? requestedBy : "-" %></span>
         </div>
+       
         <div class="info-item">
             <span class="info-label">Type:</span>
             <span class="info-value">
@@ -372,6 +373,7 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
                 </span>
             </span>
         </div>
+        
         <div class="info-item full-width">
             <span class="info-label">Purpose:</span>
             <span class="info-value"><%= (purpose != null && !purpose.isEmpty()) ? purpose : "-" %></span>
@@ -406,7 +408,11 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
                     <td><%= count++ %></td>
                     <td style="text-align: left;"><%= rs.getString("item_name") %></td>
                     <td><%= rs.getString("UOM") != null ? rs.getString("UOM") : "-" %></td>
-                    <td style="color:#FA6D16; font-weight:bold;"><%= rs.getBigDecimal("balance_qty") %></td>
+                      <% if ("Issue".equalsIgnoreCase(PurchaseorIssue)) { %>
+                      <td style="color:#FA6D16; font-weight:bold;">
+                      <%= rs.getBigDecimal("balance_qty") %>
+                      </td>
+                      <% } %>
                     <td style="font-weight: 600;"><%= rs.getString("qty") %></td>
                     <td style="<%= statusStyle %>"><%= displayStatus %></td>
                 </tr>
