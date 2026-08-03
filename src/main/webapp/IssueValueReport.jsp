@@ -10,6 +10,7 @@
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
     String deptss = (String) sess.getAttribute("department");
+    String branch = (String) sess.getAttribute("branch");
 
     if (!"Global".equalsIgnoreCase(role) &&
         !"Incharge".equalsIgnoreCase(role) &&
@@ -152,7 +153,7 @@
             <%
                 String selectedDept = request.getParameter("department");
                 if (selectedDept == null) selectedDept = "All";
-                try (Connection con = DBUtil.getConnection();
+                try (Connection con = DBUtil.getConnection(branch);
                      PreparedStatement ps = con.prepareStatement(
                          "SELECT DISTINCT department FROM stock_issues WHERE department IS NOT NULL AND department<>'' ORDER BY department");
                      ResultSet rs = ps.executeQuery()) {
@@ -176,7 +177,7 @@
                 if (selectedYear == null)
                     selectedYear = String.valueOf(Calendar.getInstance().get(Calendar.YEAR));
 
-                try (Connection con = DBUtil.getConnection();
+                try (Connection con = DBUtil.getConnection(branch);
                      PreparedStatement ps = con.prepareStatement(
                          "SELECT DISTINCT YEAR(issue_date) AS y FROM stock_issues WHERE issue_date IS NOT NULL ORDER BY y DESC");
                      ResultSet rs = ps.executeQuery()) {
@@ -201,7 +202,7 @@
         Map<String,double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
 
-        try (Connection con = DBUtil.getConnection()) {
+        try (Connection con = DBUtil.getConnection(branch)) {
             StringBuilder sql = new StringBuilder(
                 "SELECT department, MONTH(issue_date) AS m, SUM(IFNULL(total_value,0)) AS total_value " +
                 "FROM stock_issues WHERE issue_date IS NOT NULL AND YEAR(issue_date)=? ");

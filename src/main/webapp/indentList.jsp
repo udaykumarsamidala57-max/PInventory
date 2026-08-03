@@ -18,7 +18,10 @@ if (sess == null || sess.getAttribute("username") == null) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-* { box-sizing: border-box; }
+* { 
+  box-sizing: border-box; 
+}
+
 body {
   font-family: 'Poppins', sans-serif;
   background-color: #f3f3f3;
@@ -29,21 +32,20 @@ body {
 }
 
 .main-content {
-  width: 96%;
-  max-width: 100%;
+  width: 98%;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 20px 10px;
 }
 
 /* Salesforce Style Card Base */
 .card {
   background: #fff;
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 20px;
   width: 100%;
   border: 1px solid #c9c9c9;
-  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-  overflow: hidden; 
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .header-area {
@@ -65,6 +67,7 @@ body {
   justify-content: center;
   color: white;
   font-size: 18px;
+  flex-shrink: 0;
 }
 
 h1 {
@@ -75,16 +78,16 @@ h1 {
   text-align: left;
 }
 
-/* Salesforce Filter Toolbar Grid */
+/* Responsive Grid Search & Filter Toolbar */
 .search-bar {
   background: #fafaf9;
   border: 1px solid #c9c9c9;
-  border-radius: 4px;
-  padding: 14px;
+  border-radius: 6px;
+  padding: 16px;
   margin-bottom: 20px;
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-end;
 }
 
@@ -92,6 +95,8 @@ h1 {
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 1 1 180px;
+  min-width: 140px;
 }
 
 .search-bar label {
@@ -106,7 +111,7 @@ h1 {
 .search-bar input[type="text"], 
 .search-bar input[type="date"],
 #deptFilter {
-  height: 36px;
+  height: 38px;
   padding: 0 10px;
   border: 1px solid #aeaeae;
   border-radius: 4px;
@@ -114,7 +119,7 @@ h1 {
   font-size: 13px;
   background: #ffffff;
   outline: none;
-  min-width: 150px;
+  width: 100%;
 }
 
 .search-bar input:focus, 
@@ -129,12 +134,11 @@ h1 {
   gap: 8px;
   margin-left: auto;
   align-items: center;
-  height: 36px;
 }
 
-/* Salesforce Lightning Action Buttons */
+/* Unified Button Styling */
 .btn {
-  height: 36px;
+  height: 38px;
   padding: 0 14px;
   border: 1px solid #0176d3;
   background: #0176d3;
@@ -147,7 +151,8 @@ h1 {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.1s ease;
+  transition: background-color 0.15s ease;
+  white-space: nowrap;
 }
 
 .btn:hover { background: #015a9e; border-color: #015a9e; }
@@ -177,51 +182,26 @@ h1 {
   border-color: #747472;
 }
 
-#expandAll {
-  background-color: #ffffff;
-  border-color: #747472;
-  color: #181818;
-}
-#expandAll:hover {
-  background-color: #f4f6f9;
-}
-
-/* High-Density Performance Layout Container */
+/* Dynamic High-Density Data Matrix */
 .table-container {
   width: 100%;
-  overflow-x: auto; /* Restores controlled local hardware accelerated scrolling */
+  overflow-x: auto;
   scrollbar-width: thin;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
 }
 
 .main-table {
   width: 100%;
   border-collapse: collapse;
   background: #fff;
-  font-size: 11px;
+  font-size: 12px;
 }
-
-/* Flexible Matrix Min-Width Specifications */
-.main-table th:nth-child(1)  { min-width: 45px; }   /* ID */
-.main-table th:nth-child(2)  { min-width: 80px; }   /* Indent No */
-.main-table th:nth-child(3)  { min-width: 85px; }   /* Date */
-.main-table th:nth-child(4)  { min-width: 160px; }  /* Item */
-.main-table th:nth-child(5)  { min-width: 70px; }   /* Avail Qty */
-.main-table th:nth-child(6)  { min-width: 70px; }   /* Req Qty */
-.main-table th:nth-child(7)  { min-width: 55px; }   /* UOM */
-.main-table th:nth-child(8)  { min-width: 100px; }  /* Dept */
-.main-table th:nth-child(9)  { min-width: 110px; }  /* Requested By */
-.main-table th:nth-child(10) { min-width: 120px; }  /* Purpose */
-.main-table th:nth-child(11) { min-width: 95px; }   /* L1 Status */
-.main-table th:nth-child(12) { min-width: 90px; }   /* IApproveDate */
-.main-table th:nth-child(13) { min-width: 95px; }   /* L2 Status */
-.main-table th:nth-child(14) { min-width: 90px; }   /* FApproveDate */
-.main-table th:nth-child(15) { min-width: 95px; }   /* Indent Status */
-.main-table th:nth-child(16) { min-width: 90px; }   /* Action Box */
 
 .main-table th {
   background: #fafaf9;
   color: #514f4d;
-  padding: 12px 6px;
+  padding: 10px 8px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
@@ -230,61 +210,80 @@ h1 {
   cursor: pointer;
   text-align: center;
   white-space: nowrap;
+  user-select: none;
 }
 
 .main-table th i {
-  margin-left: 2px;
+  margin-left: 3px;
   font-size: 9px;
   color: #747472;
 }
 
 .main-table td {
-  padding: 10px 6px;
+  padding: 8px 6px;
   text-align: center;
   border-bottom: 1px solid #e5e5e5;
   color: #181818;
   vertical-align: middle;
-  word-wrap: break-word;
-  white-space: normal; /* Safe wrapping for massive descriptions inside structural columns */
-}
-
-/* Explicit text constraints for clean grid architecture */
-.main-table td:nth-child(3),
-.main-table td:nth-child(11),
-.main-table td:nth-child(12),
-.main-table td:nth-child(13),
-.main-table td:nth-child(14) {
-  white-space: nowrap;
+  word-break: break-word;
 }
 
 .main-table tr:hover {
-  background-color: #f3f3f3;
+  background-color: #f4f6f9;
 }
 
-/* Centered Form Handling */
+/* Type Status Badges (Purchase / Issue) */
+.badge-type {
+  display: inline-block;
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+
+.badge-type-purchase {
+  background-color: #eef4fe;
+  color: #0176d3;
+  border: 1px solid #aacbfa;
+}
+
+.badge-type-issue {
+  background-color: #eaf5ea;
+  color: #2e844a;
+  border: 1px solid #a3d9b1;
+}
+
+.badge-type-default {
+  background-color: #f3f3f3;
+  color: #514f4d;
+  border: 1px solid #c9c9c9;
+}
+
+/* Centered Table Action Buttons */
 .print-form {
   margin: 0;
-  display: inline-flex;
+  display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
 }
 
 .print-action-btn {
   background: #ffffff;
   border: 1px solid #0176d3;
   color: #0176d3;
-  padding: 5px 8px;
+  padding: 4px 8px;
   border-radius: 4px;
-  font-size: 10.5px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   gap: 4px;
   white-space: nowrap;
-  transition: all 0.1s ease;
+  transition: all 0.15s ease;
 }
 
 .print-action-btn:hover {
@@ -292,99 +291,73 @@ h1 {
   color: #ffffff;
 }
 
-/* Responsive Adaptive Layer */
-@media (max-width: 1200px) {
-  .main-content { width: 100%; padding: 10px; }
-  .card { padding: 16px; }
-  .header-area { margin-bottom: 16px; padding-bottom: 12px; }
-
-  .search-bar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
-    padding: 12px;
-  }
-
-  .filter-group {
-    width: 100%;
-  }
-
-  .search-bar input[type="text"], 
-  .search-bar input[type="date"],
-  #deptFilter {
-    width: 100%;
-    height: 40px;
-  }
+/* CSS Mobile Card Transformation */
+@media (max-width: 1024px) {
+  .main-content { width: 100%; padding: 10px 5px; }
+  .card { padding: 12px; }
 
   .actions-group {
     width: 100%;
-    flex-direction: column;
     margin-left: 0;
-    gap: 8px;
-    height: auto;
   }
 
-  .btn {
-    width: 100%;
-    height: 40px;
+  .actions-group .btn {
+    flex: 1 1 45%;
   }
 
-  table, thead, tbody, th, td, tr {
+  .table-container {
+    border: none;
+  }
+
+  table.main-table, 
+  .main-table thead, 
+  .main-table tbody, 
+  .main-table th, 
+  .main-table td, 
+  .main-table tr {
     display: block;
     width: 100%;
   }
 
-  thead tr {
+  .main-table thead tr {
     display: none;
   }
 
-  tr {
-    margin-bottom: 16px;
+  .main-table tr {
+    margin-bottom: 14px;
     border: 1px solid #c9c9c9;
-    border-radius: 4px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    padding: 10px 0;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    padding: 8px 0;
     background: #fff;
   }
 
   .main-table td {
     text-align: right;
-    padding: 10px 16px;
+    padding: 8px 14px;
     position: relative;
     border: none;
     border-bottom: 1px solid #f3f3f3;
-    font-size: 13px;
-    white-space: normal !important;
+    font-size: 12px;
+    min-height: 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .main-table td:last-child {
     border-bottom: none;
-    text-align: right;
   }
 
-  .main-table td:before {
+  .main-table td::before {
     content: attr(data-label);
-    position: absolute;
-    left: 16px;
-    width: 45%;
     font-weight: 700;
     text-align: left;
     color: #514f4d;
-    white-space: nowrap;
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    top: 50%;
-    transform: translateY(-50%);
-  }
-  
-  .print-form {
-    justify-content: flex-end;
-  }
-  
-  .print-action-btn {
-    padding: 8px 14px;
-    font-size: 12px;
+    padding-right: 10px;
   }
 }
 </style>
@@ -410,17 +383,17 @@ h1 {
 
       <div class="filter-group">
         <label>From Date</label>
-        <input type="date" id="fromDate">
+        <input type="date" id="fromDate" onchange="filterTable()">
       </div>
 
       <div class="filter-group">
         <label>To Date</label>
-        <input type="date" id="toDate">
+        <input type="date" id="toDate" onchange="filterTable()">
       </div>
 
       <div class="filter-group">
         <label>Department</label>
-        <select id="deptFilter">
+        <select id="deptFilter" onchange="filterTable()">
             <option value="">All Departments</option>
             <option value="Electrical">Electrical</option>
             <option value="Housekeeping">Housekeeping</option>
@@ -437,7 +410,7 @@ h1 {
         <button class="btn btn-info" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
         <button class="btn btn-secondary" onclick="resetFilters()"><i class="fa fa-rotate-left"></i> Reset</button>
         <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
-        <button id="expandAll" class="btn" onclick="toggleExpand()">Collapse All</button>
+        <button id="expandAll" class="btn btn-secondary" onclick="toggleExpand()">Collapse All</button>
       </div>
     </div>
 
@@ -447,19 +420,20 @@ h1 {
           <tr>
             <th onclick="sortTable(0)">ID <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(1)">Indent No <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(2)">Date <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(3)">Item <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(4)">Avail. Qty <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(5)">Req. Qty <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(6)">UOM <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(7)">Dept <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(8)">Requested By <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(9)">Purpose <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(10)">L1 Status <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(11)">IApproveDate <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(12)">L2 Status <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(13)">FApproveDate <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(14)">Indent status <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(2)">Type <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(3)">Date <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(4)">Item <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(5)">Avail. Qty <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(6)">Req. Qty <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(7)">UOM <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(8)">Dept <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(9)">Requested By <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(10)">Purpose <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(11)">L1 Status <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(12)">IApproveDate <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(13)">L2 Status <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(14)">FApproveDate <i class="fa fa-sort"></i></th>
+            <th onclick="sortTable(15)">Indent Status <i class="fa fa-sort"></i></th>
             <th>Action</th>
           </tr>
         </thead>
@@ -470,16 +444,30 @@ h1 {
               for (IndentItemFull ind : indents) {
                 String istatus = ind.getIstatus();
                 String status = ind.getStatus();
+                String typeVal = ind.getPurchaseorIssue();
+                
                 String istatusStyle = "Approved".equalsIgnoreCase(istatus) ? "color:#2e844a;font-weight:bold;" : "color:#c23934;font-weight:bold;";
                 String statusStyle = (status == null || status.trim().isEmpty() || "pending".equalsIgnoreCase(status))
                   ? "color:#c23934;font-weight:bold;" : "color:#2e844a;font-weight:bold;";
+                
+                String badgeClass = "badge-type-default";
+                if (typeVal != null) {
+                    if (typeVal.trim().equalsIgnoreCase("Purchase")) {
+                        badgeClass = "badge-type-purchase";
+                    } else if (typeVal.trim().equalsIgnoreCase("Issue")) {
+                        badgeClass = "badge-type-issue";
+                    }
+                }
           %>
           <tr class="data-row">
             <td data-label="ID"><%= ind.getId() %></td>
             <td data-label="Indent No"><%= ind.getIndentNo() %></td>
+            <td data-label="Type">
+              <span class="badge-type <%= badgeClass %>"><%= (typeVal != null && !typeVal.trim().isEmpty()) ? typeVal : "-" %></span>
+            </td>
             <td data-label="Date"><%= ind.getDate() %></td>
             <td data-label="Item"><%= ind.getItemName() %></td>
-            <td data-label="Avail. Qty" style="color:#FA6D16"><b><%= ind.getBalanceQty() %></b></td>
+            <td data-label="Avail. Qty" style="color:#FA6D16; font-weight:bold;"><%= ind.getBalanceQty() %></td>
             <td data-label="Req. Qty"><%= ind.getQty() %></td>
             <td data-label="UOM"><%= ind.getUom() %></td>
             <td data-label="Dept"><%= ind.getDepartment() %></td>
@@ -494,7 +482,7 @@ h1 {
             <td data-label="IApproveDate"><%= ind.getIapprovevdate() %></td>
             <td data-label="L2 Status" style="<%= statusStyle %>"><%= (status == null || status.trim().isEmpty()) ? "Pending" : status %></td>
             <td data-label="FApproveDate"><%= ind.getFapprovevdate() %></td>
-            <td data-label="Indent status"><%= ind.getIndentNext() %></td>
+            <td data-label="Indent Status"><%= ind.getIndentNext() %></td>
             <td data-label="Action">
               <form action="PrintIndent.jsp" method="get" class="print-form">
                 <input type="hidden" name="IndentNumber" value="<%= ind.getIndentNo() %>">
@@ -505,7 +493,7 @@ h1 {
             </td>
           </tr>
           <% } } else { %>
-          <tr><td colspan="16" style="text-align:center;color:#c23934;font-weight:600;">No records found</td></tr>
+          <tr><td colspan="17" style="text-align:center;color:#c23934;font-weight:600;padding:20px;">No records found</td></tr>
           <% } %>
         </tbody>
       </table>
@@ -523,40 +511,56 @@ function sortTable(n) {
       let shouldSwitch = false;
       let x = rows[i].getElementsByTagName("TD")[n];
       let y = rows[i + 1].getElementsByTagName("TD")[n];
-      if (dir == "asc" && x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) shouldSwitch = true;
-      else if (dir == "desc" && x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) shouldSwitch = true;
-      if (shouldSwitch) {
-        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-        switching = true; switchcount++; break;
+      if (!x || !y) continue;
+      
+      let xVal = x.innerText.toLowerCase().trim();
+      let yVal = y.innerText.toLowerCase().trim();
+      
+      let xNum = parseFloat(xVal), yNum = parseFloat(yVal);
+      if (!isNaN(xNum) && !isNaN(yNum)) {
+        xVal = xNum;
+        yVal = yNum;
       }
+
+      if (dir == "asc" && xVal > yVal) { shouldSwitch = true; break; }
+      else if (dir == "desc" && xVal < yVal) { shouldSwitch = true; break; }
     }
-    if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
+    if (shouldSwitch) {
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true; 
+      switchcount++;
+    } else {
+      if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
+    }
   }
 }
 
 function filterTable() {
   const fromDate = document.getElementById('fromDate').value;
   const toDate = document.getElementById('toDate').value;
-  const keyword = document.getElementById('keywordSearch').value.toLowerCase();
-  const selectedDept = document.getElementById('deptFilter').value.toLowerCase();
+  const keyword = document.getElementById('keywordSearch').value.toLowerCase().trim();
+  const selectedDept = document.getElementById('deptFilter').value.toLowerCase().trim();
   const rows = document.querySelectorAll('#dataTable tbody tr');
   
   rows.forEach(row => {
-    if (row.cells.length === 1) return; 
+    if (row.cells.length <= 1) return; 
     
-    const dateCell = row.cells[2]?.innerText.trim();
-    const dept = row.cells[7]?.innerText.toLowerCase();
+    const dateCell = row.cells[3]?.innerText.trim();
+    const deptCell = row.cells[8]?.innerText.toLowerCase().trim();
     
-    const textMatch = row.innerText.toLowerCase().includes(keyword);
-    const deptMatch = selectedDept === "" || dept === selectedDept;
+    const textMatch = keyword === "" || row.innerText.toLowerCase().includes(keyword);
+    const deptMatch = selectedDept === "" || deptCell === selectedDept;
     
     let dateMatch = true;
     if (fromDate || toDate) {
       const rowDate = new Date(dateCell);
       const from = fromDate ? new Date(fromDate) : null;
       const to = toDate ? new Date(toDate) : null;
-      if (from && rowDate < from) dateMatch = false;
-      if (to && rowDate > to) dateMatch = false;
+      
+      if (!isNaN(rowDate.getTime())) {
+        if (from && rowDate < from) dateMatch = false;
+        if (to && rowDate > to) dateMatch = false;
+      }
     }
     
     row.style.display = (textMatch && dateMatch && deptMatch) ? '' : 'none';
@@ -575,6 +579,7 @@ function downloadExcel() {
   const table = document.getElementById('dataTable');
   let csv = [];
   const rows = table.querySelectorAll('tr');
+  
   rows.forEach(row => {
     if (row.style.display !== 'none') {
       let cols = row.querySelectorAll('th, td');
@@ -582,7 +587,7 @@ function downloadExcel() {
       cols.forEach(cell => {
         let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
         
-        if (window.innerWidth <= 1200 && cell.tagName === 'TD') {
+        if (window.innerWidth <= 1024 && cell.tagName === 'TD') {
           const labelText = cell.getAttribute('data-label') || '';
           if (text.startsWith(labelText)) {
             text = text.substring(labelText.length).trim();
@@ -596,6 +601,7 @@ function downloadExcel() {
       csv.push(rowData.join(','));
     }
   });
+  
   const csvString = csv.join('\n');
   const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');

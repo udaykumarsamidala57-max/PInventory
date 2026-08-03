@@ -10,6 +10,7 @@
     String user  = (String) sess.getAttribute("username");
     String role  = (String) sess.getAttribute("role");
     String dept  = (String) sess.getAttribute("department");
+    String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -195,7 +196,7 @@ Map<String, Double> dayWise = new LinkedHashMap<>();
 Map<String, Map<String, Double>> sessionWise = new LinkedHashMap<>();
 
 try {
-    con = DBUtil.getConnection();
+    con = DBUtil.getConnection(branch);
     Statement st = con.createStatement();
 
     ResultSet rs = st.executeQuery("SELECT SUM(total_value) FROM dining_hall_consumption WHERE DATE(issue_date)=CURDATE()");

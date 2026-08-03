@@ -2,6 +2,18 @@
 <%@ page import="java.util.*" %>
 <%@ page import ="com.bean.DBUtil" %>
 <%
+
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+
+String user = (String) sess.getAttribute("username");
+String role = (String) sess.getAttribute("role");
+String deptss = (String) sess.getAttribute("department");
+String branch = (String) sess.getAttribute("branch");
+
 Connection con = null;
 PreparedStatement psMaster = null;
 PreparedStatement psItems = null;
@@ -9,7 +21,7 @@ ResultSet rsMaster = null;
 ResultSet rsItems = null;
 
 try {
-    con = DBUtil.getConnection();
+    con = DBUtil.getConnection(branch);
 
     String masterSql =
             "SELECT * FROM (" +

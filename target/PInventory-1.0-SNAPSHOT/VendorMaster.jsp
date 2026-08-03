@@ -19,7 +19,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vendor Master | Salesforce</title>
+<title>Vendor Master </title>
 <style>
     /* Salesforce SLDS Core Variables & Base Styling */
     :root {
@@ -366,7 +366,7 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0176D3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         Vendor Master
       </h2>
-      <p class="slds-page-header__subtitle">Manage accounts, GSTIN profiles, and contact channels</p>
+      <p class="slds-page-header__subtitle">Manage Vendors</p>
     </div>
     <div style="display: flex; gap: 10px; align-items: center;">
       <input type="text" id="searchInput" class="slds-search-input" placeholder="Search vendors...">

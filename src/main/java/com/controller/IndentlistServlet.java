@@ -93,6 +93,7 @@ public class IndentlistServlet extends HttpServlet {
                         ind.setApprovedBy(rs.getString("IstausApprove"));
                         ind.setStatus(rs.getString("status"));
                         ind.setIndentNext(rs.getString("Indentnext"));
+                        ind.setPurchaseorIssue(rs.getString("PurchaseorIssue"));
 
                         // Approval Dates
                         try {

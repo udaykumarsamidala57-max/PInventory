@@ -447,6 +447,7 @@ h1 {
           <tr>
             <th onclick="sortTable(0)">ID <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(1)">Indent No <i class="fa fa-sort"></i></th>
+            <th>Purchase/ Issue</th>
             <th onclick="sortTable(2)">Date <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(3)">Item <i class="fa fa-sort"></i></th>
             <th onclick="sortTable(4)">Avail. Qty <i class="fa fa-sort"></i></th>
@@ -477,6 +478,7 @@ h1 {
           <tr class="data-row">
             <td data-label="ID"><%= ind.getId() %></td>
             <td data-label="Indent No"><%= ind.getIndentNo() %></td>
+            <td data-label="Indent No"><%= ind.getPurchaseorIssue()%></td>
             <td data-label="Date"><%= ind.getDate() %></td>
             <td data-label="Item"><%= ind.getItemName() %></td>
             <td data-label="Avail. Qty" style="color:#FA6D16"><b><%= ind.getBalanceQty() %></b></td>
