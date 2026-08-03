@@ -32,74 +32,74 @@ body {
     font-family: 'Poppins', 'Segoe UI', sans-serif;
     background-color: #f3f3f3;
     margin: 0;
-    padding: 15px 0;
+    padding: 20px 0;
     color: #181818;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* Scaled Container optimized for A5 proportions */
+/* Container optimized for standard A4 portrait width */
 .container {
     width: 100%;
-    max-width: 148mm;
+    max-width: 210mm;
     margin: 0 auto;
     background: #ffffff;
-    padding: 18px 20px;
+    padding: 25px 30px;
     border-radius: 6px;
     border: 1px solid #c9c9c9;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 /* Header Banner */
 .header {
     text-align: center;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .header img {
-    max-height: 65px;
+    max-height: 85px;
     width: auto;
     display: block;
-    margin: 0 auto 6px auto;
+    margin: 0 auto 8px auto;
 }
 
 .document-title {
     text-align: center;
     color: #0176d3;
-    margin: 8px 0 12px 0;
-    font-size: 14px;
+    margin: 12px 0 16px 0;
+    font-size: 16px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
-    border-top: 1.5px solid #0176d3;
-    border-bottom: 1.5px solid #0176d3;
-    padding: 4px 0;
+    letter-spacing: 0.8px;
+    border-top: 2px solid #0176d3;
+    border-bottom: 2px solid #0176d3;
+    padding: 6px 0;
 }
 
 /* Metadata Grid */
 .indent-info {
-    margin: 10px 0 15px 0;
+    margin: 12px 0 20px 0;
     background: #fafaf9;
     border-radius: 4px;
-    padding: 10px 12px;
+    padding: 12px 16px;
     border: 1px solid #e5e5e5;
-    border-left: 3px solid #0176d3;
+    border-left: 4px solid #0176d3;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 6px 12px;
+    gap: 8px 20px;
 }
 
 .indent-info .info-item {
     display: flex;
-    font-size: 11px;
-    line-height: 1.3;
+    font-size: 12.5px;
+    line-height: 1.4;
 }
 
 .indent-info .info-label {
     font-weight: 700;
     color: #514f4d;
-    min-width: 90px;
+    min-width: 110px;
     text-transform: uppercase;
-    font-size: 9.5px;
+    font-size: 11px;
     letter-spacing: 0.4px;
 }
 
@@ -115,12 +115,12 @@ body {
 /* Type Status Badges */
 .badge-type {
     display: inline-block;
-    padding: 1px 6px;
-    font-size: 9.5px;
+    padding: 2px 8px;
+    font-size: 10.5px;
     font-weight: 700;
-    border-radius: 10px;
+    border-radius: 12px;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: 0.4px;
 }
 
 .badge-type-purchase {
@@ -135,37 +135,37 @@ body {
     border: 1px solid #a3d9b1;
 }
 
-/* Compact Report Table */
+/* Report Table */
 .table-container {
     width: 100%;
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
     background: #fff;
-    font-size: 10.5px;
+    font-size: 12px;
 }
 
 th {
     background: #fafaf9;
     color: #514f4d;
-    padding: 6px 4px;
+    padding: 8px 6px;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.2px;
+    letter-spacing: 0.3px;
     border-top: 1px solid #c9c9c9;
     border-bottom: 2px solid #c9c9c9;
     border-left: 1px solid #e5e5e5;
     border-right: 1px solid #e5e5e5;
-    font-size: 9px;
+    font-size: 11px;
     text-align: center;
 }
 
 td {
     border: 1px solid #e5e5e5;
-    padding: 5px 4px;
+    padding: 8px 6px;
     text-align: center;
     color: #181818;
     vertical-align: middle;
@@ -177,27 +177,27 @@ tr:nth-child(even) {
 
 /* Footer & Signature Structure */
 .signature-section {
-    margin-top: 25px;
+    margin-top: 40px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
 }
 
 .stamp-box {
-    min-width: 100px;
+    min-width: 120px;
 }
 
 .stamp {
     display: inline-block;
-    padding: 4px 10px;
-    border: 1.5px dashed #2e844a;
+    padding: 6px 14px;
+    border: 2px dashed #2e844a;
     color: #2e844a;
     font-weight: 700;
-    font-size: 13px;
+    font-size: 14px;
     text-transform: uppercase;
     border-radius: 4px;
     transform: rotate(-5deg);
-    letter-spacing: 0.8px;
+    letter-spacing: 1px;
 }
 
 .sign-box {
@@ -207,41 +207,41 @@ tr:nth-child(even) {
 
 .sign-box .company-name {
     font-weight: 700;
-    font-size: 10.5px;
+    font-size: 12px;
     color: #514f4d;
-    margin-bottom: 35px;
+    margin-bottom: 45px;
 }
 
 .sign-box .sign-title {
     font-weight: 600;
-    font-size: 10.5px;
+    font-size: 12px;
     border-top: 1px solid #181818;
-    padding-top: 2px;
+    padding-top: 4px;
     display: inline-block;
 }
 
 /* Action Controls */
 .action-bar {
-    margin-top: 20px;
+    margin-top: 25px;
     display: flex;
     justify-content: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .btn {
-    height: 32px;
-    padding: 0 16px;
+    height: 36px;
+    padding: 0 20px;
     border: 1px solid #0176d3;
     background: #0176d3;
     color: white;
     border-radius: 4px;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 5px;
+    gap: 6px;
     transition: background-color 0.15s ease;
 }
 
@@ -250,16 +250,16 @@ tr:nth-child(even) {
     border-color: #015a9e;
 }
 
-/* Strict A5 Portrait Print Styles */
+/* Strict A4 Portrait Print Styles */
 @page {
-    size: A5 portrait;
-    margin: 8mm;
+    size: A4 portrait;
+    margin: 12mm;
 }
 
 @media print {
     html, body {
-        width: 148mm;
-        height: 210mm;
+        width: 210mm;
+        height: 297mm;
         background-color: #ffffff;
         padding: 0;
         margin: 0;
@@ -276,7 +276,7 @@ tr:nth-child(even) {
         display: none !important;
     }
     .header img {
-        max-height: 55px;
+        max-height: 75px;
     }
     th {
         background-color: #f3f3f3 !important;
@@ -382,12 +382,12 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
         <table>
             <thead>
                 <tr>
-                    <th style="width: 8%;">S.No</th>
-                    <th style="width: 36%;">Item Name</th>
+                    <th style="width: 6%;">S.No</th>
+                    <th style="width: 40%;">Item Name</th>
                     <th style="width: 10%;">UOM</th>
                     <th style="width: 14%;">Bal Qty</th>
                     <th style="width: 14%;">Req Qty</th>
-                    <th style="width: 18%;">Status</th>
+                    <th style="width: 16%;">Status</th>
                 </tr>
             </thead>
             <tbody>
@@ -441,7 +441,7 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
 
 <%
         } else {
-            out.println("<div style='text-align:center; padding:20px 0; color:#c23934; font-weight:600; font-size:11px;'>No record found for this indent number.</div>");
+            out.println("<div style='text-align:center; padding:20px 0; color:#c23934; font-weight:600; font-size:12px;'>No record found for this indent number.</div>");
         }
 
         rs.close();
@@ -449,11 +449,11 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
         con.close();
 
     } catch (Exception e) {
-        out.println("<div style='text-align:center; padding:15px; color:#c23934; font-size:11px;'>Error rendering report: " + e.getMessage() + "</div>");
+        out.println("<div style='text-align:center; padding:15px; color:#c23934; font-size:12px;'>Error rendering report: " + e.getMessage() + "</div>");
         e.printStackTrace();
     }
 } else {
-    out.println("<div style='text-align:center; padding:20px 0; color:#c23934; font-weight:600; font-size:11px;'>Invalid or missing Indent Number parameter.</div>");
+    out.println("<div style='text-align:center; padding:20px 0; color:#c23934; font-weight:600; font-size:12px;'>Invalid or missing Indent Number parameter.</div>");
 }
 %>
 
