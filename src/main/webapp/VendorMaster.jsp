@@ -8,6 +8,7 @@
     }
     String role = (String) sess.getAttribute("role");
     String dept = (String) sess.getAttribute("department");
+    String branch = (String) sess.getAttribute("branch");
     if (!"Global".equalsIgnoreCase(role) && !"Finance".equalsIgnoreCase(dept)) {
         out.println("<h3 style='color:red;text-align:center;margin-top:100px;'>Access Denied! You are not authorized.</h3>");
         return;
@@ -191,7 +192,7 @@ a.action-link:hover {
   <%
   Connection con = null;
   try {
-      con = DBUtil.getConnection();
+      con = DBUtil.getConnection(branch);
 
      
       if (request.getParameter("add") != null) {
