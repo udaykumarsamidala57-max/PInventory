@@ -387,7 +387,9 @@ if (indentNumber != null && !indentNumber.trim().isEmpty()) {
                     <th style="width: 6%;">S.No</th>
                     <th style="width: 40%;">Item Name</th>
                     <th style="width: 10%;">UOM</th>
+                    <% if ("Issue".equalsIgnoreCase(PurchaseorIssue)) { %>
                     <th style="width: 14%;">Bal Qty</th>
+                    <% } %>
                     <th style="width: 14%;">Req Qty</th>
                     <th style="width: 16%;">Status</th>
                 </tr>
