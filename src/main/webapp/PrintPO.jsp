@@ -11,6 +11,7 @@
     }
 
     String poNumber = request.getParameter("poNumber");
+    String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
 <html>
@@ -124,7 +125,7 @@
 
 <%
 if (poNumber != null && !poNumber.trim().isEmpty()) {
-    try (Connection con = DBUtil.getConnection()) {
+    try (Connection con = DBUtil.getConnection(branch)) {
 
        
         PreparedStatement pst = con.prepareStatement(
