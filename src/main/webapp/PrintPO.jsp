@@ -14,120 +14,341 @@
     String branch = (String) sess.getAttribute("branch");
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Purchase Order - Sandur Residential School</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        body {
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-            margin: 30px 60px;
-            background-color: #f9fbfd;
-            color: #1a1a1a;
-            line-height: 1.6;
+        * {
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Poppins', 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 30px 0;
+            background-color: #f3f3f3;
+            color: #181818;
+            line-height: 1.5;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 210mm;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 30px 35px;
+            border-radius: 6px;
+            border: 1px solid #c9c9c9;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* Header Banner */
         header {
             text-align: center;
-            border-bottom: 3px solid #003366;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
-        header img { height: 100px; }
-        header h6 { font-weight: normal; margin: 2px 0; color: #444; }
+
+        header img {
+            max-height: 80px;
+            width: auto;
+            display: block;
+            margin: 0 auto 8px auto;
+        }
+
         .contact-line {
             text-align: center;
-            font-size: 13px;
-            color: #555;
-            border-bottom: 1px dashed #aaa;
-            margin-bottom: 20px;
-            padding-bottom: 5px;
+            font-size: 11px;
+            color: #514f4d;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 8px;
+            margin-bottom: 16px;
+            font-weight: 500;
         }
-        h3 {
+
+        .document-title {
             text-align: center;
-            color: #003366;
+            color: #0176d3;
+            margin: 10px 0 20px 0;
+            font-size: 18px;
+            font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 0;
+            border-top: 2px solid #0176d3;
+            border-bottom: 2px solid #0176d3;
+            padding: 6px 0;
         }
-        table {
+
+        /* Metadata & Vendor Grid */
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .info-card {
+            background: #fafaf9;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            padding: 12px 16px;
+            font-size: 12px;
+        }
+
+        .info-card-header {
+            font-weight: 700;
+            color: #0176d3;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 4px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+        }
+
+        .info-label {
+            font-weight: 700;
+            color: #514f4d;
+            min-width: 100px;
+        }
+
+        .info-value {
+            color: #181818;
+            font-weight: 500;
+        }
+
+        .intro-text {
+            font-size: 12px;
+            color: #514f4d;
+            margin-bottom: 15px;
+            font-style: italic;
+        }
+
+        /* Items Table */
+        .table-container {
+            width: 100%;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+
+        table.items-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            font-size: 14px;
-            background: white;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-        }
-        th, td { border: 1px solid #ccc; padding: 8px 10px; }
-        thead {
-            background: linear-gradient(90deg, #003366, #00509e);
-            color: #fff;
-            text-align: center;
-            font-weight: 600;
-        }
-        td { text-align: left; }
-        .summary {
-            margin-top: 20px;
-            width: 40%;
-            float: right;
-            border: 1px solid #ccc;
             background: #fff;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+            font-size: 11.5px;
         }
-        .summary td { font-weight: 600; border: none; padding: 6px 10px; }
-        .summary tr td:first-child {
-            text-align: right;
-            width: 70%;
-            color: #003366;
+
+        table.items-table th {
+            background: #fafaf9;
+            color: #514f4d;
+            padding: 8px 6px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            border-top: 1px solid #c9c9c9;
+            border-bottom: 2px solid #c9c9c9;
+            border-left: 1px solid #e5e5e5;
+            border-right: 1px solid #e5e5e5;
+            font-size: 10px;
+            text-align: center;
         }
+
+        table.items-table td {
+            border: 1px solid #e5e5e5;
+            padding: 7px 6px;
+            color: #181818;
+            vertical-align: middle;
+        }
+
+        table.items-table tr:nth-child(even) {
+            background-color: #fafaf9;
+        }
+
+        /* Summary Panel */
+        .summary-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+        }
+
+        .summary-card {
+            width: 280px;
+            background: #fafaf9;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+            padding: 8px 12px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 4px 0;
+            color: #514f4d;
+        }
+
+        .summary-row.grand-total {
+            border-top: 2px solid #0176d3;
+            margin-top: 4px;
+            padding-top: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #0176d3;
+        }
+
+        /* Conditions Sections */
         .section-title {
+            margin-top: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #0176d3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #0176d3;
+            padding-bottom: 3px;
+            display: inline-block;
+        }
+
+        .condition-text {
+            font-size: 11.5px;
+            color: #181818;
+            margin: 6px 0 0 0;
+            white-space: pre-wrap;
+        }
+
+        /* Signature Section */
+        .signature-section {
             margin-top: 40px;
-            font-weight: bold;
-            color: #003366;
-            text-decoration: underline;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
         }
-        .signature {
-            clear: both;
-            text-align: right;
-            margin-top: 80px;
-            color: #000;
-            position: relative;
+
+        .stamp-box {
+            min-width: 120px;
         }
+
         .stamp {
             display: inline-block;
-            margin-top: 15px;
             padding: 6px 14px;
-            border: 2px solid #28a745;
-            color: #28a745;
-            font-weight: bold;
-            font-size: 20px;
+            border: 2px dashed #2e844a;
+            color: #2e844a;
+            font-weight: 700;
+            font-size: 14px;
             text-transform: uppercase;
-            border-radius: 6px;
-            transform: rotate(-8deg);
-            box-shadow: 2px 2px 6px rgba(0,0,0,0.2);
-            background: rgba(40,167,69,0.1);
+            border-radius: 4px;
+            transform: rotate(-5deg);
+            letter-spacing: 1px;
+            background: #eaf5ea;
         }
-        .print-btn {
-            display: block;
-            margin: 40px auto 20px;
-            padding: 10px 30px;
-            background: linear-gradient(90deg, #003366, #00509e);
+
+        .sign-box {
+            text-align: right;
+            color: #181818;
+        }
+
+        .sign-box .company-name {
+            font-weight: 700;
+            font-size: 12px;
+            color: #514f4d;
+            margin-bottom: 45px;
+        }
+
+        .sign-box .sign-title {
+            font-weight: 600;
+            font-size: 12px;
+            border-top: 1px solid #181818;
+            padding-top: 4px;
+            display: inline-block;
+        }
+
+        /* Controls */
+        .action-bar {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .btn {
+            height: 38px;
+            padding: 0 24px;
+            border: 1px solid #0176d3;
+            background: #0176d3;
             color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
+            border-radius: 4px;
             cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background-color 0.15s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .print-btn:hover { background: #001f4d; }
-        @media print { .print-btn { display: none !important; } }
+
+        .btn:hover {
+            background: #015a9e;
+            border-color: #015a9e;
+        }
+
+        /* Strict Printable Layout Setup */
+        @page {
+            size: A4 portrait;
+            margin: 12mm;
+        }
+
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0;
+                margin: 0;
+            }
+            .container {
+                width: 100%;
+                max-width: 100%;
+                border: none;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+            }
+            .action-bar {
+                display: none !important;
+            }
+            header img {
+                max-height: 75px;
+            }
+            th {
+                background-color: #fafaf9 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .stamp {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
     </style>
 </head>
 <body>
+
+<div class="container">
 
 <%
 if (poNumber != null && !poNumber.trim().isEmpty()) {
     try (Connection con = DBUtil.getConnection(branch)) {
 
-       
         PreparedStatement pst = con.prepareStatement(
             "SELECT po_number, PO_date AS po_date, vendor_name, vendor_address, vendor_gstin, " +
             "total_gst, total_dis, total_amount, terms_conditions, general_conditions, " +
@@ -141,7 +362,6 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
             String serviceCharge = rsPO.getString("Servicecharge");
             String approvalStatus = rsPO.getString("Approval");
 
-          
             PreparedStatement updateIndent = con.prepareStatement(
                 "UPDATE indent SET status = 'Approved' WHERE Indentnext = 'PO' AND status <> 'Approved'"
             );
@@ -150,39 +370,59 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
 
 <header>
     <img src="Header.png" alt="School Logo">
-    <h6>Website: <strong>www.sandurschool.edu.in</strong> | Email: <strong>srsadmin@sandurschool.com</strong> | Ph: 08395-260246</h6>
 </header>
 
-<div class="contact-line"></div>
-<h3>Purchase Order</h3>
+<div class="contact-line">
+    Website: <strong>www.sandurschool.edu.in</strong> &nbsp;|&nbsp; Email: <strong>srsadmin@sandurschool.com</strong> &nbsp;|&nbsp; Ph: <strong>08395-260246</strong>
+</div>
 
-<table>
-    <tr>
-    <%
-String poDate = rsPO.getString("po_date");
+<div class="document-title">Purchase Order</div>
 
-String formattedDate = "";
-if(poDate != null && !poDate.trim().isEmpty()){
-    formattedDate = LocalDate.parse(poDate)
-                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
-}
-%>
-        <td><b>PO Number:</b> <%= rsPO.getString("po_number") %><br>
-        <b>Date:</b> <%= formattedDate %></td>
-    </tr>
-    <tr>
-        <td>
-            <b>Vendor Name:</b> <%= rsPO.getString("vendor_name") %><br>
-            <b>GSTIN:</b> <%= rsPO.getString("vendor_gstin") %><br>
-            <b>Vendor Address:</b> <%= rsPO.getString("vendor_address") %>
-        </td>
-    </tr>
-</table>
+<div class="details-grid">
+    <div class="info-card">
+        <div class="info-card-header">Order Reference</div>
+        <%
+            String poDate = rsPO.getString("po_date");
+            String formattedDate = "-";
+            if(poDate != null && !poDate.trim().isEmpty()){
+                try {
+                    formattedDate = LocalDate.parse(poDate)
+                                    .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+                } catch(Exception ex) {
+                    formattedDate = poDate;
+                }
+            }
+        %>
+        <div class="info-row">
+            <span class="info-label">PO Number:</span>
+            <span class="info-value"><%= rsPO.getString("po_number") %></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Date:</span>
+            <span class="info-value"><%= formattedDate %></span>
+        </div>
+    </div>
 
-<p>We are pleased to place our order for the supply of the below items on the terms and conditions mentioned below:</p>
+    <div class="info-card">
+        <div class="info-card-header">Vendor Details</div>
+        <div class="info-row">
+            <span class="info-label">Vendor Name:</span>
+            <span class="info-value"><%= rsPO.getString("vendor_name") %></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">GSTIN:</span>
+            <span class="info-value"><%= rsPO.getString("vendor_gstin") != null ? rsPO.getString("vendor_gstin") : "-" %></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Address:</span>
+            <span class="info-value"><%= rsPO.getString("vendor_address") %></span>
+        </div>
+    </div>
+</div>
+
+<p class="intro-text">We are pleased to place our order for the supply of the below items on the terms and conditions mentioned below:</p>
 
 <%
-    
     PreparedStatement pstItems = con.prepareStatement(
         "SELECT i.description, i.qty, i.rate, i.amount, i.discount_percent, i.discount_value, " +
         "i.gst_percent, i.gst_value, i.net_amount, m.UOM " +
@@ -192,100 +432,108 @@ if(poDate != null && !poDate.trim().isEmpty()){
     ResultSet rsItems = pstItems.executeQuery();
 %>
 
-<table>
-    <thead>
-        <tr>
-            <th>Sl.No</th>
-            <th>Item Description</th>
-            <th>UOM</th>
-            <th>Qty</th>
-            <th>Rate</th>
-            <th>Amount</th>
-            <th>Disc %</th>
-            <th>Disc Value</th>
-            <th>GST %</th>
-            <th>GST Value</th>
-            <th>Net Amount</th>
-        </tr>
-    </thead>
-    <tbody>
-    <%
-        int sl = 1;
-        while (rsItems.next()) {
-    %>
-        <tr>
-            <td style="text-align:center;"><%= sl++ %></td>
-            <td><%= rsItems.getString("description") %></td>
-            <td style="text-align:center;"><%= rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-" %></td>
-            <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("qty")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("rate")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("amount")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_percent")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_value")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_percent")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_value")) %></td>
-			<td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("net_amount")) %></td>
-        </tr>
-    <%
-        }
-        rsItems.close();
-        pstItems.close();
-    %>
-    </tbody>
-</table>
-
-<table class="summary">
-    <tr>
-        <td>Total Discount:</td>
-        <td style="text-align:right;"><%= rsPO.getString("total_dis") %></td>
-    </tr>
-    <tr>
-        <td>Total GST:</td>
-        <td style="text-align:right;"><%= rsPO.getString("total_gst") %></td>
-    </tr>
-    <% if (serviceCharge != null && !serviceCharge.trim().equals("") && !serviceCharge.trim().equals("0")) { %>
-    <tr>
-        <td>Service Charges:</td>
-        <td style="text-align:right;"><%= serviceCharge %></td>
-    </tr>
-    <% } %>
-    <tr>
-        <td><b>Grand Total:</b></td>
-        <td style="text-align:right;"><b><%= rsPO.getString("total_amount") %></b></td>
-    </tr>
-</table>
-
-<div style="clear:both;"></div>
-
-<h4 class="section-title">Terms and Conditions</h4>
-<p><%= rsPO.getString("terms_conditions") %></p>
-
-<h4 class="section-title">General Conditions</h4>
-<p><%= rsPO.getString("general_conditions") %></p>
-
-<div class="signature">
-    <p><b>For Sandur Residential School</b></p>
-    <br><br><br>
-    <p><b>Authorized Signatory</b></p>
-
-    <% if ("Approved".equalsIgnoreCase(approvalStatus)) { %>
-        <p class="stamp">Approved</p>
-    <% } %>
+<div class="table-container">
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 5%;">Sl.No</th>
+                <th style="width: 25%;">Item Description</th>
+                <th style="width: 8%;">UOM</th>
+                <th style="width: 8%;">Qty</th>
+                <th style="width: 9%;">Rate</th>
+                <th style="width: 9%;">Amount</th>
+                <th style="width: 7%;">Disc %</th>
+                <th style="width: 9%;">Disc Val</th>
+                <th style="width: 6%;">GST %</th>
+                <th style="width: 8%;">GST Val</th>
+                <th style="width: 10%;">Net Amt</th>
+            </tr>
+        </thead>
+        <tbody>
+        <%
+            int sl = 1;
+            while (rsItems.next()) {
+        %>
+            <tr>
+                <td style="text-align:center;"><%= sl++ %></td>
+                <td style="text-align:left;"><%= rsItems.getString("description") %></td>
+                <td style="text-align:center;"><%= rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-" %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("qty")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("rate")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("amount")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_percent")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_value")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_percent")) %></td>
+                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_value")) %></td>
+                <td style="text-align:right; font-weight:600;"><%= String.format("%.2f", rsItems.getDouble("net_amount")) %></td>
+            </tr>
+        <%
+            }
+            rsItems.close();
+            pstItems.close();
+        %>
+        </tbody>
+    </table>
 </div>
 
+<div class="summary-wrapper">
+    <div class="summary-card">
+        <div class="summary-row">
+            <span>Total Discount:</span>
+            <span><%= rsPO.getString("total_dis") %></span>
+        </div>
+        <div class="summary-row">
+            <span>Total GST:</span>
+            <span><%= rsPO.getString("total_gst") %></span>
+        </div>
+        <% if (serviceCharge != null && !serviceCharge.trim().equals("") && !serviceCharge.trim().equals("0")) { %>
+        <div class="summary-row">
+            <span>Service Charges:</span>
+            <span><%= serviceCharge %></span>
+        </div>
+        <% } %>
+        <div class="summary-row grand-total">
+            <span>Grand Total:</span>
+            <span><%= rsPO.getString("total_amount") %></span>
+        </div>
+    </div>
+</div>
 
+<div class="section-title">Terms and Conditions</div>
+<p class="condition-text"><%= rsPO.getString("terms_conditions") %></p>
+
+<div class="section-title">General Conditions</div>
+<p class="condition-text"><%= rsPO.getString("general_conditions") %></p>
+
+<div class="signature-section">
+    <div class="stamp-box">
+        <% if ("Approved".equalsIgnoreCase(approvalStatus)) { %>
+            <div class="stamp">Approved</div>
+        <% } %>
+    </div>
+    <div class="sign-box">
+        <div class="company-name">For SANDUR RESIDENTIAL SCHOOL</div>
+        <div class="sign-title">Authorized Signatory</div>
+    </div>
+</div>
+
+<div class="action-bar">
+    <button class="btn" onclick="window.print()">
+        <i class="fa fa-print"></i> Print / Save as PDF
+    </button>
+</div>
 
 <%
         } else {
-            out.println("<p style='color:red;text-align:center;'>No Purchase Order Found!</p>");
+            out.println("<p style='color:#c23934; text-align:center; font-weight:600; padding:30px 0;'>No Purchase Order Found!</p>");
         }
     } catch (Exception e) {
-        out.println("<p style='color:red;'>Error: " + e.getMessage() + "</p>");
+        out.println("<p style='color:#c23934; font-size:12px; padding:15px;'>Error rendering document: " + e.getMessage() + "</p>");
     }
 }
 %>
 
-<button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+</div>
 
 </body>
 </html>
