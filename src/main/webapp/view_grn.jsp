@@ -617,7 +617,7 @@ function printGRN(grnNo){
         String vendor=grn.get("vendor_name")==null?"":grn.get("vendor_name").toString();
         String gstin=grn.get("vendor_gstin")==null?"":grn.get("vendor_gstin").toString();
         String address=grn.get("vendor_address")==null?"":grn.get("vendor_address").toString();
-        String poId=grn.get("po_id")==null?"":grn.get("po_id").toString();
+        String poNumber = grn.get("po_number")==null?"":grn.get("po_number").toString();
         String invoiceNo=grn.get("invoice_no")==null?"":grn.get("invoice_no").toString();
         String invoiceDate=grn.get("invoice_date")==null?"":grn.get("invoice_date").toString();
         String receivedBy=grn.get("received_by")==null?"":grn.get("received_by").toString();
@@ -625,7 +625,7 @@ function printGRN(grnNo){
         String status=grn.get("status")==null?"completed":grn.get("status").toString();
     %>
 
-    <div class="sap-object-container grn-card" data-grn="<%=grnNo%>" data-date="<%=grnDate%>" data-vendor="<%=vendor%>" data-gstin="<%=gstin%>" data-address="<%=address%>" data-po="<%=poId%>" data-invoice="<%=invoiceNo%>" data-invdate="<%=invoiceDate%>" data-receivedby="<%=receivedBy%>" data-remarks="<%=remarks%>">
+    <div class="sap-object-container grn-card" data-grn="<%=grnNo%>" data-date="<%=grnDate%>" data-vendor="<%=vendor%>" data-gstin="<%=gstin%>" data-address="<%=address%>" data-po="<%=poNumber%>" data-invoice="<%=invoiceNo%>" data-invdate="<%=invoiceDate%>" data-receivedby="<%=receivedBy%>" data-remarks="<%=remarks%>">
         
         <div class="sap-card-header">
             <div class="sap-card-header-left">
@@ -635,7 +635,7 @@ function printGRN(grnNo){
                     <%=status.substring(0,1).toUpperCase()+status.substring(1)%>
                 </span>
                 <div class="sap-subline-entity">
-                    <i class="fa fa-building" style="color: var(--sap-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO ID: <b><%=poId%></b>
+                    <i class="fa fa-building" style="color: var(--sap-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO Number: <b><%=poNumber%></b>
                 </div>
             </div>
             <div class="sap-card-header-actions">

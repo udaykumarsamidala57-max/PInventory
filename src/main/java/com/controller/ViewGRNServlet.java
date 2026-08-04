@@ -30,7 +30,7 @@ public class ViewGRNServlet extends HttpServlet {
         // FIXED: Removed m.status to prevent database schema errors
         String unifiedQuery = 
             "SELECT m.grn_id, m.grn_no, m.grn_date, m.vendor_name, m.vendor_gstin, m.vendor_address, " +
-            "       m.po_id, m.invoice_no, m.invoice_date, m.received_by, m.remarks AS master_remarks, " +
+            "       m.po_number, m.invoice_no, m.invoice_date, m.received_by, m.remarks AS master_remarks, " +
             "       i.item_description, i.qty_received, i.qty_accepted, i.qty_rejected, i.remarks AS item_remarks, " +
             "       p.qty AS qty_ordered " +
             "FROM grn_master m " +
@@ -54,7 +54,7 @@ public class ViewGRNServlet extends HttpServlet {
                     master.put("vendor_name", rs.getString("vendor_name"));
                     master.put("vendor_gstin", rs.getString("vendor_gstin"));
                     master.put("vendor_address", rs.getString("vendor_address"));
-                    master.put("po_id", rs.getString("po_id")); // Kept safe for numeric or alphanumeric IDs
+                    master.put("po_number", rs.getString("po_number")); // Kept safe for numeric or alphanumeric IDs
                     master.put("invoice_no", rs.getString("invoice_no"));
                     master.put("invoice_date", rs.getDate("invoice_date"));
                     master.put("received_by", rs.getString("received_by"));

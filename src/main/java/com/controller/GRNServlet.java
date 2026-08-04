@@ -68,22 +68,39 @@ public class GRNServlet extends HttpServlet {
             }
 
             // --- Fetch PO items ---
+         // --- Fetch PO items ---
             List<GRNItem> itemList = new ArrayList<>();
+
             try (PreparedStatement psItems = con.prepareStatement(
                 "SELECT pi.po_item_id, pi.item_id, im.item_name, pi.qty " +
                 "FROM po_items pi " +
                 "JOIN item_master im ON pi.item_id = im.item_id " +
                 "WHERE pi.po_id=?")) {
+
                 psItems.setInt(1, poId);
+
                 try (ResultSet rsItems = psItems.executeQuery()) {
+
                     while (rsItems.next()) {
-                        GRNItem item = new GRNItem();
+
                         int poItemId = rsItems.getInt("po_item_id");
+                        double orderedQty = rsItems.getDouble("qty");
+                        double receivedQty = receivedMap.containsKey(poItemId)
+                                ? receivedMap.get(poItemId)
+                                : 0.0;
+
+                        // Skip fully received items
+                        if (Double.compare(orderedQty, receivedQty) == 0) {
+                            continue;
+                        }
+
+                        GRNItem item = new GRNItem();
                         item.setPoItemId(poItemId);
                         item.setItemId(rsItems.getInt("item_id"));
                         item.setDescription(rsItems.getString("item_name"));
-                        item.setOrderedQty(rsItems.getDouble("qty"));
-                        item.setAlreadyReceived(receivedMap.getOrDefault(poItemId, 0.0));
+                        item.setOrderedQty(orderedQty);
+                        item.setAlreadyReceived(receivedQty);
+
                         itemList.add(item);
                     }
                 }
@@ -135,12 +152,13 @@ public class GRNServlet extends HttpServlet {
             int poId = 0;
             String vendorName = "";
             try (PreparedStatement psPO = con.prepareStatement(
-                "SELECT po_id, vendor_name FROM po_master WHERE po_number=?")) {
+                "SELECT po_id,po_number, vendor_name FROM po_master WHERE po_number=?")) {
                 psPO.setString(1, poNumber);
                 try (ResultSet rsPO = psPO.executeQuery()) {
                     if (rsPO.next()) {
                         poId = rsPO.getInt("po_id");
                         vendorName = rsPO.getString("vendor_name");
+                        poNumber = rsPO.getString("po_number");
                     } else {
                         throw new SQLException("PO not found for number: " + poNumber);
                     }
@@ -190,17 +208,20 @@ public class GRNServlet extends HttpServlet {
             String grnNo = "GRN" + System.currentTimeMillis();
             int grnId;
             try (PreparedStatement psMaster = con.prepareStatement(
-                "INSERT INTO grn_master(grn_no,grn_date,po_id,vendor_name," +
-                "invoice_no,invoice_date,received_by,created_at) VALUES(?,CURDATE(),?,?,?,?,?,NOW())",
+            		"INSERT INTO grn_master(grn_no,grn_date,po_id,po_number,vendor_name," +
+            				"invoice_no,invoice_date,received_by,created_at) VALUES(?,CURDATE(),?,?,?,?,?,?,NOW())",
                 Statement.RETURN_GENERATED_KEYS)) {
 
-                psMaster.setString(1, grnNo);
-                psMaster.setInt(2, poId);
-                psMaster.setString(3, vendorName);
-                psMaster.setString(4, invoiceNo);
-                psMaster.setString(5, invoiceDate);
-                psMaster.setString(6, receivedBy);
-                psMaster.executeUpdate();
+            	psMaster.setString(1, grnNo);
+            	psMaster.setInt(2, poId);          
+            	psMaster.setString(3, poNumber);  
+            	psMaster.setString(4, vendorName);
+            	psMaster.setString(5, invoiceNo);
+            	psMaster.setString(6, invoiceDate);
+            	psMaster.setString(7, receivedBy);
+            	
+            	psMaster.executeUpdate();   
+
 
                 try (ResultSet rsKeys = psMaster.getGeneratedKeys()) {
                     if (rsKeys.next()) {
