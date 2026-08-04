@@ -436,8 +436,8 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 .urgent-item:last-child { margin-bottom: 0; }
 .req-no { font-size: 12.5px; font-weight: 600; color: #080707; }
-.req-location { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
-.req-desc { font-size: 12px; color: #3e3e3e; margin-top: 6px; line-height: 1.5; }
+.req-location { font-size: 11.5px; font-weight: 700; color: #008C34; margin-top: 4px; }
+.req-desc { font-size: 12px;font-weight: 700; color: #3e3e3e; margin-top: 6px; line-height: 1.5; }
 
 /* --- Minimal Fluid Layout System Footer --- */
 footer { 
@@ -686,7 +686,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
                         <div class="req-no">Ticket ID: <%= row[0] %></div>
                         <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
                         <div class="req-desc"><%= row[2] %></div>
-                        <div class="req-location" style="margin-top:8px; color:var(--color-danger); font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
+                        <div class="req-location" style="margin-top:8px; color:#03349E; font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
                     </div>
                 <% } %>
             </div>
