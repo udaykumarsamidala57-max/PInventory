@@ -12,6 +12,7 @@
     String users = (String) sesso.getAttribute("username");
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
+    String branches = (String) sesso.getAttribute("branch");
 
     SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
@@ -258,14 +259,14 @@ header {
 }
 
 .header-brand-title { 
-    color: #080707; 
+    color: #090136; 
     font-weight: 900; 
     font-size: 24px; 
     padding-left: 14px; 
 }
 .header-brand-title span {
-    color: var(--accent-primary);
-    font-weight: 1200;
+    color: #FC5005;
+    font-weight: 900;
     margin-left: 4px;
 }
 
@@ -450,7 +451,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fa-solid fa-layer-group"></i> SRS Workspace</h2>
+  <h2><i class="fa-solid fa-layer-group"></i> <%= branches.toUpperCase() %> Workspace</h2>
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory Platform</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
@@ -624,7 +625,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="header-brand-title">SRS |<span>OFFICE CENTRAL ERP</span></div>
+    <div class="header-brand-title"><%= branches.toUpperCase() %>|<span>OFFICE CENTRAL ERP</span></div>
   </div>
 
   <div class="user-info-card">
