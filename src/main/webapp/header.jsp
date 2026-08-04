@@ -48,11 +48,10 @@ try{
     consa = DBUtil5.getConnection();
 
     String sql =
-        "SELECT request_no, location, description, requested_by " +
-        "FROM service_requests " +
-        "WHERE UPPER(priority)='URGENT' " +
-        "AND (status IS NULL OR status NOT IN ('Closed','Completed')) " +
-        "ORDER BY id DESC";
+    	    "SELECT request_no, location, description, requested_by " +
+    	    "FROM service_requests " +
+    	    "WHERE (status IS NULL OR UPPER(status) NOT IN ('CLOSED','COMPLETED','SATISFIED')) " +
+    	    "ORDER BY id DESC";
 
     psaa = consa.prepareStatement(sql);
     rsaa = psaa.executeQuery();
@@ -677,11 +676,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
             <span class="urgent-header" onclick="toggleUrgentPopup()">
-                <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Urgent Action Alerts
+                <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Open Service Requests
             </span>
 
             <div class="urgent-popup" id="urgentPopup">
-                <div class="popup-title">Urgent Exceptions</div>
+                <div class="popup-title">Open Service Requests</div>
                 <% for(String[] row : urgentList){ %>
                     <div class="urgent-item">
                         <div class="req-no">Ticket ID: <%= row[0] %></div>
