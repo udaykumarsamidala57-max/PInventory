@@ -981,7 +981,26 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <% } %>  
 
 <div class="sidebar-label">Core Operations Desk</div>
-<a href="javascript:void(0);" onclick="openUrgentModal()"><i class="fa-solid fa-clock-rotate-left text-warning"></i> Request Pending <% if(urgentCount > 0){ %><span class="badge bg-danger ms-auto" style="font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; margin-left: 5px;"><%= urgentCount %></span><% } %></a>
+<div class="dropdown Service-menu">
+    <button class="dropdown-btn">
+        <i class="fa-solid fa-headset text-info"></i>
+        <span>Service Request</span>
+        <i class="fa-solid fa-caret-down"></i>
+    </button>
+    <div class="dropdown-content">
+      <% if ("Global".equalsIgnoreCase(roles) ) { %>
+        <a href="<%=request.getContextPath()%>/MasterServlet"><i class="fa-solid fa-network-wired text-danger"></i> Departments</a>
+      <% } %>
+      <a href="<%=request.getContextPath()%>/RequestBookingServlet"><i class="fa-solid fa-calendar-plus text-success"></i> Book a Request</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles)) { %>
+        <a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"><i class="fa-solid fa-user-plus text-info"></i> Assign Incharge</a>
+      <% } %>
+      <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
+      <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
+      <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
+      <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
+    </div>
+</div>
 
 <div class="sidebar-label">Academic Admissions</div>
 <div class="dropdown admission-menu">
@@ -1230,8 +1249,7 @@ function toggleUrgentPopup(){
 }
 
 function openUrgentModal(){
-    let popup = document.getElementById("urgentPopup");
-    if(popup) popup.style.display = "none";
+    document.getElementById("urgentPopup").style.display = "none";
     document.getElementById("urgentModal").classList.add("active");
 }
 
