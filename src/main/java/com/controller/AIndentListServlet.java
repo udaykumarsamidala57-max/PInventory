@@ -71,7 +71,7 @@ public class AIndentListServlet extends HttpServlet {
         // Department filtering
         if (!"Global".equalsIgnoreCase(role)) {
             if ("Admin".equalsIgnoreCase(role)) {
-                listSql.append("AND i.department IN ('Electrical','Housekeeping','Plumbing','Dining Hall','RO Plant','Store') ");
+                listSql.append("AND i.department IN ('Electrical','Housekeeping','Plumbing','Dining Hall','RO Plant','Store','Dhobi') ");
             } else {
                 listSql.append("AND i.department = ? ");
             }

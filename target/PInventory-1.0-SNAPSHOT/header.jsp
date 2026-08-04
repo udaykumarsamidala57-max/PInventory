@@ -12,8 +12,10 @@
     String users = (String) sesso.getAttribute("username");
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
+    String branches = (String) sesso.getAttribute("branch");
 
-    SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+    // Formats date with full day name in the header (e.g., Tuesday, 04 August 2026)
+    SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
     
     String initial = (users != null && !users.isEmpty()) ? users.substring(0,1).toUpperCase() : "?";
@@ -36,42 +38,73 @@
 
 <%
 int urgentCount = 0;
-List<String[]> urgentList = new ArrayList<>();
+// Map to group requests by Department Name -> List of requests
+Map<String, List<String[]>> urgentGroupedMap = new LinkedHashMap<>();
 
 Connection consa = null;
 PreparedStatement psaa = null;
 ResultSet rsaa = null;
 
-try{
+try {
     consa = DBUtil5.getConnection();
 
     String sql =
-        "SELECT request_no, location, description, requested_by " +
-        "FROM service_requests " +
-        "WHERE UPPER(priority)='URGENT' " +
-        "AND (status IS NULL OR status NOT IN ('Closed','Completed')) " +
-        "ORDER BY id DESC";
+        "SELECT sr.request_no, " +
+        "       COALESCE(d.department_name, 'General / Unassigned') AS department_name, " +
+        "       sr.location, " +
+        "       sr.description, " +
+        "       sr.requested_by " +
+        "FROM service_requests sr " +
+        "LEFT JOIN departments d ON sr.department_id = d.id " +
+        "WHERE (sr.status IS NULL OR UPPER(sr.status) NOT IN ('CLOSED','COMPLETED','SATISFIED')) " +
+        "ORDER BY d.department_name ASC, sr.id DESC";
 
     psaa = consa.prepareStatement(sql);
     rsaa = psaa.executeQuery();
 
-    while(rsaa.next()){
+    while (rsaa.next()) {
         urgentCount++;
-        String reqNo = rsaa.getString("request_no");
-        String location = rsaa.getString("location");
-        String description = rsaa.getString("description");
-        String requested_by = rsaa.getString("requested_by");
 
-        urgentList.add(new String[]{
-            reqNo, location, description, requested_by
-        });
+        String requestNo   = rsaa.getString("request_no");
+        String department  = rsaa.getString("department_name");
+        String location    = rsaa.getString("location");
+        String description = rsaa.getString("description");
+        String requestedBy = rsaa.getString("requested_by");
+
+        String[] requestData = new String[] {
+            requestNo,
+            department,
+            location,
+            description,
+            requestedBy
+        };
+
+        if (!urgentGroupedMap.containsKey(department)) {
+            urgentGroupedMap.put(department, new ArrayList<String[]>());
+        }
+        urgentGroupedMap.get(department).add(requestData);
     }
-}catch(Exception e){
+
+} catch (Exception e) {
     e.printStackTrace();
-}finally{
-    try{ if(rsaa != null) rsaa.close(); }catch(Exception e){}
-    try{ if(psaa != null) psaa.close(); }catch(Exception e){}
-    try{ if(consa != null) consa.close(); }catch(Exception e){}
+} finally {
+    try {
+        if (rsaa != null) rsaa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    try {
+        if (psaa != null) psaa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    try {
+        if (consa != null) consa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 }
 %>
 <!DOCTYPE html>
@@ -87,13 +120,16 @@ try{
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    /* Salesforce Lighting Design System Blue Palette */
+    /* Premium Salesforce Lightning Design System Palette */
     --bg-page: #f3f3f3;
-    --bg-sidebar: #1b2a47;
-    --bg-sidebar-hover: #223559;
+    --bg-sidebar: #032d60; /* Deep Salesforce Brand Navy */
+    --bg-sidebar-hover: #004487;
     --bg-sidebar-active: #0176d3;
+    
     --accent-primary: #0176d3;
-    --accent-gradient: linear-gradient(180deg, #018ed3, #0176d3);
+    --accent-dark: #032d60;
+    --accent-gradient: linear-gradient(135deg, #032d60 0%, #0176d3 100%);
+    --accent-gradient-hover: linear-gradient(135deg, #014486 0%, #018ed3 100%);
     
     --text-main: #181818;
     --text-muted: #5e5e5e;
@@ -110,14 +146,16 @@ try{
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
+    --radius-pill: 50px;
     
-    --shadow-sm: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 28px 0 rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 6px 16px rgba(3, 45, 96, 0.08);
+    --shadow-lg: 0 16px 36px rgba(3, 45, 96, 0.20);
+    --shadow-glow-danger: 0 4px 14px rgba(234, 0, 30, 0.25);
 }
 
 body { 
-    font-family: 'Salesforce Sans', 'Inter', sans-serif; 
+    font-family: 'Salesforce Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
     background-color: var(--bg-page); 
     color: var(--text-main); 
     transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -145,11 +183,11 @@ body.sidebar-collapsed {
     display: flex; 
     flex-direction: column; 
     padding: 24px 12px; 
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1); 
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12); 
     z-index: 1001; 
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
     overflow-y: auto; 
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar h2 { 
@@ -167,7 +205,7 @@ body.sidebar-collapsed {
 .sidebar-label {
     font-size: 11px;
     font-weight: 700;
-    color: #919191;
+    color: #8faac9;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     padding: 20px 12px 6px;
@@ -199,7 +237,7 @@ body.sidebar-collapsed {
 }
 
 .sidebar .dropdown.active .dropdown-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
     font-weight: 600;
 }
@@ -208,7 +246,7 @@ body.sidebar-collapsed {
     margin-left: auto;
     font-size: 11px;
     transition: transform 0.2s ease;
-    color: #919191;
+    color: #8faac9;
 }
 .dropdown.active .dropdown-btn i.fa-caret-down {
     transform: rotate(180deg);
@@ -218,7 +256,7 @@ body.sidebar-collapsed {
 .dropdown-content { 
     display: none; 
     flex-direction: column; 
-    background: rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.2);
     padding: 4px 0;
     margin: 2px 0 6px 0;
     border-radius: var(--radius-sm);
@@ -244,7 +282,7 @@ header {
     top: 0; 
     left: 260px; 
     right: 0; 
-    height: 60px; 
+    height: 70px; 
     background: #ffffff; 
     color: var(--text-main); 
     display: flex; 
@@ -255,18 +293,61 @@ header {
     z-index: 1000; 
     box-shadow: var(--shadow-sm); 
     transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    gap: 16px;
+}
+
+.header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .header-brand-title { 
-    color: #080707; 
-    font-weight: 900; 
-    font-size: 24px; 
-    padding-left: 14px; 
+    color: #FC5005; 
+    font-weight: 800; 
+    font-size: 18px; 
+    border-right: 1px solid var(--border-color);
+    padding-right: 16px;
+    line-height: 1;
 }
 .header-brand-title span {
-    color: var(--accent-primary);
-    font-weight: 1200;
+    color: var(--accent-dark);
+    font-weight: 800;
     margin-left: 4px;
+}
+
+.header-title-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-title-wrapper h6 {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.header-title-wrapper .adm-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #080707;
+    line-height: 1;
+}
+
+.header-center-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .toggle-btn { 
@@ -292,116 +373,457 @@ header {
     display: flex; 
     align-items: center; 
     gap: 10px;
+    border-left: 1px solid var(--border-color);
+    padding-left: 16px;
 }
 
 .user-initials { 
     width: 34px; 
     height: 34px; 
     border-radius: 50%; 
-    background: #5a6e85; 
+    background: var(--accent-dark); 
     color: white; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     font-weight: 700; 
     font-size: 13px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .user-meta { display: flex; flex-direction: column; }
 .user-meta .u-name { font-size: 13px; font-weight: 600; color: #080707; text-transform: capitalize; }
 .user-meta .u-role { font-size: 11px; color: var(--text-muted); text-transform: uppercase;}
 
-/* --- Modern Main Workspace Area --- */
-main { padding: 84px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+/* Modern Main Workspace Area */
+main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
 
-.adm-header {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    padding: 16px 24px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.adm-left h6 {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-}
-.adm-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #080707;
-}
-.adm-breadcrumb {
+/* Dynamic Live IST Clock Styling */
+.live-clock-badge {
+    color: var(--text-main);
     font-size: 12px;
+    font-weight: 600;
+    background: #eef4f9;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #c9deee;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+}
+.live-clock-badge .clock-time {
     color: var(--accent-primary);
-    margin-top: 2px;
+    font-weight: 700;
+    padding-left: 6px;
+    border-left: 1px solid #c9deee;
 }
 
-/* --- Salesforce Classic Style Exceptions System --- */
-.urgent-wrapper { position: relative; display: inline-block; }
+
+/* ==========================================================================
+   CLASSY, PROFESSIONAL & CONFIDENT POPUP & MODAL STYLING (SLDS EXECUTIVE)
+   ========================================================================== */
+
+.urgent-wrapper { 
+    position: relative; 
+    display: inline-block; 
+}
+
+/* Subtle, High-Executive Urgent Indicator Trigger */
 .urgent-header {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 8px 16px;
-    border-radius: var(--radius-sm);
-    background: #fff0f0;
-    border: 1px solid #fac7c7;
-    color: var(--color-danger);
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
     font-size: 12px;
     font-weight: 600;
-    transition: background 0.15s ease;
-}
-.urgent-header:hover {
-    background: #ffe5e5;
+    letter-spacing: 0.2px;
+    transition: all 0.2s ease;
+    user-select: none;
 }
 
+.urgent-header:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
+}
+
+/* Sleek Executive Dropdown Popup Container */
 .urgent-popup {
     display: none;
     position: absolute;
-    top: 45px;
+    top: calc(100% + 10px);
     right: 0;
-    width: 360px;
-    max-height: 400px;
-    overflow-y: auto;
+    width: 420px;
+    max-height: 520px;
     background: #ffffff;
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-lg);
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
     border: 1px solid var(--border-color);
     z-index: 9999;
-    padding: 16px;
+    overflow: hidden;
+    animation: popupSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@keyframes popupSlideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Crisp Clean Top Header Bar */
+.popup-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: #032d60;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.popup-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .popup-title {
     font-size: 12px;
     font-weight: 700;
-    color: #080707;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
+    color: #ffffff;
     text-transform: uppercase;
+    letter-spacing: 0.6px;
 }
-.urgent-item {
-    padding: 12px;
+
+.popup-action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-expand-btn {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 4px 10px;
     border-radius: var(--radius-sm);
-    background: #f9f9f9;
-    margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--color-danger);
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: all 0.15s ease;
+}
+
+.popup-expand-btn:hover {
+    background: #ffffff;
+    color: var(--accent-dark);
+    border-color: #ffffff;
+}
+
+.popup-body {
+    padding: 14px 16px;
+    max-height: 450px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+/* Custom Scrollbar */
+.popup-body::-webkit-scrollbar {
+    width: 5px;
+}
+.popup-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.popup-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.popup-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Department Group Card Header */
+.dept-group-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-dark);
+    background: #ffffff;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    margin: 14px 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--accent-primary);
+}
+.dept-group-header:first-of-type {
+    margin-top: 0;
+}
+
+.dept-badge-count {
+    background: #e2e8f0;
+    color: #334155;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+/* Clean Professional Card */
+.urgent-item {
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
+    background: #ffffff;
+    margin-bottom: 8px;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid #dc2626;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.15s ease;
 }
 .urgent-item:last-child { margin-bottom: 0; }
-.req-no { font-size: 12.5px; font-weight: 600; color: #080707; }
-.req-location { font-size: 11.5px; color: var(--text-muted); margin-top: 4px; }
-.req-desc { font-size: 12px; color: #3e3e3e; margin-top: 6px; line-height: 1.5; }
+.urgent-item:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
+    border-left-color: #dc2626;
+}
+
+.urgent-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.req-no { 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: #334155; 
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #e2e8f0;
+}
+
+.req-location { 
+    font-size: 11px; 
+    font-weight: 600; 
+    color: var(--color-success); 
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.req-desc { 
+    font-size: 12px; 
+    font-weight: 400; 
+    color: #334155; 
+    margin: 6px 0; 
+    line-height: 1.45; 
+    word-break: break-word;
+}
+
+.req-user {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #f1f5f9;
+}
+
+
+/* ==========================================================================
+   CLASSY SALESFORCE EXECUTIVE MODAL DASHBOARD
+   ========================================================================== */
+
+.urgent-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.65); /* Neutral Slate Dark Overlay */
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.urgent-modal-overlay.active {
+    display: flex;
+}
+
+.urgent-modal-content {
+    background: #ffffff;
+    width: 95%;
+    max-width: 1200px;
+    height: 86vh;
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--border-color);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.modal-header {
+    background: #032d60;
+    color: #ffffff;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h3 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #ffffff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background 0.15s ease;
+}
+.modal-close-btn:hover {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.modal-toolbar {
+    padding: 12px 24px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.modal-search-wrapper {
+    position: relative;
+}
+.modal-search-wrapper i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.modal-search-input {
+    padding: 8px 12px 8px 34px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    width: 300px;
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+.modal-search-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.12);
+    background: #ffffff;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px;
+    background: #ffffff;
+}
+
+/* Clean, Readable Data Table */
+.modal-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.modal-table th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.modal-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    text-align: left !important;
+    color: #1e293b;
+}
+
+.modal-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.modal-table tr:hover {
+    background-color: #f1f5f9;
+}
+
+.modal-table tr:last-child td {
+    border-bottom: none;
+}
+
+.badge-dept {
+    background: #f1f5f9;
+    color: var(--accent-dark);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 11px;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    display: inline-block;
+}
+
 
 /* --- Minimal Fluid Layout System Footer --- */
 footer { 
@@ -443,6 +865,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     .sidebar { transform: translateX(-100%); }
     body:not(.sidebar-collapsed) .sidebar { transform: translateX(0); }
     main { padding-left: 16px; padding-right: 16px; }
+    .urgent-popup { width: 340px; right: -60px; }
 }
 </style>
 </head>
@@ -450,7 +873,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fa-solid fa-layer-group"></i> SRS Workspace</h2>
+  <h2><i class="fa-solid fa-layer-group"></i> <%= branches.toUpperCase() %> Workspace</h2>
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory Platform</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
@@ -532,12 +955,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
       <a href="StockVerificationServlet">
-    <i class="fas fa-clipboard-check text-success"></i> New Audit
-</a>
-
-<a href="StockAuditReportServlet">
-    <i class="fas fa-chart-bar text-info"></i> Audit Report
-</a>
+        <i class="fas fa-clipboard-check text-success"></i> New Audit
+      </a>
+      <a href="StockAuditReportServlet">
+        <i class="fas fa-chart-bar text-info"></i> Audit Report
+      </a>
     </div>
   </div>
   <% } %>
@@ -577,8 +999,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
       <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
       <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
-      
-      
     </div>
 </div>
 
@@ -622,62 +1042,133 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </div>
 
 <header>
-  <div style="display: flex; align-items: center;">
+  <!-- Left Side: Toggle, Branding, and Page Title -->
+  <div class="header-left-group">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="header-brand-title">SRS |<span>OFFICE CENTRAL ERP</span></div>
+    <div class="header-brand-title"><%= branches.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
+    <div class="header-title-wrapper">
+      <h6>Overview</h6>
+      <div class="adm-title" id="admPageTitle">Dashboard</div>
+    </div>
   </div>
 
-  <div class="user-info-card">
-    <div class="user-initials"><%= initial %></div>
-    <div class="user-meta">
-      <span class="u-name"><%= users.toLowerCase() %></span>
-      <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
+  <!-- Center/Right Side: Live Clock, Urgent Alerts, User Profile -->
+  <div class="header-right-group">
+    <p class="live-clock-badge">
+        <span><i class="fa-regular fa-calendar text-primary" style="margin-right: 4px;"></i> <%= todayDate %></span>
+        <span class="clock-time"><i class="fa-regular fa-clock text-primary" style="margin-right: 4px;"></i> <span id="istClock">--:--:-- -- IST</span></span>
+    </p>
+
+    <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
+       <% if(urgentCount > 0){ %>
+        <div class="urgent-wrapper">
+            <span class="urgent-header" onclick="toggleUrgentPopup()">
+                <i class="fa-solid fa-triangle-exclamation"></i> <%= urgentCount %> Open Service Requests
+            </span>
+
+            <div class="urgent-popup" id="urgentPopup">
+                <div class="popup-header-bar">
+                    <div class="popup-title-group">
+                        <i class="fa-solid fa-bell text-danger"></i>
+                        <span class="popup-title">Open Requests</span>
+                    </div>
+                    <div class="popup-action-group">
+                        <button class="popup-expand-btn" onclick="openUrgentModal()"><i class="fa-solid fa-expand"></i> Expand</button>
+                    </div>
+                </div>
+                
+                <div class="popup-body">
+                    <%-- Categorized Display grouped by Department --%>
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                         String deptName = entry.getKey();
+                         List<String[]> deptRequests = entry.getValue();
+                    %>
+                        <div class="dept-group-header">
+                            <span><i class="fa-solid fa-building text-primary"></i> <%= deptName %></span>
+                            <span class="dept-badge-count"><%= deptRequests.size() %></span>
+                        </div>
+
+                        <% for(String[] row : deptRequests){ %>
+                            <div class="urgent-item">
+                                <div class="urgent-item-header">
+                                    <span class="req-no">#<%= row[0] %></span>
+                                    <span class="req-location"><i class="fa-solid fa-location-dot"></i> <%= row[2] != null ? row[2] : "N/A" %></span>
+                                </div>
+                                <div class="req-desc"><%= row[3] %></div>
+                                <div class="req-user"><i class="fa-solid fa-user-circle"></i> <%= row[4] %></div>
+                            </div>
+                        <% } %>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    <% } %>
+
+    <div class="user-info-card">
+      <div class="user-initials"><%= initial %></div>
+      <div class="user-meta">
+        <span class="u-name"><%= users.toLowerCase() %></span>
+        <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
+      </div>
     </div>
   </div>
 </header>
 
-<main>
-   <div class="adm-header">
-    <div class="adm-left">
-       
-        <div class="adm-title" id="admPageTitle">Dashboard</div>
-      
-    </div>
-    
-    <div style="display:flex; align-items:center; gap:16px;">
-        <p style="color:var(--text-main); font-size:12.5px; font-weight: 600; background: #eef4f9; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid #c9deee;">
-            <i class="fa-regular fa-calendar text-primary" style="margin-right: 6px;"></i> <%= todayDate %>
-        </p>
-
-        <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
-           <% if(urgentCount > 0){ %>
-            <div class="urgent-wrapper">
-                <span class="urgent-header" onclick="toggleUrgentPopup()">
-                    <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Urgent Action Alerts
-                </span>
-
-                <div class="urgent-popup" id="urgentPopup">
-                    <div class="popup-title">Urgent Exceptions</div>
-                    <% for(String[] row : urgentList){ %>
-                        <div class="urgent-item">
-                            <div class="req-no">Ticket ID: <%= row[0] %></div>
-                            <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
-                            <div class="req-desc"><%= row[2] %></div>
-                            <div class="req-location" style="margin-top:8px; color:var(--color-danger); font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
-                        </div>
-                    <% } %>
-                </div>
+<!-- Full Screen Expanded Modal for Urgent Requests -->
+<div class="urgent-modal-overlay" id="urgentModal">
+    <div class="urgent-modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-list-check text-primary"></i> Open Service Requests Monitor (<%= urgentCount %> Total)</h3>
+            <button class="modal-close-btn" onclick="closeUrgentModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-toolbar">
+            <div class="modal-search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="Search ticket, location, or requestor..." onkeyup="filterModalTable()">
             </div>
-            <% } %>
-        <% } %>
+        </div>
+        <div class="modal-body">
+            <table class="modal-table" id="modalRequestsTable">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Department</th>
+                        <th>Location / Zone</th>
+                        <th>Description</th>
+                        <th>Requestor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                         String deptName = entry.getKey();
+                         List<String[]> deptRequests = entry.getValue();
+                         for(String[] row : deptRequests){
+                    %>
+                        <tr>
+                            <td><strong class="text-primary"><%= row[0] %></strong></td>
+                            <td><span class="badge-dept"><%= deptName %></span></td>
+                            <td><i class="fa-solid fa-location-dot text-danger"></i> <%= row[2] != null ? row[2] : "N/A" %></td>
+                            <td style="max-width: 400px;"><%= row[3] %></td>
+                            <td><i class="fa-solid fa-user text-secondary"></i> <%= row[4] %></td>
+                        </tr>
+                    <%   } 
+                       } 
+                    %>
+                </tbody>
+            </table>
+        </div>
     </div>
-   </div>
+</div>
+
+<main>
+  <!-- Content area reserved for specific page forms/tables -->
 </main>
 
 <footer>
     <div class="footer-badge">
         <i class="fa-solid fa-code-branch text-primary"></i>
-        <span class="brand">SRS</span>
+        <span class="brand"><%= branches.toUpperCase() %></span>
         <span class="dot"></span>
         <span class="tagline">OFFICE CENTRAL ERP</span>
         <span class="dot"></span>
@@ -688,7 +1179,28 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </footer>
 
 <script>
+// --- Real-time IST Dynamic Moving Clock ---
+function updateISTClock() {
+    const clockElement = document.getElementById("istClock");
+    if (!clockElement) return;
+
+    const options = {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+
+    const formatter = new Intl.DateTimeFormat('en-IN', options);
+    clockElement.innerText = formatter.format(new Date()).toUpperCase() + " IST";
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    // Initial call & ticking interval setup
+    updateISTClock();
+    setInterval(updateISTClock, 1000);
+
     let title = document.title;
     title = title.replace(" - SANPOLY", "").trim();
     if(document.getElementById("admPageTitle")) {
@@ -734,6 +1246,31 @@ toggleBtn.addEventListener('click', (e) => {
 function toggleUrgentPopup(){
     let popup = document.getElementById("urgentPopup");
     popup.style.display = (popup.style.display === "block") ? "none" : "block";
+}
+
+function openUrgentModal(){
+    document.getElementById("urgentPopup").style.display = "none";
+    document.getElementById("urgentModal").classList.add("active");
+}
+
+function closeUrgentModal(){
+    document.getElementById("urgentModal").classList.remove("active");
+}
+
+function filterModalTable() {
+    let input = document.getElementById("modalSearchInput");
+    let filter = input.value.toUpperCase();
+    let table = document.getElementById("modalRequestsTable");
+    let tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let tdText = tr[i].innerText;
+        if (tdText.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+        }
+    }
 }
 
 document.addEventListener("click", function(event){

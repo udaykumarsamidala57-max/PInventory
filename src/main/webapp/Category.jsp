@@ -11,6 +11,7 @@
 
     String role = (String) sess.getAttribute("role");
     String dept = (String) sess.getAttribute("department");
+    String branch = (String) sess.getAttribute("branch");
 
     
     if (!"Global".equalsIgnoreCase(role)) {
@@ -23,7 +24,7 @@
     ResultSet rs = null;
 
     try {
-        con = DBUtil.getConnection();
+        con = DBUtil.getConnection(branch);
     } catch (Exception e) {
         out.println("Database Connection Error: " + e);
     }

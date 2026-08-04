@@ -635,7 +635,7 @@ function printGRN(grnNo){
                     <%=status.substring(0,1).toUpperCase()+status.substring(1)%>
                 </span>
                 <div class="sap-subline-entity">
-                    <i class="fa fa-building" style="color: var(--sap-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO ID: <b><%=poNumber%></b>
+                    <i class="fa fa-building" style="color: var(--sap-text-muted);"></i> <%=vendor%> &nbsp;•&nbsp; PO Number: <b><%=poNumber%></b>
                 </div>
             </div>
             <div class="sap-card-header-actions">
