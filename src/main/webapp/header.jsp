@@ -14,7 +14,8 @@
     String depts = (String) sesso.getAttribute("department");
     String branches = (String) sesso.getAttribute("branch");
 
-    SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+    // Formats date with full day name in the header (e.g., Tuesday, 04 August 2026)
+    SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
     
     String initial = (users != null && !users.isEmpty()) ? users.substring(0,1).toUpperCase() : "?";
@@ -245,7 +246,7 @@ header {
     top: 0; 
     left: 260px; 
     right: 0; 
-    height: 60px; 
+    height: 70px; 
     background: #ffffff; 
     color: var(--text-main); 
     display: flex; 
@@ -256,18 +257,61 @@ header {
     z-index: 1000; 
     box-shadow: var(--shadow-sm); 
     transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    gap: 16px;
+}
+
+.header-left-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .header-brand-title { 
     color:#FC5005 ; 
     font-weight: 800; 
-    font-size: 22px; 
-    padding-left: 14px; 
+    font-size: 18px; 
+    border-right: 1px solid var(--border-color);
+    padding-right: 16px;
+    line-height: 1;
 }
 .header-brand-title span {
     color: #090136;
     font-weight: 800;
     margin-left: 4px;
+}
+
+.header-title-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-title-wrapper h6 {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+    margin-bottom: 3px;
+}
+
+.header-title-wrapper .adm-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #080707;
+    line-height: 1;
+}
+
+.header-center-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.header-right-group {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .toggle-btn { 
@@ -293,6 +337,8 @@ header {
     display: flex; 
     align-items: center; 
     gap: 10px;
+    border-left: 1px solid var(--border-color);
+    padding-left: 16px;
 }
 
 .user-initials { 
@@ -313,38 +359,28 @@ header {
 .user-meta .u-role { font-size: 11px; color: var(--text-muted); text-transform: uppercase;}
 
 /* --- Modern Main Workspace Area --- */
-main { padding: 84px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
 
-.adm-header {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    padding: 16px 24px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: var(--shadow-sm);
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.adm-left h6 {
-    font-size: 11px;
-    color: var(--text-muted);
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-}
-.adm-title {
-    font-size: 22px;
-    font-weight: 600;
-    color: #080707;
-}
-.adm-breadcrumb {
+/* Dynamic Live IST Clock Styling */
+.live-clock-badge {
+    color: var(--text-main);
     font-size: 12px;
+    font-weight: 600;
+    background: #eef4f9;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid #c9deee;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-variant-numeric: tabular-nums;
+    margin: 0;
+}
+.live-clock-badge .clock-time {
     color: var(--accent-primary);
-    margin-top: 2px;
+    font-weight: 700;
+    padding-left: 6px;
+    border-left: 1px solid #c9deee;
 }
 
 /* --- Salesforce Classic Style Exceptions System --- */
@@ -354,7 +390,7 @@ main { padding: 84px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 8px 16px;
+    padding: 6px 12px;
     border-radius: var(--radius-sm);
     background: #fff0f0;
     border: 1px solid #fac7c7;
@@ -533,12 +569,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
       <a href="StockVerificationServlet">
-    <i class="fas fa-clipboard-check text-success"></i> New Audit
-</a>
-
-<a href="StockAuditReportServlet">
-    <i class="fas fa-chart-bar text-info"></i> Audit Report
-</a>
+        <i class="fas fa-clipboard-check text-success"></i> New Audit
+      </a>
+      <a href="StockAuditReportServlet">
+        <i class="fas fa-chart-bar text-info"></i> Audit Report
+      </a>
     </div>
   </div>
   <% } %>
@@ -578,8 +613,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
       <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
       <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
-      
-      
     </div>
 </div>
 
@@ -623,56 +656,57 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </div>
 
 <header>
-  <div style="display: flex; align-items: center;">
+  <!-- Left Side: Toggle, Branding, and Page Title -->
+  <div class="header-left-group">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
     <div class="header-brand-title"><%= branches.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
+    <div class="header-title-wrapper">
+      <h6>Overview</h6>
+      <div class="adm-title" id="admPageTitle">Dashboard</div>
+    </div>
   </div>
 
-  <div class="user-info-card">
-    <div class="user-initials"><%= initial %></div>
-    <div class="user-meta">
-      <span class="u-name"><%= users.toLowerCase() %></span>
-      <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
+  <!-- Center/Right Side: Live Clock, Urgent Alerts, User Profile -->
+  <div class="header-right-group">
+    <p class="live-clock-badge">
+        <span><i class="fa-regular fa-calendar text-primary" style="margin-right: 4px;"></i> <%= todayDate %></span>
+        <span class="clock-time"><i class="fa-regular fa-clock text-primary" style="margin-right: 4px;"></i> <span id="istClock">--:--:-- -- IST</span></span>
+    </p>
+
+    <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
+       <% if(urgentCount > 0){ %>
+        <div class="urgent-wrapper">
+            <span class="urgent-header" onclick="toggleUrgentPopup()">
+                <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Urgent Action Alerts
+            </span>
+
+            <div class="urgent-popup" id="urgentPopup">
+                <div class="popup-title">Urgent Exceptions</div>
+                <% for(String[] row : urgentList){ %>
+                    <div class="urgent-item">
+                        <div class="req-no">Ticket ID: <%= row[0] %></div>
+                        <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
+                        <div class="req-desc"><%= row[2] %></div>
+                        <div class="req-location" style="margin-top:8px; color:var(--color-danger); font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+        <% } %>
+    <% } %>
+
+    <div class="user-info-card">
+      <div class="user-initials"><%= initial %></div>
+      <div class="user-meta">
+        <span class="u-name"><%= users.toLowerCase() %></span>
+        <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
+      </div>
     </div>
   </div>
 </header>
 
 <main>
-   <div class="adm-header">
-    <div class="adm-left">
-       
-        <div class="adm-title" id="admPageTitle">Dashboard</div>
-      
-    </div>
-    
-    <div style="display:flex; align-items:center; gap:16px;">
-        <p style="color:var(--text-main); font-size:12.5px; font-weight: 600; background: #eef4f9; padding: 8px 14px; border-radius: var(--radius-sm); border: 1px solid #c9deee;">
-            <i class="fa-regular fa-calendar text-primary" style="margin-right: 6px;"></i> <%= todayDate %>
-        </p>
-
-        <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
-           <% if(urgentCount > 0){ %>
-            <div class="urgent-wrapper">
-                <span class="urgent-header" onclick="toggleUrgentPopup()">
-                    <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Urgent Action Alerts
-                </span>
-
-                <div class="urgent-popup" id="urgentPopup">
-                    <div class="popup-title">Urgent Exceptions</div>
-                    <% for(String[] row : urgentList){ %>
-                        <div class="urgent-item">
-                            <div class="req-no">Ticket ID: <%= row[0] %></div>
-                            <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
-                            <div class="req-desc"><%= row[2] %></div>
-                            <div class="req-location" style="margin-top:8px; color:var(--color-danger); font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
-                        </div>
-                    <% } %>
-                </div>
-            </div>
-            <% } %>
-        <% } %>
-    </div>
-   </div>
+  <!-- Content area reserved for specific page forms/tables -->
 </main>
 
 <footer>
@@ -689,7 +723,28 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </footer>
 
 <script>
+// --- Real-time IST Dynamic Moving Clock ---
+function updateISTClock() {
+    const clockElement = document.getElementById("istClock");
+    if (!clockElement) return;
+
+    const options = {
+        timeZone: 'Asia/Kolkata',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+    };
+
+    const formatter = new Intl.DateTimeFormat('en-IN', options);
+    clockElement.innerText = formatter.format(new Date()).toUpperCase() + " IST";
+}
+
 document.addEventListener("DOMContentLoaded", function () {
+    // Initial call & ticking interval setup
+    updateISTClock();
+    setInterval(updateISTClock, 1000);
+
     let title = document.title;
     title = title.replace(" - SANPOLY", "").trim();
     if(document.getElementById("admPageTitle")) {
