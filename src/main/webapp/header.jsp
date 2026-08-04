@@ -259,14 +259,14 @@ header {
 }
 
 .header-brand-title { 
-    color: #090136; 
-    font-weight: 900; 
-    font-size: 24px; 
+    color:#FC5005 ; 
+    font-weight: 800; 
+    font-size: 22px; 
     padding-left: 14px; 
 }
 .header-brand-title span {
-    color: #FC5005;
-    font-weight: 900;
+    color: #090136;
+    font-weight: 800;
     margin-left: 4px;
 }
 
@@ -625,7 +625,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <header>
   <div style="display: flex; align-items: center;">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="header-brand-title"><%= branches.toUpperCase() %>|<span>OFFICE CENTRAL ERP</span></div>
+    <div class="header-brand-title"><%= branches.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
   </div>
 
   <div class="user-info-card">
@@ -678,7 +678,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <footer>
     <div class="footer-badge">
         <i class="fa-solid fa-code-branch text-primary"></i>
-        <span class="brand">SRS</span>
+        <span class="brand"><%= branches.toUpperCase() %></span>
         <span class="dot"></span>
         <span class="tagline">OFFICE CENTRAL ERP</span>
         <span class="dot"></span>
