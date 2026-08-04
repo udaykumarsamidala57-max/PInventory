@@ -422,7 +422,7 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 
 
 /* ==========================================================================
-   CLASSY & CONFIDENT SALESFORCE URGENT POPUP STYLING
+   CLASSY, PROFESSIONAL & CONFIDENT POPUP & MODAL STYLING (SLDS EXECUTIVE)
    ========================================================================== */
 
 .urgent-wrapper { 
@@ -430,78 +430,75 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     display: inline-block; 
 }
 
-/* Elegant SLDS Alert Trigger Pill */
+/* Subtle, High-Executive Urgent Indicator Trigger */
 .urgent-header {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 7px 16px;
+    padding: 6px 14px;
     border-radius: var(--radius-pill);
-    background: #fff0f0;
-    border: 1px solid #fca5a5;
-    color: var(--color-danger);
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
     font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    transition: all 0.2s ease;
     user-select: none;
-    box-shadow: 0 2px 6px rgba(234, 0, 30, 0.08);
 }
 
 .urgent-header:hover {
-    background: var(--color-danger);
-    color: #ffffff;
-    border-color: var(--color-danger);
-    box-shadow: var(--shadow-glow-danger);
-    transform: translateY(-1px);
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
 }
 
-/* Sleek Dropdown Popup Container */
+/* Sleek Executive Dropdown Popup Container */
 .urgent-popup {
     display: none;
     position: absolute;
-    top: calc(100% + 12px);
+    top: calc(100% + 10px);
     right: 0;
-    width: 440px;
-    max-height: 540px;
+    width: 420px;
+    max-height: 520px;
     background: #ffffff;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.04);
-    border: 1px solid #c9c9c9;
+    border-radius: var(--radius-md);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border-color);
     z-index: 9999;
     overflow: hidden;
-    animation: popupSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: popupSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes popupSlideDown {
-    from { opacity: 0; transform: translateY(-12px) scale(0.98); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Salesforce Branded Top Header Bar */
+/* Crisp Clean Top Header Bar */
 .popup-header-bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 14px 18px;
-    background: var(--accent-gradient);
+    background: #032d60;
     color: #ffffff;
-    border-bottom: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .popup-title-group {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .popup-title {
-    font-size: 13px;
-    font-weight: 800;
+    font-size: 12px;
+    font-weight: 700;
     color: #ffffff;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
 }
 
 .popup-action-group {
@@ -511,38 +508,36 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 
 .popup-expand-btn {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    padding: 5px 12px;
-    border-radius: var(--radius-pill);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
     font-size: 11px;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    backdrop-filter: blur(4px);
-    transition: all 0.2s ease;
+    gap: 5px;
+    transition: all 0.15s ease;
 }
 
 .popup-expand-btn:hover {
     background: #ffffff;
     color: var(--accent-dark);
     border-color: #ffffff;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .popup-body {
-    padding: 16px;
-    max-height: 460px;
+    padding: 14px 16px;
+    max-height: 450px;
     overflow-y: auto;
     background: #f8fafc;
 }
 
 /* Custom Scrollbar */
 .popup-body::-webkit-scrollbar {
-    width: 6px;
+    width: 5px;
 }
 .popup-body::-webkit-scrollbar-track {
     background: #f1f5f9;
@@ -558,71 +553,71 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 /* Department Group Card Header */
 .dept-group-header {
     font-size: 11px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--accent-dark);
-    background: #eef4f9;
+    background: #ffffff;
     padding: 8px 12px;
     border-radius: var(--radius-sm);
-    margin: 16px 0 10px 0;
+    margin: 14px 0 8px 0;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.6px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-left: 4px solid var(--accent-primary);
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--accent-primary);
 }
 .dept-group-header:first-of-type {
     margin-top: 0;
 }
 
 .dept-badge-count {
-    background: var(--accent-dark);
-    color: #ffffff;
+    background: #e2e8f0;
+    color: #334155;
     font-size: 10px;
-    padding: 2px 8px;
-    border-radius: 12px;
+    padding: 2px 7px;
+    border-radius: 10px;
     font-weight: 700;
 }
 
-/* Refined Elevated Card Styling */
+/* Clean Professional Card */
 .urgent-item {
-    padding: 14px;
-    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    border-radius: var(--radius-sm);
     background: #ffffff;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     border: 1px solid #e2e8f0;
-    border-left: 4px solid var(--color-danger);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border-left: 3px solid #dc2626;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.15s ease;
 }
 .urgent-item:last-child { margin-bottom: 0; }
 .urgent-item:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     border-color: #cbd5e1;
-    border-left-color: var(--color-danger);
+    border-left-color: #dc2626;
 }
 
 .urgent-item-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .req-no { 
-    font-size: 11.5px; 
-    font-weight: 800; 
-    color: #ffffff; 
-    background: var(--accent-dark);
-    padding: 3px 8px;
+    font-size: 11px; 
+    font-weight: 700; 
+    color: #334155; 
+    background: #f1f5f9;
+    padding: 2px 6px;
     border-radius: var(--radius-sm);
-    letter-spacing: 0.5px;
+    border: 1px solid #e2e8f0;
 }
 
 .req-location { 
-    font-size: 11.5px; 
-    font-weight: 700; 
+    font-size: 11px; 
+    font-weight: 600; 
     color: var(--color-success); 
     display: inline-flex;
     align-items: center;
@@ -630,11 +625,11 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 
 .req-desc { 
-    font-size: 12.5px; 
-    font-weight: 500; 
-    color: #1e293b; 
-    margin: 8px 0; 
-    line-height: 1.5; 
+    font-size: 12px; 
+    font-weight: 400; 
+    color: #334155; 
+    margin: 6px 0; 
+    line-height: 1.45; 
     word-break: break-word;
 }
 
@@ -645,14 +640,14 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px dashed #e2e8f0;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #f1f5f9;
 }
 
 
 /* ==========================================================================
-   FULL SCREEN SALESFORCE MODAL DASHBOARD STYLING
+   CLASSY SALESFORCE EXECUTIVE MODAL DASHBOARD
    ========================================================================== */
 
 .urgent-modal-overlay {
@@ -662,8 +657,8 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(3, 45, 96, 0.75); /* Deep Salesforce Navy Overlay */
-    backdrop-filter: blur(8px);
+    background: rgba(15, 23, 42, 0.65); /* Neutral Slate Dark Overlay */
+    backdrop-filter: blur(4px);
     z-index: 10000;
     align-items: center;
     justify-content: center;
@@ -676,66 +671,66 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 .urgent-modal-content {
     background: #ffffff;
     width: 95%;
-    max-width: 1240px;
-    height: 88vh;
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    max-width: 1200px;
+    height: 86vh;
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--border-color);
 }
 
 @keyframes modalFadeIn {
-    from { opacity: 0; transform: scale(0.96) translateY(10px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 .modal-header {
-    background: var(--accent-gradient);
+    background: #032d60;
     color: #ffffff;
-    padding: 20px 28px;
+    padding: 16px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 3px solid #014486;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .modal-header h3 {
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .modal-close-btn {
-    background: rgba(255, 255, 255, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
     color: #ffffff;
-    width: 34px;
-    height: 34px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 14px;
-    transition: all 0.2s ease;
+    font-size: 13px;
+    transition: background 0.15s ease;
 }
 .modal-close-btn:hover {
-    background: var(--color-danger);
-    border-color: var(--color-danger);
-    transform: rotate(90deg);
+    background: #dc2626;
+    color: #ffffff;
 }
 
 .modal-toolbar {
-    padding: 16px 28px;
+    padding: 12px 24px;
     background: #f8fafc;
     border-bottom: 1px solid var(--border-color);
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
 }
 
@@ -744,54 +739,54 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 .modal-search-wrapper i {
     position: absolute;
-    left: 14px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: var(--text-muted);
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .modal-search-input {
-    padding: 9px 14px 9px 38px;
+    padding: 8px 12px 8px 34px;
     border: 1px solid #cbd5e1;
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     font-size: 13px;
-    width: 320px;
+    width: 300px;
     outline: none;
-    transition: all 0.2s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 .modal-search-input:focus {
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.18);
+    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.12);
     background: #ffffff;
 }
 
 .modal-body {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 28px;
+    padding: 20px 24px;
     background: #ffffff;
 }
 
-/* Crisp Salesforce Data Table */
+/* Clean, Readable Data Table */
 .modal-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
     font-size: 13px;
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
+    border-radius: var(--radius-sm);
     overflow: hidden;
 }
 
 .modal-table th {
-    background: var(--accent-dark);
-    color: #ffffff;
+    background: #f8fafc;
+    color: #475569;
     font-weight: 700;
     text-transform: uppercase;
     font-size: 11px;
-    letter-spacing: 0.8px;
-    padding: 14px 18px;
+    letter-spacing: 0.5px;
+    padding: 12px 16px;
     border-bottom: 2px solid var(--border-color);
     position: sticky;
     top: 0;
@@ -799,7 +794,7 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 
 .modal-table td {
-    padding: 14px 18px;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
     text-align: left !important;
@@ -811,7 +806,7 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 
 .modal-table tr:hover {
-    background-color: #eff6ff;
+    background-color: #f1f5f9;
 }
 
 .modal-table tr:last-child td {
@@ -819,13 +814,13 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
 }
 
 .badge-dept {
-    background: #eef4f9;
+    background: #f1f5f9;
     color: var(--accent-dark);
-    padding: 5px 10px;
-    border-radius: var(--radius-pill);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
     font-size: 11px;
-    font-weight: 700;
-    border: 1px solid #c9deee;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
     display: inline-block;
 }
 
