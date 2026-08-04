@@ -38,41 +38,73 @@
 
 <%
 int urgentCount = 0;
-List<String[]> urgentList = new ArrayList<>();
+// Map to group requests by Department Name -> List of requests
+Map<String, List<String[]>> urgentGroupedMap = new LinkedHashMap<>();
 
 Connection consa = null;
 PreparedStatement psaa = null;
 ResultSet rsaa = null;
 
-try{
+try {
     consa = DBUtil5.getConnection();
 
     String sql =
-    	    "SELECT request_no, location, description, requested_by " +
-    	    "FROM service_requests " +
-    	    "WHERE (status IS NULL OR UPPER(status) NOT IN ('CLOSED','COMPLETED','SATISFIED')) " +
-    	    "ORDER BY id DESC";
+        "SELECT sr.request_no, " +
+        "       COALESCE(d.department_name, 'General / Unassigned') AS department_name, " +
+        "       sr.location, " +
+        "       sr.description, " +
+        "       sr.requested_by " +
+        "FROM service_requests sr " +
+        "LEFT JOIN departments d ON sr.department_id = d.id " +
+        "WHERE (sr.status IS NULL OR UPPER(sr.status) NOT IN ('CLOSED','COMPLETED','SATISFIED')) " +
+        "ORDER BY d.department_name ASC, sr.id DESC";
 
     psaa = consa.prepareStatement(sql);
     rsaa = psaa.executeQuery();
 
-    while(rsaa.next()){
+    while (rsaa.next()) {
         urgentCount++;
-        String reqNo = rsaa.getString("request_no");
-        String location = rsaa.getString("location");
-        String description = rsaa.getString("description");
-        String requested_by = rsaa.getString("requested_by");
 
-        urgentList.add(new String[]{
-            reqNo, location, description, requested_by
-        });
+        String requestNo   = rsaa.getString("request_no");
+        String department  = rsaa.getString("department_name");
+        String location    = rsaa.getString("location");
+        String description = rsaa.getString("description");
+        String requestedBy = rsaa.getString("requested_by");
+
+        String[] requestData = new String[] {
+            requestNo,
+            department,
+            location,
+            description,
+            requestedBy
+        };
+
+        if (!urgentGroupedMap.containsKey(department)) {
+            urgentGroupedMap.put(department, new ArrayList<String[]>());
+        }
+        urgentGroupedMap.get(department).add(requestData);
     }
-}catch(Exception e){
+
+} catch (Exception e) {
     e.printStackTrace();
-}finally{
-    try{ if(rsaa != null) rsaa.close(); }catch(Exception e){}
-    try{ if(psaa != null) psaa.close(); }catch(Exception e){}
-    try{ if(consa != null) consa.close(); }catch(Exception e){}
+} finally {
+    try {
+        if (rsaa != null) rsaa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    try {
+        if (psaa != null) psaa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+
+    try {
+        if (consa != null) consa.close();
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
 }
 %>
 <!DOCTYPE html>
@@ -88,13 +120,16 @@ try{
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    /* Salesforce Lighting Design System Blue Palette */
+    /* Premium Salesforce Lightning Design System Palette */
     --bg-page: #f3f3f3;
-    --bg-sidebar: #1b2a47;
-    --bg-sidebar-hover: #223559;
+    --bg-sidebar: #032d60; /* Deep Salesforce Brand Navy */
+    --bg-sidebar-hover: #004487;
     --bg-sidebar-active: #0176d3;
+    
     --accent-primary: #0176d3;
-    --accent-gradient: linear-gradient(180deg, #018ed3, #0176d3);
+    --accent-dark: #032d60;
+    --accent-gradient: linear-gradient(135deg, #032d60 0%, #0176d3 100%);
+    --accent-gradient-hover: linear-gradient(135deg, #014486 0%, #018ed3 100%);
     
     --text-main: #181818;
     --text-muted: #5e5e5e;
@@ -111,14 +146,16 @@ try{
     --radius-sm: 4px;
     --radius-md: 8px;
     --radius-lg: 12px;
+    --radius-pill: 50px;
     
-    --shadow-sm: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 12px 28px 0 rgba(0, 0, 0, 0.15);
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 6px 16px rgba(3, 45, 96, 0.08);
+    --shadow-lg: 0 16px 36px rgba(3, 45, 96, 0.20);
+    --shadow-glow-danger: 0 4px 14px rgba(234, 0, 30, 0.25);
 }
 
 body { 
-    font-family: 'Salesforce Sans', 'Inter', sans-serif; 
+    font-family: 'Salesforce Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; 
     background-color: var(--bg-page); 
     color: var(--text-main); 
     transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
@@ -146,11 +183,11 @@ body.sidebar-collapsed {
     display: flex; 
     flex-direction: column; 
     padding: 24px 12px; 
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1); 
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.12); 
     z-index: 1001; 
     transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
     overflow-y: auto; 
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .sidebar h2 { 
@@ -168,7 +205,7 @@ body.sidebar-collapsed {
 .sidebar-label {
     font-size: 11px;
     font-weight: 700;
-    color: #919191;
+    color: #8faac9;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     padding: 20px 12px 6px;
@@ -200,7 +237,7 @@ body.sidebar-collapsed {
 }
 
 .sidebar .dropdown.active .dropdown-btn {
-    background: rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.12);
     color: #ffffff;
     font-weight: 600;
 }
@@ -209,7 +246,7 @@ body.sidebar-collapsed {
     margin-left: auto;
     font-size: 11px;
     transition: transform 0.2s ease;
-    color: #919191;
+    color: #8faac9;
 }
 .dropdown.active .dropdown-btn i.fa-caret-down {
     transform: rotate(180deg);
@@ -219,7 +256,7 @@ body.sidebar-collapsed {
 .dropdown-content { 
     display: none; 
     flex-direction: column; 
-    background: rgba(0, 0, 0, 0.12);
+    background: rgba(0, 0, 0, 0.2);
     padding: 4px 0;
     margin: 2px 0 6px 0;
     border-radius: var(--radius-sm);
@@ -266,7 +303,7 @@ header {
 }
 
 .header-brand-title { 
-    color:#FC5005 ; 
+    color: #FC5005; 
     font-weight: 800; 
     font-size: 18px; 
     border-right: 1px solid var(--border-color);
@@ -274,7 +311,7 @@ header {
     line-height: 1;
 }
 .header-brand-title span {
-    color: #090136;
+    color: var(--accent-dark);
     font-weight: 800;
     margin-left: 4px;
 }
@@ -344,20 +381,21 @@ header {
     width: 34px; 
     height: 34px; 
     border-radius: 50%; 
-    background: #5a6e85; 
+    background: var(--accent-dark); 
     color: white; 
     display: flex; 
     align-items: center; 
     justify-content: center; 
     font-weight: 700; 
     font-size: 13px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .user-meta { display: flex; flex-direction: column; }
 .user-meta .u-name { font-size: 13px; font-weight: 600; color: #080707; text-transform: capitalize; }
 .user-meta .u-role { font-size: 11px; color: var(--text-muted); text-transform: uppercase;}
 
-/* --- Modern Main Workspace Area --- */
+/* Modern Main Workspace Area */
 main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
 
 /* Dynamic Live IST Clock Styling */
@@ -382,62 +420,415 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     border-left: 1px solid #c9deee;
 }
 
-/* --- Salesforce Classic Style Exceptions System --- */
-.urgent-wrapper { position: relative; display: inline-block; }
+
+/* ==========================================================================
+   CLASSY & CONFIDENT SALESFORCE URGENT POPUP STYLING
+   ========================================================================== */
+
+.urgent-wrapper { 
+    position: relative; 
+    display: inline-block; 
+}
+
+/* Elegant SLDS Alert Trigger Pill */
 .urgent-header {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     cursor: pointer;
-    padding: 6px 12px;
-    border-radius: var(--radius-sm);
+    padding: 7px 16px;
+    border-radius: var(--radius-pill);
     background: #fff0f0;
-    border: 1px solid #fac7c7;
+    border: 1px solid #fca5a5;
     color: var(--color-danger);
     font-size: 12px;
-    font-weight: 600;
-    transition: background 0.15s ease;
-}
-.urgent-header:hover {
-    background: #ffe5e5;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    box-shadow: 0 2px 6px rgba(234, 0, 30, 0.08);
 }
 
+.urgent-header:hover {
+    background: var(--color-danger);
+    color: #ffffff;
+    border-color: var(--color-danger);
+    box-shadow: var(--shadow-glow-danger);
+    transform: translateY(-1px);
+}
+
+/* Sleek Dropdown Popup Container */
 .urgent-popup {
     display: none;
     position: absolute;
-    top: 45px;
+    top: calc(100% + 12px);
     right: 0;
-    width: 360px;
-    max-height: 400px;
-    overflow-y: auto;
+    width: 440px;
+    max-height: 540px;
     background: #ffffff;
-    border-radius: var(--radius-sm);
-    box-shadow: var(--shadow-lg);
-    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    border: 1px solid #c9c9c9;
     z-index: 9999;
-    padding: 16px;
+    overflow: hidden;
+    animation: popupSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+@keyframes popupSlideDown {
+    from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Salesforce Branded Top Header Bar */
+.popup-header-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    background: var(--accent-gradient);
+    color: #ffffff;
+    border-bottom: none;
+}
+
+.popup-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .popup-title {
-    font-size: 12px;
-    font-weight: 700;
-    color: #080707;
-    margin-bottom: 12px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
     text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
-.urgent-item {
-    padding: 12px;
+
+.popup-action-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.popup-expand-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s ease;
+}
+
+.popup-expand-btn:hover {
+    background: #ffffff;
+    color: var(--accent-dark);
+    border-color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.popup-body {
+    padding: 16px;
+    max-height: 460px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+/* Custom Scrollbar */
+.popup-body::-webkit-scrollbar {
+    width: 6px;
+}
+.popup-body::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+.popup-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+}
+.popup-body::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Department Group Card Header */
+.dept-group-header {
+    font-size: 11px;
+    font-weight: 800;
+    color: var(--accent-dark);
+    background: #eef4f9;
+    padding: 8px 12px;
     border-radius: var(--radius-sm);
-    background: #f9f9f9;
+    margin: 16px 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-left: 4px solid var(--accent-primary);
+}
+.dept-group-header:first-of-type {
+    margin-top: 0;
+}
+
+.dept-badge-count {
+    background: var(--accent-dark);
+    color: #ffffff;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+/* Refined Elevated Card Styling */
+.urgent-item {
+    padding: 14px;
+    border-radius: var(--radius-md);
+    background: #ffffff;
     margin-bottom: 10px;
-    border: 1px solid var(--border-color);
-    border-left: 3px solid var(--color-danger);
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid var(--color-danger);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .urgent-item:last-child { margin-bottom: 0; }
-.req-no { font-size: 12.5px; font-weight: 600; color: #080707; }
-.req-location { font-size: 11.5px; font-weight: 700; color: #008C34; margin-top: 4px; }
-.req-desc { font-size: 12px;font-weight: 700; color: #3e3e3e; margin-top: 6px; line-height: 1.5; }
+.urgent-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: #cbd5e1;
+    border-left-color: var(--color-danger);
+}
+
+.urgent-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.req-no { 
+    font-size: 11.5px; 
+    font-weight: 800; 
+    color: #ffffff; 
+    background: var(--accent-dark);
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    letter-spacing: 0.5px;
+}
+
+.req-location { 
+    font-size: 11.5px; 
+    font-weight: 700; 
+    color: var(--color-success); 
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.req-desc { 
+    font-size: 12.5px; 
+    font-weight: 500; 
+    color: #1e293b; 
+    margin: 8px 0; 
+    line-height: 1.5; 
+    word-break: break-word;
+}
+
+.req-user {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+
+/* ==========================================================================
+   FULL SCREEN SALESFORCE MODAL DASHBOARD STYLING
+   ========================================================================== */
+
+.urgent-modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(3, 45, 96, 0.75); /* Deep Salesforce Navy Overlay */
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.urgent-modal-overlay.active {
+    display: flex;
+}
+
+.urgent-modal-content {
+    background: #ffffff;
+    width: 95%;
+    max-width: 1240px;
+    height: 88vh;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+    background: var(--accent-gradient);
+    color: #ffffff;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 3px solid #014486;
+}
+
+.modal-header h3 {
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #ffffff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+.modal-close-btn:hover {
+    background: var(--color-danger);
+    border-color: var(--color-danger);
+    transform: rotate(90deg);
+}
+
+.modal-toolbar {
+    padding: 16px 28px;
+    background: #f8fafc;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.modal-search-wrapper {
+    position: relative;
+}
+.modal-search-wrapper i {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.modal-search-input {
+    padding: 9px 14px 9px 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    width: 320px;
+    outline: none;
+    transition: all 0.2s ease;
+}
+.modal-search-input:focus {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(1, 118, 211, 0.18);
+    background: #ffffff;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    background: #ffffff;
+}
+
+/* Crisp Salesforce Data Table */
+.modal-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.modal-table th {
+    background: var(--accent-dark);
+    color: #ffffff;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.8px;
+    padding: 14px 18px;
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.modal-table td {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    text-align: left !important;
+    color: #1e293b;
+}
+
+.modal-table tr:nth-child(even) {
+    background-color: #f8fafc;
+}
+
+.modal-table tr:hover {
+    background-color: #eff6ff;
+}
+
+.modal-table tr:last-child td {
+    border-bottom: none;
+}
+
+.badge-dept {
+    background: #eef4f9;
+    color: var(--accent-dark);
+    padding: 5px 10px;
+    border-radius: var(--radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+    border: 1px solid #c9deee;
+    display: inline-block;
+}
+
 
 /* --- Minimal Fluid Layout System Footer --- */
 footer { 
@@ -479,6 +870,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     .sidebar { transform: translateX(-100%); }
     body:not(.sidebar-collapsed) .sidebar { transform: translateX(0); }
     main { padding-left: 16px; padding-right: 16px; }
+    .urgent-popup { width: 340px; right: -60px; }
 }
 </style>
 </head>
@@ -594,26 +986,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <% } %>  
 
 <div class="sidebar-label">Core Operations Desk</div>
-<div class="dropdown Service-menu">
-    <button class="dropdown-btn">
-        <i class="fa-solid fa-headset text-info"></i>
-        <span>Service Request</span>
-        <i class="fa-solid fa-caret-down"></i>
-    </button>
-    <div class="dropdown-content">
-      <% if ("Global".equalsIgnoreCase(roles) ) { %>
-        <a href="<%=request.getContextPath()%>/MasterServlet"><i class="fa-solid fa-network-wired text-danger"></i> Departments</a>
-      <% } %>
-      <a href="<%=request.getContextPath()%>/RequestBookingServlet"><i class="fa-solid fa-calendar-plus text-success"></i> Book a Request</a>
-      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles)) { %>
-        <a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"><i class="fa-solid fa-user-plus text-info"></i> Assign Incharge</a>
-      <% } %>
-      <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
-      <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
-      <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
-      <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
-    </div>
-</div>
+<a href="javascript:void(0);" onclick="openUrgentModal()"><i class="fa-solid fa-clock-rotate-left text-warning"></i> Request Pending <% if(urgentCount > 0){ %><span class="badge bg-danger ms-auto" style="font-size: 0.75rem; padding: 2px 6px; border-radius: 10px; margin-left: 5px;"><%= urgentCount %></span><% } %></a>
 
 <div class="sidebar-label">Academic Admissions</div>
 <div class="dropdown admission-menu">
@@ -676,19 +1049,43 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
             <span class="urgent-header" onclick="toggleUrgentPopup()">
-                <i class="fa-solid fa-circle-exclamation text-danger"></i> <%= urgentCount %> Open Service Requests
+                <i class="fa-solid fa-triangle-exclamation"></i> <%= urgentCount %> Open Service Requests
             </span>
 
             <div class="urgent-popup" id="urgentPopup">
-                <div class="popup-title">Open Service Requests</div>
-                <% for(String[] row : urgentList){ %>
-                    <div class="urgent-item">
-                        <div class="req-no">Ticket ID: <%= row[0] %></div>
-                        <div class="req-location"><i class="fa-solid fa-location-dot"></i> Zone: <%= row[1] %></div>
-                        <div class="req-desc"><%= row[2] %></div>
-                        <div class="req-location" style="margin-top:8px; color:#03349E; font-weight: 600;"><i class="fa-solid fa-circle-user"></i> Requestor: <%= row[3] %></div>
+                <div class="popup-header-bar">
+                    <div class="popup-title-group">
+                        <i class="fa-solid fa-bell text-danger"></i>
+                        <span class="popup-title">Open Requests</span>
                     </div>
-                <% } %>
+                    <div class="popup-action-group">
+                        <button class="popup-expand-btn" onclick="openUrgentModal()"><i class="fa-solid fa-expand"></i> Expand</button>
+                    </div>
+                </div>
+                
+                <div class="popup-body">
+                    <%-- Categorized Display grouped by Department --%>
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                         String deptName = entry.getKey();
+                         List<String[]> deptRequests = entry.getValue();
+                    %>
+                        <div class="dept-group-header">
+                            <span><i class="fa-solid fa-building text-primary"></i> <%= deptName %></span>
+                            <span class="dept-badge-count"><%= deptRequests.size() %></span>
+                        </div>
+
+                        <% for(String[] row : deptRequests){ %>
+                            <div class="urgent-item">
+                                <div class="urgent-item-header">
+                                    <span class="req-no">#<%= row[0] %></span>
+                                    <span class="req-location"><i class="fa-solid fa-location-dot"></i> <%= row[2] != null ? row[2] : "N/A" %></span>
+                                </div>
+                                <div class="req-desc"><%= row[3] %></div>
+                                <div class="req-user"><i class="fa-solid fa-user-circle"></i> <%= row[4] %></div>
+                            </div>
+                        <% } %>
+                    <% } %>
+                </div>
             </div>
         </div>
         <% } %>
@@ -703,6 +1100,52 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 </header>
+
+<!-- Full Screen Expanded Modal for Urgent Requests -->
+<div class="urgent-modal-overlay" id="urgentModal">
+    <div class="urgent-modal-content">
+        <div class="modal-header">
+            <h3><i class="fa-solid fa-list-check text-primary"></i> Open Service Requests Monitor (<%= urgentCount %> Total)</h3>
+            <button class="modal-close-btn" onclick="closeUrgentModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-toolbar">
+            <div class="modal-search-wrapper">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="Search ticket, location, or requestor..." onkeyup="filterModalTable()">
+            </div>
+        </div>
+        <div class="modal-body">
+            <table class="modal-table" id="modalRequestsTable">
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Department</th>
+                        <th>Location / Zone</th>
+                        <th>Description</th>
+                        <th>Requestor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                         String deptName = entry.getKey();
+                         List<String[]> deptRequests = entry.getValue();
+                         for(String[] row : deptRequests){
+                    %>
+                        <tr>
+                            <td><strong class="text-primary"><%= row[0] %></strong></td>
+                            <td><span class="badge-dept"><%= deptName %></span></td>
+                            <td><i class="fa-solid fa-location-dot text-danger"></i> <%= row[2] != null ? row[2] : "N/A" %></td>
+                            <td style="max-width: 400px;"><%= row[3] %></td>
+                            <td><i class="fa-solid fa-user text-secondary"></i> <%= row[4] %></td>
+                        </tr>
+                    <%   } 
+                       } 
+                    %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <main>
   <!-- Content area reserved for specific page forms/tables -->
@@ -789,6 +1232,32 @@ toggleBtn.addEventListener('click', (e) => {
 function toggleUrgentPopup(){
     let popup = document.getElementById("urgentPopup");
     popup.style.display = (popup.style.display === "block") ? "none" : "block";
+}
+
+function openUrgentModal(){
+    let popup = document.getElementById("urgentPopup");
+    if(popup) popup.style.display = "none";
+    document.getElementById("urgentModal").classList.add("active");
+}
+
+function closeUrgentModal(){
+    document.getElementById("urgentModal").classList.remove("active");
+}
+
+function filterModalTable() {
+    let input = document.getElementById("modalSearchInput");
+    let filter = input.value.toUpperCase();
+    let table = document.getElementById("modalRequestsTable");
+    let tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) {
+        let tdText = tr[i].innerText;
+        if (tdText.toUpperCase().indexOf(filter) > -1) {
+            tr[i].style.display = "";
+        } else {
+            tr[i].style.display = "none";
+        }
+    }
 }
 
 document.addEventListener("click", function(event){
