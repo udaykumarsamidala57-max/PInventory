@@ -49,6 +49,7 @@ if (sess == null || sess.getAttribute("username") == null) {
 <tr><td>Invoice No:</td><td><input name="invoice_no" required></td></tr>
 <tr><td>Invoice Date:</td><td><input type="date" name="invoice_date" required></td></tr>
 <tr><td>Received By:</td><td><input name="received_by" required></td></tr>
+<tr><td> GRN Date:</td><input type="date" name="grn_date" value="<%= java.time.LocalDate.now() %>" required><td></tr>
 </table>
 
 <table class="main-table">

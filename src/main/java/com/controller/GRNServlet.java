@@ -135,6 +135,7 @@ public class GRNServlet extends HttpServlet {
         String invoiceNo = request.getParameter("invoice_no");
         String invoiceDate = request.getParameter("invoice_date");
         String receivedBy  = request.getParameter("received_by");
+        String grnDate = request.getParameter("grn_date");
 
         int totalItems = 0;
         try {
@@ -209,16 +210,17 @@ public class GRNServlet extends HttpServlet {
             int grnId;
             try (PreparedStatement psMaster = con.prepareStatement(
             		"INSERT INTO grn_master(grn_no,grn_date,po_id,po_number,vendor_name," +
-            				"invoice_no,invoice_date,received_by,created_at) VALUES(?,CURDATE(),?,?,?,?,?,?,NOW())",
+            				"invoice_no,invoice_date,received_by,created_at) VALUES(?,?,?,?,?,?,?,?,NOW())",
                 Statement.RETURN_GENERATED_KEYS)) {
 
             	psMaster.setString(1, grnNo);
-            	psMaster.setInt(2, poId);          
-            	psMaster.setString(3, poNumber);  
-            	psMaster.setString(4, vendorName);
-            	psMaster.setString(5, invoiceNo);
-            	psMaster.setString(6, invoiceDate);
-            	psMaster.setString(7, receivedBy);
+            	psMaster.setString(2, grnDate);
+            	psMaster.setInt(3, poId);          
+            	psMaster.setString(4, poNumber);  
+            	psMaster.setString(5, vendorName);
+            	psMaster.setString(6, invoiceNo);
+            	psMaster.setString(7, invoiceDate);
+            	psMaster.setString(8, receivedBy);
             	
             	psMaster.executeUpdate();   
 
@@ -233,33 +235,45 @@ public class GRNServlet extends HttpServlet {
             }
 
             // --- Insert GRN Items + Update Stock & Ledger ---
-            try (PreparedStatement psItems = con.prepareStatement(
-                    "INSERT INTO grn_items(grn_id,po_item_id,item_id,item_description,qty_received,qty_accepted,qty_rejected,remarks) " +
-                    "VALUES (?,?,?,?,?,?,?,?)");
-                 PreparedStatement psStockSel = con.prepareStatement(
-                    "SELECT stock_id, total_received, balance_qty FROM stock WHERE item_id=?");
-                 PreparedStatement psStockIns = con.prepareStatement(
-                    "INSERT INTO stock(item_id, po_item_id, total_received, total_issued, balance_qty, last_updated) " +
+         // --- Insert GRN Items + Update Stock & Ledger ---
+            try (
+                PreparedStatement psItems = con.prepareStatement(
+                    "INSERT INTO grn_items(grn_id, po_item_id, item_id, item_description, " +
+                    "qty_received, qty_accepted, qty_rejected, remarks) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+
+                PreparedStatement psStockSel = con.prepareStatement(
+                    "SELECT stock_id, total_received, balance_qty " +
+                    "FROM stock WHERE item_id=?");
+
+                PreparedStatement psStockIns = con.prepareStatement(
+                    "INSERT INTO stock(item_id, po_item_id, total_received, total_issued, " +
+                    "balance_qty, last_updated) " +
                     "VALUES (?, ?, ?, 0, ?, NOW())");
-                 PreparedStatement psStockUpd = con.prepareStatement(
-                    "UPDATE stock SET total_received=?, balance_qty=?, last_updated=NOW() WHERE stock_id=?");
-                 PreparedStatement psLedger = con.prepareStatement(
-                    "INSERT INTO stock_ledger(item_id, po_item_id, trans_type, trans_id, trans_date, qty, running_balance, remarks) " +
-                    "VALUES (?, ?, 'RECEIPT', ?, CURDATE(), ?, ?, ?)")) {
+
+                PreparedStatement psStockUpd = con.prepareStatement(
+                    "UPDATE stock SET total_received=?, balance_qty=?, " +
+                    "last_updated=NOW() WHERE stock_id=?");
+
+                PreparedStatement psLedger = con.prepareStatement(
+                    "INSERT INTO stock_ledger(item_id, po_item_id, trans_type, trans_id, " +
+                    "trans_date, qty, running_balance, remarks) " +
+                    "VALUES (?, ?, 'RECEIPT', ?, ?, ?, ?, ?)")
+            ) {
 
                 for (int i = 0; i < totalItems; i++) {
-                    int poItemId   = Integer.parseInt(request.getParameter("po_item_id" + i));
-                    int itemId     = Integer.parseInt(request.getParameter("item_id" + i));
+
+                    int poItemId = Integer.parseInt(request.getParameter("po_item_id" + i));
+                    int itemId = Integer.parseInt(request.getParameter("item_id" + i));
                     String description = request.getParameter("description_" + i);
 
-                    // parse as double for decimals
                     double qtyReceived = Double.parseDouble(request.getParameter("qty_received_" + i));
                     double qtyAccepted = Double.parseDouble(request.getParameter("qty_accepted_" + i));
                     double qtyRejected = Double.parseDouble(request.getParameter("qty_rejected_" + i));
 
-                    String remarks  = request.getParameter("remarks_" + i);
+                    String remarks = request.getParameter("remarks_" + i);
 
-                    // --- Insert GRN Item ---
+                    // ---------------- Insert GRN Item ----------------
                     psItems.setInt(1, grnId);
                     psItems.setInt(2, poItemId);
                     psItems.setInt(3, itemId);
@@ -270,13 +284,17 @@ public class GRNServlet extends HttpServlet {
                     psItems.setString(8, remarks);
                     psItems.executeUpdate();
 
-                    // --- STOCK update ---
+                    // ---------------- Update Stock ----------------
                     int stockId = 0;
-                    double totalReceivedVal = 0, balanceQty = 0;
+                    double totalReceivedVal = 0;
+                    double balanceQty = 0;
 
                     psStockSel.setInt(1, itemId);
+
                     try (ResultSet rsStock = psStockSel.executeQuery()) {
+
                         if (rsStock.next()) {
+
                             stockId = rsStock.getInt("stock_id");
                             totalReceivedVal = rsStock.getDouble("total_received") + qtyAccepted;
                             balanceQty = rsStock.getDouble("balance_qty") + qtyAccepted;
@@ -285,7 +303,9 @@ public class GRNServlet extends HttpServlet {
                             psStockUpd.setDouble(2, balanceQty);
                             psStockUpd.setInt(3, stockId);
                             psStockUpd.executeUpdate();
+
                         } else {
+
                             totalReceivedVal = qtyAccepted;
                             balanceQty = qtyAccepted;
 
@@ -297,13 +317,14 @@ public class GRNServlet extends HttpServlet {
                         }
                     }
 
-                    // --- LEDGER insert ---
+                    // ---------------- Insert Stock Ledger ----------------
                     psLedger.setInt(1, itemId);
                     psLedger.setInt(2, poItemId);
                     psLedger.setInt(3, grnId);
-                    psLedger.setDouble(4, qtyAccepted);
-                    psLedger.setDouble(5, balanceQty);
-                    psLedger.setString(6, "GRN " + grnNo);
+                    psLedger.setString(4, grnDate);      // Selected GRN Date
+                    psLedger.setDouble(5, qtyAccepted);
+                    psLedger.setDouble(6, balanceQty);
+                    psLedger.setString(7, "GRN " + grnNo);
                     psLedger.executeUpdate();
                 }
             }
