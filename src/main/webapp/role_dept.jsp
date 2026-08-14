@@ -3,6 +3,14 @@
 <%@ page import="com.bean.DBUtil" %>
 
 <%
+HttpSession sess = request.getSession(false);
+if (sess == null || sess.getAttribute("username") == null) {
+    response.sendRedirect("login.jsp");
+    return;
+}
+String grnNo = request.getParameter("grnNo");
+String branch = (String) sess.getAttribute("branch");
+
     String action = request.getParameter("action");
     String id = request.getParameter("id");
     String role = request.getParameter("role");
@@ -14,7 +22,7 @@
 
     try {
         Class.forName("com.mysql.cj.jdbc.Driver");
-        con = DBUtil.getConnection();
+        con = DBUtil.getConnection(branch);
 
         if ("add".equals(action)) {
             ps = con.prepareStatement("INSERT INTO role_dept (Role, Department) VALUES (?, ?)");
