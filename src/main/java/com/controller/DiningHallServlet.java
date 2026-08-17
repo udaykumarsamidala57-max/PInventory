@@ -36,14 +36,19 @@ public class DiningHallServlet extends HttpServlet {
 
         HttpSession sess = request.getSession(false);
 
-        if (sess == null || sess.getAttribute("username") == null) {
+        if (sess == null ||
+            sess.getAttribute("username") == null) {
+
             response.sendRedirect("login.jsp");
             return;
         }
 
-        String branch = (String) sess.getAttribute("branch");
+        String branch =
+                (String) sess.getAttribute("branch");
 
-        if (branch == null || branch.trim().isEmpty()) {
+        if (branch == null ||
+            branch.trim().isEmpty()) {
+
             throw new ServletException(
                     "Branch information is missing from session.");
         }
@@ -64,14 +69,17 @@ public class DiningHallServlet extends HttpServlet {
 
             try (PreparedStatement ps =
                          con.prepareStatement(sqlNext);
-                 ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs =
+                         ps.executeQuery()) {
 
                 if (rs.next()) {
-                    nextIssueNo = rs.getInt("next_no");
+                    nextIssueNo =
+                            rs.getInt("next_no");
                 }
             }
 
-            String formattedIssueNo = "ISS" + nextIssueNo;
+            String formattedIssueNo =
+                    "ISS" + nextIssueNo;
 
             request.setAttribute(
                     "nextIssueNo",
@@ -91,7 +99,9 @@ public class DiningHallServlet extends HttpServlet {
             Map<String, String> singleDept =
                     new HashMap<String, String>();
 
-            singleDept.put("name", "Dining Hall");
+            singleDept.put(
+                    "name",
+                    "Dining Hall");
 
             departments.add(singleDept);
 
@@ -110,7 +120,8 @@ public class DiningHallServlet extends HttpServlet {
 
             try (PreparedStatement ps =
                          con.prepareStatement(catSql);
-                 ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs =
+                         ps.executeQuery()) {
 
                 while (rs.next()) {
 
@@ -144,7 +155,8 @@ public class DiningHallServlet extends HttpServlet {
 
             try (PreparedStatement ps =
                          con.prepareStatement(subSql);
-                 ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs =
+                         ps.executeQuery()) {
 
                 while (rs.next()) {
 
@@ -185,7 +197,8 @@ public class DiningHallServlet extends HttpServlet {
 
             try (PreparedStatement ps =
                          con.prepareStatement(itemSql);
-                 ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs =
+                         ps.executeQuery()) {
 
                 while (rs.next()) {
 
@@ -251,14 +264,22 @@ public class DiningHallServlet extends HttpServlet {
                     "selectedDept",
                     "Dining Hall");
 
+
+            /* =====================================================
+               FORWARD
+               ===================================================== */
+
             request.getRequestDispatcher(
                     "dining_hall_form.jsp")
-                    .forward(request, response);
+                    .forward(
+                            request,
+                            response);
 
         } catch (SQLException e) {
 
             throw new ServletException(
-                    "Database Error: " + e.getMessage(),
+                    "Database Error: " +
+                    e.getMessage(),
                     e);
         }
     }
@@ -276,12 +297,21 @@ public class DiningHallServlet extends HttpServlet {
         HttpSession sess =
                 request.getSession(false);
 
+        /* =====================================================
+           LOGIN CHECK
+           ===================================================== */
+
         if (sess == null ||
             sess.getAttribute("username") == null) {
 
             response.sendRedirect("login.jsp");
             return;
         }
+
+
+        /* =====================================================
+           BRANCH
+           ===================================================== */
 
         String branch =
                 (String) sess.getAttribute("branch");
@@ -362,12 +392,7 @@ public class DiningHallServlet extends HttpServlet {
             return;
         }
 
-        /*
-         * Item and quantity arrays MUST match.
-         *
-         * Otherwise item 1 could receive quantity 2,
-         * item 2 quantity 3, etc.
-         */
+
         if (itemIds.length != qtys.length) {
 
             sendError(
@@ -395,6 +420,26 @@ public class DiningHallServlet extends HttpServlet {
             return;
         }
 
+        if (issuedTo.isEmpty()) {
+
+            sendError(
+                    request,
+                    response,
+                    "Issued To is required.");
+
+            return;
+        }
+
+        if (session.isEmpty()) {
+
+            sendError(
+                    request,
+                    response,
+                    "Session is required.");
+
+            return;
+        }
+
         if (issueDate.isEmpty()) {
 
             sendError(
@@ -408,24 +453,21 @@ public class DiningHallServlet extends HttpServlet {
 
         Connection con = null;
 
+
         try {
 
-            con = DBUtil.getConnection(branch);
+            /* =================================================
+               CONNECTION
+               ================================================= */
 
-            /*
-             * VERY IMPORTANT
-             *
-             * Everything below is one transaction.
-             *
-             * If any item fails:
-             *
-             *     dining_hall_consumption
-             *     stock_issues
-             *     stock_ledger
-             *     stock
-             *
-             * are all rolled back.
-             */
+            con =
+                    DBUtil.getConnection(branch);
+
+
+            /* =================================================
+               START TRANSACTION
+               ================================================= */
+
             con.setAutoCommit(false);
 
 
@@ -434,7 +476,7 @@ public class DiningHallServlet extends HttpServlet {
                ================================================= */
 
             /*
-             * FOR UPDATE locks the stock row until commit/rollback.
+             * Lock stock record while checking availability.
              */
             String stockSql =
                     "SELECT " +
@@ -446,7 +488,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
             /*
-             * Keep existing PO price logic.
+             * Get latest PO price.
              */
             String poSql =
                     "SELECT net_amount, qty " +
@@ -457,6 +499,9 @@ public class DiningHallServlet extends HttpServlet {
                     "LIMIT 1";
 
 
+            /*
+             * Dining Hall consumption.
+             */
             String insConsumption =
                     "INSERT INTO dining_hall_consumption " +
                     "(issueno, item_id, department, issued_to, " +
@@ -465,6 +510,9 @@ public class DiningHallServlet extends HttpServlet {
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
 
+            /*
+             * Stock issue.
+             */
             String insIssues =
                     "INSERT INTO stock_issues " +
                     "(issueno, item_id, department, issued_to, " +
@@ -473,6 +521,12 @@ public class DiningHallServlet extends HttpServlet {
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
 
+            /*
+             * Stock ledger.
+             *
+             * IMPORTANT:
+             * Ledger becomes the source of truth.
+             */
             String insLedger =
                     "INSERT INTO stock_ledger " +
                     "(item_id, trans_type, trans_id, trans_date, " +
@@ -480,14 +534,44 @@ public class DiningHallServlet extends HttpServlet {
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
 
-            String upStock =
-                    "UPDATE stock " +
-                    "SET total_issued = " +
-                    "COALESCE(total_issued, 0) + ?, " +
-                    "balance_qty = " +
-                    "COALESCE(balance_qty, 0) - ?, " +
-                    "last_price = ? " +
-                    "WHERE item_id = ?";
+            /*
+             * =================================================
+             * STOCK RECONCILIATION
+             * =================================================
+             *
+             * This is your query.
+             *
+             * It recalculates stock from the complete ledger.
+             *
+             * Every successful Dining Hall issue will execute
+             * this query before COMMIT.
+             */
+            String reconcileStockSql =
+                    "UPDATE stock s " +
+                    "JOIN ( " +
+                    "    SELECT " +
+                    "        item_id, " +
+                    "        SUM(CASE " +
+                    "                WHEN trans_type = 'RECEIPT' " +
+                    "                THEN qty ELSE 0 " +
+                    "            END) AS total_received, " +
+                    "        SUM(CASE " +
+                    "                WHEN trans_type = 'ISSUE' " +
+                    "                THEN qty ELSE 0 " +
+                    "            END) AS total_issued, " +
+                    "        SUM(CASE " +
+                    "                WHEN trans_type = 'RECEIPT' " +
+                    "                THEN qty " +
+                    "                ELSE -qty " +
+                    "            END) AS balance " +
+                    "    FROM stock_ledger " +
+                    "    GROUP BY item_id " +
+                    ") x " +
+                    "ON s.item_id = x.item_id " +
+                    "SET " +
+                    "    s.total_received = x.total_received, " +
+                    "    s.total_issued   = x.total_issued, " +
+                    "    s.balance_qty    = x.balance";
 
 
             /* =================================================
@@ -501,7 +585,8 @@ public class DiningHallServlet extends HttpServlet {
                          con.prepareStatement(poSql);
 
                  PreparedStatement psConsumption =
-                         con.prepareStatement(insConsumption);
+                         con.prepareStatement(
+                                 insConsumption);
 
                  PreparedStatement psIssues =
                          con.prepareStatement(
@@ -509,10 +594,12 @@ public class DiningHallServlet extends HttpServlet {
                                  Statement.RETURN_GENERATED_KEYS);
 
                  PreparedStatement psLedger =
-                         con.prepareStatement(insLedger);
+                         con.prepareStatement(
+                                 insLedger);
 
-                 PreparedStatement psUpdateStock =
-                         con.prepareStatement(upStock)) {
+                 PreparedStatement psReconcile =
+                         con.prepareStatement(
+                                 reconcileStockSql)) {
 
 
                 int processedItems = 0;
@@ -528,7 +615,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       READ FORM VALUES
+                       FORM VALUES
                        ============================================= */
 
                     String itemIdText =
@@ -541,9 +628,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /*
-                     * Completely empty dynamic row.
-                     *
-                     * This is intentionally ignored.
+                     * Ignore completely empty dynamic rows.
                      */
                     if (itemIdText.isEmpty() &&
                         qtyText.isEmpty()) {
@@ -553,25 +638,27 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       ITEM ID VALIDATION
+                       ITEM ID
                        ============================================= */
 
                     if (itemIdText.isEmpty()) {
 
                         throw new SQLException(
-                                "Row " + (i + 1) +
+                                "Row " +
+                                (i + 1) +
                                 ": Item ID is missing.");
                     }
 
 
                     /* =============================================
-                       QUANTITY VALIDATION
+                       QUANTITY
                        ============================================= */
 
                     if (qtyText.isEmpty()) {
 
                         throw new SQLException(
-                                "Row " + (i + 1) +
+                                "Row " +
+                                (i + 1) +
                                 ": Quantity is missing " +
                                 "for Item ID " +
                                 itemIdText);
@@ -589,7 +676,8 @@ public class DiningHallServlet extends HttpServlet {
                     } catch (NumberFormatException e) {
 
                         throw new SQLException(
-                                "Row " + (i + 1) +
+                                "Row " +
+                                (i + 1) +
                                 ": Invalid Item ID: " +
                                 itemIdText,
                                 e);
@@ -607,7 +695,8 @@ public class DiningHallServlet extends HttpServlet {
                     } catch (NumberFormatException e) {
 
                         throw new SQLException(
-                                "Row " + (i + 1) +
+                                "Row " +
+                                (i + 1) +
                                 ": Invalid quantity '" +
                                 qtyText +
                                 "' for Item ID " +
@@ -621,9 +710,10 @@ public class DiningHallServlet extends HttpServlet {
                         qtyIssued <= 0) {
 
                         throw new SQLException(
-                                "Row " + (i + 1) +
-                                ": Quantity must be greater than zero " +
-                                "for Item ID " +
+                                "Row " +
+                                (i + 1) +
+                                ": Quantity must be greater " +
+                                "than zero for Item ID " +
                                 itemId);
                     }
 
@@ -644,18 +734,11 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       1. GET + LOCK STOCK
+                       1. LOCK STOCK
                        ============================================= */
 
-                    /*
-                     * IMPORTANT:
-                     *
-                     * These variables MUST be declared OUTSIDE
-                     * the ResultSet block.
-                     *
-                     * Otherwise they cannot be used later.
-                     */
                     double currentBalance = 0.0;
+
                     double stockLastPrice = 0.0;
 
                     int stockRowCount = 0;
@@ -675,15 +758,12 @@ public class DiningHallServlet extends HttpServlet {
 
                             stockRowCount++;
 
-                            /*
-                             * There should be exactly one
-                             * stock record for each item.
-                             */
+
                             if (stockRowCount > 1) {
 
                                 throw new SQLException(
-                                        "Multiple stock records found " +
-                                        "for Item ID " +
+                                        "Multiple stock records " +
+                                        "found for Item ID " +
                                         itemId +
                                         ". Please check stock table.");
                             }
@@ -702,7 +782,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       STOCK ROW MUST EXIST
+                       STOCK RECORD MUST EXIST
                        ============================================= */
 
                     if (stockRowCount == 0) {
@@ -716,8 +796,18 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       2. CHECK STOCK
+                       STOCK VALIDATION
                        ============================================= */
+
+                    if (currentBalance < 0) {
+
+                        throw new SQLException(
+                                "Invalid negative stock for Item ID " +
+                                itemId +
+                                ". Current balance: " +
+                                currentBalance);
+                    }
+
 
                     if (qtyIssued > currentBalance) {
 
@@ -732,20 +822,13 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       3. DETERMINE UNIT PRICE
+                       2. DETERMINE UNIT PRICE
                        ============================================= */
 
-                    /*
-                     * Default price = stock.last_price
-                     */
                     double unitPrice =
                             stockLastPrice;
 
 
-                    /*
-                     * Latest PO price is preferred,
-                     * same as your original servlet.
-                     */
                     psPO.clearParameters();
 
                     psPO.setInt(
@@ -790,7 +873,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       4. CALCULATE
+                       3. CALCULATE
                        ============================================= */
 
                     double totalValue =
@@ -803,9 +886,6 @@ public class DiningHallServlet extends HttpServlet {
                             qtyIssued;
 
 
-                    /*
-                     * Avoid tiny floating-point residue.
-                     */
                     if (Math.abs(newBalance) < 0.0000001) {
 
                         newBalance = 0.0;
@@ -813,7 +893,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       5. INSERT DINING HALL CONSUMPTION
+                       4. DINING HALL CONSUMPTION
                        ============================================= */
 
                     psConsumption.clearParameters();
@@ -866,14 +946,14 @@ public class DiningHallServlet extends HttpServlet {
                     if (consumptionRows != 1) {
 
                         throw new SQLException(
-                                "dining_hall_consumption INSERT failed " +
-                                "for Item ID " +
+                                "dining_hall_consumption INSERT " +
+                                "failed for Item ID " +
                                 itemId);
                     }
 
 
                     /* =============================================
-                       6. INSERT STOCK ISSUES
+                       5. STOCK ISSUES
                        ============================================= */
 
                     psIssues.clearParameters();
@@ -929,7 +1009,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       7. GET GENERATED ISSUE ID
+                       6. GENERATED STOCK ISSUE ID
                        ============================================= */
 
                     int issueId = 0;
@@ -956,7 +1036,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       8. INSERT STOCK LEDGER
+                       7. STOCK LEDGER
                        ============================================= */
 
                     psLedger.clearParameters();
@@ -1004,50 +1084,6 @@ public class DiningHallServlet extends HttpServlet {
 
 
                     /* =============================================
-                       9. UPDATE MASTER STOCK
-                       ============================================= */
-
-                    psUpdateStock.clearParameters();
-
-                    psUpdateStock.setDouble(
-                            1,
-                            qtyIssued);
-
-                    psUpdateStock.setDouble(
-                            2,
-                            qtyIssued);
-
-                    psUpdateStock.setDouble(
-                            3,
-                            unitPrice);
-
-                    psUpdateStock.setInt(
-                            4,
-                            itemId);
-
-
-                    int stockUpdateRows =
-                            psUpdateStock.executeUpdate();
-
-
-                    /*
-                     * MUST update exactly one row.
-                     *
-                     * If zero rows are updated, something is
-                     * wrong with the stock record.
-                     */
-                    if (stockUpdateRows != 1) {
-
-                        throw new SQLException(
-                                "stock UPDATE failed for Item ID " +
-                                itemId +
-                                ". Expected 1 row but updated " +
-                                stockUpdateRows +
-                                " rows.");
-                    }
-
-
-                    /* =============================================
                        ITEM COMPLETED
                        ============================================= */
 
@@ -1073,9 +1109,9 @@ public class DiningHallServlet extends HttpServlet {
                 }
 
 
-                /* =============================================
+                /* =================================================
                    CHECK PROCESSED ITEMS
-                   ============================================= */
+                   ================================================= */
 
                 if (processedItems == 0) {
 
@@ -1084,9 +1120,41 @@ public class DiningHallServlet extends HttpServlet {
                 }
 
 
-                /* =============================================
-                   COMMIT
-                   ============================================= */
+                /* =================================================
+                   RECONCILE STOCK FROM LEDGER
+                   =================================================
+                   
+                   IMPORTANT:
+                   
+                   This executes EVERY TIME a Dining Hall
+                   transaction is successfully processed.
+                   
+                   It recalculates:
+                   
+                       total_received
+                       total_issued
+                       balance_qty
+                   
+                   directly from stock_ledger.
+                   
+                   Because this is inside the transaction,
+                   the newly inserted ISSUE ledger rows are
+                   included.
+                   ================================================= */
+
+                int reconciledRows =
+                        psReconcile.executeUpdate();
+
+
+                System.out.println(
+                        "Stock reconciliation completed | " +
+                        "Rows updated: " +
+                        reconciledRows);
+
+
+                /* =================================================
+                   COMMIT EVERYTHING
+                   ================================================= */
 
                 con.commit();
 
@@ -1096,8 +1164,14 @@ public class DiningHallServlet extends HttpServlet {
                         "Issue No: " +
                         issueno +
                         " | Items: " +
-                        processedItems);
+                        processedItems +
+                        " | Stock rows reconciled: " +
+                        reconciledRows);
 
+
+                /* =================================================
+                   REDIRECT
+                   ================================================= */
 
                 response.sendRedirect(
                         "DiningHallServlet");
@@ -1137,7 +1211,7 @@ public class DiningHallServlet extends HttpServlet {
 
 
             /* =================================================
-               STORE USER-FRIENDLY ERROR
+               USER-FRIENDLY ERROR
                ================================================= */
 
             if (sess != null) {
