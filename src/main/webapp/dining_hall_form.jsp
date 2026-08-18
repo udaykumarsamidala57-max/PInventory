@@ -324,7 +324,7 @@
                 <div class="icon-box">📦</div>
                 <div>
                     <h2>Dining Hall Consumption</h2>
-                    <p class="subtitle">Record and authorize dining hall stock issues</p>
+                    <p class="subtitle">Record dining hall stock issues</p>
                 </div>
             </div>
         </div>
