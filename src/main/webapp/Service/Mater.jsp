@@ -1,7 +1,6 @@
 <%@page import="java.util.*"%>
 
 <%
-
 ArrayList<HashMap<String,Object>> departments =
 (ArrayList<HashMap<String,Object>>)request.getAttribute("departments");
 
@@ -10,7 +9,6 @@ ArrayList<HashMap<String,Object>> complaints =
 
 ArrayList<HashMap<String,Object>> incharges =
 (ArrayList<HashMap<String,Object>>)request.getAttribute("incharges");
-
 %>
 
 <!DOCTYPE html>
@@ -151,6 +149,7 @@ button:hover{
     overflow-x:auto;
     border-radius: 6px;
     border: 1px solid #d8dde6;
+    margin-bottom: 16px;
 }
 
 table{
@@ -373,22 +372,24 @@ tr:hover{
 
     <div class="card table-card">
 
-        <h2>COMPLAINT CLASSIFICATIONS </h2>
+        <h2>COMPLAINT CLASSIFICATIONS</h2>
 
         <% 
-        String currentDept = ""; 
-        boolean isTableOpen = false;
-
         if (complaints != null && !complaints.isEmpty()) {
+            String currentDept = null; 
+            boolean isTableOpen = false;
+
             for(HashMap<String,Object> c : complaints){
                 String deptName = (String) c.get("department_name");
                 
-                if(!deptName.equals(currentDept)) { 
-                    currentDept = deptName;
-                    
+                if(deptName != null && !deptName.equals(currentDept)) { 
                     if(isTableOpen) { 
-                        out.print("</table></div>"); 
+                        %>
+                        </table></div>
+                        <% 
                     }
+                    currentDept = deptName;
+                    isTableOpen = true;
         %>
                     <div class="dept-group-title">
                         <%= currentDept.toUpperCase() %>
@@ -401,7 +402,6 @@ tr:hover{
                             <th>REGISTERED COMPLAINT TYPE</th>
                         </tr>
         <% 
-                    isTableOpen = true;
                 } 
         %>
                         <tr>
@@ -412,7 +412,9 @@ tr:hover{
             } 
             
             if(isTableOpen) { 
-                out.print("</table></div>"); 
+                %>
+                </table></div>
+                <% 
             }
         } else {
         %>

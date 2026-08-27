@@ -137,9 +137,9 @@ public class MasterServlet extends HttpServlet {
             }
 
             // =========================================
-            // DEPARTMENT LIST
+            // DEPARTMENT LIST (Safeguarded with COALESCE)
             // =========================================
-            String deptSql = "SELECT d.id, d.department_name, i.incharge_name " +
+            String deptSql = "SELECT d.id, d.department_name, COALESCE(i.incharge_name, 'Not Assigned') AS incharge_name " +
                              "FROM departments d " +
                              "LEFT JOIN department_incharge i ON d.incharge_user_id = i.id " +
                              "ORDER BY d.department_name";
@@ -155,12 +155,12 @@ public class MasterServlet extends HttpServlet {
             }
 
             // =========================================
-            // COMPLAINT LIST
+            // COMPLAINT LIST (Safeguarded with LEFT JOIN)
             // =========================================
-            String complaintSql = "SELECT c.id, c.complaint_name, d.department_name " +
+            String complaintSql = "SELECT c.id, c.complaint_name, COALESCE(d.department_name, 'Unassigned') AS department_name " +
                                   "FROM complaint_types c " +
-                                  "JOIN departments d ON c.department_id = d.id " +
-                                  "ORDER BY d.department_name";
+                                  "LEFT JOIN departments d ON c.department_id = d.id " +
+                                  "ORDER BY department_name";
             psComplaint = con.prepareStatement(complaintSql);
             rsComplaint = psComplaint.executeQuery();
 
