@@ -31,7 +31,7 @@ public class DBUtil5 {
 
         } else if ("Sanpoly".equalsIgnoreCase(branch)) {
 
-            url = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/SANPOLY_INVENTORY"
+            url = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/Sanploy_Service"
                     + "?useSSL=false"
                     + "&allowPublicKeyRetrieval=true"
                     + "&serverTimezone=UTC"
