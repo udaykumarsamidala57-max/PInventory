@@ -12,7 +12,7 @@
     String users = (String) sesso.getAttribute("username");
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
-    String branches = (String) sesso.getAttribute("branch");
+    String branchess = (String) sesso.getAttribute("branch");
 
     // Formats date with full day name in the header (e.g., Tuesday, 04 August 2026)
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
@@ -46,7 +46,7 @@ PreparedStatement psaa = null;
 ResultSet rsaa = null;
 
 try {
-    consa = DBUtil5.getConnection();
+    consa = DBUtil5.getConnection(branchess);
 
     String sql =
         "SELECT sr.request_no, " +
@@ -873,7 +873,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <body class="sidebar-collapsed">
 
 <div class="sidebar" id="sidebar">
-  <h2><i class="fa-solid fa-layer-group"></i> <%= branches.toUpperCase() %> Workspace</h2>
+  <h2><i class="fa-solid fa-layer-group"></i> <%= branchess.toUpperCase() %> Workspace</h2>
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory Platform</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
@@ -1045,7 +1045,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <!-- Left Side: Toggle, Branding, and Page Title -->
   <div class="header-left-group">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="header-brand-title"><%= branches.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
+    <div class="header-brand-title"><%= branchess.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
     <div class="header-title-wrapper">
       <h6>Overview</h6>
       <div class="adm-title" id="admPageTitle">Dashboard</div>
@@ -1168,7 +1168,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 <footer>
     <div class="footer-badge">
         <i class="fa-solid fa-code-branch text-primary"></i>
-        <span class="brand"><%= branches.toUpperCase() %></span>
+        <span class="brand"><%= branchess.toUpperCase() %></span>
         <span class="dot"></span>
         <span class="tagline">OFFICE CENTRAL ERP</span>
         <span class="dot"></span>

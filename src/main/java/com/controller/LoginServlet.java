@@ -2,7 +2,6 @@ package com.controller;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
@@ -14,19 +13,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.bean.DBUtil; // Using DBUtil instead of hardcoded connection details
+
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
 
-    private static final String URL =
-            "jdbc:mysql://shuttle.proxy.rlwy.net:26985/inventory?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&tcpKeepAlive=true";
-
-    private static final String USER = "root";
-    private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
+    private static final long serialVersionUID = 1L;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
         response.sendRedirect("login.jsp");
     }
 
@@ -42,9 +38,8 @@ public class LoginServlet extends HttpServlet {
         ResultSet rs = null;
 
         try {
-
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            con = DriverManager.getConnection(URL, USER, PASSWORD);
+          
+            con = DBUtil.getConnection("SRS");
 
             ps = con.prepareStatement(
                     "SELECT role, department, branch FROM users WHERE username=? AND password=?");
@@ -55,7 +50,6 @@ public class LoginServlet extends HttpServlet {
             rs = ps.executeQuery();
 
             if (rs.next()) {
-
                 String role = rs.getString("role");
                 String department = rs.getString("department");
                 String branch = rs.getString("branch");
@@ -68,57 +62,47 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("branch", branch);
 
                 // Redirect based on role/department
-
                 if ("Global".equalsIgnoreCase(role)) {
-
                     response.sendRedirect("Home");
-
                 } else if ("incharge".equalsIgnoreCase(role)
                         || "Finance".equalsIgnoreCase(department)) {
-
                     response.sendRedirect("Home");
-
                 } else if ("HOSTEL".equalsIgnoreCase(department)) {
-
                     response.sendRedirect("TrackRequestServlet");
-
                 } else {
-
                     response.sendRedirect("Home");
                 }
 
             } else {
-
                 request.setAttribute("error", "Invalid Username or Password!");
                 RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
                 rd.forward(request, response);
-
             }
 
         } catch (Exception e) {
-
             e.printStackTrace();
+            request.setAttribute("error", "Database connection error. Please try again later.");
+            RequestDispatcher rd = request.getRequestDispatcher("login.jsp");
+            rd.forward(request, response);
 
         } finally {
-
             try {
-                if (rs != null)
-                    rs.close();
+                if (rs != null) rs.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             try {
-                if (ps != null)
-                    ps.close();
+                if (ps != null) ps.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
 
             try {
-                if (con != null)
-                    con.close();
+                if (con != null) con.close();
             } catch (Exception e) {
+                e.printStackTrace();
             }
-
         }
     }
 }
