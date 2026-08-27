@@ -40,6 +40,15 @@ public class Incharge extends HttpServlet {
             );
             return;
         }
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
 
         /*
          * SESSION USERNAME
@@ -99,7 +108,7 @@ public class Incharge extends HttpServlet {
         System.out.println("==================================");
 
         try (
-                Connection con = DBUtil5.getConnection();
+                Connection con = DBUtil5.getConnection(branch);
 
                 PreparedStatement ps =
                         con.prepareStatement(sql);
@@ -283,6 +292,15 @@ public class Incharge extends HttpServlet {
             );
             return;
         }
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
 
         String username = String.valueOf(
                 session.getAttribute("username")
@@ -349,7 +367,7 @@ public class Incharge extends HttpServlet {
                 "WHERE id = ?";
 
         try (
-                Connection con = DBUtil5.getConnection();
+                Connection con = DBUtil5.getConnection(branch);
 
                 PreparedStatement verifyPs =
                         con.prepareStatement(verifySql);

@@ -45,347 +45,601 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dining Hall Consumption Report</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/design-system/2.17.6/styles/salesforce-lightning-design-system.min.css" />
-    <style>
-        body{
-            background:#f4f6f9;
-            font-family:"Salesforce Sans", Arial, sans-serif;
-            color:#181818;
-        }
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
-        .page-container{
-            width:96%;
-            margin:25px auto;
-        }
+   <style>
+    :root {
+        --bg-body: #f8fafc;
+        --card-bg: #ffffff;
+        --border-subtle: #e2e8f0;
+        --border-strong: #cbd5e1;
+        
+        --text-heading: #0f172a;
+        --text-body: #334155;
+        --text-muted: #64748b;
+        
+        --brand-primary: #1e3a8a;
+        --brand-accent: #2563eb;
+        --brand-light: #eff6ff;
+    }
 
-        .slds-card{
-            border:1px solid #d8dde6;
-            border-radius:8px;
-            overflow:hidden;
-            background:#fff;
-            box-shadow:0 2px 8px rgba(0,0,0,0.08);
-        }
+    body {
+        background-color: var(--bg-body);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-body);
+        margin: 0;
+        padding: 0;
+        -webkit-font-smoothing: antialiased;
+    }
 
-        .slds-card__body{
-            background:#fff;
-            padding:1.5rem;
-        }
+    .dashboard-container {
+        width: 95%;
+        max-width: 1400px;
+        margin: 28px auto;
+    }
 
-        /* Filter Panel */
-        .filter-panel{
-            background:#ffffff;
-            border:1px solid #d8dde6;
-            border-radius:10px;
-            padding:18px;
-            margin-bottom:20px;
-            box-shadow:0 2px 6px rgba(0,0,0,.05);
-        }
+    /* Top Header Card */
+    .report-header-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
 
-        .filter-grid{
-            display:grid;
-            grid-template-columns: 220px 220px 150px;
-            gap:16px;
-            align-items:end;
-        }
+    .header-title-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
 
-        .filter-item label{
-            display:block;
-            margin-bottom:6px;
-            font-weight:600;
-            color:#16325c;
-        }
+    .header-icon {
+        width: 42px;
+        height: 42px;
+        background: var(--brand-light);
+        color: var(--brand-accent);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
 
-        .slds-input, .slds-select{
-            border-radius:6px;
-            border:1px solid #c9c7c5;
-        }
+    .report-header-card h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--text-heading);
+        letter-spacing: -0.01em;
+    }
 
-        .slds-button_brand{
-            border-radius:6px;
-            font-weight:600;
-            height: 40px;
-            width: 100%;
-        }
+    .report-header-card p {
+        margin: 2px 0 0 0;
+        font-size: 13px;
+        color: var(--text-muted);
+    }
 
-        /* Calendar Grid Overrides */
-        .calendar-table {
-            width: 100%;
-            table-layout: fixed;
-            border-collapse: collapse;
-            border: 1px solid #d8dde6;
-        }
+    /* Filter Panel */
+    .filter-panel {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
 
-        .calendar-table th {
-            background: #f3f5f7;
-            color: #16325c;
-            font-weight: 700;
-            font-size: 18px;
-            text-transform: uppercase;
-            text-align: center;
-            padding: 12px 8px;
-            border: 1px solid #d8dde6;
-            width: 14.285%;
-        }
+    .filter-grid {
+        display: grid;
+        grid-template-columns: 200px 200px 140px;
+        gap: 16px;
+        align-items: end;
+    }
 
-        .calendar-table td {
-            vertical-align: top;
-            height: 120px;
-            padding: 6px;
-            border: 1px solid #d8dde6;
-            background: #fff;
-        }
+    .filter-item label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 
-        .calendar-table td.empty-day {
-            background: #fafbfc;
-        }
+    .form-input, .form-select {
+        width: 100%;
+        height: 38px;
+        padding: 0 12px;
+        border-radius: 6px;
+        border: 1px solid var(--border-strong);
+        background-color: var(--card-bg);
+        color: var(--text-heading);
+        font-size: 14px;
+        font-family: inherit;
+        box-sizing: border-box;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
 
-        .day-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid #eef4ff;
-        }
+    .form-input:focus, .form-select:focus {
+        outline: none;
+        border-color: var(--brand-accent);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
 
-        .day-number {
-            font-size: 18px;
-            font-weight: bold;
-            color: #16325c;
-        }
+    .btn-brand {
+        background: var(--brand-primary);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 13px;
+        height: 38px;
+        width: 100%;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
 
-        .day-total {
-            background: #eef4ff;
-            color: #0176d3;
-            padding: 1px 6px;
-            border-radius: 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
+    .btn-brand:hover {
+        background: #1d4ed8;
+    }
 
-        /* Sessions inside days */
-        .session-trigger {
-            cursor: pointer;
-            padding: 4px 6px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-radius: 4px;
-            transition: background 0.2s ease;
-            margin-bottom: 2px;
-        }
+    /* Modern Calendar Table Grid */
+    .calendar-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
 
-        .session-trigger:hover {
-            background: #f4f6f9;
-        }
+    .calendar-table {
+        width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
+    }
 
-        .session-name {
-            color: black;
-            font-weight: 400;
-            font-size: 16px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+    .calendar-table th {
+        background: #f1f5f9;
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        text-align: center;
+        padding: 12px 8px;
+        border-bottom: 1px solid var(--border-subtle);
+        border-right: 1px solid var(--border-subtle);
+        width: 14.285%;
+    }
 
-        .session-val {
-        font-weight: 400;
-            color: #54698d;
-            font-size: 16px;
-        }
+    .calendar-table th:last-child {
+        border-right: none;
+    }
 
-        /* Centered Overlay Stylesheet Fixes */
-        .custom-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(8, 7, 7, 0.6);
-            z-index: 9999;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(2px);
-        }
+    .calendar-table td {
+        vertical-align: top;
+        height: 115px;
+        padding: 8px;
+        border-bottom: 1px solid var(--border-subtle);
+        border-right: 1px solid var(--border-subtle);
+        background: var(--card-bg);
+        transition: background-color 0.15s ease;
+    }
 
-        .custom-modal.is-open { display: flex; }
+    .calendar-table td:last-child {
+        border-right: none;
+    }
 
-        .custom-modal-content {
-            background: #ffffff;
-            border-radius: 8px;
-            width: 550px;
-            max-width: 90%;
-            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.24);
-            animation: modalSlideUp 0.2s ease-out;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+    .calendar-table tr:last-child td {
+        border-bottom: none;
+    }
 
-        @keyframes modalSlideUp {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    .calendar-table td.empty-day {
+        background: #fafafa;
+    }
 
-        .custom-modal-header {
-            background: #fafbfc;
-            padding: 12px 20px;
-            border-bottom: 1px solid #d8dde6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    .calendar-table td:not(.empty-day):hover {
+        background-color: #f8fafc;
+    }
 
-        .close-modal-btn {
-            background: none; 
-            border: none; 
-            font-size: 1.75rem; 
-            color: #706e6b; 
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-        }
+    /* Day Cell Structure */
+    .day-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
 
-        .close-modal-btn:hover { color: #c23934; }
+    .day-number {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-heading);
+    }
 
-        .custom-modal-body { 
-            padding: 0; 
-            max-height: 60vh; 
-            overflow-y: auto; 
-        }
+    .day-total-badge {
+        background: #f1f5f9;
+        color: var(--text-heading);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 800;
+        font-variant-numeric: tabular-nums;
+        border: 1px solid var(--border-subtle);
+    }
 
-        .modal-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    /* Sessions - Clean Compact Badges */
+    .session-list {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
 
-        .modal-table th {
-            background: #f3f5f7;
-            color: #16325c;
-            font-weight: 700;
-            font-size: 13px;
-            text-transform: uppercase;
-            padding: 10px 20px;
-            border-bottom: 1px solid #d8dde6;
-        }
+    .session-trigger {
+        cursor: pointer;
+        padding: 3px 6px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-radius: 4px;
+        transition: all 0.12s ease;
+        background: #f8fafc;
+        border: 1px solid var(--border-subtle);
+    }
 
-        .modal-table td {
-            padding: 10px 20px;
-            border-bottom: 1px solid #eee;
-            font-size: 14px;
-            color: #3e3e3c;
-        }
+    .session-trigger:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-1px);
+    }
 
-        .modal-table tr:last-child td {
-            border-bottom: none;
-        }
+    .session-name {
+        font-weight: 500;
+        font-size: 14px;
+        color: var(--text-heading);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
 
-        .modal-footer-summary {
-            background: #fafbfc;
-            padding: 14px 20px;
-            border-top: 1px solid #d8dde6;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
+    .session-val {
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--text-body);
+        font-variant-numeric: tabular-nums;
+    }
 
-        .grand-total-banner {
-            background: #f3f5f7;
-            border-top: 2px solid #d8dde6;
-            padding: 5px;
-            margin-top: 10px;
-            text-align: right;
-            border-radius: 6px;
-        }
+    /* Minimal Session Color Accents */
+    .session-trigger.morning-drink i { color: #0284c7; }
+    .session-trigger.break-fast i { color: #d97706; }
+    .session-trigger.lunch i { color: #16a34a; }
+    .session-trigger.snacks i { color: #e11d48; }
+    .session-trigger.staff-tea i { color: #6366f1; }
+    .session-trigger.dinner i { color: #0d9488; }
 
-        @media(max-width:900px){
-            .filter-grid{ grid-template-columns: 1fr; }
-        }
-    </style>
+    /* Grand Total Summary Section */
+    .summary-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-subtle);
+        border-radius: 12px;
+        padding: 16px 24px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .summary-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .summary-value {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--brand-primary);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ==========================================================================
+       PROFESSIONAL ENTERPRISE MODAL STYLING (REDESIGNED)
+       ========================================================================== */
+    
+    .custom-modal {
+        display: none;
+        position: fixed;
+        top: 0; 
+        left: 0; 
+        width: 100%; 
+        height: 100%;
+        background: rgba(15, 23, 42, 0.55);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        backdrop-filter: blur(6px);
+        opacity: 0;
+        transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .custom-modal.is-open { 
+        display: flex; 
+        opacity: 1;
+    }
+
+    .custom-modal-content {
+        background: var(--card-bg);
+        border-radius: 12px;
+        width: 520px;
+        max-width: 92%;
+        box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+        border: 1px solid var(--border-subtle);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transform: scale(0.96) translateY(8px);
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .custom-modal.is-open .custom-modal-content {
+        transform: scale(1) translateY(0);
+    }
+
+    /* Header Structure */
+    .custom-modal-header {
+        background: #ffffff;
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border-subtle);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .modal-title-container {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .modal-preheading {
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--brand-accent);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .custom-modal-header h3 {
+        font-weight: 700;
+        font-size: 16px;
+        color: var(--text-heading);
+        margin: 0;
+        letter-spacing: -0.01em;
+    }
+
+    .close-modal-btn {
+        background: #f1f5f9; 
+        border: none; 
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        color: var(--text-muted); 
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        transition: all 0.15s ease;
+    }
+
+    .close-modal-btn:hover { 
+        background: #fee2e2;
+        color: #ef4444; 
+    }
+
+    /* Modal Content Body */
+    .custom-modal-body { 
+        padding: 0; 
+        max-height: 52vh; 
+        overflow-y: auto; 
+    }
+
+    .modal-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .modal-table th {
+        background: #f8fafc;
+        color: var(--text-muted);
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        padding: 10px 24px;
+        border-bottom: 1px solid var(--border-subtle);
+        position: sticky;
+        top: 0;
+        z-index: 2;
+    }
+
+    .modal-table td {
+        padding: 12px 24px;
+        border-bottom: 1px solid var(--border-subtle);
+        font-size: 13px;
+        color: var(--text-body);
+        transition: background-color 0.12s ease;
+    }
+
+    .modal-table tr:hover td {
+        background-color: #f8fafc;
+    }
+
+    .modal-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    /* Footer Stat Panel */
+    .modal-footer-summary {
+        background: #f8fafc;
+        padding: 16px 24px;
+        border-top: 1px solid var(--border-subtle);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-stat-pill {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-stat-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .modal-stat-val {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-heading);
+        font-variant-numeric: tabular-nums;
+    }
+
+    .modal-stat-val.highlight {
+        color: var(--brand-primary);
+    }
+
+    @media(max-width: 850px){
+        .filter-grid{ grid-template-columns: 1fr; }
+        .report-header-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+</style>
 </head>
 <body>
 <%@ include file="header.jsp" %>
-<div class="slds-scope page-container">
-    <article class="slds-card">
-        <div class="slds-card__body slds-card__body_inner">
-            
-            <form method="get" action="DiningHallConsumptionReportServlet" class="filter-panel">
-                <div class="filter-grid">
-                    <div class="filter-item">
-                        <label class="slds-form-element__label">Month</label>
-                        <input type="month" name="report_month" class="slds-input" 
-                               value="<%= reportMonthParam != null ? reportMonthParam : targetYearMonth.toString() %>">
-                    </div>
 
-                    <div class="filter-item">
-                        <label class="slds-form-element__label">Session</label>
-                        <select name="session" class="slds-select">
-                            <option value="">All Sessions</option>
-                            <% for(String s : Arrays.asList("BREAKFAST","LUNCH","SNACKS","DINNER")) { %>
-                                <option value="<%= s %>" <%= s.equals(request.getParameter("session")) ? "selected" : "" %>><%= s %></option>
-                            <% } %>
-                        </select>
-                    </div>
+<div class="dashboard-container">
+    
+    <!-- Top Header -->
+    <div class="report-header-card">
+        <div class="header-title-group">
+            <div class="header-icon">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div>
+                <h2>Dining Hall Consumption Report</h2>
+                <p>Monthly aggregate and session-wise breakdown</p>
+            </div>
+        </div>
+    </div>
 
-                    <div class="filter-button">
-                        <button type="submit" class="slds-button slds-button_brand">Run Report</button>
-                    </div>
-                </div>
-            </form>
+    <!-- Filter Bar -->
+    <form method="get" action="DiningHallConsumptionReportServlet" class="filter-panel">
+        <div class="filter-grid">
+            <div class="filter-item">
+                <label>Month</label>
+                <input type="month" name="report_month" class="form-input" 
+                       value="<%= reportMonthParam != null ? reportMonthParam : targetYearMonth.toString() %>">
+            </div>
 
-            <table class="calendar-table">
-                <thead>
-                    <tr>
-                        <th>Sun</th>
-                        <th>Mon</th>
-                        <th>Tue</th>
-                        <th>Wed</th>
-                        <th>Thu</th>
-                        <th>Fri</th>
-                        <th>Sat</th>
-                    </tr>
-                </thead>
-                <tbody>
+            <div class="filter-item">
+                <label>Session</label>
+                <select name="session" class="form-select">
+                    <option value="">All Sessions</option>
+                    <% for(String s : Arrays.asList("BREAKFAST","LUNCH","SNACKS","DINNER")) { %>
+                        <option value="<%= s %>" <%= s.equals(request.getParameter("session")) ? "selected" : "" %>><%= s %></option>
+                    <% } %>
+                </select>
+            </div>
+
+            <div class="filter-button">
+                <button type="submit" class="btn-brand"><i class="fa-solid fa-magnifying-glass"></i> Run Report</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Calendar Card Grid -->
+    <div class="calendar-card">
+        <table class="calendar-table">
+            <thead>
                 <tr>
-                <%
-                double grandTotal = 0;
-                int modalCounter = 0;
-                int cellCount = 0;
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                    <th>Sat</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+            <%
+            double grandTotal = 0;
+            int modalCounter = 0;
+            int cellCount = 0;
 
-                // 1. Print preceding empty padding blocks for calendar grid alignment
-                for (int i = 0; i < leadingEmptyCells; i++) {
-                    out.print("<td class='empty-day'></td>");
-                    cellCount++;
+            // 1. Empty padding blocks
+            for (int i = 0; i < leadingEmptyCells; i++) {
+                out.print("<td class='empty-day'></td>");
+                cellCount++;
+            }
+
+            // 2. Loop through month days
+            for (int day = 1; day <= totalDaysInMonth; day++) {
+                LocalDate currentDate = targetYearMonth.atDay(day);
+                String dateKey = currentDate.toString();
+                String formattedDate = currentDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+
+                double dayTotal = 0;
+                Map<String, List<Map<String, Object>>> sessionMap = groupedData.get(dateKey);
+
+                if (sessionMap != null) {
+                    dayTotal = sessionMap.values().stream()
+                            .flatMap(List::stream)
+                            .mapToDouble(i -> ((Number)i.get("value")).doubleValue())
+                            .sum();
                 }
+                grandTotal += dayTotal;
 
-                // 2. Loop systematically day by day through the target month
-                for (int day = 1; day <= totalDaysInMonth; day++) {
-                    LocalDate currentDate = targetYearMonth.atDay(day);
-                    String dateKey = currentDate.toString();
-                    String formattedDate = currentDate.format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
+                if (cellCount > 0 && cellCount % 7 == 0) {
+                    out.print("</tr><tr>");
+                }
+            %>
+            <td>
+                <div class="day-header">
+                    <span class="day-number"><%= day %></span>
+                    <% if(dayTotal > 0) { %>
+                        <span class="day-total-badge"><%= String.format("%.0f", dayTotal) %></span>
+                    <% } %>
+                </div>
 
-                    double dayTotal = 0;
-                    Map<String, List<Map<String, Object>>> sessionMap = groupedData.get(dateKey);
-
-                    if (sessionMap != null) {
-                        dayTotal = sessionMap.values().stream()
-                                .flatMap(List::stream)
-                                .mapToDouble(i -> ((Number)i.get("value")).doubleValue())
-                                .sum();
-                    }
-                    grandTotal += dayTotal;
-
-                    if (cellCount > 0 && cellCount % 7 == 0) {
-                        out.print("</tr><tr>");
-                    }
-                %>
-                <td>
-                    <div class="day-header">
-                        <span class="day-number"><%= day %></span>
-                        <% if(dayTotal > 0) { %>
-                            <span class="day-total"><%= String.format("%.2f", dayTotal) %></span>
-                        <% } %>
-                    </div>
-
-                 <%
+                <div class="session-list">
+             <%
 if (sessionMap != null) {
 
     List<String> sessionOrder = Arrays.asList(
@@ -418,24 +672,31 @@ if (sessionMap != null) {
         modalData.put("total", sessionTotal);
         modalBufferList.add(modalData);
 
-        String iconClass = "fa-solid fa-utensils text-info";
+        String iconClass = "fa-solid fa-utensils";
+        String colorClass = "";
 
         if ("Morning Drink".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-mug-saucer text-info";
+            iconClass = "fa-solid fa-mug-saucer";
+            colorClass = "morning-drink";
         } else if ("Break Fast".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-bread-slice text-warning";
+            iconClass = "fa-solid fa-bread-slice";
+            colorClass = "break-fast";
         } else if ("Lunch".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-plate-wheat text-success";
+            iconClass = "fa-solid fa-plate-wheat";
+            colorClass = "lunch";
         } else if ("Snacks".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-cookie-bite text-warning";
+            iconClass = "fa-solid fa-cookie-bite";
+            colorClass = "snacks";
         } else if ("Staff Tea".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-mug-hot text-secondary";
+            iconClass = "fa-solid fa-mug-hot";
+            colorClass = "staff-tea";
         } else if ("Dinner".equalsIgnoreCase(sessionName)) {
-            iconClass = "fa-solid fa-bowl-rice text-primary";
+            iconClass = "fa-solid fa-bowl-rice";
+            colorClass = "dinner";
         }
 %>
 
-<div class="session-trigger"
+<div class="session-trigger <%= colorClass %>"
      onclick="toggleModal('session-modal-<%= modalCounter %>', true)">
 
     <span class="session-name">
@@ -453,28 +714,29 @@ if (sessionMap != null) {
     }
 }
 %>
-                </td>
-                <%
-                    cellCount++;
-                }
+                </div>
+            </td>
+            <%
+                cellCount++;
+            }
 
-                // 3. Append trailing empty cell blocks to finalize the calendar layout row safely
-                while (cellCount % 7 != 0) {
-                    out.print("<td class='empty-day'></td>");
-                    cellCount++;
-                }
-                %>
-                </tr>
-                </tbody>
-            </table>
+            // 3. Trailing empty padding
+            while (cellCount % 7 != 0) {
+                out.print("<td class='empty-day'></td>");
+                cellCount++;
+            }
+            %>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 
-            <div class="grand-total-banner">
-                <span style="font-size: 16px; font-weight: 600; color: #54698d; margin-right: 15px;">Grand Total Volume:</span>
-                <span style="font-size: 22px; font-weight: 800; color: #0176d3;"><%= String.format("%.2f", grandTotal) %></span>
-            </div>
+    <!-- Summary Section -->
+    <div class="summary-card">
+        <span class="summary-label">Grand Total Volume:</span>
+        <span class="summary-value"><%= String.format("%.2f", grandTotal) %></span>
+    </div>
 
-        </div>
-    </article>
 </div>
 
 <% 
@@ -487,8 +749,8 @@ for(Map<String, Object> mBlock : modalBufferList) {
 <div id="session-modal-<%= mId %>" class="custom-modal" onclick="if(event.target === this) toggleModal('session-modal-<%= mId %>', false)">
     <div class="custom-modal-content">
         <div class="custom-modal-header">
-            <h3 style="font-weight: 700; font-size:1.1rem; color: #16325c; margin: 0;"><%= mTitle %></h3>
-            <button type="button" class="close-modal-btn" onclick="toggleModal('session-modal-<%= mId %>', false)">&times;</button>
+            <h3><i class="fa-solid fa-circle-info" style="color:#2563eb;"></i> <%= mTitle %></h3>
+            <button type="button" class="close-modal-btn" onclick="toggleModal('session-modal-<%= mId %>', false)"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="custom-modal-body">
             <table class="modal-table">
@@ -496,7 +758,7 @@ for(Map<String, Object> mBlock : modalBufferList) {
                     <tr>
                         <th style="text-align: left;">Item Name</th>
                         <th style="text-align: center; width: 80px;">Qty</th>
-                        <th style="text-align: right; width: 120px;">Value</th>
+                        <th style="text-align: right; width: 110px;">Value</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -511,9 +773,8 @@ for(Map<String, Object> mBlock : modalBufferList) {
             </table>
         </div>
         <div class="modal-footer-summary">
-            <span style="font-size: 15px; color: #333;">
-                Total Session Cost: <b style="color:#c23934; font-size: 16px; margin-left: 5px;"><%= String.format("%.2f", mTotal) %></b>
-            </span>
+            <span>Total Session Cost:</span>
+            <b><%= String.format("%.2f", mTotal) %></b>
         </div>
     </div>
 </div>

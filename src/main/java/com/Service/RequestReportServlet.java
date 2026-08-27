@@ -14,6 +14,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.bean.DBUtil5;
 
@@ -25,6 +26,16 @@ public class RequestReportServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
                          HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
 
         List<Map<String, Object>> reportDataList = new ArrayList<>();
 
@@ -53,7 +64,7 @@ public class RequestReportServlet extends HttpServlet {
                 "ORDER BY id ASC";
 
         try (
-                Connection con = DBUtil5.getConnection();
+                Connection con = DBUtil5.getConnection(branch);
                 PreparedStatement psMain = con.prepareStatement(mainSql);
                 ResultSet rsMain = psMain.executeQuery();
                 PreparedStatement psDetail = con.prepareStatement(detailsSql)

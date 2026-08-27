@@ -46,12 +46,22 @@ public class RequestBookingServlet extends HttpServlet {
 
     private void loadDepartments(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
 
         ArrayList<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
         String sql = "SELECT * FROM departments ORDER BY department_name";
 
         // Connection is requested and closed automatically here
-        try (Connection con = DBUtil5.getConnection();
+        try (Connection con = DBUtil5.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -85,8 +95,18 @@ public class RequestBookingServlet extends HttpServlet {
         int departmentId = Integer.parseInt(deptId);
         String sql = "SELECT * FROM complaint_types WHERE department_id=? ORDER BY complaint_name";
 
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String role = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
+        
         // Connection is requested and closed automatically here
-        try (Connection con = DBUtil5.getConnection();
+        try (Connection con = DBUtil5.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
@@ -125,9 +145,19 @@ public class RequestBookingServlet extends HttpServlet {
             String year = new SimpleDateFormat("yyyy").format(new Date());
             String countSql = "SELECT COUNT(*) AS total FROM service_requests WHERE YEAR(request_date)=YEAR(NOW())";
             int nextNo = 1;
+            
+            HttpSession sess = request.getSession(false);
+            if (sess == null || sess.getAttribute("username") == null) {
+                response.sendRedirect("login.jsp");
+                return;
+            }
+            String branch = (String) sess.getAttribute("branch");
+
+            String role = (String) sess.getAttribute("role");
+            String dept = (String) sess.getAttribute("department");
 
             // Connection is requested and closed automatically here
-            try (Connection con = DBUtil5.getConnection();
+            try (Connection con = DBUtil5.getConnection(branch);
                  PreparedStatement countPs = con.prepareStatement(countSql);
                  ResultSet countRs = countPs.executeQuery()) {
 

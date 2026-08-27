@@ -12,6 +12,7 @@ if(sess == null || sess.getAttribute("username") == null){
 
 String role = (String)sess.getAttribute("role");
 String dept = (String)sess.getAttribute("department");
+String branch = (String) sess.getAttribute("branch");
 
 if((!"Global".equalsIgnoreCase(role))
         && (!"Finance".equalsIgnoreCase(dept))
@@ -211,7 +212,7 @@ Map<String, Integer> deptCounts = new LinkedHashMap<String, Integer>();
 int totalClosed = 0;
 
 try {
-    con = DBUtil5.getConnection();
+    con = DBUtil5.getConnection(branch);
 
     /* UPDATED QUERY: 
        Performs a LEFT JOIN with your departments table to extract 

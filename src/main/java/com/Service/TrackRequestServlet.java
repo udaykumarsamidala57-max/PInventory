@@ -27,6 +27,16 @@ public class TrackRequestServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
+    	
+    	HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        String branch = (String) sess.getAttribute("branch");
+
+        String roles = (String) sess.getAttribute("role");
+        String dept = (String) sess.getAttribute("department");
 
         Connection con = null;
 
@@ -54,7 +64,7 @@ public class TrackRequestServlet extends HttpServlet {
                     session.getAttribute("role"))
                     .trim();
 
-            con = DBUtil5.getConnection();
+            con = DBUtil5.getConnection(branch);
 
             ArrayList<HashMap<String,Object>>
             requestList =
@@ -335,8 +345,18 @@ public class TrackRequestServlet extends HttpServlet {
 
                 return;
             }
+            
+            HttpSession sess = request.getSession(false);
+            if (sess == null || sess.getAttribute("username") == null) {
+                response.sendRedirect("login.jsp");
+                return;
+            }
+            String branch = (String) sess.getAttribute("branch");
 
-            con = DBUtil5.getConnection();
+            String roles = (String) sess.getAttribute("role");
+            String dept = (String) sess.getAttribute("department");
+
+            con = DBUtil5.getConnection(branch);
 
             PreparedStatement ps =
             con.prepareStatement(

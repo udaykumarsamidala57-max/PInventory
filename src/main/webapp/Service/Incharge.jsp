@@ -8,9 +8,10 @@ if(sess == null || sess.getAttribute("username") == null){
     response.sendRedirect(request.getContextPath() + "/login.jsp");
     return;
 }
-
+String branch = (String) sess.getAttribute("branch");
 String username = String.valueOf(sess.getAttribute("username")).trim().toUpperCase();
 %>
+
 
 <!DOCTYPE html>
 <html>
