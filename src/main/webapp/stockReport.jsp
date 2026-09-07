@@ -60,6 +60,7 @@ try {
      "im.Item_name, " +
      "im.Category, " +
      "im.Sub_Category, " +
+     "s.last_price, " +
 
      /* Opening Balance */
      "COALESCE(( " +
@@ -90,7 +91,8 @@ try {
      "   AND sl.trans_date BETWEEN ? AND ? " +
      "),0) AS issues " +
 
-     "FROM item_master im ";
+     "FROM item_master im " +
+     "LEFT JOIN stock s ON im.Item_id = s.item_id ";
 
  boolean hasWhere = false;
 
@@ -297,7 +299,7 @@ button{
 .main-table{
     width:100%;
     border-collapse:collapse;
-    min-width: 950px;
+    min-width: 1100px;
     background: #fff;
     font-size: 13px;
 }
@@ -507,13 +509,15 @@ button{
 
 <tr>
     <th class="txt-align-left">Category</th>
-     <th class="txt-align-left">Sub Category</th>
+    <th class="txt-align-left">Sub Category</th>
     <th style="text-align: right;">Item ID</th>
     <th class="txt-align-left">Item Name</th>
     <th style="text-align: right;">Opening Balance</th>
     <th style="text-align: right;">Receipts</th>
     <th style="text-align: right;">Issues</th>
     <th style="text-align: right;">Closing Balance</th>
+    <th style="text-align: right;">Unit Price (₹)</th>
+    <th style="text-align: right;">Closing Value (₹)</th>
 </tr>
 
 </thead>
@@ -532,6 +536,8 @@ while(rs.next()){
     double receipts = rs.getDouble("receipts");
     double issues = rs.getDouble("issues");
     double closing = opening + receipts - issues;
+    double lastPrice = rs.getDouble("last_price");
+    double closingValue = closing * lastPrice;
 
 %>
 
@@ -563,6 +569,10 @@ while(rs.next()){
         <%=String.format("%.2f", closing)%>
     </td>
 
+    <td data-label="Unit Price (₹)"><%=String.format("%.2f", lastPrice)%></td>
+
+    <td data-label="Closing Value (₹)"><%=String.format("%.2f", closingValue)%></td>
+
 </tr>
 
 <%
@@ -572,7 +582,7 @@ if(!hasData){
 %>
 
 <tr>
-    <td colspan="7" style="text-align:center; color:#c23934; font-weight: 600;">
+    <td colspan="10" style="text-align:center; color:#c23934; font-weight: 600;">
         No Records Found
     </td>
 </tr>
