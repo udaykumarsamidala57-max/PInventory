@@ -30,7 +30,6 @@ public class IndentlistServlet extends HttpServlet {
         String dept = (String) sess.getAttribute("department");
         String branch = (String) sess.getAttribute("branch");
 
-
         List<IndentItemFull> list = new ArrayList<>();
 
         try (Connection con = DBUtil.getConnection(branch)) {
@@ -39,7 +38,7 @@ public class IndentlistServlet extends HttpServlet {
 
             listSql.append("SELECT i.*, i.stock AS balance_qty ")
                    .append("FROM indent i ")
-                   .append("WHERE 1=1 ");
+                   .append("WHERE (LOWER(i.purpose) != 'adjustment' OR i.purpose IS NULL) ");
 
             // ---------- Department Filter ----------
             if (!"Global".equalsIgnoreCase(role)
@@ -57,7 +56,7 @@ public class IndentlistServlet extends HttpServlet {
                 }
             }
 
-            // ---------- Latest 500 Records ----------
+            // ---------- Latest Records ----------
             listSql.append(" ORDER BY i.indent_id DESC LIMIT 1000");
 
             try (PreparedStatement ps = con.prepareStatement(listSql.toString())) {
