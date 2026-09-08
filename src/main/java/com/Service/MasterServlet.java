@@ -26,11 +26,7 @@ public class MasterServlet extends HttpServlet {
                          HttpServletResponse response)
                          throws ServletException, IOException {
         
-        HttpSession sess = request.getSession(false);
-        if (sess == null || sess.getAttribute("username") == null) {
-            response.sendRedirect("login.jsp");
-            return;
-        }
+        
         loadData(request, response);
     }
     
