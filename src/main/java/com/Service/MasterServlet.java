@@ -21,7 +21,18 @@ import com.bean.DBUtil5;
 public class MasterServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-
+    @Override
+    protected void doGet(HttpServletRequest request,
+                         HttpServletResponse response)
+                         throws ServletException, IOException {
+        
+        HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null) {
+            response.sendRedirect("login.jsp");
+            return;
+        }
+        loadData(request, response);
+    }
     
     @Override
     protected void doPost(HttpServletRequest request,
