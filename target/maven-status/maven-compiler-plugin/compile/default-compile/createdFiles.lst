@@ -51,6 +51,7 @@ com\controller\HRA\CandidateServlet.class
 com\controller\Asset\CategoryController.class
 com\DAO\TransferDAO.class
 com\bean\DBUtil6.class
+com\controller\HRA\VacancyServlet.class
 com\controller\StockAuditReportServlet.class
 com\controller\Admissions\SaveMarksServlet.class
 com\controller\PO$1MergedItem.class
@@ -90,5 +91,6 @@ com\controller\HRA\resume.class
 com\Employee\EmployeeTreeServlet$1.class
 com\controller\SendOTPServlet.class
 com\bean\Asset.class
+com\controller\HRA\VacancyServlet$Vacancy.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
 com\DAO\AllocationDAO.class
