@@ -1,336 +1,376 @@
-<%@ page language="java" contentType="text/html; charset=UTF-8" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="com.bean.DBUtil2" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Careers | Sandur Residential School</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Job Application | Sandur Residential School</title>
+    <link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans,SalesforceSans,-apple-system,BlinkMacSystemFont,Segoe+UI,Roboto,Helvetica,Arial,sans-serif" rel="stylesheet">
     <style>
         :root {
-            --brand-dark: #1a2a47;
-            --brand-yellow: #f1c40f;
-            --brand-accent: #3498db;
-            --bg-body: #f4f7f9;
-            --card-bg: #ffffff;
-            --border-color: #e1e4e8;
-            --text-main: #333c48;
-            --text-muted: #6a737d;
-            --input-focus: #3498db;
+            /* Brown & Orange Palette */
+            --slds-brand: #e05600;            /* Warm Orange Accent */
+            --slds-brand-hover: #c44700;      /* Darker Orange Hover */
+            --slds-brand-dark: #3d2314;       /* Chocolate Brown Header/Accent */
+            --slds-bg-page: #f6f3f0;          /* Subtle Warm Grey/Cream */
+            --slds-bg-card: #ffffff;
+            --slds-border: #e8d8ce;          /* Soft Brownish Border */
+            --slds-border-focus: #e05600;    /* Focus Ring Orange */
+            --slds-text-primary: #2b1d14;    /* Dark Warm Brown Text */
+            --slds-text-secondary: #5c473a;  /* Medium Earthy Brown Text */
+            --slds-text-muted: #8c7365;     /* Muted Earthy Brown Text */
+            --slds-error: #ba0505;
         }
 
         * {
             box-sizing: border-box;
-            -webkit-font-smoothing: antialiased;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-body);
-            margin: 0;
-            padding: 0;
-            color: var(--text-main);
-            line-height: 1.6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--slds-bg-page);
+            color: var(--slds-text-primary);
+            line-height: 1.5;
+            padding: 32px 16px;
         }
 
-        /* --- Zoho Style Navigation --- */
-        .brand-header {
-            background-color: var(--brand-dark);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* --- Page Layout --- */
+        .page-container {
+            max-width: 840px;
+            margin: 0 auto;
         }
 
-        .header-content {
-            display: flex;
-            align-items: center;
+        /* Salesforce Style Header Block */
+        .page-header {
+            background: var(--slds-bg-card);
+            border: 1px solid var(--slds-border);
+            border-radius: 4px 4px 0 0;
+            padding: 20px 24px;
+            border-bottom: 3px solid var(--slds-brand);
+            text-align: center;
         }
 
-        .yellow-bar {
-            width: 3px;
-            height: 32px;
-            background-color: var(--brand-yellow);
-            margin-right: 12px;
-            border-radius: 2px;
-        }
-
-        .school-name {
-            color: #fff;
-            font-size: 1.2rem;
+        .page-header h1 {
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.5px;
+            color: var(--slds-brand-dark);
+            margin-bottom: 2px;
         }
 
-        .system-tag {
-            background: rgba(255,255,255,0.1);
-            color: var(--brand-yellow);
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            margin-left: 10px;
+        .page-header .subtitle {
+            font-size: 0.8rem;
             text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        /* --- Main Layout --- */
-        .page-wrapper {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .intro-section {
-            margin-bottom: 30px;
-        }
-
-        .intro-section h1 {
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-            color: var(--brand-dark);
-        }
-
-        .intro-section p {
-            color: var(--text-muted);
-            font-size: 0.95rem;
+            letter-spacing: 0.06em;
+            color: var(--slds-brand);
+            font-weight: 700;
         }
 
         .form-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 10px 20px rgba(0,0,0,0.02);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
+            background: var(--slds-bg-card);
+            border: 1px solid var(--slds-border);
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            box-shadow: 0 2px 6px rgba(61, 35, 20, 0.05);
         }
 
-        /* --- Form Elements --- */
+        /* --- Section Styling --- */
+        .form-section {
+            padding: 24px;
+            border-bottom: 1px solid var(--slds-border);
+        }
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
         .section-header {
-            padding: 25px 40px 10px 40px;
             display: flex;
             align-items: center;
-        }
-
-        .section-number {
-            width: 28px;
-            height: 28px;
-            background: #f0f4f8;
-            color: var(--brand-dark);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 0.8rem;
-            margin-right: 12px;
-            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #f4ece7;
         }
 
         .section-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--brand-dark);
-            letter-spacing: -0.2px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--slds-brand-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .form-body {
-            padding: 20px 40px 40px 40px;
+        .section-title::before {
+            content: '';
+            display: inline-block;
+            width: 4px;
+            height: 14px;
+            background-color: var(--slds-brand);
+            border-radius: 2px;
         }
 
+        /* Form Grid System */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 24px;
-            margin-bottom: 30px;
+            gap: 16px 20px;
         }
 
-        .full-width { grid-column: span 2; }
+        .full-width {
+            grid-column: span 2;
+        }
 
         .form-group {
             display: flex;
             flex-direction: column;
+            gap: 4px;
         }
 
         label {
-            font-size: 0.85rem;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: var(--text-main);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--slds-text-secondary);
         }
 
-        input, select, textarea {
-            padding: 10px 14px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: var(--text-main);
-            transition: all 0.2s ease;
-            background-color: #fafbfc;
+        label .required {
+            color: var(--slds-error);
+            margin-left: 2px;
+        }
+
+        /* Form Controls */
+        input[type="text"],
+        input[type="tel"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--slds-border);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: var(--slds-text-primary);
+            background-color: #ffffff;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+
+        input:hover, select:hover, textarea:hover {
+            border-color: #cbb5a7;
         }
 
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--brand-accent);
-            background-color: #ffffff;
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+            border-color: var(--slds-border-focus);
+            box-shadow: 0 0 0 1px var(--slds-border-focus) inset, 0 0 3px rgba(224, 86, 0, 0.4);
         }
 
-        /* --- File Upload Styling --- */
-        .file-input-wrapper {
-            border: 2px dashed var(--border-color);
-            padding: 20px;
-            border-radius: 8px;
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%238c7365%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 9px auto;
+            padding-right: 28px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        /* --- File Upload (Warm Accent Box) --- */
+        .file-upload-box {
+            border: 1px dashed var(--slds-brand);
+            border-radius: 4px;
+            padding: 16px;
             text-align: center;
-            background: #fafbfc;
-            transition: border-color 0.2s;
+            background-color: #fdfaf7;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s;
         }
 
-        .file-input-wrapper:hover {
-            border-color: var(--brand-accent);
+        .file-upload-box:hover {
+            background-color: #f7eee7;
         }
 
-        /* --- Button --- */
-        .footer-actions {
-            padding: 30px 40px;
-            background: #fafbfc;
-            border-top: 1px solid var(--border-color);
-            text-align: right;
+        .file-upload-box span {
+            font-size: 0.8125rem;
+            color: var(--slds-brand);
+            font-weight: 600;
+        }
+
+        .file-upload-box input[type="file"] {
+            display: none;
+        }
+
+        /* --- Footer & Actions --- */
+        .form-footer {
+            padding: 16px 24px;
+            background: #f8f4f0;
+            border-top: 1px solid var(--slds-border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-radius: 0 0 4px 4px;
         }
 
         .btn-submit {
-            background-color: var(--brand-dark);
-            color: white;
-            padding: 12px 32px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
+            background-color: var(--slds-brand);
+            color: #ffffff;
+            border: 1px solid var(--slds-brand);
+            padding: 8px 24px;
+            border-radius: 4px;
+            font-size: 0.8125rem;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.1s, background 0.2s;
+            transition: background-color 0.15s;
         }
 
         .btn-submit:hover {
-            background-color: #0d1625;
-            transform: translateY(-1px);
+            background-color: var(--slds-brand-hover);
+            border-color: var(--slds-brand-hover);
         }
 
-        /* --- Messages --- */
-        .message {
-            margin: 20px 0;
-            padding: 14px 20px;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
+        /* --- System Alerts --- */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 16px;
         }
-        .success { background: #e6fffa; color: #234e52; border: 1px solid #b2f5ea; }
-        .error { background: #fff5f5; color: #742a2a; border: 1px solid #fed7d7; }
+        .alert-success { background-color: #f0f7f0; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .alert-error { background-color: #fdf2f2; color: var(--slds-error); border: 1px solid #f8b4b4; }
 
-        @media (max-width: 768px) {
+        @media (max-width: 640px) {
+            body { padding: 12px; }
             .form-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
-            .form-body { padding: 20px; }
-            .page-wrapper { margin: 20px auto; }
+            .form-section { padding: 16px; }
+            .page-header { padding: 16px; }
         }
     </style>
 </head>
 <body>
 
-<header class="brand-header">
-    <div class="header-content">
-        <div class="yellow-bar"></div>
-        <span class="school-name">Sandur Residential School</span>
-        <span class="system-tag">Recruitment</span>
-    </div>
-</header>
-
-<div class="page-wrapper">
-    <div class="intro-section">
-        <h1>Submit Your Application</h1>
-        <p>Join our team of dedicated educators. Please fill out the form below accurately.</p>
-    </div>
+<div class="page-container">
 
     <%
         String msg = (String) session.getAttribute("message");
         if (msg != null) {
-            String cls = msg.contains("❌") ? "error" : "success";
+            String alertType = msg.contains("❌") ? "alert-error" : "alert-success";
     %>
-        <div class="message <%= cls %>">
-            <span><%= msg %></span>
+        <div class="alert <%= alertType %>">
+            <%= msg %>
         </div>
     <%
             session.removeAttribute("message");
         }
     %>
 
+    <div class="page-header">
+        <h1>Sandur Residential School</h1>
+        <div class="subtitle">Candidate Application Form</div>
+    </div>
+
     <div class="form-card">
         <form action="CandidateServlet" method="post" enctype="multipart/form-data">
             
-            <div class="section-header">
-                <div class="section-number">01</div>
-                <div class="section-title">Personal Information</div>
-            </div>
-            <div class="form-body">
+            <!-- Section 1: Personal Details -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-title">Personal Information</span>
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Full Name *</label>
-                        <input type="text" name="name" required placeholder="e.g. Uday Kumar">
+                        <label>Full Name <span class="required">*</span></label>
+                        <input type="text" name="name" required placeholder="First and Last Name">
                     </div>
                     <div class="form-group">
                         <label>Gender</label>
                         <select name="gender">
-                            <option value="" disabled selected>Select Gender</option>
+                            <option value="" disabled selected>-- Select --</option>
                             <option value="Male">Male</option>
                             <option value="Female">Female</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Date of Birth</label>
+                        <label>Date of Birth <span class="required">*</span></label>
                         <input type="date" required name="date_of_birth">
                     </div>
                     <div class="form-group">
-                        <label>Mobile Number *</label>
+                        <label>Mobile Phone <span class="required">*</span></label>
                         <input type="tel" required name="mobile_no" placeholder="+91 00000 00000">
                     </div>
                     <div class="form-group full-width">
-                        <label>Current Address</label>
-                        <textarea name="address" required rows="2" placeholder="Street, City, State, ZIP"></textarea>
+                        <label>Current Address <span class="required">*</span></label>
+                        <input type="text" name="address" required placeholder="Street, City, State, ZIP Code">
                     </div>
                 </div>
             </div>
 
-            <div class="section-header">
-                <div class="section-number">02</div>
-                <div class="section-title">Application Details</div>
-            </div>
-            <div class="form-body">
+            <!-- Section 2: Application Details -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-title">Position & Referral</span>
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Post Applied For</label>
-                        <select name="post_applied_for">
-                            <option value="" disabled selected>Select Post</option>
-                            <option value="Mathematics Teacher">Mathematics Teacher</option>
-                            <option value="English Teacher">English Teacher</option>
-                            <option value="Kannada Teacher">Kannada Teacher</option>
-                            <option value="Hindi Teacher">Hindi Teacher</option>
-                            <option value="Social Teacher">Social Teacher</option>
-                            <option value="Biology Teacher">Biology Teacher</option>
-                            <option value="Physics Teacher">Physics Teacher</option>
-                            <option value="Chemistry Teacher">Chemistry Teacher</option>
-                            <option value="Geography Teacher">Geography Teacher</option>
-                            <option value="Computer Science Teacher">Computer Science Teacher</option>
-                            <option value="HR">HR</option>
-                            <option value="Academic Assistant">Academic Assistant</option>
-                            <option value="Environmental Applications Teacher">Environmental Applications Teacher</option>
-                            <option value="Mother Teacher">Mother Teacher</option>
-                            <option value="General Science Teacher">General Science Teacher</option>
-                            <option value="Dance">Dance</option>
-                            <option value="Music">Music</option>
-                            <option value="PE Teacher">PE Teacher</option>
-                            <option value="Art & Craft">Art & Craft</option>
+                        <label>Post Applied For <span class="required">*</span></label>
+                        <select name="post_applied_for" required>
+                            <option value="" disabled selected>-- Select Position --</option>
+                            <%
+                                Connection conn = null;
+                                PreparedStatement ps = null;
+                                ResultSet rs = null;
+                                try {
+                                    conn = DBUtil2.getConnection();
+                                    String query = "SELECT job_type, job_title FROM school_vacancies ORDER BY job_type DESC, job_title ASC";
+                                    ps = conn.prepareStatement(query);
+                                    rs = ps.executeQuery();
+
+                                    String currentGroup = "";
+                                    boolean hasResults = false;
+
+                                    while (rs.next()) {
+                                        hasResults = true;
+                                        String jobType = rs.getString("job_type");
+                                        String jobTitle = rs.getString("job_title");
+
+                                        if (!jobType.equals(currentGroup)) {
+                                            if (!currentGroup.isEmpty()) {
+                                                out.println("</optgroup>");
+                                            }
+                                            currentGroup = jobType;
+                                            out.println("<optgroup label='" + currentGroup + " Staff'>");
+                                        }
+                            %>
+                                        <option value="<%= jobTitle %>"><%= jobTitle %></option>
+                            <%
+                                    }
+                                    if (!currentGroup.isEmpty()) {
+                                        out.println("</optgroup>");
+                                    }
+                                    if (!hasResults) {
+                            %>
+                                        <option value="" disabled>No current openings</option>
+                            <%
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                            %>
+                                    <option value="" disabled>Error loading positions</option>
+                            <%
+                                } finally {
+                                    if (rs != null) try { rs.close(); } catch (SQLException e) {}
+                                    if (ps != null) try { ps.close(); } catch (SQLException e) {}
+                                    if (conn != null) try { conn.close(); } catch (SQLException e) {}
+                                }
+                            %>
                         </select>
                     </div>
                     <div class="form-group">
@@ -341,70 +381,67 @@
                         </select>
                     </div>
                     <div class="form-group full-width">
-                        <label>How did you hear about us? (Reference)</label>
-                        <input type="text" name="reference_by" placeholder="Referral name or Advertisement source">
+                        <label>Referral Source / How did you hear about us?</label>
+                        <input type="text" name="reference_by" placeholder="e.g. Employee referral, Job Board, Newspaper">
                     </div>
                 </div>
             </div>
 
-            <div class="section-header">
-                <div class="section-number">03</div>
-                <div class="section-title">Academic & Professional</div>
-            </div>
-            <div class="form-body">
+            <!-- Section 3: Professional & Experience -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-title">Education & Work Experience</span>
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Highest Qualification</label>
+                        <label>Highest Qualification <span class="required">*</span></label>
                         <input type="text" required name="qualification" placeholder="e.g. M.Sc, B.Ed">
                     </div>
                     <div class="form-group">
-                        <label>Specialization</label>
-                        <input type="text" required name="specialization" placeholder="e.g. Mathematics">
+                        <label>Specialization / Major <span class="required">*</span></label>
+                        <input type="text" required name="specialization" placeholder="e.g. Mathematics, English">
                     </div>
                     <div class="form-group">
                         <label>Percentage Marks (%)</label>
-                        <input type="text" name="percentage_marks" placeholder="00.00%">
+                        <input type="text" name="percentage_marks" placeholder="e.g. 82.5%">
                     </div>
                     <div class="form-group">
-                        <label>Year of Passing</label>
+                        <label>Year of Graduation</label>
                         <input type="text" name="year_of_passing" placeholder="YYYY">
                     </div>
                     <div class="form-group">
-                        <label>Total Experience (Years)</label>
+                        <label>Total Experience (Years) <span class="required">*</span></label>
                         <input type="text" required name="total_experience" placeholder="e.g. 5">
                     </div>
                     <div class="form-group">
-                        <label>Expected Monthly Salary</label>
+                        <label>Expected Monthly Salary <span class="required">*</span></label>
                         <input type="text" required name="expected_salary" placeholder="₹">
                     </div>
                     <div class="form-group full-width">
-                        <label>Experience Details</label>
-                        <textarea name="experience" required rows="3" placeholder="List your previous organizations and roles..."></textarea>
+                        <label>Work History Summary <span class="required">*</span></label>
+                        <textarea name="experience" required rows="3" placeholder="Provide details of past employers, positions held, and key responsibilities..."></textarea>
                     </div>
                     <div class="form-group full-width">
-                        <label>Additional Remarks</label>
-                        <textarea name="remarks" rows="2"></textarea>
+                        <label>Additional Notes / Remarks</label>
+                        <input type="text" name="remarks" placeholder="Any additional information you wish to disclose">
                     </div>
                 </div>
             </div>
 
-            <div class="section-header">
-                <div class="section-number">04</div>
-                <div class="section-title">Resume Attachment</div>
-            </div>
-            <div class="form-body">
+            <!-- Section 4: Resume Attachment -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="section-title">Resume Upload</span>
+                </div>
                 <div class="form-group full-width">
-                    <div class="file-input-wrapper">
-                        <label style="display:block; cursor:pointer;">
-                            <span style="color: var(--brand-accent); font-weight:600;">Click to upload</span> or drag and drop
-                            <br><span style="font-size:0.75rem; color: var(--text-muted);">PDF or Word documents (Max 5MB)</span>
-                            <input type="file" name="resume" accept=".pdf,.doc,.docx" required style="margin-top:10px; width:100%;">
-                        </label>
-                    </div>
+                    <label class="file-upload-box" for="resume-upload">
+                        <span id="file-label">Upload Resume (.pdf, .doc, .docx - Max 5MB)</span>
+                        <input type="file" id="resume-upload" name="resume" accept=".pdf,.doc,.docx" required onchange="document.getElementById('file-label').innerText = this.files[0] ? 'Selected: ' + this.files[0].name : 'Upload Resume (.pdf, .doc, .docx - Max 5MB)'">
+                    </label>
                 </div>
             </div>
 
-            <div class="footer-actions">
+            <div class="form-footer">
                 <button type="submit" class="btn-submit">Submit Application</button>
             </div>
 
