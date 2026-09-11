@@ -917,8 +917,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
         <a href="IndentPO"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
         <a href="GRNServlet"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
-        <a href="viewGRN"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
+        
         <a href="VendorMaster.jsp"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
+      <% } %>
+      <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)){ %>
+      <a href="viewGRN"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
       <% } %>
     </div>
   </div>
