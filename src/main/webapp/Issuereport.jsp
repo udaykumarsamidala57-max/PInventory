@@ -8,6 +8,9 @@ if (sess == null || sess.getAttribute("username") == null) {
     return;
 }
 String branch = (String) sess.getAttribute("branch");
+String selectedDept = request.getParameter("department");
+String fromDate = request.getParameter("fromDate");
+String toDate = request.getParameter("toDate");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,7 +144,8 @@ String branch = (String) sess.getAttribute("branch");
         }
 
         .filter-bar input[type="date"],
-        .filter-bar input[type="text"] {
+        .filter-bar input[type="text"],
+        .filter-bar select {
             height: 36px;
             padding: 0 12px;
             border: 1px solid #aeaeae;
@@ -153,7 +157,8 @@ String branch = (String) sess.getAttribute("branch");
             min-width: 160px;
         }
 
-        .filter-bar input:focus {
+        .filter-bar input:focus,
+        .filter-bar select:focus {
             border-color: #0176d3;
             box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
         }
@@ -257,7 +262,7 @@ String branch = (String) sess.getAttribute("branch");
             background-color: #f8fafc;
         }
 
-        /* Structural Laptop Small Screen & Mobile Refactor Engine */
+        /* Responsive Breakpoints */
         @media (max-width: 1024px) {
             .card { padding: 16px; }
             
@@ -281,6 +286,7 @@ String branch = (String) sess.getAttribute("branch");
 
             .filter-bar input[type="text"], 
             .filter-bar input[type="date"],
+            .filter-bar select,
             .btn {
                 width: 100%;
                 height: 40px;
@@ -340,7 +346,7 @@ String branch = (String) sess.getAttribute("branch");
             const input = document.getElementById("searchInput").value.toLowerCase();
             const rows = document.querySelectorAll("#issueTable tbody tr");
             rows.forEach(row => {
-                if (row.cells.length === 1) return; // Skip "No records found" loops
+                if (row.cells.length === 1) return; // Skip "No records found" row
                 const text = row.textContent.toLowerCase();
                 row.style.display = text.includes(input) ? "" : "none";
             });
@@ -355,7 +361,7 @@ String branch = (String) sess.getAttribute("branch");
                     let cols = row.querySelectorAll('th, td');
                     let rowData = [];
                     cols.forEach((cell, index) => {
-                        // Skip the last column (Action/Print column) in Excel Export
+                        // Skip the last column (Action column) in CSV Export
                         if (index === cols.length - 1) return;
 
                         let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
@@ -403,13 +409,45 @@ String branch = (String) sess.getAttribute("branch");
             <form method="get">
                 <div class="filter-group">
                     <label>From Date</label>
-                    <input type="date" name="fromDate" value="<%= request.getParameter("fromDate") != null ? request.getParameter("fromDate") : "" %>">
+                    <input type="date" name="fromDate" value="<%= fromDate != null ? fromDate : "" %>">
                 </div>
                 <div class="filter-group">
                     <label>To Date</label>
-                    <input type="date" name="toDate" value="<%= request.getParameter("toDate") != null ? request.getParameter("toDate") : "" %>">
+                    <input type="date" name="toDate" value="<%= toDate != null ? toDate : "" %>">
+                </div>
+                <div class="filter-group">
+                    <label>Department</label>
+                    <select name="department">
+                        <option value="">All Departments</option>
+                        <%
+                            Connection deptConn = null;
+                            Statement deptStmt = null;
+                            ResultSet deptRs = null;
+                            try {
+                                deptConn = DBUtil.getConnection(branch);
+                                deptStmt = deptConn.createStatement();
+                                deptRs = deptStmt.executeQuery("SELECT DISTINCT department FROM stock_issues WHERE department IS NOT NULL AND department != '' ORDER BY department ASC");
+                                while (deptRs.next()) {
+                                    String dName = deptRs.getString("department");
+                                    String selected = (selectedDept != null && selectedDept.equals(dName)) ? "selected" : "";
+                        %>
+                                    <option value="<%= dName %>" <%= selected %>><%= dName %></option>
+                        <%
+                                }
+                            } catch (Exception e) {
+                                // Silent fail or log for dropdown population
+                            } finally {
+                                if (deptRs != null) try { deptRs.close(); } catch (Exception ignored) {}
+                                if (deptStmt != null) try { deptStmt.close(); } catch (Exception ignored) {}
+                                if (deptConn != null) try { deptConn.close(); } catch (Exception ignored) {}
+                            }
+                        %>
+                    </select>
                 </div>
                 <button type="submit" class="btn"><i class="fa fa-filter"></i> Filter</button>
+                <% if ((fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty()) || (selectedDept != null && !selectedDept.isEmpty())) { %>
+                    <a href="StockIssueReport.jsp" class="btn btn-secondary" title="Reset Filters"><i class="fa fa-rotate-left"></i> Reset</a>
+                <% } %>
             </form>
 
             <div class="filter-group" style="flex:1; min-width:200px;">
@@ -443,27 +481,36 @@ String branch = (String) sess.getAttribute("branch");
                     PreparedStatement ps = null;
                     ResultSet rs = null;
 
-                    String fromDate = request.getParameter("fromDate");
-                    String toDate = request.getParameter("toDate");
-
                     try {
                         con = DBUtil.getConnection(branch);
                         StringBuilder query = new StringBuilder(
                             "SELECT si.indent_no, si.issueno, si.item_id, im.Item_name, " +
                             "si.issued_to, si.department, si.qty_issued, si.unit_price, si.total_value, si.issue_date, si.remarks " +
-                            "FROM stock_issues si JOIN item_master im ON si.item_id = im.Item_id "
+                            "FROM stock_issues si JOIN item_master im ON si.item_id = im.Item_id WHERE 1=1 "
                         );
 
-                        if (fromDate != null && !fromDate.isEmpty() && toDate != null && !toDate.isEmpty()) {
-                            query.append("WHERE DATE(si.issue_date) BETWEEN ? AND ? ");
+                        boolean hasDateFilter = (fromDate != null && !fromDate.isEmpty() && toDate != null && !toDate.isEmpty());
+                        boolean hasDeptFilter = (selectedDept != null && !selectedDept.isEmpty());
+
+                        if (hasDateFilter) {
+                            query.append("AND DATE(si.issue_date) BETWEEN ? AND ? ");
                         }
-                        query.append("ORDER BY si.issue_date DESC");
+                        if (hasDeptFilter) {
+                            query.append("AND si.department = ? ");
+                        }
+
+                        query.append("ORDER BY si.issue_date DESC ");
+                        query.append("LIMIT 1000");
 
                         ps = con.prepareStatement(query.toString());
 
-                        if (fromDate != null && !fromDate.isEmpty() && toDate != null && !toDate.isEmpty()) {
-                            ps.setString(1, fromDate);
-                            ps.setString(2, toDate);
+                        int paramIndex = 1;
+                        if (hasDateFilter) {
+                            ps.setString(paramIndex++, fromDate);
+                            ps.setString(paramIndex++, toDate);
+                        }
+                        if (hasDeptFilter) {
+                            ps.setString(paramIndex++, selectedDept);
                         }
 
                         rs = ps.executeQuery();
@@ -488,13 +535,13 @@ String branch = (String) sess.getAttribute("branch");
                         <td data-label="Issue Date" class="num"><%= rs.getTimestamp("issue_date") %></td>
                         <td data-label="Remarks" class="text"><%= rs.getString("remarks") != null ? rs.getString("remarks") : "-" %></td>
                         <td data-label="Action" class="num">
-    <a href="printissue.jsp?indentNo=<%= java.net.URLEncoder.encode(indentNo != null ? indentNo : "", "UTF-8") %>" 
-       target="_blank" 
-       class="btn btn-print" 
-       title="Print Issue Voucher">
-        <i class="fa fa-print"></i> Print Voucher
-    </a>
-</td>
+                            <a href="printissue.jsp?indentNo=<%= java.net.URLEncoder.encode(indentNo != null ? indentNo : "", "UTF-8") %>" 
+                               target="_blank" 
+                               class="btn btn-print" 
+                               title="Print Issue Voucher">
+                                <i class="fa fa-print"></i> Print Voucher
+                            </a>
+                        </td>
                     </tr>
                 <%
                         }
