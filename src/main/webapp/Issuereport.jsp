@@ -500,7 +500,7 @@ String toDate = request.getParameter("toDate");
                         }
 
                         query.append("ORDER BY si.issue_date DESC ");
-                        query.append("LIMIT 1000");
+                        query.append("LIMIT 2000");
 
                         ps = con.prepareStatement(query.toString());
 
