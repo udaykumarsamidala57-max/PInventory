@@ -446,7 +446,7 @@ String toDate = request.getParameter("toDate");
                 </div>
                 <button type="submit" class="btn"><i class="fa fa-filter"></i> Filter</button>
                 <% if ((fromDate != null && !fromDate.isEmpty()) || (toDate != null && !toDate.isEmpty()) || (selectedDept != null && !selectedDept.isEmpty())) { %>
-                    <a href="StockIssueReport.jsp" class="btn btn-secondary" title="Reset Filters"><i class="fa fa-rotate-left"></i> Reset</a>
+                    <a href="Issuereport.jsp" class="btn btn-secondary" title="Reset Filters"><i class="fa fa-rotate-left"></i> Reset</a>
                 <% } %>
             </form>
 
