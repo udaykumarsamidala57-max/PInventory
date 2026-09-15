@@ -858,14 +858,38 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 .text-purple { color: var(--color-purple) !important; }
 .text-secondary { color: var(--text-muted) !important; }
 
-@media (max-width: 1024px) {
-    body { padding-left: 0; }
-    header { left: 0; }
-    footer { left: 0; }
-    .sidebar { transform: translateX(-100%); }
-    body:not(.sidebar-collapsed) .sidebar { transform: translateX(0); }
+@media (max-width: 768px) {
+    body { padding-left: 0 !important; }
+    header { left: 0 !important; }
+    footer { left: 0 !important; }
+    
+    .sidebar { 
+        transform: translateX(-100%); 
+        width: 260px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    /* Open state when not collapsed on mobile */
+    body:not(.sidebar-collapsed) .sidebar { 
+        transform: translateX(0); 
+    }
+    
     main { padding-left: 16px; padding-right: 16px; }
-    .urgent-popup { width: 340px; right: -60px; }
+    
+    /* Hide live clock on mobile devices */
+    .live-clock-badge { 
+        display: none !important; 
+    }
+    
+    .header-brand-title {
+        font-size: 14px;
+        padding-right: 8px;
+    }
+    
+    .urgent-popup { 
+        width: calc(100vw - 32px); 
+        right: -10px; 
+    }
 }
 </style>
 </head>
