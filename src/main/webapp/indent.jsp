@@ -15,7 +15,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Items Requisition Form</title>
-<<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -23,15 +23,14 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background: #f8f9fa; /* Slightly off-white for better contrast */
+    background: #f8f9fa;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
     font-size: 0.95rem;
-    color: #334155; /* Modern slate-gray */
+    color: #334155;
 }
 
-/* ----- Card Layout ----- */
 .main-content {
     display: flex;
     justify-content: center;
@@ -55,7 +54,7 @@ h2 {
     text-align: center;
     font-size: 1.6rem;
     margin: 0 0 24px 0;
-    color: #0f2a4d; /* Using your table header color for consistency */
+    color: #0f2a4d;
     font-weight: 700;
     letter-spacing: -0.5px;
     position: relative;
@@ -111,7 +110,6 @@ input:focus, select:focus {
     background-color: #fff;
 }
 
-/* ----- Table Styling ----- */
 table.main-table {
     width: 100%;
     border-collapse: separate;
@@ -159,7 +157,6 @@ tbody tr:hover {
     background-color: #f8fafc;
 }
 
-/* ----- Table Inputs ----- */
 table select, 
 table input[type="text"],
 table input[type="number"] {
@@ -169,7 +166,6 @@ table input[type="number"] {
     border-radius: 6px;
 }
 
-/* ----- Indent Type Radio Buttons ----- */
 .indent-type-group {
     display: flex;
     flex-wrap: wrap;
@@ -190,7 +186,6 @@ table input[type="number"] {
     color: #8e2de2;
 }
 
-/* ----- Buttons ----- */
 .btn {
     padding: 10px 24px;
     border: none;
@@ -235,10 +230,11 @@ table input[type="number"] {
 
 .center-buttons {
     margin-top: 32px;
+    display: flex;
+    justify-content: center;
     gap: 16px;
 }
 
-/* ----- Responsive Adjustments ----- */
 @media (max-width: 992px) {
     .table-section {
         grid-template-columns: 1fr 1fr;
@@ -251,8 +247,6 @@ table input[type="number"] {
     label { margin-bottom: -5px; }
 }
 </style>
-
-
 </head>
 
 <body>
@@ -318,10 +312,10 @@ table input[type="number"] {
     </form>
   </div>
 </div>
-<a href="IndentlistServlet"><i class="fas fa-list text-info"></i> Indent Report</a>
+
 <script>
-const userRole = "<%= (role != null ? role : "") %>".toLowerCase();
-const userDept = "<%= (dept != null ? dept : "") %>";
+const userRole = "<%= (role != null ? role.trim() : "") %>".toLowerCase();
+const userDept = "<%= (dept != null ? dept.trim() : "") %>";
 
 const categories = [];
 <c:forEach var="c" items="${masterData.categories}">
@@ -347,18 +341,28 @@ const items = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   restrictDateToToday();
-  if (userRole !== "global" && userDept) {
-    const deptSelect = document.getElementById("departmentSelect");
+
+  const deptSelect = document.getElementById("departmentSelect");
+
+  // Allow multi-department selection for Global AND Admin roles
+  if (userRole !== "global" && userRole !== "admin" && userDept) {
     deptSelect.value = userDept;
     deptSelect.disabled = true;
   }
+
+  // Clear existing row options if department changes mid-form fill
+  deptSelect.addEventListener("change", () => {
+    document.querySelectorAll("#itemsTable tbody tr").forEach(tr => tr.remove());
+  });
+
   document.getElementById("addItemBtn").addEventListener("click", addRow);
 });
 
 function addRow() {
   const deptSel = document.getElementById("departmentSelect");
   const selectedDept = deptSel.value || userDept;
-  if (!selectedDept && userRole !== "global") {
+
+  if (!selectedDept && (userRole === "global" || userRole === "admin")) {
     alert("Please select a Department first!");
     return;
   }
@@ -370,7 +374,7 @@ function addRow() {
     <td><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
     <td><select class="item"><option value="">-- Select Item --</option></select></td>
     <td class="uom"></td>
-   <td style="color: #FA6D16; font-weight: bold;" class="stock"></td>
+    <td style="color: #FA6D16; font-weight: bold;" class="stock"></td>
     <td><input type="number" class="qty" min="0" step="any" required></td>
     <td><input type="text" class="purpose" required></td>
     <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>
@@ -388,8 +392,12 @@ function addRow() {
 }
 
 function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
-  let filteredCats = userRole === "global" ? categories :
-      categories.filter(c => c.departmentName === selectedDept || c.departmentName.toLowerCase() === 'common');
+  // Filter categories by selected department or common category
+  let filteredCats = categories.filter(c => 
+    c.departmentName === selectedDept || 
+    c.departmentName.toLowerCase() === 'common' ||
+    userRole === 'global'
+  );
 
   const uniqueNames = [...new Set(filteredCats.map(c => c.name))];
   catSel.innerHTML = '<option value="">-- Select Category --</option>';
@@ -400,6 +408,8 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
     subcategories.filter(s => s.categoryName === catSel.value)
       .forEach(s => subSel.add(new Option(s.name, s.name)));
     itemSel.innerHTML = '<option value="">-- Select Item --</option>';
+    uomCell.textContent = '';
+    stockCell.textContent = '';
   };
 
   subSel.onchange = () => {
@@ -412,6 +422,8 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
         o.dataset.stock = i.stock;
         itemSel.add(o);
       });
+    uomCell.textContent = '';
+    stockCell.textContent = '';
   };
 
   itemSel.onchange = () => {
@@ -430,11 +442,21 @@ function restrictDateToToday() {
 }
 
 document.getElementById('indentForm').addEventListener('submit', function(e) {
+  const deptSelect = document.getElementById("departmentSelect");
+  deptSelect.disabled = false; // Re-enable temporarily to ensure submitted with POST form
+
   const indentType = document.querySelector('input[name="indentType"]:checked');
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
   let issueError = false;
 
-  document.querySelectorAll("#itemsTable tbody tr").forEach(tr => {
+  const rows = document.querySelectorAll("#itemsTable tbody tr");
+  if (rows.length === 0) {
+    e.preventDefault();
+    alert("❌ Please add at least one item before saving.");
+    return;
+  }
+
+  rows.forEach(tr => {
     const sel = tr.querySelector(".item");
     const opt = sel.options[sel.selectedIndex];
     const stock = parseFloat(tr.querySelector(".stock").textContent || "0");
