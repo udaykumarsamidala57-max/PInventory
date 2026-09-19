@@ -27,9 +27,12 @@ public class IndentServlet extends HttpServlet {
         String deptSession = (String) sess.getAttribute("department");
         String selectedDept = request.getParameter("selectedDept");
         String branch = (String) sess.getAttribute("branch");
-        
+
+        if (role == null) role = "";
+
         try (Connection con = DBUtil.getConnection(branch)) {
 
+            // 1. Fetch Next Indent Number
             int nextIndentNo = 1;
             String sqlNext = "SELECT next_val + 1 AS next_no FROM id_sequences WHERE seq_name = 'indent_no'";
             try (PreparedStatement ps = con.prepareStatement(sqlNext);
@@ -47,16 +50,17 @@ public class IndentServlet extends HttpServlet {
             request.setAttribute("nextIndentNo", nextIndentNo);
 
             Map<String, Object> masterData = new HashMap<>();
-
             List<Map<String, String>> departments = new ArrayList<>();
-            if ("Global".equalsIgnoreCase(role)) {
+
+            // 2. Fetch Department Options Based on Role
+            if ("Global".equalsIgnoreCase(role.trim())) {
 
                 String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
-                                 "WHERE Department IS NOT NULL AND Department<>''";
+                                 "WHERE Department IS NOT NULL AND Department <> '' " +
+                                 "ORDER BY Department ASC";
 
                 try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
-
                     while (rs.next()) {
                         Map<String, String> d = new HashMap<>();
                         d.put("name", rs.getString("Department"));
@@ -64,8 +68,9 @@ public class IndentServlet extends HttpServlet {
                     }
                 }
 
-            } else if ("Admin".equalsIgnoreCase(role)) {
+            } else if ("Admin".equalsIgnoreCase(role.trim())) {
 
+                // Hardcoded Admin Departments
                 String[] adminDepartments = {
                     "Housekeeping",
                     "Plumbing",
@@ -78,15 +83,47 @@ public class IndentServlet extends HttpServlet {
                     departments.add(d);
                 }
 
+                // Fallback: If DB contains distinct admin departments, fetch directly
+                if (departments.isEmpty()) {
+                    String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
+                                     "WHERE Department IS NOT NULL AND Department <> '' " +
+                                     "ORDER BY Department ASC";
+                    try (PreparedStatement ps = con.prepareStatement(deptSql);
+                         ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            Map<String, String> d = new HashMap<>();
+                            d.put("name", rs.getString("Department"));
+                            departments.add(d);
+                        }
+                    }
+                }
+
             } else if (deptSession != null && !deptSession.trim().isEmpty()) {
 
+                // Standard User limited to Session Department
                 Map<String, String> d = new HashMap<>();
                 d.put("name", deptSession.trim());
                 departments.add(d);
+
+            } else {
+
+                // Safe Fallback if role/dept session is completely empty
+                String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
+                                 "WHERE Department IS NOT NULL AND Department <> '' " +
+                                 "ORDER BY Department ASC";
+                try (PreparedStatement ps = con.prepareStatement(deptSql);
+                     ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        Map<String, String> d = new HashMap<>();
+                        d.put("name", rs.getString("Department"));
+                        departments.add(d);
+                    }
+                }
             }
 
+            // 3. Fetch Categories
             List<Map<String, String>> categories = new ArrayList<>();
-            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category<>''";
+            String catSql = "SELECT DISTINCT Category, Department FROM dept_cate WHERE Category IS NOT NULL AND Category <> ''";
             try (PreparedStatement ps = con.prepareStatement(catSql);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
@@ -97,6 +134,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
+            // 4. Fetch Subcategories
             List<Map<String, String>> subcats = new ArrayList<>();
             String subSql = "SELECT Sub_Category, Category FROM category WHERE Status='Active'";
             try (PreparedStatement ps = con.prepareStatement(subSql);
@@ -109,6 +147,7 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
+            // 5. Fetch Item Master & Stock
             List<Map<String, String>> items = new ArrayList<>();
             String itemSql =
                     "SELECT im.Item_id, im.Item_name, im.UOM, im.Category, im.Sub_Category, " +
@@ -202,15 +241,18 @@ public class IndentServlet extends HttpServlet {
             con = DBUtil.getConnection(branch);
             con.setAutoCommit(false);
 
-            con.prepareStatement(
-                    "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name='indent_no'"
-            ).executeUpdate();
+            try (PreparedStatement psSeqUpdate = con.prepareStatement(
+                    "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name='indent_no'")) {
+                psSeqUpdate.executeUpdate();
+            }
 
-            ResultSet rs = con.prepareStatement(
-                    "SELECT next_val FROM id_sequences WHERE seq_name='indent_no'"
-            ).executeQuery();
-
-            if (rs.next()) finalIndentNo = rs.getString(1);
+            try (PreparedStatement psSeqSelect = con.prepareStatement(
+                    "SELECT next_val FROM id_sequences WHERE seq_name='indent_no'");
+                 ResultSet rs = psSeqSelect.executeQuery()) {
+                if (rs.next()) {
+                    finalIndentNo = rs.getString(1);
+                }
+            }
 
             String insertSql =
                 "INSERT INTO indent (" +
@@ -232,7 +274,7 @@ public class IndentServlet extends HttpServlet {
                     ps.setString(9, "");
                     ps.setString(10, it.getUom());
                     ps.setString(11, indentType);
-                    ps.setInt(12, it.getItemId()); // for stock subquery
+                    ps.setInt(12, it.getItemId());
                     ps.addBatch();
                 }
                 ps.executeBatch();
@@ -242,10 +284,18 @@ public class IndentServlet extends HttpServlet {
             sess.setAttribute("message", "✅ Indent #" + finalIndentNo + " saved successfully!");
 
         } catch (Exception e) {
-            if (con != null) try { con.rollback(); } catch (SQLException ignored) {}
+            if (con != null) {
+                try {
+                    con.rollback();
+                } catch (SQLException ignored) {}
+            }
             sess.setAttribute("message", "❌ Database Error: " + e.getMessage());
         } finally {
-            if (con != null) try { con.close(); } catch (SQLException ignored) {}
+            if (con != null) {
+                try {
+                    con.close();
+                } catch (SQLException ignored) {}
+            }
         }
 
         response.sendRedirect("Home");
