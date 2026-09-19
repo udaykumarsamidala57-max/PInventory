@@ -50,16 +50,36 @@ public class IndentServlet extends HttpServlet {
 
             List<Map<String, String>> departments = new ArrayList<>();
             if ("Global".equalsIgnoreCase(role)) {
-                String deptSql = "SELECT DISTINCT Department FROM dept_cate WHERE Department IS NOT NULL AND Department<>''";
+
+                String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
+                                 "WHERE Department IS NOT NULL AND Department<>''";
+
                 try (PreparedStatement ps = con.prepareStatement(deptSql);
                      ResultSet rs = ps.executeQuery()) {
+
                     while (rs.next()) {
                         Map<String, String> d = new HashMap<>();
                         d.put("name", rs.getString("Department"));
                         departments.add(d);
                     }
                 }
+
+            } else if ("Admin".equalsIgnoreCase(role)) {
+
+                String[] adminDepartments = {
+                    "Housekeeping",
+                    "Plumbing",
+                    "Electrical"
+                };
+
+                for (String dept : adminDepartments) {
+                    Map<String, String> d = new HashMap<>();
+                    d.put("name", dept);
+                    departments.add(d);
+                }
+
             } else if (deptSession != null && !deptSession.trim().isEmpty()) {
+
                 Map<String, String> d = new HashMap<>();
                 d.put("name", deptSession.trim());
                 departments.add(d);

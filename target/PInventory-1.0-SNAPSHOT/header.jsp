@@ -14,7 +14,6 @@
     String depts = (String) sesso.getAttribute("department");
     String branchess = (String) sesso.getAttribute("branch");
 
-    // Formats date with full day name in the header (e.g., Tuesday, 04 August 2026)
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
     
@@ -38,7 +37,6 @@
 
 <%
 int urgentCount = 0;
-// Map to group requests by Department Name -> List of requests
 Map<String, List<String[]>> urgentGroupedMap = new LinkedHashMap<>();
 
 Connection consa = null;
@@ -120,9 +118,8 @@ try {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 :root {
-    /* Premium Salesforce Lightning Design System Palette */
     --bg-page: #f3f3f3;
-    --bg-sidebar: #032d60; /* Deep Salesforce Brand Navy */
+    --bg-sidebar: #032d60; 
     --bg-sidebar-hover: #004487;
     --bg-sidebar-active: #0176d3;
     
@@ -136,7 +133,6 @@ try {
     --border-color: #dddbda;
     --bg-card: #ffffff;
     
-    /* System Utility Semantic Colors */
     --color-success: #2e844a;
     --color-danger: #ea001e;
     --color-warning: #b78103;
@@ -169,6 +165,19 @@ body {
 
 body.sidebar-collapsed {
     padding-left: 0;
+}
+
+/* --- Mobile Sidebar Overlay Backdrop --- */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transition: opacity 0.25s ease;
 }
 
 /* --- Salesforce Modernized Sidebar --- */
@@ -420,17 +429,11 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     border-left: 1px solid #c9deee;
 }
 
-
-/* ==========================================================================
-   CLASSY, PROFESSIONAL & CONFIDENT POPUP & MODAL STYLING (SLDS EXECUTIVE)
-   ========================================================================== */
-
 .urgent-wrapper { 
     position: relative; 
     display: inline-block; 
 }
 
-/* Subtle, High-Executive Urgent Indicator Trigger */
 .urgent-header {
     display: inline-flex;
     align-items: center;
@@ -454,7 +457,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     color: #b91c1c;
 }
 
-/* Sleek Executive Dropdown Popup Container */
 .urgent-popup {
     display: none;
     position: absolute;
@@ -476,7 +478,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Crisp Clean Top Header Bar */
 .popup-header-bar {
     display: flex;
     align-items: center;
@@ -535,7 +536,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     background: #f8fafc;
 }
 
-/* Custom Scrollbar */
 .popup-body::-webkit-scrollbar {
     width: 5px;
 }
@@ -550,7 +550,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     background: #94a3b8;
 }
 
-/* Department Group Card Header */
 .dept-group-header {
     font-size: 11px;
     font-weight: 700;
@@ -580,7 +579,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     font-weight: 700;
 }
 
-/* Clean Professional Card */
 .urgent-item {
     padding: 12px 14px;
     border-radius: var(--radius-sm);
@@ -645,11 +643,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     border-top: 1px solid #f1f5f9;
 }
 
-
-/* ==========================================================================
-   CLASSY SALESFORCE EXECUTIVE MODAL DASHBOARD
-   ========================================================================== */
-
 .urgent-modal-overlay {
     display: none;
     position: fixed;
@@ -657,7 +650,7 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(15, 23, 42, 0.65); /* Neutral Slate Dark Overlay */
+    background: rgba(15, 23, 42, 0.65);
     backdrop-filter: blur(4px);
     z-index: 10000;
     align-items: center;
@@ -768,7 +761,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     background: #ffffff;
 }
 
-/* Clean, Readable Data Table */
 .modal-table {
     width: 100%;
     border-collapse: separate;
@@ -824,8 +816,6 @@ main { padding: 94px 24px 24px; transition: margin-left 0.25s cubic-bezier(0.4, 
     display: inline-block;
 }
 
-
-/* --- Minimal Fluid Layout System Footer --- */
 footer { 
     position: fixed; 
     bottom: 0; 
@@ -849,7 +839,6 @@ body.sidebar-collapsed main { margin-left: 0; }
 body.sidebar-collapsed footer { left: 0; }
 body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 
-/* Global Color Utility Systems */
 .text-primary { color: var(--accent-primary) !important; }
 .text-success { color: var(--color-success) !important; }
 .text-danger { color: var(--color-danger) !important; }
@@ -858,19 +847,48 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 .text-purple { color: var(--color-purple) !important; }
 .text-secondary { color: var(--text-muted) !important; }
 
-@media (max-width: 1024px) {
-    body { padding-left: 0; }
-    header { left: 0; }
-    footer { left: 0; }
-    .sidebar { transform: translateX(-100%); }
-    body:not(.sidebar-collapsed) .sidebar { transform: translateX(0); }
+@media (max-width: 768px) {
+    body { padding-left: 0 !important; }
+    header { left: 0 !important; }
+    footer { left: 0 !important; }
+    
+    .sidebar { 
+        transform: translateX(-100%); 
+        width: 260px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25);
+    }
+    
+    body:not(.sidebar-collapsed) .sidebar { 
+        transform: translateX(0); 
+    }
+    
+    body:not(.sidebar-collapsed) .sidebar-overlay {
+        display: block;
+    }
+    
     main { padding-left: 16px; padding-right: 16px; }
-    .urgent-popup { width: 340px; right: -60px; }
+    
+    .live-clock-badge { 
+        display: none !important; 
+    }
+    
+    .header-brand-title {
+        font-size: 14px;
+        padding-right: 8px;
+    }
+    
+    .urgent-popup { 
+        width: calc(100vw - 32px); 
+        right: -10px; 
+    }
 }
 </style>
 </head>
 
 <body class="sidebar-collapsed">
+
+<!-- Mobile Sidebar Backdrop Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <div class="sidebar" id="sidebar">
   <h2><i class="fa-solid fa-layer-group"></i> <%= branchess.toUpperCase() %> Workspace</h2>
@@ -917,7 +935,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
         <a href="IndentPO"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
         <a href="GRNServlet"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
-        
         <a href="VendorMaster.jsp"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)){ %>
@@ -931,7 +948,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall Operations <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <a href="DiningHallServlet"><i class="fa-solid fa-kitchen-set text-primary"></i> DH Consumption Entry</a>
-      
       <a href="DiningHallConsumptionReportServlet"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
       <% if ("Global".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)){ %>
        <a href="editConsumption.jsp"><i class="fa-solid fa-chart-line text-success"></i>Edit Consumption</a>
@@ -957,12 +973,8 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     <div class="dropdown-content">
       <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
-      <a href="StockVerificationServlet">
-        <i class="fas fa-clipboard-check text-success"></i> New Audit
-      </a>
-      <a href="StockAuditReportServlet">
-        <i class="fas fa-chart-bar text-info"></i> Audit Report
-      </a>
+      <a href="StockVerificationServlet"><i class="fas fa-clipboard-check text-success"></i> New Audit</a>
+      <a href="StockAuditReportServlet"><i class="fas fa-chart-bar text-info"></i> Audit Report</a>
     </div>
   </div>
   <% } %>
@@ -1001,7 +1013,7 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
       <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
       <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
       <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
-      <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report	</a>
+      <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report</a>
     </div>
 </div>
 
@@ -1045,7 +1057,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </div>
 
 <header>
-  <!-- Left Side: Toggle, Branding, and Page Title -->
   <div class="header-left-group">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
     <div class="header-brand-title"><%= branchess.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
@@ -1055,7 +1066,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
     </div>
   </div>
 
-  <!-- Center/Right Side: Live Clock, Urgent Alerts, User Profile -->
   <div class="header-right-group">
     <p class="live-clock-badge">
         <span><i class="fa-regular fa-calendar text-primary" style="margin-right: 4px;"></i> <%= todayDate %></span>
@@ -1081,7 +1091,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
                 </div>
                 
                 <div class="popup-body">
-                    <%-- Categorized Display grouped by Department --%>
                     <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
                          String deptName = entry.getKey();
                          List<String[]> deptRequests = entry.getValue();
@@ -1118,7 +1127,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   </div>
 </header>
 
-<!-- Full Screen Expanded Modal for Urgent Requests -->
 <div class="urgent-modal-overlay" id="urgentModal">
     <div class="urgent-modal-content">
         <div class="modal-header">
@@ -1165,7 +1173,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </div>
 
 <main>
-  <!-- Content area reserved for specific page forms/tables -->
 </main>
 
 <footer>
@@ -1182,7 +1189,6 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </footer>
 
 <script>
-// --- Real-time IST Dynamic Moving Clock ---
 function updateISTClock() {
     const clockElement = document.getElementById("istClock");
     if (!clockElement) return;
@@ -1200,7 +1206,6 @@ function updateISTClock() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-    // Initial call & ticking interval setup
     updateISTClock();
     setInterval(updateISTClock, 1000);
 
@@ -1245,6 +1250,14 @@ toggleBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   document.body.classList.toggle('sidebar-collapsed');
 });
+
+// Close sidebar on mobile overlay click
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+if (sidebarOverlay) {
+  sidebarOverlay.addEventListener('click', () => {
+    document.body.classList.add('sidebar-collapsed');
+  });
+}
 
 function toggleUrgentPopup(){
     let popup = document.getElementById("urgentPopup");

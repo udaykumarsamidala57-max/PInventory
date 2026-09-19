@@ -24,7 +24,7 @@ String username =
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 <title>Service Request</title>
 
@@ -37,7 +37,7 @@ String username =
 body{
     margin:0;
     background:#f3f6f9;
-    font-family:Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -45,27 +45,27 @@ body{
     width: 100%;
     max-width: 650px;
     margin: 0 auto;
-    padding: 16px 12px;
+    padding: 12px;
 }
 
 .card{
     background:white;
     border-radius:12px;
-    padding:30px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.08);
+    padding:20px 16px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.06);
 }
 
 .title{
-    font-size:24px;
-    font-weight:600;
+    font-size:20px;
+    font-weight:700;
     color:#0176d3;
-    margin-bottom:25px;
+    margin-bottom:20px;
 }
 
 .grid{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:18px;
+    grid-template-columns:1fr;
+    gap:16px;
 }
 
 .form-group{
@@ -74,11 +74,11 @@ body{
 }
 
 .full{
-    grid-column:1/3;
+    grid-column: 1 / -1;
 }
 
 label{
-    font-size:14px;
+    font-size:13px;
     margin-bottom:6px;
     font-weight:600;
     color:#444;
@@ -87,26 +87,43 @@ label{
 input,
 select,
 textarea{
-    padding:11px 12px;
+    padding:10px 12px;
     border:1px solid #d8dde6;
     border-radius:8px;
-    font-size:14px;
+    font-size:16px; /* 16px prevents iOS Safari auto-zoom on focus */
     background:white;
     width: 100%;
     outline: none;
-    height: 42px; /* Uniform height for standard fields on touchscreen layouts */
+    min-height: 44px; /* Optimal mobile touch target size */
+    color: #181818;
+}
+
+/* Styled custom arrow for selects to look clean across mobile devices */
+select {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='%23514f4d' d='M0 0l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+input[readonly] {
+    background-color: #f3f6f9;
+    color: #747472;
 }
 
 input:focus,
 select:focus,
 textarea:focus{
-    border:1px solid #0176d3;
-    box-shadow:0 0 4px rgba(1,118,211,0.3);
+    border-color:#0176d3;
+    box-shadow:0 0 0 3px rgba(1,118,211,0.15);
 }
 
 textarea{
-    height:120px;
-    resize:none;
+    min-height:110px;
+    resize:vertical;
+    padding-top: 10px;
 }
 
 .btn{
@@ -119,43 +136,58 @@ textarea{
     cursor:pointer;
     font-weight:600;
     width: 100%;
-    height: 44px;
+    min-height: 46px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.15s ease;
 }
 
-.btn:hover{
+.btn:active{
     background:#015fb2;
 }
 
 .success{
     background:#d8f3dc;
     color:#1b4332;
-    padding:12px;
+    padding:12px 14px;
     border-radius:8px;
-    margin-bottom:20px;
-    font-size:14px;
+    margin-bottom:16px;
+    font-size:13px;
+    font-weight: 600;
+    border: 1px solid #b7e4c7;
 }
 
-/* RESPONSIVE MEDIA QUERIES */
-@media (max-width: 600px) {
+/* DESKTOP RESPONSIVE BREAKPOINT */
+@media (min-width: 600px) {
+    .container {
+        padding: 24px 16px;
+    }
+
     .card {
-        padding: 20px 16px;
+        padding: 30px;
     }
     
     .title {
-        font-size: 20px;
-        margin-bottom: 20px;
+        font-size: 24px;
+        margin-bottom: 24px;
     }
     
     .grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
     }
     
     .full {
-        grid-column: auto;
+        grid-column: 1 / 3;
+    }
+    
+    input, select, textarea {
+        font-size: 14px;
+    }
+
+    .btn:hover{
+        background:#015fb2;
     }
 }
 
