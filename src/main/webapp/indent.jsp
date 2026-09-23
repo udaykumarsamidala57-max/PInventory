@@ -15,52 +15,50 @@
 <head>
 <meta charset="UTF-8">
 <title>Items Requisition Form</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-* {
-    box-sizing: border-box;
-}
 
 body {
     font-family: 'Poppins', sans-serif;
     background: #f8f9fa;
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
     font-size: 0.95rem;
     color: #334155;
-    padding-bottom: 90px; /* Space for fixed bottom bar on long lists */
 }
 
 .main-content {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 20px 10px;
+    padding: 40px 15px;
 }
 
 .card {
     background: #ffffff;
     border-radius: 16px;
-    padding: 24px;
+    padding: 32px;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1100px;
+    min-width: 340px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     border: 1px solid #eef2f6;
+    transition: transform 0.2s ease;
 }
 
 h2 {
     text-align: center;
-    font-size: 1.5rem;
-    margin: 0 0 20px 0;
+    font-size: 1.6rem;
+    margin: 0 0 24px 0;
     color: #0f2a4d;
     font-weight: 700;
     letter-spacing: -0.5px;
     position: relative;
-    padding-bottom: 10px;
+    padding-bottom: 12px;
 }
 
 h2::after {
@@ -75,318 +73,178 @@ h2::after {
     border-radius: 10px;
 }
 
-/* Header Form Grid */
 .table-section {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px 20px;
+    grid-template-columns: 160px 1fr 160px 1fr;
+    gap: 16px 24px;
     margin-bottom: 24px;
     align-items: center;
-    background: #f8fafc;
-    padding: 16px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-}
-
-.table-section .field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
 }
 
 label {
     font-weight: 600;
     color: #475569;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     text-transform: uppercase;
     letter-spacing: 0.3px;
 }
 
 input[type="text"],
 input[type="date"],
-select,
-input[type="number"],
-textarea {
+select {
     width: 100%;
     padding: 10px 12px;
-    border: 1.5px solid #cbd5e1;
+    border: 1.5px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 0.9rem;
+    box-sizing: border-box;
+    font-size: 0.95rem;
     background-color: #ffffff;
     transition: all 0.2s ease;
     color: #1e293b;
-    font-family: inherit;
 }
 
-input:focus, select:focus, textarea:focus {
+input:focus, select:focus {
     outline: none;
     border-color: #8e2de2;
     box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
-}
-
-.indent-type-group {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    height: 42px;
-}
-
-.indent-type-option {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-/* Items List Header Summary */
-.items-summary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    padding: 0 4px;
-}
-
-.items-count-badge {
-    background: #e0e7ff;
-    color: #3730a3;
-    font-weight: 600;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-}
-
-/* Desktop Table Styles */
-.table-wrapper {
-    width: 100%;
-    overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-    max-height: 600px; /* Scrollable table container for 20-30 rows */
-    position: relative;
+    background-color: #fff;
 }
 
 table.main-table {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 900px;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
 }
 
 thead {
-    position: sticky;
-    top: 0;
-    z-index: 10;
     background: #0f2a4d;
     color: #ffffff;
 }
 
 thead th {
-    font-weight: 600;
+    font-weight: 500;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     letter-spacing: 0.5px;
-    padding: 12px 10px;
-    text-align: left;
+    padding: 14px 10px;
+    border: none;
 }
 
 th, td {
-    padding: 10px 8px;
+    text-align: center;
+    padding: 12px 8px;
     border-bottom: 1px solid #e2e8f0;
-    vertical-align: middle;
+    border-right: 1px solid #e2e8f0;
+}
+
+td:last-child, th:last-child {
+    border-right: none;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+tbody tr {
+    transition: background 0.2s ease;
 }
 
 tbody tr:hover {
-    background-color: #f1f5f9;
+    background-color: #f8fafc;
 }
 
-/* Field specific sizes inside table */
-table select {
-    min-width: 130px;
+table select, 
+table input[type="text"],
+table input[type="number"] {
+    border: 1px solid #cbd5e1;
+    background-color: #ffffff;
+    padding: 8px;
+    border-radius: 6px;
 }
 
-table input[type="number"].qty {
-    width: 80px;
-    text-align: center;
+.indent-type-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 5px 0;
 }
 
-table textarea.purpose {
-    width: 100%;
-    min-width: 160px;
-    height: 38px;
-    padding: 6px 8px;
-    resize: vertical;
-}
-
-.stock-badge {
-    color: #d97706;
-    font-weight: 700;
-    text-align: center;
-    display: block;
-}
-
-/* Action Buttons */
-.btn {
-    padding: 9px 18px;
-    border: none;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
+.indent-type-option {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
+    gap: 8px;
+    font-weight: 500;
+    color: #334155;
+    transition: color 0.2s ease;
+}
+
+.indent-type-option:hover {
+    color: #8e2de2;
+}
+
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.btn:active {
+    transform: translateY(1px);
 }
 
 .btn-green {
-    background: #16a34a;
+    background: #27ae60;
     color: #fff;
 }
 .btn-green:hover { 
-    background: #15803d; 
+    background: #219150; 
+    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
 }
 
 .btn-info {
-    background: #2563eb;
+    background: #3498db;
     color: #fff;
 }
 .btn-info:hover { 
-    background: #1d4ed8; 
+    background: #2980b9; 
+    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
 }
 
 .btn-red {
-    background: #dc2626;
+    background: #e74c3c;
     color: #fff;
-    padding: 6px 12px;
-    font-size: 0.82rem;
 }
 .btn-red:hover { 
-    background: #b91c1c; 
+    background: #c0392b; 
+    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
 }
 
-/* Floating Actions Bar for easy submit/add with 20-30 items */
-.sticky-actions-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.1);
-    padding: 12px 20px;
+.center-buttons {
+    margin-top: 32px;
     display: flex;
     justify-content: center;
     gap: 16px;
-    z-index: 100;
-    border-top: 1px solid #e2e8f0;
 }
 
-/* Mobile Responsive Adjustments (Cards Layout) */
-@media (max-width: 768px) {
-    .main-content {
-        padding: 10px 6px;
-    }
-
-    .card {
-        padding: 16px 12px;
-        border-radius: 12px;
-    }
-
+@media (max-width: 992px) {
     .table-section {
-        grid-template-columns: 1fr;
-        gap: 12px;
-        padding: 12px;
+        grid-template-columns: 1fr 1fr;
     }
+}
 
-    .table-wrapper {
-        border: none;
-        max-height: none;
-        overflow-x: visible;
-    }
-
-    table.main-table, 
-    table.main-table thead, 
-    table.main-table tbody, 
-    table.main-table th, 
-    table.main-table td, 
-    table.main-table tr { 
-        display: block; 
-    }
-
-    table.main-table thead {
-        display: none; /* Hide standard headers on mobile */
-    }
-
-    table.main-table tbody tr {
-        background: #ffffff;
-        border: 1.5px solid #e2e8f0;
-        border-radius: 12px;
-        margin-bottom: 16px;
-        padding: 14px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-        position: relative;
-    }
-
-    table.main-table td {
-        border: none;
-        padding: 6px 0;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        text-align: left;
-    }
-
-    /* Add pseudo-label for fields in mobile card view */
-    table.main-table td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        font-size: 0.75rem;
-        color: #64748b;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-    }
-
-    table.main-table td[data-label="UOM"],
-    table.main-table td[data-label="Available Stock"] {
-        display: inline-block;
-        width: 48%;
-    }
-
-    .mobile-inline-row {
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-        background: #f8fafc;
-        padding: 8px;
-        border-radius: 8px;
-        margin: 6px 0;
-    }
-
-    table input[type="number"].qty {
-        width: 100%;
-        text-align: left;
-    }
-
-    table.main-table td[data-label="Action"] {
-        margin-top: 8px;
-        align-items: flex-end;
-    }
-
-    .btn-red {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .sticky-actions-bar {
-        padding: 10px 12px;
-    }
-
-    .sticky-actions-bar .btn {
-        flex: 1;
-        font-size: 0.85rem;
-        padding: 12px 8px;
-    }
+@media (max-width: 600px) {
+    .card { padding: 20px; }
+    .table-section { grid-template-columns: 1fr; }
+    label { margin-bottom: -5px; }
 }
 </style>
 </head>
@@ -399,70 +257,51 @@ table textarea.purpose {
     <h2>Items Requisition Form</h2>
 
     <form action="IndentServlet" method="post" id="indentForm">
-      <!-- Master Info Controls -->
       <div class="table-section">
-        <div class="field-group">
-            <label>Indent No:</label>
-            <input type="text" name="indentNumber" value="${nextIndentNo}" readonly>
-        </div>
+        <label>Indent No:</label>
+        <input type="text" name="indentNumber" value="${nextIndentNo}" readonly>
 
-        <div class="field-group">
-            <label>Date:</label>
-            <input type="date" name="date" id="dateField" required>
-        </div>
+        <label>Date:</label>
+        <input type="date" name="date" id="dateField" required>
 
-        <div class="field-group">
-            <label>Department:</label>
-            <select name="department" id="departmentSelect" required>
-              <option value="">-- Select Department --</option>
-              <c:forEach var="d" items="${masterData.departments}">
-                <option value="${d.name}" <c:if test="${d.name == selectedDept}">selected</c:if>>${d.name}</option>
-              </c:forEach>
-            </select>
-        </div>
+        <label>Department:</label>
+        <select name="department" id="departmentSelect" required>
+          <option value="">-- Select Department --</option>
+          <c:forEach var="d" items="${masterData.departments}">
+            <option value="${d.name}" <c:if test="${d.name == selectedDept}">selected</c:if>>${d.name}</option>
+          </c:forEach>
+        </select>
 
-        <div class="field-group">
-            <label>Indent Type:</label>
-            <div class="indent-type-group">
-              <label class="indent-type-option">
-                <input type="radio" name="indentType" value="Purchase" required> Purchase
-              </label>
-              <label class="indent-type-option">
-                <input type="radio" name="indentType" value="Issue"> Issue
-              </label>
-            </div>
+        <label>Indent Type:</label>
+        <div class="indent-type-group">
+          <label class="indent-type-option">
+            <input type="radio" name="indentType" value="Purchase" required> Purchase
+          </label>
+          <label class="indent-type-option">
+            <input type="radio" name="indentType" value="Issue"> Issue
+          </label>
         </div>
       </div>
 
-      <!-- Items Summary Bar -->
-      <div class="items-summary-header">
-        <label>Requested Items</label>
-        <span class="items-count-badge" id="rowCountBadge">Total Items: 0</span>
-      </div>
+      <table class="main-table" id="itemsTable">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>SubCategory</th>
+            <th>Item</th>
+            <th>UOM</th>
+            <th>Available Stock</th>
+            <th>Qty</th>
+            <th>Purpose</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
 
-      <!-- Dynamic Items Container -->
-      <div class="table-wrapper">
-          <table class="main-table" id="itemsTable">
-            <thead>
-              <tr>
-                <th style="width: 18%;">Category</th>
-                <th style="width: 18%;">SubCategory</th>
-                <th style="width: 20%;">Item</th>
-                <th style="width: 8%;">UOM</th>
-                <th style="width: 10%;">Stock</th>
-                <th style="width: 8%;">Qty</th>
-                <th style="width: 13%;">Purpose</th>
-                <th style="width: 5%;">Action</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-      </div>
-
-      <!-- Sticky Floating Action Bar for Quick Addition/Submission -->
-      <div class="sticky-actions-bar">
-        <button type="button" class="btn btn-info" id="addItemBtn">➕ Add Item</button>
-        <button type="submit" class="btn btn-green">💾 Save Indent</button>
+      <div class="center-buttons">
+        <button type="button" class="btn btn-info" id="addItemBtn">Add Item</button>
+        <button type="submit" class="btn btn-green">Save Indent</button>
       </div>
 
       <input type="hidden" name="itemIds">
@@ -505,26 +344,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const deptSelect = document.getElementById("departmentSelect");
 
+  // Allow multi-department selection for Global AND Admin roles
   if (userRole !== "global" && userRole !== "admin" && userDept) {
     deptSelect.value = userDept;
     deptSelect.disabled = true;
   }
 
+  // Clear existing row options if department changes mid-form fill
   deptSelect.addEventListener("change", () => {
     document.querySelectorAll("#itemsTable tbody tr").forEach(tr => tr.remove());
-    updateItemCount();
   });
 
   document.getElementById("addItemBtn").addEventListener("click", addRow);
-  
-  // Add first initial row automatically
-  addRow();
 });
-
-function updateItemCount() {
-  const count = document.querySelectorAll("#itemsTable tbody tr").length;
-  document.getElementById("rowCountBadge").textContent = `Total Items: ${count}`;
-}
 
 function addRow() {
   const deptSel = document.getElementById("departmentSelect");
@@ -537,17 +369,15 @@ function addRow() {
 
   const tbody = document.querySelector("#itemsTable tbody");
   const tr = document.createElement("tr");
-
-  // Included data-label attributes for full mobile responsive layout
   tr.innerHTML = `
-    <td data-label="Category"><select class="cat"><option value="">-- Select Category --</option></select></td>
-    <td data-label="SubCategory"><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
-    <td data-label="Item"><select class="item"><option value="">-- Select Item --</option></select></td>
-    <td data-label="UOM" class="uom">--</td>
-    <td data-label="Available Stock" class="stock-badge stock">0</td>
-    <td data-label="Qty"><input type="number" class="qty" min="0" step="any" placeholder="Qty" required></td>
-    <td data-label="Purpose"><textarea class="purpose" rows="1" placeholder="Enter purpose..." required></textarea></td>
-    <td data-label="Action"><button type="button" class="btn btn-red removeBtn">🗑️ Remove</button></td>
+    <td><select class="cat"><option value="">-- Select Category --</option></select></td>
+    <td><select class="subcat"><option value="">-- Select SubCategory --</option></select></td>
+    <td><select class="item"><option value="">-- Select Item --</option></select></td>
+    <td class="uom"></td>
+    <td style="color: #FA6D16; font-weight: bold;" class="stock"></td>
+    <td><input type="number" class="qty" min="0" step="any" required></td>
+    <td><input type="text" class="purpose" required></td>
+    <td><button type="button" class="btn btn-red removeBtn">Remove</button></td>
   `;
   tbody.appendChild(tr);
 
@@ -558,21 +388,11 @@ function addRow() {
   const stockCell = tr.querySelector(".stock");
 
   fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept);
-  
-  tr.querySelector(".removeBtn").onclick = () => {
-    tr.remove();
-    updateItemCount();
-  };
-
-  updateItemCount();
-
-  // Scroll smooth to newly added item on long screens
-  if (tbody.children.length > 3) {
-    tr.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  }
+  tr.querySelector(".removeBtn").onclick = () => tr.remove();
 }
 
 function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept) {
+  // Filter categories by selected department or common category
   let filteredCats = categories.filter(c => 
     c.departmentName === selectedDept || 
     c.departmentName.toLowerCase() === 'common' ||
@@ -588,8 +408,8 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
     subcategories.filter(s => s.categoryName === catSel.value)
       .forEach(s => subSel.add(new Option(s.name, s.name)));
     itemSel.innerHTML = '<option value="">-- Select Item --</option>';
-    uomCell.textContent = '--';
-    stockCell.textContent = '0';
+    uomCell.textContent = '';
+    stockCell.textContent = '';
   };
 
   subSel.onchange = () => {
@@ -602,13 +422,13 @@ function fillDropdowns(catSel, subSel, itemSel, uomCell, stockCell, selectedDept
         o.dataset.stock = i.stock;
         itemSel.add(o);
       });
-    uomCell.textContent = '--';
-    stockCell.textContent = '0';
+    uomCell.textContent = '';
+    stockCell.textContent = '';
   };
 
   itemSel.onchange = () => {
     const opt = itemSel.options[itemSel.selectedIndex];
-    uomCell.textContent = opt?.dataset.uom || '--';
+    uomCell.textContent = opt?.dataset.uom || '';
     stockCell.textContent = opt?.dataset.stock || '0';
   };
 }
@@ -623,7 +443,7 @@ function restrictDateToToday() {
 
 document.getElementById('indentForm').addEventListener('submit', function(e) {
   const deptSelect = document.getElementById("departmentSelect");
-  deptSelect.disabled = false;
+  deptSelect.disabled = false; // Re-enable temporarily to ensure submitted with POST form
 
   const indentType = document.querySelector('input[name="indentType"]:checked');
   const ids = [], names = [], qtys = [], purps = [], uomsArr = [];
@@ -636,7 +456,7 @@ document.getElementById('indentForm').addEventListener('submit', function(e) {
     return;
   }
 
-  rows.forEach((tr, index) => {
+  rows.forEach(tr => {
     const sel = tr.querySelector(".item");
     const opt = sel.options[sel.selectedIndex];
     const stock = parseFloat(tr.querySelector(".stock").textContent || "0");
@@ -651,16 +471,16 @@ document.getElementById('indentForm').addEventListener('submit', function(e) {
     if (indentType && indentType.value === "Issue") {
       if (isNaN(stock) || stock <= 0 || qty > stock) {
         issueError = true;
-        tr.style.border = "2px solid #dc2626";
+        tr.style.backgroundColor = "#ffcccc";
       } else {
-        tr.style.border = "";
+        tr.style.backgroundColor = "";
       }
     }
   });
 
   if (issueError) {
     e.preventDefault();
-    alert("❌ Some items do not have enough stock for 'Issue' type.\nPlease adjust quantities or verify stock levels.");
+    alert("❌ Some items do not have enough stock for Issue type.\nPlease adjust the quantities or check stock levels.");
     return;
   }
 
