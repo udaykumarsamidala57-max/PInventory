@@ -285,6 +285,23 @@ body {
 
 <body>
 <%@ include file="../header.jsp" %>
+<div style="display: flex; justify-content: center; align-items: center; gap: 12px; margin: 12px 0;">
+    <a href="MenuMasterServlet" 
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background-color: #ffffff; color: #0176d3; border: 1px solid #dddbda; border-radius: 4px; text-decoration: none; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); transition: all 0.15s ease;" 
+       onmouseover="this.style.backgroundColor='#f3f3f3'; this.style.borderColor='#0176d3';" 
+       onmouseout="this.style.backgroundColor='#ffffff'; this.style.borderColor='#dddbda';">
+        <i class="fa-solid fa-square-plus" style="color: #2e844a; font-size: 14px;"></i>
+        <span>Day Wise Menu</span>
+    </a>
+
+    <a href="MenuItemsServlet" 
+       style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; background-color: #ffffff; color: #0176d3; border: 1px solid #dddbda; border-radius: 4px; text-decoration: none; font-family: 'Inter', -apple-system, sans-serif; font-size: 12px; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05); transition: all 0.15s ease;" 
+       onmouseover="this.style.backgroundColor='#f3f3f3'; this.style.borderColor='#0176d3';" 
+       onmouseout="this.style.backgroundColor='#ffffff'; this.style.borderColor='#dddbda';">
+        <i class="fa-solid fa-square-plus" style="color: #2e844a; font-size: 14px;"></i>
+        <span>Menu Items</span>
+    </a>
+</div>
 <div class="container">
 
     <div class="page-header">
