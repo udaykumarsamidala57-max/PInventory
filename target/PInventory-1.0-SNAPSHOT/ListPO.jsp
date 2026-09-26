@@ -27,7 +27,7 @@ try {
             "SELECT * FROM (" +
             "   SELECT * FROM po_master " +
             "   ORDER BY PO_id DESC " +
-            "   LIMIT 200" +
+            "   LIMIT 20000" +
             ") t " +
             "ORDER BY PO_id ASC";
     psMaster = con.prepareStatement(masterSql);

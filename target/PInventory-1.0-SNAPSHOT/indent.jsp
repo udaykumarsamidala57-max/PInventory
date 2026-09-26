@@ -19,129 +19,185 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
 
+* {
+    box-sizing: border-box;
+}
+
+html,
 body {
-    font-family: 'Poppins', sans-serif;
-    background: #f8f9fa;
     margin: 0;
     padding: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f5f7fa;
+    color: #1e293b;
+    font-size: 14px;
     overflow-x: hidden;
-    font-size: 0.95rem;
-    color: #334155;
 }
+
+/* =========================
+   MAIN CONTAINER
+   ========================= */
 
 .main-content {
     display: flex;
     justify-content: center;
     align-items: flex-start;
-    padding: 40px 15px;
+    padding: 12px;
 }
 
 .card {
-    background: #ffffff;
-    border-radius: 16px;
-    padding: 32px;
     width: 100%;
-    max-width: 1100px;
-    min-width: 340px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
-    border: 1px solid #eef2f6;
-    transition: transform 0.2s ease;
+    max-width: 1050px;
+    min-width: 0;
+    background: #fff;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(15, 42, 77, 0.06);
 }
 
+/* =========================
+   TITLE
+   ========================= */
+
 h2 {
-    text-align: center;
-    font-size: 1.6rem;
-    margin: 0 0 24px 0;
+    margin: 0 0 14px;
+    padding: 0;
+    text-align: left;
     color: #0f2a4d;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    position: relative;
-    padding-bottom: 12px;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0;
 }
 
 h2::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 4px;
-    background: #8e2de2;
-    border-radius: 10px;
+    display: none;
 }
+
+/* =========================
+   FORM SECTION
+   ========================= */
 
 .table-section {
     display: grid;
-    grid-template-columns: 160px 1fr 160px 1fr;
-    gap: 16px 24px;
-    margin-bottom: 24px;
+    grid-template-columns: 125px minmax(0, 1fr) 125px minmax(0, 1fr);
+    gap: 8px 10px;
+    margin-bottom: 10px;
     align-items: center;
 }
 
 label {
-    font-weight: 600;
+    margin: 0;
     color: #475569;
-    font-size: 0.9rem;
+    font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
+    letter-spacing: .2px;
 }
+
+/* =========================
+   INPUTS
+   ========================= */
 
 input[type="text"],
 input[type="date"],
+input[type="number"],
 select {
     width: 100%;
-    padding: 10px 12px;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 8px;
-    box-sizing: border-box;
-    font-size: 0.95rem;
-    background-color: #ffffff;
-    transition: all 0.2s ease;
+    height: 40px;
+    padding: 7px 10px;
+    margin: 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
     color: #1e293b;
+    font-family: inherit;
+    font-size: 14px;
+    outline: none;
+    transition: border-color .12s ease,
+                box-shadow .12s ease;
 }
 
-input:focus, select:focus {
-    outline: none;
-    border-color: #8e2de2;
-    box-shadow: 0 0 0 3px rgba(142, 45, 226, 0.15);
-    background-color: #fff;
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="number"]:focus,
+select:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
 }
+
+/* =========================
+   INDENT TYPE
+   ========================= */
+
+.indent-type-group {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 2px 0;
+}
+
+.indent-type-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin: 0;
+    padding: 2px 0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.indent-type-option input {
+    margin: 0;
+    width: 15px;
+    height: 15px;
+}
+
+/* =========================
+   MAIN TABLE
+   ========================= */
 
 table.main-table {
     width: 100%;
+    margin-top: 10px;
     border-collapse: separate;
     border-spacing: 0;
-    margin-top: 20px;
-    border-radius: 10px;
+    border: 1px solid #dbe2ea;
+    border-radius: 7px;
     overflow: hidden;
-    border: 1px solid #e2e8f0;
+    background: #fff;
 }
 
 thead {
     background: #0f2a4d;
-    color: #ffffff;
+    color: #fff;
 }
 
 thead th {
-    font-weight: 500;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-    padding: 14px 10px;
+    padding: 9px 7px;
     border: none;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .3px;
+    white-space: nowrap;
 }
 
-th, td {
+th,
+td {
+    padding: 6px;
     text-align: center;
-    padding: 12px 8px;
-    border-bottom: 1px solid #e2e8f0;
     border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-td:last-child, th:last-child {
+th:last-child,
+td:last-child {
     border-right: none;
 }
 
@@ -149,102 +205,258 @@ tbody tr:last-child td {
     border-bottom: none;
 }
 
-tbody tr {
-    transition: background 0.2s ease;
-}
-
 tbody tr:hover {
-    background-color: #f8fafc;
+    background: #f8fafc;
 }
 
-table select, 
+/* Table inputs */
+table select,
 table input[type="text"],
 table input[type="number"] {
+    height: 36px;
+    width: 100%;
+    padding: 5px 7px;
     border: 1px solid #cbd5e1;
-    background-color: #ffffff;
-    padding: 8px;
-    border-radius: 6px;
+    border-radius: 5px;
+    font-size: 13px;
 }
 
-.indent-type-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    padding: 5px 0;
-}
-
-.indent-type-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    color: #334155;
-    transition: color 0.2s ease;
-}
-
-.indent-type-option:hover {
-    color: #8e2de2;
-}
+/* =========================
+   BUTTONS
+   ========================= */
 
 .btn {
-    padding: 10px 24px;
-    border: none;
-    border-radius: 10px;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 0;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
     font-weight: 600;
-    font-size: 0.95rem;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: none;
+    transition: background-color .1s ease,
+                transform .05s ease;
 }
 
 .btn:active {
-    transform: translateY(1px);
+    transform: scale(.98);
 }
 
 .btn-green {
-    background: #27ae60;
+    background: #16a34a;
     color: #fff;
 }
-.btn-green:hover { 
-    background: #219150; 
-    box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+
+.btn-green:hover {
+    background: #15803d;
 }
 
 .btn-info {
-    background: #3498db;
+    background: #2563eb;
     color: #fff;
 }
-.btn-info:hover { 
-    background: #2980b9; 
-    box-shadow: 0 6px 15px rgba(52, 152, 219, 0.3);
+
+.btn-info:hover {
+    background: #1d4ed8;
 }
 
 .btn-red {
-    background: #e74c3c;
+    background: #dc2626;
     color: #fff;
 }
-.btn-red:hover { 
-    background: #c0392b; 
-    box-shadow: 0 6px 15px rgba(231, 76, 60, 0.3);
+
+.btn-red:hover {
+    background: #b91c1c;
 }
+
+/* =========================
+   BUTTON AREA
+   ========================= */
 
 .center-buttons {
-    margin-top: 32px;
+    margin-top: 12px;
     display: flex;
-    justify-content: center;
-    gap: 16px;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
 }
 
+/* =========================
+   RAPID ADD ITEM
+   ========================= */
+
+.btn-add-item {
+    min-width: 110px;
+    background: #2563eb;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.btn-add-item:hover {
+    background: #1d4ed8;
+}
+
+/* =========================
+   TABLET
+   ========================= */
+
 @media (max-width: 992px) {
+
+    .main-content {
+        padding: 8px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
     .table-section {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 110px minmax(0, 1fr);
+        gap: 7px 8px;
     }
 }
 
+/* =========================
+   MOBILE
+   ========================= */
+
 @media (max-width: 600px) {
-    .card { padding: 20px; }
-    .table-section { grid-template-columns: 1fr; }
-    label { margin-bottom: -5px; }
+
+    body {
+        font-size: 13px;
+    }
+
+    .main-content {
+        display: block;
+        padding: 5px;
+    }
+
+    .card {
+        width: 100%;
+        padding: 10px;
+        border-radius: 7px;
+        box-shadow: none;
+    }
+
+    h2 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    /*
+       Single-column rapid-entry layout
+    */
+
+    .table-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 3px;
+        margin-bottom: 8px;
+    }
+
+    label {
+        margin-top: 3px;
+        font-size: 11px;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+        height: 40px;
+        padding: 7px 9px;
+        font-size: 14px;
+        border-radius: 5px;
+    }
+
+    .indent-type-group {
+        gap: 10px;
+        min-height: 36px;
+    }
+
+    .indent-type-option {
+        font-size: 13px;
+    }
+
+    /* Horizontal table scroll */
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table.main-table {
+        min-width: 650px;
+        margin-top: 7px;
+    }
+
+    thead th {
+        padding: 8px 6px;
+        font-size: 10px;
+    }
+
+    th,
+    td {
+        padding: 5px;
+    }
+
+    table select,
+    table input[type="text"],
+    table input[type="number"] {
+        height: 36px;
+        font-size: 13px;
+    }
+
+    .center-buttons {
+        margin-top: 8px;
+        gap: 6px;
+    }
+
+    .btn {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+
+    .btn-add-item {
+        width: 100%;
+        min-height: 44px;
+        font-size: 14px;
+    }
+}
+
+/* =========================
+   VERY SMALL PHONES
+   ========================= */
+
+@media (max-width: 380px) {
+
+    .main-content {
+        padding: 3px;
+    }
+
+    .card {
+        padding: 8px;
+    }
+
+    h2 {
+        font-size: 1rem;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select {
+        height: 38px;
+    }
+
+    .btn {
+        min-height: 38px;
+        padding: 7px 10px;
+    }
 }
 </style>
 </head>
