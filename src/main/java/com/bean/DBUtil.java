@@ -36,6 +36,7 @@ public class DBUtil {
                     + "&allowPublicKeyRetrieval=true"
                     + "&serverTimezone=UTC"
                     + "&tcpKeepAlive=true";
+
         } else if ("Sanpoly2".equalsIgnoreCase(branch)) {
 
             url = "jdbc:mysql://shuttle.proxy.rlwy.net:26985/SANPOLY_INVENTORY2"

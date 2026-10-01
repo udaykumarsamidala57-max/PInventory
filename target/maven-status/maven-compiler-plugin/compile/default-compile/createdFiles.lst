@@ -79,6 +79,7 @@ com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\DAO\TransferDAO.class
 com\bean\DBUtil6.class
 com\DAO\EmployeeDAO.class
+com\controller\SwitchBranchServlet.class
 com\controller\LoadIndentItemsServlet.class
 com\controller\Asset\LocationController.class
 com\Service\Incharge.class
