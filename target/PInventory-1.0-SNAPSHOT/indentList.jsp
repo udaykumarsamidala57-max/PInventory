@@ -1,11 +1,53 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*, com.bean.IndentItemFull" %>
+
+<%!
+// HTML-escape any value; null -> ""
+private static String esc(Object o) {
+    if (o == null) return "";
+    return String.valueOf(o).replace("&","&amp;").replace("<","&lt;")
+           .replace(">","&gt;").replace("\"","&quot;");
+}
+// show "-" for empty values
+private static String dash(Object o) {
+    String s = (o == null) ? "" : String.valueOf(o).trim();
+    return (s.isEmpty() || "null".equalsIgnoreCase(s)) ? "-" : esc(s);
+}
+// colour class for status pills
+private static String pillClass(String s) {
+    if (s == null) return "warn";
+    s = s.trim().toLowerCase();
+    if (s.isEmpty() || s.equals("pending")) return "warn";
+    if (s.equals("cancelled") || s.equals("rejected")) return "bad";
+    return "ok";
+}
+%>
 <%
 HttpSession sess = request.getSession(false);
 if (sess == null || sess.getAttribute("username") == null) {
     response.sendRedirect("login.jsp");
     return;
 }
+
+List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
+if (indents == null) indents = new ArrayList<>();
+
+// Left = Purchase, Right = Issue
+List<IndentItemFull> purchaseList = new ArrayList<>();
+List<IndentItemFull> issueList    = new ArrayList<>();
+for (IndentItemFull i : indents) {
+    if ("Issue".equalsIgnoreCase(i.getPurchaseorIssue() == null ? "" : i.getPurchaseorIssue().trim()))
+        issueList.add(i);
+    else
+        purchaseList.add(i);
+}
+
+List<List<IndentItemFull>> panes = new ArrayList<>();
+panes.add(purchaseList);
+panes.add(issueList);
+String[] paneTitles  = {"Purchase Indents", "Issue Indents"};
+String[] paneClasses = {"pane-purchase", "pane-issue"};
+String[] tableIds    = {"tblPurchase", "tblIssue"};
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,351 +56,279 @@ if (sess == null || sess.getAttribute("username") == null) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Indent Full Report</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <style>
-* { 
-  box-sizing: border-box; 
+:root {
+  --sf-blue: #0176d3;
+  --sf-blue-dark: #014486;
+  --sf-navy: #032d60;
+  --sf-bg: #f3f3f3;
+  --sf-border: #dddbda;
+  --sf-border-soft: #ecebea;
+  --sf-text: #181818;
+  --sf-muted: #5c5c5c;
+  --sf-green: #2e844a;
+  --sf-green-bg: #ebf7e6;
+  --sf-amber: #b45f06;
+  --sf-amber-bg: #fef1d6;
+  --sf-red: #ba0517;
+  --sf-red-bg: #fde8ea;
+  --sf-purchase: #fe9339;
+  --sf-issue: #2e844a;
 }
 
+* { box-sizing: border-box; }
+
 body {
-  font-family: 'Poppins', sans-serif;
-  background-color: #f3f3f3;
+  font-family: 'Salesforce Sans', 'Segoe UI', 'Inter', Arial, sans-serif;
+  background: var(--sf-bg);
+  color: var(--sf-text);
   margin: 0;
   padding: 0;
-  color: #181818;
+  font-size: 12px;
+  line-height: 1.35;
   -webkit-tap-highlight-color: transparent;
 }
 
-.main-content {
-  width: 98%;
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 20px 10px;
-}
+.main-content { width: 100%; padding: 10px 12px 24px; }
 
-/* Salesforce Style Card Base */
-.card {
-  background: #fff;
-  border-radius: 6px;
-  padding: 20px;
-  width: 100%;
-  border: 1px solid #c9c9c9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.header-area {
+/* ---------- Page title + toolbar ---------- */
+.page-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #e5e5e5;
-  padding-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 8px;
 }
-
 .icon-box {
-  width: 40px;
-  height: 40px;
+  width: 28px; height: 28px;
   border-radius: 4px;
-  background: #0176d3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 18px;
+  background: var(--sf-blue);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
   flex-shrink: 0;
 }
-
-h1 {
+.page-head h1 {
   margin: 0;
-  font-size: 20px;
-  color: #0176d3;
+  font-size: 16px;
   font-weight: 700;
-  text-align: left;
+  color: var(--sf-navy);
 }
+.page-head .total { color: var(--sf-muted); font-size: 11.5px; }
 
-/* Responsive Grid Search & Filter Toolbar */
 .search-bar {
-  background: #fafaf9;
-  border: 1px solid #c9c9c9;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 20px;
+  background: #fff;
+  border: 1px solid var(--sf-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 8px 10px;
   align-items: flex-end;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1 1 180px;
-  min-width: 140px;
+  gap: 2px;
+  flex: 1 1 130px;
+  min-width: 110px;
 }
+.filter-group.grow { flex: 2 1 200px; }
 
 .search-bar label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: #514f4d;
+  color: var(--sf-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: .4px;
   white-space: nowrap;
 }
 
-.search-bar input[type="text"], 
+.search-bar input[type="text"],
 .search-bar input[type="date"],
-#deptFilter {
-  height: 38px;
-  padding: 0 10px;
-  border: 1px solid #aeaeae;
+#deptFilter,
+#statusFilter {
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid #c9c7c5;
   border-radius: 4px;
   font-family: inherit;
-  font-size: 13px;
-  background: #ffffff;
+  font-size: 12px;
+  background: #fff;
   outline: none;
   width: 100%;
 }
-
-.search-bar input:focus, 
-#deptFilter:focus {
-  border-color: #0176d3;
-  box-shadow: 0 0 0 2px rgba(1,118,211,0.15);
+.search-bar input:focus, #statusFilter:focus, #deptFilter:focus {
+  border-color: var(--sf-blue);
+  box-shadow: 0 0 0 1px var(--sf-blue);
 }
 
-.actions-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-left: auto;
-  align-items: center;
-}
+.actions-group { display: flex; flex-wrap: wrap; gap: 6px; margin-left: auto; align-items: center; }
 
-/* Unified Button Styling */
 .btn {
-  height: 38px;
-  padding: 0 14px;
-  border: 1px solid #0176d3;
-  background: #0176d3;
-  color: white;
+  height: 28px;
+  padding: 0 11px;
+  border: 1px solid var(--sf-blue);
+  background: var(--sf-blue);
+  color: #fff;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 12px;
+  font-family: inherit;
+  font-size: 11.5px;
   font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background-color 0.15s ease;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
   white-space: nowrap;
+  transition: background .15s;
+}
+.btn:hover { background: var(--sf-blue-dark); border-color: var(--sf-blue-dark); }
+.btn-success { background: var(--sf-green); border-color: var(--sf-green); }
+.btn-success:hover { background: #1b5e30; border-color: #1b5e30; }
+.btn-secondary { background: #fff; border-color: #c9c7c5; color: var(--sf-text); }
+.btn-secondary:hover { background: #f4f6f9; border-color: #a8a6a4; }
+
+/* ---------- Two-pane split ---------- */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+.pane { min-width: 0; }
+
+.pane-title {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--sf-navy);
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 4px 4px 0 0;
+  border-top: 3px solid var(--sf-purchase);
+}
+.pane-issue .pane-title { border-top-color: var(--sf-issue); }
+.pane-title h2 {
+  margin: 0;
+  font-size: 12.5px; font-weight: 700;
+  letter-spacing: .6px; text-transform: uppercase;
+}
+.pane-count {
+  background: rgba(255,255,255,.18);
+  border-radius: 10px;
+  padding: 1px 9px;
+  font-size: 11px; font-weight: 700;
 }
 
-.btn:hover { background: #015a9e; border-color: #015a9e; }
-
-.btn-info {
-  background-color: #0176d3;
-  border-color: #0176d3;
-  color: white;
-}
-
-.btn-success {
-  background-color: #2e844a;
-  border-color: #2e844a;
-}
-.btn-success:hover {
-  background-color: #1b5e30;
-  border-color: #1b5e30;
-}
-
-.btn-secondary {
-  background: #ffffff;
-  border-color: #747472;
-  color: #181818;
-}
-.btn-secondary:hover {
-  background: #f4f6f9;
-  border-color: #747472;
-}
-
-/* Dynamic High-Density Data Matrix */
 .table-container {
   width: 100%;
   overflow-x: auto;
+  background: #fff;
+  border: 1px solid var(--sf-border);
+  border-top: none;
+  border-radius: 0 0 4px 4px;
   scrollbar-width: thin;
-  border: 1px solid #e5e5e5;
-  border-radius: 4px;
 }
+.pane.collapsed .table-container { display: none; }
 
+/* ---------- Table ---------- */
 .main-table {
   width: 100%;
+  min-width: 640px;
   border-collapse: collapse;
+  table-layout: fixed;
   background: #fff;
-  font-size: 12px;
 }
 
 .main-table th {
   background: #fafaf9;
-  color: #514f4d;
-  padding: 10px 8px;
+  color: var(--sf-muted);
+  padding: 5px 6px;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  border-bottom: 2px solid #c9c9c9;
-  font-size: 10.5px;
-  cursor: pointer;
-  text-align: center;
+  letter-spacing: .3px;
+  border-bottom: 1px solid var(--sf-border);
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
   user-select: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.main-table th i {
-  margin-left: 3px;
-  font-size: 9px;
-  color: #747472;
-}
+.main-table th:hover { color: var(--sf-blue); }
+.main-table th i { margin-left: 2px; font-size: 8px; color: #9b9a98; }
+.main-table th.no-sort { cursor: default; }
+.main-table th.no-sort:hover { color: var(--sf-muted); }
 
 .main-table td {
-  padding: 8px 6px;
-  text-align: center;
-  border-bottom: 1px solid #e5e5e5;
-  color: #181818;
+  padding: 4px 6px;
+  text-align: left;
   vertical-align: middle;
-  word-break: break-word;
+  border-bottom: 1px solid var(--sf-border-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
 }
+.main-table tbody tr:last-child td { border-bottom: none; }
+.main-table tbody tr.data-row:hover td { background: #f3f9ff; }
 
-.main-table tr:hover {
-  background-color: #f4f6f9;
-}
+/* column widths: Indent | Date | Item | Avl | Req | Purpose | L1 | L2 | Action */
+.main-table th:nth-child(1), .main-table td:nth-child(1) { width: 10%; }
+.main-table th:nth-child(2), .main-table td:nth-child(2) { width: 11%; white-space: nowrap; }
+.main-table th:nth-child(3), .main-table td:nth-child(3) { width: 21%; }
+.main-table th:nth-child(4), .main-table td:nth-child(4) { width: 6%;  text-align: right; }
+.main-table th:nth-child(5), .main-table td:nth-child(5) { width: 8%;  text-align: right; }
+.main-table th:nth-child(6), .main-table td:nth-child(6) { width: 14%; }
+.main-table th:nth-child(7), .main-table td:nth-child(7) { width: 13%; }
+.main-table th:nth-child(8), .main-table td:nth-child(8) { width: 12%; }
+.main-table th:nth-child(9), .main-table td:nth-child(9) { width: 5%;  text-align: center; }
 
-/* Type Status Badges (Purchase / Issue) */
-.badge-type {
+.indent-no  { font-weight: 700; color: var(--sf-blue); white-space: nowrap; }
+.sub        { display: block; color: var(--sf-muted); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.item-name  { display: block; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avl        { color: #c55a00; font-weight: 700; }
+.req        { font-weight: 700; color: var(--sf-blue-dark); }
+.uom        { color: var(--sf-muted); font-size: 10px; margin-left: 2px; }
+.purpose    { color: var(--sf-muted); white-space: normal; word-break: break-word; overflow-wrap: anywhere; line-height: 1.3; }
+
+/* status pills */
+.pill {
   display: inline-block;
-  padding: 3px 8px;
-  font-size: 10.5px;
-  font-weight: 700;
-  border-radius: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .3px;
   white-space: nowrap;
 }
+.pill.ok   { background: var(--sf-green-bg); color: var(--sf-green); }
+.pill.warn { background: var(--sf-amber-bg); color: var(--sf-amber); }
+.pill.bad  { background: var(--sf-red-bg);   color: var(--sf-red); }
 
-.badge-type-purchase {
-  background-color: #eef4fe;
-  color: #0176d3;
-  border: 1px solid #aacbfa;
-}
-
-.badge-type-issue {
-  background-color: #eaf5ea;
-  color: #2e844a;
-  border: 1px solid #a3d9b1;
-}
-
-.badge-type-default {
-  background-color: #f3f3f3;
-  color: #514f4d;
-  border: 1px solid #c9c9c9;
-}
-
-/* Centered Table Action Buttons */
-.print-form {
-  margin: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
+/* print button */
+.print-form { margin: 0; display: flex; justify-content: center; }
 .print-action-btn {
-  background: #ffffff;
-  border: 1px solid #0176d3;
-  color: #0176d3;
-  padding: 4px 8px;
+  width: 24px; height: 24px;
+  background: #fff;
+  border: 1px solid var(--sf-blue);
+  color: var(--sf-blue);
   border-radius: 4px;
   font-size: 11px;
-  font-weight: 600;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
-  transition: all 0.15s ease;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: all .15s;
 }
+.print-action-btn:hover { background: var(--sf-blue); color: #fff; }
 
-.print-action-btn:hover {
-  background: #0176d3;
-  color: #ffffff;
+.empty-row td { text-align: center !important; color: var(--sf-muted); padding: 18px 6px; white-space: normal; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1100px) {
+  .split { grid-template-columns: 1fr; }
+  .actions-group { width: 100%; margin-left: 0; }
+  .actions-group .btn { flex: 1 1 auto; }
 }
-
-/* CSS Mobile Card Transformation */
-@media (max-width: 1024px) {
-  .main-content { width: 100%; padding: 10px 5px; }
-  .card { padding: 12px; }
-
-  .actions-group {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .actions-group .btn {
-    flex: 1 1 45%;
-  }
-
-  .table-container {
-    border: none;
-  }
-
-  table.main-table, 
-  .main-table thead, 
-  .main-table tbody, 
-  .main-table th, 
-  .main-table td, 
-  .main-table tr {
-    display: block;
-    width: 100%;
-  }
-
-  .main-table thead tr {
-    display: none;
-  }
-
-  .main-table tr {
-    margin-bottom: 14px;
-    border: 1px solid #c9c9c9;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    padding: 8px 0;
-    background: #fff;
-  }
-
-  .main-table td {
-    text-align: right;
-    padding: 8px 14px;
-    position: relative;
-    border: none;
-    border-bottom: 1px solid #f3f3f3;
-    font-size: 12px;
-    min-height: 36px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .main-table td:last-child {
-    border-bottom: none;
-  }
-
-  .main-table td::before {
-    content: attr(data-label);
-    font-weight: 700;
-    text-align: left;
-    color: #514f4d;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding-right: 10px;
-  }
+@media (max-width: 600px) {
+  .main-content { padding: 8px 6px 20px; }
 }
 </style>
 </head>
@@ -368,171 +338,210 @@ h1 {
 <%@ include file="header.jsp" %>
 
 <div class="main-content">
-  <div class="card">
-    
-    <div class="header-area">
-      <div class="icon-box"><i class="fa fa-file-invoice"></i></div>
-      <h1>Indents Report</h1>
+
+  <div class="page-head">
+    <div class="icon-box"><i class="fa fa-file-invoice"></i></div>
+    <h1>Indents Report</h1>
+    <span class="total">&middot; <%= indents.size() %> items</span>
+  </div>
+
+  <div class="search-bar">
+    <div class="filter-group grow">
+      <label>Keyword Search</label>
+      <input type="text" id="keywordSearch" placeholder="Search by any field..." onkeyup="filterTable()">
     </div>
 
-    <div class="search-bar">
-      <div class="filter-group">
-        <label>Keyword Search</label>
-        <input type="text" id="keywordSearch" placeholder="Search by any field..." onkeyup="filterTable()">
-      </div>
-
-      <div class="filter-group">
-        <label>From Date</label>
-        <input type="date" id="fromDate" onchange="filterTable()">
-      </div>
-
-      <div class="filter-group">
-        <label>To Date</label>
-        <input type="date" id="toDate" onchange="filterTable()">
-      </div>
-
-      <div class="filter-group">
-        <label>Department</label>
-        <select id="deptFilter" onchange="filterTable()">
-            <option value="">All Departments</option>
-            <option value="Electrical">Electrical</option>
-            <option value="Housekeeping">Housekeeping</option>
-            <option value="Plumbing">Plumbing</option>
-            <option value="Dining Hall">Dining Hall</option>
-            <option value="RO Plant">RO Plant</option>
-            <option value="Store">Store</option>
-            <option value="Academics">Academics</option>
-            <option value="Finance">Finance</option>
-        </select>
-      </div>
-
-      <div class="actions-group">
-        <button class="btn btn-info" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
-        <button class="btn btn-secondary" onclick="resetFilters()"><i class="fa fa-rotate-left"></i> Reset</button>
-        <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
-        <button id="expandAll" class="btn btn-secondary" onclick="toggleExpand()">Collapse All</button>
-      </div>
+    <div class="filter-group">
+      <label>From Date</label>
+      <input type="date" id="fromDate" onchange="filterTable()">
     </div>
 
-    <div class="table-container">
-      <table id="dataTable" class="main-table">
-        <thead>
-          <tr>
-            <th onclick="sortTable(0)">ID <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(1)">Indent No <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(2)">Type <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(3)">Date <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(4)">Item <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(5)">Avail. Qty <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(6)">Req. Qty <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(7)">UOM <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(8)">Dept <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(9)">Requested By <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(10)">Purpose <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(11)">L1 Status <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(12)">IApproveDate <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(13)">L2 Status <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(14)">FApproveDate <i class="fa fa-sort"></i></th>
-            <th onclick="sortTable(15)">Indent Status <i class="fa fa-sort"></i></th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%
-            List<IndentItemFull> indents = (List<IndentItemFull>) request.getAttribute("indents");
-            if (indents != null && !indents.isEmpty()) {
-              for (IndentItemFull ind : indents) {
-                String istatus = ind.getIstatus();
-                String status = ind.getStatus();
-                String typeVal = ind.getPurchaseorIssue();
-                
-                String istatusStyle = "Approved".equalsIgnoreCase(istatus) ? "color:#2e844a;font-weight:bold;" : "color:#c23934;font-weight:bold;";
-                String statusStyle = (status == null || status.trim().isEmpty() || "pending".equalsIgnoreCase(status))
-                  ? "color:#c23934;font-weight:bold;" : "color:#2e844a;font-weight:bold;";
-                
-                String badgeClass = "badge-type-default";
-                if (typeVal != null) {
-                    if (typeVal.trim().equalsIgnoreCase("Purchase")) {
-                        badgeClass = "badge-type-purchase";
-                    } else if (typeVal.trim().equalsIgnoreCase("Issue")) {
-                        badgeClass = "badge-type-issue";
-                    }
-                }
+    <div class="filter-group">
+      <label>To Date</label>
+      <input type="date" id="toDate" onchange="filterTable()">
+    </div>
+
+    <div class="filter-group">
+      <label>Department</label>
+      <select id="deptFilter" onchange="filterTable()">
+        <option value="">All Departments</option>
+        <option value="Electrical">Electrical</option>
+        <option value="Housekeeping">Housekeeping</option>
+        <option value="Plumbing">Plumbing</option>
+        <option value="Dining Hall">Dining Hall</option>
+        <option value="RO Plant">RO Plant</option>
+        <option value="Store">Store</option>
+        <option value="Academics">Academics</option>
+        <option value="Finance">Finance</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Status</label>
+      <select id="statusFilter" onchange="filterTable()">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+
+    <div class="actions-group">
+      <button class="btn" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
+      <button class="btn btn-secondary" onclick="resetFilters()"><i class="fa fa-rotate-left"></i> Reset</button>
+      <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
+      <button id="expandAll" class="btn btn-secondary" onclick="toggleExpand()">Collapse All</button>
+    </div>
+  </div>
+
+  <div class="split">
+
+  <% for (int p = 0; p < panes.size(); p++) {
+       List<IndentItemFull> list = panes.get(p);
+       String tid = tableIds[p];
+  %>
+    <section class="pane <%= paneClasses[p] %>">
+
+      <div class="pane-title">
+        <h2><%= paneTitles[p] %></h2>
+        <span class="pane-count"><%= list.size() %></span>
+      </div>
+
+      <div class="table-container">
+        <table id="<%= tid %>" class="main-table">
+          <thead>
+            <tr>
+              <th onclick="sortTable('<%= tid %>',0)">Indent <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',1)">Date <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',2)">Item <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',3)">Avl <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',4)">Req <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',5)">Purpose <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',6)">L1 Status <i class="fa fa-sort"></i></th>
+              <th onclick="sortTable('<%= tid %>',7)">L2 Status <i class="fa fa-sort"></i></th>
+              <th class="no-sort"></th>
+            </tr>
+          </thead>
+          <tbody>
+          <% if (list.isEmpty()) { %>
+            <tr class="empty-row"><td colspan="9">No records found</td></tr>
+          <% } else {
+               for (IndentItemFull ind : list) {
+                 String istatus = ind.getIstatus();
+                 String status  = ind.getStatus();
+                 String l1Text  = (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus;
+                 String l2Text  = (status  == null || status.trim().isEmpty())  ? "Pending" : status;
+                 String l1Class = "Approved".equalsIgnoreCase(istatus) ? "ok" : "bad";
+                 String l2Class = pillClass(status);
+                 String statusKey = "bad".equals(l2Class) ? "cancelled" : ("ok".equals(l2Class) ? "approved" : "pending");
+                 String typeVal = (ind.getPurchaseorIssue() == null || ind.getPurchaseorIssue().trim().isEmpty()) ? "-" : ind.getPurchaseorIssue().trim();
           %>
-          <tr class="data-row">
-            <td data-label="ID"><%= ind.getId() %></td>
-            <td data-label="Indent No"><%= ind.getIndentNo() %></td>
-            <td data-label="Type">
-              <span class="badge-type <%= badgeClass %>"><%= (typeVal != null && !typeVal.trim().isEmpty()) ? typeVal : "-" %></span>
-            </td>
-            <td data-label="Date"><%= ind.getDate() %></td>
-            <td data-label="Item"><%= ind.getItemName() %></td>
-            <td data-label="Avail. Qty" style="color:#FA6D16; font-weight:bold;"><%= ind.getBalanceQty() %></td>
-            <td data-label="Req. Qty"><%= ind.getQty() %></td>
-            <td data-label="UOM"><%= ind.getUom() %></td>
-            <td data-label="Dept"><%= ind.getDepartment() %></td>
-            <td data-label="Requested By"><%= ind.getRequestedBy() %></td>
-            <td data-label="Purpose"><%= ind.getPurpose() %></td>
-            <td data-label="L1 Status" style="<%= istatusStyle %>">
-              <%= (istatus == null || istatus.trim().isEmpty()) ? "Pending" : istatus %>
-              <% if(ind.getApprovedBy() != null && !ind.getApprovedBy().trim().isEmpty()) { %>
-                <br><span style="font-size:10px; color:#514f4d; font-weight:normal; display:block; line-height:1.2;">By: <%= ind.getApprovedBy() %></span>
-              <% } %>
-            </td>
-            <td data-label="IApproveDate"><%= ind.getIapprovevdate() %></td>
-            <td data-label="L2 Status" style="<%= statusStyle %>"><%= (status == null || status.trim().isEmpty()) ? "Pending" : status %></td>
-            <td data-label="FApproveDate"><%= ind.getFapprovevdate() %></td>
-            <td data-label="Indent Status"><%= ind.getIndentNext() %></td>
-            <td data-label="Action">
-              <form action="PrintIndent.jsp" method="get" class="print-form">
-                <input type="hidden" name="IndentNumber" value="<%= ind.getIndentNo() %>">
-                <button type="submit" class="print-action-btn">
-                  <i class="fa fa-print"></i> View / Print
-                </button>
-              </form>
-            </td>
-          </tr>
-          <% } } else { %>
-          <tr><td colspan="17" style="text-align:center;color:#c23934;font-weight:600;padding:20px;">No records found</td></tr>
-          <% } %>
-        </tbody>
-      </table>
-    </div>
+            <tr class="data-row"
+                data-dept="<%= esc(ind.getDepartment()) %>"
+                data-status="<%= statusKey %>"
+                data-date="<%= esc(ind.getDate()) %>"
+                data-id="<%= esc(ind.getId()) %>"
+                data-no="<%= esc(ind.getIndentNo()) %>"
+                data-type="<%= esc(typeVal) %>"
+                data-item="<%= esc(ind.getItemName()) %>"
+                data-avl="<%= esc(ind.getBalanceQty()) %>"
+                data-req="<%= esc(ind.getQty()) %>"
+                data-uom="<%= esc(ind.getUom()) %>"
+                data-by="<%= esc(ind.getRequestedBy()) %>"
+                data-purpose="<%= esc(ind.getPurpose()) %>"
+                data-l1="<%= esc(l1Text) %>"
+                data-l1by="<%= esc(ind.getApprovedBy()) %>"
+                data-l1date="<%= esc(ind.getIapprovevdate()) %>"
+                data-l2="<%= esc(l2Text) %>"
+                data-l2date="<%= esc(ind.getFapprovevdate()) %>"
+                data-next="<%= esc(ind.getIndentNext()) %>">
+
+              <td data-sort="<%= esc(ind.getIndentNo()) %>">
+                <span class="indent-no">#<%= esc(ind.getIndentNo()) %></span>
+                <span class="sub">ID <%= esc(ind.getId()) %></span>
+              </td>
+
+              <td data-sort="<%= esc(ind.getDate()) %>"><%= dash(ind.getDate()) %></td>
+
+              <td data-sort="<%= esc(ind.getItemName()) %>" title="<%= esc(ind.getItemName()) %>">
+                <span class="item-name"><%= esc(ind.getItemName()) %></span>
+                <span class="sub"><%= esc(ind.getDepartment()) %> &middot; <%= esc(ind.getRequestedBy()) %></span>
+              </td>
+
+              <td data-sort="<%= esc(ind.getBalanceQty()) %>"><span class="avl"><%= esc(ind.getBalanceQty()) %></span></td>
+
+              <td data-sort="<%= esc(ind.getQty()) %>"><span class="req"><%= esc(ind.getQty()) %></span><span class="uom"><%= esc(ind.getUom()) %></span></td>
+
+              <td class="purpose" title="<%= esc(ind.getPurpose()) %>"><%= esc(ind.getPurpose()) %></td>
+
+              <td data-sort="<%= esc(l1Text) %>">
+                <span class="pill <%= l1Class %>"><%= esc(l1Text) %></span>
+                <% if (ind.getApprovedBy() != null && !ind.getApprovedBy().trim().isEmpty()) { %>
+                  <span class="sub">By: <%= esc(ind.getApprovedBy()) %></span>
+                <% } %>
+                <span class="sub"><%= dash(ind.getIapprovevdate()) %></span>
+              </td>
+
+              <td data-sort="<%= esc(l2Text) %>">
+                <span class="pill <%= l2Class %>"><%= esc(l2Text) %></span>
+                <% if (ind.getIndentNext() != null && !ind.getIndentNext().trim().isEmpty()) { %>
+                  <span class="sub">Next: <%= esc(ind.getIndentNext()) %></span>
+                <% } %>
+                <span class="sub"><%= dash(ind.getFapprovevdate()) %></span>
+              </td>
+
+              <td>
+                <form action="PrintIndent.jsp" method="get" class="print-form">
+                  <input type="hidden" name="IndentNumber" value="<%= esc(ind.getIndentNo()) %>">
+                  <button type="submit" class="print-action-btn" title="View / Print">
+                    <i class="fa fa-print"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+          <% } } %>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  <% } %>
+
   </div>
 </div>
 
 <script>
-function sortTable(n) {
-  let table = document.getElementById("dataTable"), switching = true, dir = "asc", switchcount = 0;
-  while (switching) {
-    switching = false;
-    let rows = table.rows;
-    for (let i = 1; i < (rows.length - 1); i++) {
-      let shouldSwitch = false;
-      let x = rows[i].getElementsByTagName("TD")[n];
-      let y = rows[i + 1].getElementsByTagName("TD")[n];
-      if (!x || !y) continue;
-      
-      let xVal = x.innerText.toLowerCase().trim();
-      let yVal = y.innerText.toLowerCase().trim();
-      
-      let xNum = parseFloat(xVal), yNum = parseFloat(yVal);
-      if (!isNaN(xNum) && !isNaN(yNum)) {
-        xVal = xNum;
-        yVal = yNum;
-      }
+/* ---------- Sorting (per table) ---------- */
+function sortTable(tid, n) {
+  const t = document.getElementById(tid);
+  const tb = t.tBodies[0];
+  const rows = Array.from(tb.querySelectorAll('tr.data-row'));
+  const dir = (t.dataset.col == n && t.dataset.dir === 'asc') ? 'desc' : 'asc';
+  t.dataset.col = n;
+  t.dataset.dir = dir;
 
-      if (dir == "asc" && xVal > yVal) { shouldSwitch = true; break; }
-      else if (dir == "desc" && xVal < yVal) { shouldSwitch = true; break; }
-    }
-    if (shouldSwitch) {
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true; 
-      switchcount++;
-    } else {
-      if (switchcount == 0 && dir == "asc") { dir = "desc"; switching = true; }
-    }
-  }
+  const val = r => {
+    const c = r.cells[n];
+    const s = (c.dataset.sort !== undefined ? c.dataset.sort : c.innerText).trim().toLowerCase();
+    const f = parseFloat(s);
+    return (!isNaN(f) && /^-?[\d.]+$/.test(s)) ? f : s;
+  };
+
+  rows.sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (x < y) return dir === 'asc' ? -1 : 1;
+    if (x > y) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  rows.forEach(r => tb.appendChild(r));
+}
+
+/* ---------- Filtering (both tables) ---------- */
+function updateCounts() {
+  document.querySelectorAll('.pane').forEach(p => {
+    const n = Array.from(p.querySelectorAll('tbody tr.data-row'))
+                   .filter(r => r.style.display !== 'none').length;
+    p.querySelector('.pane-count').textContent = n;
+  });
 }
 
 function filterTable() {
@@ -540,31 +549,27 @@ function filterTable() {
   const toDate = document.getElementById('toDate').value;
   const keyword = document.getElementById('keywordSearch').value.toLowerCase().trim();
   const selectedDept = document.getElementById('deptFilter').value.toLowerCase().trim();
-  const rows = document.querySelectorAll('#dataTable tbody tr');
-  
-  rows.forEach(row => {
-    if (row.cells.length <= 1) return; 
-    
-    const dateCell = row.cells[3]?.innerText.trim();
-    const deptCell = row.cells[8]?.innerText.toLowerCase().trim();
-    
-    const textMatch = keyword === "" || row.innerText.toLowerCase().includes(keyword);
-    const deptMatch = selectedDept === "" || deptCell === selectedDept;
-    
+  const selectedStatus = document.getElementById('statusFilter').value;
+
+  document.querySelectorAll('#tblPurchase tbody tr.data-row, #tblIssue tbody tr.data-row').forEach(row => {
+    const deptCell = (row.dataset.dept || '').toLowerCase().trim();
+    const textMatch = keyword === '' || row.innerText.toLowerCase().includes(keyword);
+    const deptMatch = selectedDept === '' || deptCell === selectedDept;
+    const statusMatch = selectedStatus === '' || row.dataset.status === selectedStatus;
+
     let dateMatch = true;
     if (fromDate || toDate) {
-      const rowDate = new Date(dateCell);
+      const rowDate = new Date(row.dataset.date);
       const from = fromDate ? new Date(fromDate) : null;
       const to = toDate ? new Date(toDate) : null;
-      
       if (!isNaN(rowDate.getTime())) {
         if (from && rowDate < from) dateMatch = false;
         if (to && rowDate > to) dateMatch = false;
       }
     }
-    
-    row.style.display = (textMatch && dateMatch && deptMatch) ? '' : 'none';
+    row.style.display = (textMatch && dateMatch && deptMatch && statusMatch) ? '' : 'none';
   });
+  updateCounts();
 }
 
 function resetFilters() {
@@ -572,54 +577,43 @@ function resetFilters() {
   document.getElementById('toDate').value = '';
   document.getElementById('keywordSearch').value = '';
   document.getElementById('deptFilter').value = '';
-  document.querySelectorAll('#dataTable tbody tr').forEach(r => r.style.display = '');
+  document.getElementById('statusFilter').value = '';
+  document.querySelectorAll('tr.data-row').forEach(r => r.style.display = '');
+  updateCounts();
 }
 
+/* ---------- Excel / CSV export (full 17 columns, visible rows only) ---------- */
 function downloadExcel() {
-  const table = document.getElementById('dataTable');
-  let csv = [];
-  const rows = table.querySelectorAll('tr');
-  
-  rows.forEach(row => {
-    if (row.style.display !== 'none') {
-      let cols = row.querySelectorAll('th, td');
-      let rowData = [];
-      cols.forEach(cell => {
-        let text = cell.innerText.replace(/\n/g, ' ').replace(/"/g, '""').trim();
-        
-        if (window.innerWidth <= 1024 && cell.tagName === 'TD') {
-          const labelText = cell.getAttribute('data-label') || '';
-          if (text.startsWith(labelText)) {
-            text = text.substring(labelText.length).trim();
-          }
-          if (cell.querySelector('button')) {
-             text = "View / Print";
-          }
-        }
-        rowData.push('"' + text + '"');
-      });
-      csv.push(rowData.join(','));
-    }
+  const cols = [
+    ['ID','id'], ['Indent No','no'], ['Type','type'], ['Date','date'], ['Item','item'],
+    ['Avail. Qty','avl'], ['Req. Qty','req'], ['UOM','uom'], ['Dept','dept'],
+    ['Requested By','by'], ['Purpose','purpose'], ['L1 Status','l1'], ['L1 Approved By','l1by'],
+    ['IApproveDate','l1date'], ['L2 Status','l2'], ['FApproveDate','l2date'], ['Indent Status','next']
+  ];
+  const q = s => '"' + String(s == null ? '' : s).replace(/\r?\n/g, ' ').replace(/"/g, '""').trim() + '"';
+
+  const csv = [cols.map(c => q(c[0])).join(',')];
+  document.querySelectorAll('#tblPurchase tbody tr.data-row, #tblIssue tbody tr.data-row').forEach(row => {
+    if (row.style.display === 'none') return;
+    csv.push(cols.map(c => q(row.dataset[c[1]])).join(','));
   });
-  
-  const csvString = csv.join('\n');
-  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+
+  const blob = new Blob(['\uFEFF' + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
-  const url = URL.createObjectURL(blob);
-  link.setAttribute('href', url);
-  link.setAttribute('download', 'Indent_Full_Report.csv');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Indent_Full_Report.csv';
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
+/* ---------- Collapse / expand both panes ---------- */
 let expanded = true;
 function toggleExpand() {
   expanded = !expanded;
-  const rows = document.querySelectorAll('.data-row');
-  rows.forEach(row => row.style.display = expanded ? '' : 'none');
-  document.getElementById("expandAll").innerText = expanded ? "Collapse All" : "Expand All";
+  document.querySelectorAll('.pane').forEach(p => p.classList.toggle('collapsed', !expanded));
+  document.getElementById('expandAll').innerText = expanded ? 'Collapse All' : 'Expand All';
 }
 </script>
 

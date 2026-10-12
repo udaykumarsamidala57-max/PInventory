@@ -1,17 +1,46 @@
 package com.controller;
 
 import java.io.IOException;
-import java.sql.*;
-import java.util.*;
-import javax.servlet.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
-import javax.servlet.http.*;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.bean.DBUtil;
 
 @WebServlet("/Home")
 public class Home extends HttpServlet {
     private static final long serialVersionUID = 1L;
+
+    /** Financial year runs April → March. */
+    private static final String[] MONTH_NAMES = {
+            "Apr", "May", "Jun", "Jul", "Aug", "Sep",
+            "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
+    };
+
+    /** Accepts "2026-27" or "2026-2027". */
+    private static final Pattern FY_PATTERN = Pattern.compile("^(\\d{4})-(\\d{2}|\\d{4})$");
+
+    /** 2026 -> "2026-27" */
+    private static String fyLabel(int startYear) {
+        return startYear + "-" + String.format("%02d", (startYear + 1) % 100);
+    }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -22,156 +51,65 @@ public class Home extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-        String role = (String) sess.getAttribute("role");
-        String depts = (String) sess.getAttribute("department");
         String branch = (String) sess.getAttribute("branch");
 
-        Map<String, Integer> deptPendingMap = new LinkedHashMap<>();
-        Map<String, Integer> totalDeptMap = new LinkedHashMap<>();
-        Map<String, Integer> nextStageCountMap = new LinkedHashMap<>();
-
-        List<Map<String, Object>> topCostliest = new ArrayList<>();
-        List<Map<String, Object>> topQty = new ArrayList<>();
-
-        // ===================== DASHBOARD COUNTS =====================
-        try (Connection con = DBUtil.getConnection(branch)) {
-
-            // ✅ Department Pending
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT department, COUNT(*) AS pending_count FROM indent " +
-                            "WHERE status='Pending' OR Istatus='Pending' " +
-                            "GROUP BY department ORDER BY department");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    deptPendingMap.put(rs.getString(1), rs.getInt(2));
-                }
-            }
-
-            // ✅ Total Indents by Department
-            try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT department, COUNT(*) AS totalCount FROM indent " +
-                            "GROUP BY department ORDER BY department");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    totalDeptMap.put(rs.getString(1), rs.getInt(2));
-                }
-            }
-
-            // ✅ Indent Stage Counts
-            String stageQuery = "SELECT IFNULL(TRIM(Indentnext),'') AS stage, COUNT(*) " +
-                    "FROM indent GROUP BY IFNULL(TRIM(Indentnext),'')";
-            try (PreparedStatement ps = con.prepareStatement(stageQuery);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String stage = rs.getString(1).trim();
-                    int cnt = rs.getInt(2);
-                    if (stage == null) {
-                        stage = "";
-                    }
-
-                    switch (stage) {
-                        case "":
-                            stage = "Approval Pending";
-                            break;
-                        case "PO":
-                            stage = "PO";
-                            break;
-                        case "Issue":
-                            stage = "Issue Pending";
-                            break;
-                        
-                        case "Management Note":
-                            stage = "Management Note";
-                            break;
-                        default:
-                            stage = "Others";
-                            break;
-                    }
-                    nextStageCountMap.put(stage, nextStageCountMap.getOrDefault(stage, 0) + cnt);
-                }
-            }
-
-            // Fill missing stages with zero
-            for (String s : new String[]{"Approval-Pending", "PO", "Issue Pending", "Issued", "Management Note"}) {
-                nextStageCountMap.putIfAbsent(s, 0);
-            }
-
-            // ✅ Top 5 costliest items overall
-            String topCostliestQuery =
-                    "SELECT i.Category, i.Item_name, s.last_price " +
-                            "FROM stock s JOIN item_master i ON s.item_id=i.Item_id " +
-                            "ORDER BY s.last_price DESC LIMIT 5";
-            try (PreparedStatement ps = con.prepareStatement(topCostliestQuery);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    row.put("Category", rs.getString("Category"));
-                    row.put("Item_name", rs.getString("Item_name"));
-                    row.put("last_price", rs.getDouble("last_price"));
-                    topCostliest.add(row);
-                }
-            }
-
-            // ✅ Top 5 Highest Quantity Items Overall
-            String topQtyQuery =
-                    "SELECT i.Item_name, i.Category, s.balance_qty " +
-                            "FROM stock s JOIN item_master i ON s.item_id=i.Item_id " +
-                            "ORDER BY s.balance_qty DESC LIMIT 5";
-            try (PreparedStatement ps = con.prepareStatement(topQtyQuery);
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    Map<String, Object> row = new LinkedHashMap<>();
-                    row.put("Item_name", rs.getString("Item_name"));
-                    row.put("Category", rs.getString("Category"));
-                    row.put("balance_qty", rs.getDouble("balance_qty"));
-                    topQty.add(row);
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Set dashboard data
-        request.setAttribute("deptPendingMap", deptPendingMap);
-        request.setAttribute("totalDeptMap", totalDeptMap);
-        request.setAttribute("nextStageCountMap", nextStageCountMap);
-        request.setAttribute("topCostliest", topCostliest);
-        request.setAttribute("topQty", topQty);
-
-        // ===================== CHART FILTER & DATA =====================
+        // ===================== FILTERS =====================
         String selectedDept = request.getParameter("department");
-        if (selectedDept == null) selectedDept = "All";
-
-        String selectedFY = request.getParameter("year");
-        if (selectedFY == null) {
-            int y = Calendar.getInstance().get(Calendar.YEAR);
-            selectedFY = (y - 1) + "-" + y;
+        if (selectedDept == null || selectedDept.trim().isEmpty()) {
+            selectedDept = "All";
         }
 
-        // Parse FY
-        String[] fyParts = selectedFY.split("-");
-        int fyStartYear = Integer.parseInt(fyParts[0]);
-        int fyEndYear = Integer.parseInt(fyParts[1]);
+        // Default financial year is fixed to 2026-27 (April 2026 – March 2027)
+        int currentFyStart = 2026;
+        String defaultFY = fyLabel(currentFyStart);
 
-        java.sql.Date fyStart = java.sql.Date.valueOf(fyStartYear + "-03-01");
-        java.sql.Date fyEnd = java.sql.Date.valueOf(fyEndYear + "-02-28");
+        String selectedFY = defaultFY;
+        int fyStartYear = currentFyStart;
+        String yearParam = request.getParameter("year");
+        if (yearParam != null) {
+            Matcher m = FY_PATTERN.matcher(yearParam.trim());
+            if (m.matches()) {
+                fyStartYear = Integer.parseInt(m.group(1));
+                selectedFY = fyLabel(fyStartYear);
+            }
+        }
 
-        // FY Month Order
-        String[] monthNames = {
-                "Mar","Apr","May","Jun","Jul","Aug",
-                "Sep","Oct","Nov","Dec","Jan","Feb"
-        };
+        // 1 Apr (start year)  →  before 1 Apr (next year); safe for DATE and DATETIME columns
+        java.sql.Date fyStart = java.sql.Date.valueOf(LocalDate.of(fyStartYear, 4, 1));
+        java.sql.Date fyEndExclusive = java.sql.Date.valueOf(LocalDate.of(fyStartYear + 1, 4, 1));
 
+        // ===================== DATA =====================
+        List<String> departments = new ArrayList<>();
+        TreeSet<String> yearSet = new TreeSet<>(Collections.reverseOrder());
+        yearSet.add(defaultFY); // current FY is always selectable
         Map<String, double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
-        
-        
+        Map<String, Double> todayDeptMap = new LinkedHashMap<>();
+        double todayTotal = 0;
 
         try (Connection con = DBUtil.getConnection(branch)) {
 
-            // ✅ Departments dropdown
-            List<String> departments = new ArrayList<>();
+            // Today's cost by department (independent of the filters).
+            // Uses today's date in IST passed from Java, so it does not depend on the DB server's clock/timezone.
+            LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                    "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                    "WHERE DATE(issue_date) = ? " +
+                    "GROUP BY dept ORDER BY v DESC")) {
+                ps.setDate(1, java.sql.Date.valueOf(today));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double v = rs.getDouble("v");
+                        todayDeptMap.put(rs.getString("dept"), v);
+                        todayTotal += v;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace(); // a failure here must not break the rest of the dashboard
+            }
+
+            // Departments dropdown
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT DISTINCT department FROM stock_issues " +
                     "WHERE department IS NOT NULL AND department<>'' ORDER BY department");
@@ -181,77 +119,71 @@ public class Home extends HttpServlet {
                 }
             }
 
-            // ✅ Financial Year dropdown
-            List<String> years = new ArrayList<>();
-
+            // Financial Year dropdown (Apr–Mar), label like 2026-27
             String fyQuery =
                 "SELECT DISTINCT " +
-                "CASE " +
-                " WHEN MONTH(issue_date) >= 3 " +
-                " THEN CONCAT(YEAR(issue_date), '-', YEAR(issue_date)+1) " +
-                " ELSE CONCAT(YEAR(issue_date)-1, '-', YEAR(issue_date)) " +
+                "CASE WHEN MONTH(issue_date) >= 4 " +
+                "  THEN CONCAT(YEAR(issue_date), '-', RIGHT(CAST(YEAR(issue_date)+1 AS CHAR), 2)) " +
+                "  ELSE CONCAT(YEAR(issue_date)-1, '-', RIGHT(CAST(YEAR(issue_date) AS CHAR), 2)) " +
                 "END AS fy " +
-                "FROM stock_issues " +
-                "ORDER BY fy DESC";
-
+                "FROM stock_issues WHERE issue_date IS NOT NULL";
             try (PreparedStatement ps = con.prepareStatement(fyQuery);
                  ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    years.add(rs.getString("fy"));
+                    yearSet.add(rs.getString("fy"));
                 }
             }
 
-            // ✅ Main FY Data Query
+            // Month-wise expenditure for the selected FY
             StringBuilder sql = new StringBuilder(
-                "SELECT department, MONTH(issue_date) m, SUM(IFNULL(total_value,0)) v " +
-                "FROM stock_issues WHERE issue_date BETWEEN ? AND ? "
+                "SELECT department, MONTH(issue_date) AS m, SUM(IFNULL(total_value,0)) AS v " +
+                "FROM stock_issues WHERE issue_date >= ? AND issue_date < ? "
             );
-            if (!"All".equalsIgnoreCase(selectedDept)) {
+            boolean allDepts = "All".equalsIgnoreCase(selectedDept);
+            if (!allDepts) {
                 sql.append("AND department=? ");
             }
-            sql.append("GROUP BY department, m");
+            sql.append("GROUP BY department, MONTH(issue_date) ORDER BY department");
 
             try (PreparedStatement ps = con.prepareStatement(sql.toString())) {
                 ps.setDate(1, fyStart);
-                ps.setDate(2, fyEnd);
-                if (!"All".equalsIgnoreCase(selectedDept)) {
+                ps.setDate(2, fyEndExclusive);
+                if (!allDepts) {
                     ps.setString(3, selectedDept);
                 }
-
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         String dept = rs.getString("department");
+                        if (dept == null) continue;
+
                         int dbMonth = rs.getInt("m");
                         double val = rs.getDouble("v");
 
-                        if (dept == null) continue;
+                        // Calendar month -> FY index (Apr=0 ... Mar=11)
+                        int index = (dbMonth >= 4) ? (dbMonth - 4) : (dbMonth + 8);
 
-                        // Convert Calendar Month → FY Index
-                        int index = (dbMonth >= 3) ? (dbMonth - 3) : (dbMonth + 9);
-
-                        dataMap.putIfAbsent(dept, new double[12]);
-                        dataMap.get(dept)[index] += val;
+                        dataMap.computeIfAbsent(dept, k -> new double[12])[index] += val;
                         grandTotal += val;
                     }
                 }
             }
 
-            // Set Attributes
-            request.setAttribute("departments", departments);
-            request.setAttribute("years", years);
-            request.setAttribute("dataMap", dataMap);
-            request.setAttribute("monthNames", monthNames);
-            request.setAttribute("selectedDept", selectedDept);
-            request.setAttribute("selectedYear", selectedFY);
-            request.setAttribute("grandTotal", grandTotal);
-            request.setAttribute("totalRows", dataMap.size());
-
-            RequestDispatcher rd = request.getRequestDispatcher("Home.jsp");
-            rd.forward(request, response);
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
+        // ===================== FORWARD =====================
+        request.setAttribute("todayDeptMap", todayDeptMap);
+        request.setAttribute("todayTotal", todayTotal);
+        request.setAttribute("departments", departments);
+        request.setAttribute("years", new ArrayList<>(yearSet));
+        request.setAttribute("dataMap", dataMap);
+        request.setAttribute("monthNames", MONTH_NAMES);
+        request.setAttribute("selectedDept", selectedDept);
+        request.setAttribute("selectedYear", selectedFY);
+        request.setAttribute("grandTotal", grandTotal);
+        request.setAttribute("totalRows", dataMap.size());
+
+        request.getRequestDispatcher("Home.jsp").forward(request, response);
     }
 }

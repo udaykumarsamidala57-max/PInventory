@@ -90,8 +90,8 @@ var LOGIN_USER = "<%= esc(loginUser) %>";
     <div class="indent-card">
 
         <div class="indent-header">
-            <span class="indent-no">#<%= esc(e.getKey()) %></span>
-            <span class="meta"><%= esc(first.getDate()) %></span>
+            <span class="indent-no">#<%= esc(e.getKey()) %><%= esc(first.getDate()) %></span>
+            <span class="meta"></span>
             <span class="meta"><b><%= esc(first.getDepartment()) %></b></span>
             <span class="meta"><%= esc(first.getRequestedBy()) %></span>
             <span class="status-text"><span class="pill" data-s="<%= esc(hStatus.toLowerCase()) %>"><%= esc(hStatus) %></span></span>
@@ -121,10 +121,10 @@ var LOGIN_USER = "<%= esc(loginUser) %>";
         <tr id="row-<%= ind.getId() %>">
             <td>
                 <div class="item-name" title="<%= esc(ind.getItemName()) %>"><%= esc(ind.getItemName()) %></div>
-                <div class="item-id">ID <%= ind.getId() %></div>
+                
             </td>
 
-            <td><%= ind.getBalanceQty() %></td>
+            <td><span class="avl"><%= ind.getBalanceQty() %></span></td>
 
             <td><span class="req"><%= ind.getQty() %></span><span class="uom"><%= esc(ind.getUom()) %></span></td>
 

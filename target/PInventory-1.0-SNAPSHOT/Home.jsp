@@ -1,6 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*" %>
 <%@ page import="java.text.*" %>
+<%!
+    // HTML-escape for text/attributes
+    private static String h(String s) {
+        if (s == null) return "";
+        return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
+    // Escape for JS string literals
+    private static String js(String s) {
+        if (s == null) return "";
+        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'")
+                .replace("\n", " ").replace("\r", " ").replace("<", "\\u003c");
+    }
+%>
 <%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
@@ -9,379 +23,301 @@
     }
 
     String user = (String) sess.getAttribute("username");
-    
-    Map<String,Integer> deptPendingMap = (Map<String,Integer>)request.getAttribute("deptPendingMap");
-    Map<String,Integer> totalDeptMap = (Map<String,Integer>)request.getAttribute("totalDeptMap");
-    Map<String,Integer> nextStageCountMap = (Map<String,Integer>)request.getAttribute("nextStageCountMap");
-    List<String> departments = (List<String>)request.getAttribute("departments");
-    List<String> years = (List<String>)request.getAttribute("years");
-    Map<String,double[]> dataMap = (Map<String,double[]>)request.getAttribute("dataMap");
-    String[] monthNames = (String[])request.getAttribute("monthNames");
-    String selectedDept = (String)request.getAttribute("selectedDept");
-    String selectedYear = (String)request.getAttribute("selectedYear");
-    double grandTotal = (Double)request.getAttribute("grandTotal");
-    int totalRows = (Integer)request.getAttribute("totalRows");
 
-    Calendar cal = Calendar.getInstance();
-    int hour = cal.get(Calendar.HOUR_OF_DAY);
-    String greeting;
-    String greetingIcon;
-    if (hour < 12) {
-        greeting = "Good Morning";
-        greetingIcon = "fa-sun"; 
-    } else if (hour < 17) {
-        greeting = "Good Afternoon";
-        greetingIcon = "fa-cloud-sun";
-    } else {
-        greeting = "Good Evening";
-        greetingIcon = "fa-moon"; 
+    @SuppressWarnings("unchecked")
+    Map<String, Double> todayDeptMap = (Map<String, Double>) request.getAttribute("todayDeptMap");
+    Double tt = (Double) request.getAttribute("todayTotal");
+    if (todayDeptMap == null) todayDeptMap = new LinkedHashMap<String, Double>();
+    double todayTotal = tt != null ? tt : 0;
+
+    @SuppressWarnings("unchecked")
+    List<String> departments = (List<String>) request.getAttribute("departments");
+    @SuppressWarnings("unchecked")
+    List<String> years = (List<String>) request.getAttribute("years");
+    @SuppressWarnings("unchecked")
+    Map<String, double[]> dataMap = (Map<String, double[]>) request.getAttribute("dataMap");
+    // Financial year months, always April to March
+    String[] monthNames = {"Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"};
+    String selectedDept = (String) request.getAttribute("selectedDept");
+    String selectedYear = (String) request.getAttribute("selectedYear");
+    Double gt = (Double) request.getAttribute("grandTotal");
+    Integer tr = (Integer) request.getAttribute("totalRows");
+
+    if (departments == null) departments = new ArrayList<String>();
+    if (years == null) years = new ArrayList<String>();
+    if (dataMap == null) dataMap = new LinkedHashMap<String, double[]>();
+    if (selectedDept == null) selectedDept = "All";
+    if (selectedYear == null) selectedYear = "";
+    double grandTotal = gt != null ? gt : 0;
+    int totalRows = tr != null ? tr : 0;
+
+    // Greeting
+    int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
+    String greeting = hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening");
+
+    // Aggregates for KPIs and charts
+    double[] monthTotals = new double[monthNames.length];
+    for (double[] vals : dataMap.values()) {
+        for (int i = 0; i < vals.length && i < monthTotals.length; i++) monthTotals[i] += vals[i];
+    }
+    int peakIdx = -1; double peakVal = 0;
+    for (int i = 0; i < monthTotals.length; i++) {
+        if (monthTotals[i] > peakVal) { peakVal = monthTotals[i]; peakIdx = i; }
+    }
+    String topDept = "—"; double topDeptVal = 0;
+    for (Map.Entry<String, double[]> e : dataMap.entrySet()) {
+        double s = 0; for (double v : e.getValue()) s += v;
+        if (s > topDeptVal) { topDeptVal = s; topDept = e.getKey(); }
+    }
+
+    NumberFormat inr = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+    inr.setMaximumFractionDigits(0);
+
+    // JSON-ish arrays for Chart.js
+    StringBuilder dLabels = new StringBuilder();
+    StringBuilder dValues = new StringBuilder();
+    for (Iterator<Map.Entry<String, double[]>> it = dataMap.entrySet().iterator(); it.hasNext();) {
+        Map.Entry<String, double[]> e = it.next();
+        double s = 0; for (double v : e.getValue()) s += v;
+        dLabels.append("\"").append(js(e.getKey())).append("\"");
+        dValues.append(String.format(Locale.ROOT, "%.2f", s));
+        if (it.hasNext()) { dLabels.append(","); dValues.append(","); }
+    }
+    StringBuilder mLabels = new StringBuilder();
+    StringBuilder mValues = new StringBuilder();
+    for (int i = 0; i < monthNames.length; i++) {
+        mLabels.append("\"").append(js(monthNames[i])).append("\"");
+        mValues.append(String.format(Locale.ROOT, "%.2f", monthTotals[i]));
+        if (i < monthNames.length - 1) { mLabels.append(","); mValues.append(","); }
     }
 %>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Inventory Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
+    /* ---------- Salesforce Lightning-style tokens ---------- */
     :root {
-        --sf-blue-primary: #0176d3;
-        --sf-blue-dark: #0b5cab;
-        --sf-bg-gray: #f3f5f7;
-        --sf-card-bg: #ffffff;
-        --sf-border: #dddbda;
-        --sf-text-main: #181818;
-        --sf-text-muted: #444444;
-        --sf-text-light: #696969;
-        --sf-success: #2e844a;
-        --sf-success-bg: #eaf5ea;
-        --sf-error: #ea001e;
-        --sf-error-bg: #ffeef0;
-        --sf-radius: 0.25rem;
-        --sf-shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
-        --sf-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+        --brand: #0176d3;
+        --brand-dark: #014486;
+        --brand-light: #eef4ff;
+        --navy: #032d60;
+        --bg: #f3f3f3;
+        --card: #ffffff;
+        --border: #e5e5e5;
+        --border-strong: #c9c9c9;
+        --text: #181818;
+        --text-weak: #444444;
+        --text-weaker: #5c5c5c;
+        --success: #2e844a;
+        --warning: #fe9339;
+        --focus: #1b96ff;
+        --radius: 0.25rem;
+        --radius-lg: 0.5rem;
+        --shadow: 0 2px 2px 0 rgba(0,0,0,0.10);
     }
-
+    * { box-sizing: border-box; }
     body {
-        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-        background: var(--sf-bg-gray);
+        font-family: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
         margin: 0;
-        color: var(--sf-text-main);
+        font-size: 13px;
         line-height: 1.5;
         -webkit-font-smoothing: antialiased;
     }
+    .container { width: 96%; max-width: 1600px; margin: 0 auto; padding: 16px 0 24px; }
 
-    .container {
-        width: 96%;
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 24px 0;
-    }
-
-    /* Premium Welcome Banner with Decorative Accent Pattern */
-    .welcome-banner {
-        background: linear-gradient(135deg, #ffffff 0%, #faffff 100%);
-        padding: 20px 28px;
-        border-radius: var(--sf-radius);
-        border: 1px solid var(--sf-border);
-        border-left: 4px solid var(--sf-blue-primary);
-        margin-bottom: 24px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        box-shadow: var(--sf-shadow-sm);
-    }
-
-    .welcome-text h1 {
-        margin: 0;
-        font-size: 22px;
-        font-weight: 600;
-        color: var(--sf-text-main);
-        letter-spacing: -0.3px;
-    }
-
-    .welcome-text p {
-        margin: 4px 0 0 0;
-        color: var(--sf-text-light);
-        font-size: 13.5px;
-    }
-
-    .date-badge {
-        font-size: 13px;
-        color: var(--sf-text-muted);
-        background: #f3f5f7;
-        padding: 6px 14px;
-        border-radius: 20px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-        border: 1px solid #e2e0df;
-    }
-
-    h1.page-title {
-        color: var(--sf-text-main);
-        font-weight: 600;
-        margin: 32px 0 16px 0;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    /* Enhanced Card Interface */
-    .card {
-        background: var(--sf-card-bg);
-        border-radius: var(--sf-radius);
-        border: 1px solid var(--sf-border);
-        box-shadow: var(--sf-shadow-sm);
-        margin-bottom: 24px;
-        overflow: hidden;
-        transition: box-shadow 0.2s ease;
-    }
-    
-    .card:hover {
-        box-shadow: var(--sf-shadow-md);
-    }
-
-    .card-header {
+    /* ---------- Page header (record-home style) ---------- */
+    .page-header {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
         padding: 14px 20px;
-        border-bottom: 1px solid var(--sf-border);
-        background: #fafaf9;
         display: flex;
-        align-items: center;
         justify-content: space-between;
-    }
-
-    .card-title {
-        font-size: 14px;
-        font-weight: 600;
-        margin: 0;
-        color: var(--sf-text-main);
-        display: flex;
         align-items: center;
+        gap: 16px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+    .ph-left { display: flex; align-items: center; gap: 12px; }
+    .ph-icon {
+        width: 40px; height: 40px; border-radius: var(--radius);
+        background: #3a9bdc; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .ph-sub { font-size: 12px; color: var(--text-weaker); margin: 0; }
+    .ph-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--text); line-height: 1.25; }
+    .ph-date {
+        font-size: 12px; color: var(--text-weak);
+        border: 1px solid var(--border-strong); border-radius: 15rem;
+        padding: 4px 12px; background: #fff; white-space: nowrap;
+    }
+    .ph-date i { margin-right: 6px; color: var(--text-weaker); }
+
+    /* ---------- Today's cost ---------- */
+    .today-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
         gap: 10px;
     }
-
-    .card-body {
-        padding: 20px;
+    .today-tile {
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--brand);
+        border-radius: var(--radius);
+        padding: 10px 14px;
+        background: #fff;
     }
+    .today-tile .t-dept { font-size: 12px; color: var(--text-weaker); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .today-tile .t-val { font-size: 18px; font-weight: 400; color: var(--navy); margin: 0; }
+    .today-total { font-size: 13px; color: var(--text-weak); }
+    .today-total b { font-size: 16px; color: var(--navy); margin-left: 4px; }
 
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1.3fr 0.7fr;
-        gap: 24px;
-    }
-
-    .table-container { 
-        overflow-x: auto; 
-    }
-
-    /* Salesforce Clean Compact Tables */
-    table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        font-size: 13px; 
-    }
-
-    thead { 
-        background: #fafaf9; 
-    }
-
-    th { 
-        color: var(--sf-text-muted); 
-        padding: 10px 14px; 
-        font-weight: 600; 
-        text-align: right;
-        border-bottom: 2px solid var(--sf-border);
-        text-transform: uppercase;
-        font-size: 11px;
-        letter-spacing: 0.6px;
-    }
-
-    td { 
-        padding: 11px 14px; 
-        border-bottom: 1px solid var(--sf-border); 
-        text-align: right; 
-        color: var(--sf-text-main);
-    }
-
-    tr:last-child td {
-        border-bottom: none;
-    }
-
-    tr:hover td {
-        background-color: #f9fbfd;
-    }
-
-    /* Utility Status Badges */
-    .badge-status {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11.5px;
-        font-weight: 600;
-    }
-    
-    .badge-status.error {
-        color: var(--sf-error);
-        background: var(--sf-error-bg);
-    }
-
-    .badge-status.success {
-        color: var(--sf-success);
-        background: var(--sf-success-bg);
-    }
-
-    /* Interactive Operational Stage Cards */
-    .stage-container { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 14px; 
-    }
-
-    .stage-card {
-        padding: 18px 16px; 
-        text-align: left; 
-        border-radius: var(--sf-radius);
-        background: var(--sf-card-bg); 
-        border: 1px solid var(--sf-border);
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-    }
-
-    .stage-card:hover {
-        border-color: var(--sf-blue-primary);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(1, 118, 211, 0.08);
-    }
-
-    .stage-card h4 { 
-        font-size: 12px; 
-        color: var(--sf-text-light); 
-        margin: 0 0 10px 0; 
-        font-weight: 400;
-    }
-
-    .stage-card h2 { 
-        font-size: 24px; 
-        color: var(--sf-blue-dark); 
-        font-weight: 600; 
-        margin: 0; 
-    }
-
-    .chart-grid { 
-        display: grid; 
-        grid-template-columns: 1fr 1fr; 
-        gap: 24px; 
-    }
-
-    .scrollable-chart-area {
-        height: 380px;
-        overflow-y: auto;
-    }
-
-    /* Enhanced Salesforce Controls Bar */
+    /* ---------- Filter bar ---------- */
     .filter-panel {
-        background: var(--sf-card-bg); 
-        padding: 20px; 
-        border-radius: var(--sf-radius);
-        border: 1px solid var(--sf-border);
-        margin: 24px 0; 
-        display: flex; 
-        justify-content: flex-start; 
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: 12px 20px;
+        margin-bottom: 12px;
+        display: flex;
         align-items: flex-end;
-        gap: 20px; 
-        box-shadow: var(--sf-shadow-sm);
+        gap: 16px;
+        flex-wrap: wrap;
     }
-
-    .filter-panel select { 
-        padding: 8px 12px; 
-        border-radius: var(--sf-radius); 
-        border: 1px solid var(--sf-border);
-        font-size: 13px;
-        color: var(--sf-text-main);
-        outline: none;
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 12px; color: var(--text-weak); }
+    .filter-panel select {
+        height: 32px;
         min-width: 220px;
-        background-color: #fff;
-        transition: border-color 0.15s ease;
-    }
-    
-    .filter-panel select:focus {
-        border-color: var(--sf-blue-primary);
-        box-shadow: 0 0 0 2px rgba(1, 118, 211, 0.15);
-    }
-
-    .filter-panel button { 
-        background: var(--sf-blue-primary); 
-        color: white; 
-        padding: 9px 24px; 
-        border: 1px solid transparent; 
-        border-radius: var(--sf-radius); 
-        font-weight: 600; 
+        padding: 0 12px;
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius);
+        background: #fff;
+        color: var(--text);
         font-size: 13px;
-        cursor: pointer; 
-        transition: background 0.1s linear, transform 0.1s ease;
+        font-family: inherit;
     }
+    .filter-panel select:focus {
+        outline: none; border-color: var(--focus);
+        box-shadow: 0 0 3px #0176d3;
+    }
+    .btn-brand {
+        height: 32px; padding: 0 16px;
+        background: var(--brand); color: #fff;
+        border: 1px solid var(--brand); border-radius: var(--radius);
+        font-size: 13px; font-weight: 400; font-family: inherit; cursor: pointer;
+    }
+    .btn-brand:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
+    .btn-brand:focus-visible { outline: none; box-shadow: 0 0 3px #0176d3; }
+    .btn-brand i { margin-right: 6px; }
 
-    .filter-panel button:hover {
-        background: var(--sf-blue-dark);
+    /* ---------- KPI tiles ---------- */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 12px;
     }
-    
-    .filter-panel button:active {
-        transform: scale(0.98);
+    .kpi {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-top: 3px solid var(--brand);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        padding: 14px 18px;
     }
+    .kpi:nth-child(2) { border-top-color: var(--success); }
+    .kpi:nth-child(3) { border-top-color: var(--warning); }
+    .kpi:nth-child(4) { border-top-color: #8e5af7; }
+    .kpi .k-label { font-size: 12px; color: var(--text-weaker); margin: 0 0 4px; }
+    .kpi .k-value { font-size: 24px; font-weight: 300; color: var(--text); margin: 0; line-height: 1.2; word-break: break-word; }
+    .kpi .k-note { font-size: 12px; color: var(--text-weaker); margin: 2px 0 0; }
 
-    /* Executive Summary Component */
-    .report-summary { 
-        display: flex; 
-        gap: 20px; 
-        margin-bottom: 24px; 
+    /* ---------- Cards ---------- */
+    .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow);
+        margin-bottom: 12px;
+        overflow: hidden;
     }
+    .card-header {
+        padding: 12px 16px;
+        display: flex; align-items: center; justify-content: space-between;
+        border-bottom: 1px solid var(--border);
+    }
+    .card-title {
+        margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
+        display: flex; align-items: center; gap: 10px;
+    }
+    .card-title .ti {
+        width: 28px; height: 28px; border-radius: var(--radius);
+        display: inline-flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 13px;
+    }
+    .card-meta { font-size: 12px; color: var(--text-weaker); }
+    .card-body { padding: 16px; }
 
-    .summary-item { 
-        flex: 1; 
-        background: var(--sf-card-bg); 
-        padding: 18px 24px; 
-        border-radius: var(--sf-radius); 
-        text-align: left; 
-        border: 1px solid var(--sf-border);
-        box-shadow: var(--sf-shadow-sm);
-    }
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .scroll-chart { height: 360px; overflow-y: auto; }
 
-    .summary-item h3 { 
-        font-size: 11px; 
-        color: var(--sf-text-light); 
-        text-transform: uppercase; 
-        margin: 0;
-        font-weight: 600;
-        letter-spacing: 0.8px;
+    /* ---------- Data table ---------- */
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead th {
+        background: #f3f3f3;
+        color: var(--text-weak);
+        font-weight: 700;
+        font-size: 12px;
+        text-align: right;
+        padding: 8px 12px;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
     }
+    tbody td {
+        padding: 8px 12px;
+        text-align: right;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-weak);
+        white-space: nowrap;
+    }
+    tbody tr:hover td { background: #f3f9ff; }
+    th.left, td.left { text-align: left; padding-left: 16px; }
+    td.dept { color: var(--brand); font-weight: 600; }
+    td.sub, th.sub { border-left: 1px solid var(--border); font-weight: 700; color: var(--text); background: #fafafa; }
+    td.zero { color: #b0adab; }
+    tfoot td {
+        padding: 9px 12px; text-align: right; font-weight: 700;
+        background: var(--brand-light); color: var(--navy);
+        border-top: 2px solid var(--border-strong);
+        white-space: nowrap;
+    }
+    tfoot td.left { text-align: left; padding-left: 16px; }
 
-    .summary-item p {
-        font-size: 26px;
-        font-weight: 300;
-        margin: 6px 0 0 0;
-        color: var(--sf-text-main);
+    .empty {
+        padding: 36px 16px; text-align: center; color: var(--text-weaker);
     }
-
-    footer { 
-        text-align: center; 
-        padding: 32px; 
-        color: var(--sf-text-light); 
-        font-size: 12px; 
-        border-top: 1px solid var(--sf-border);
-        margin-top: 48px;
-    }
+    .empty i { font-size: 28px; color: var(--border-strong); display: block; margin-bottom: 8px; }
 
     @media (max-width: 1100px) {
-        .dashboard-grid, .chart-grid { grid-template-columns: 1fr; }
-        .filter-panel { flex-direction: column; align-items: stretch; }
+        .chart-grid { grid-template-columns: 1fr; }
+        .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 600px) {
+        .kpi-grid { grid-template-columns: 1fr; }
+        .filter-panel select { min-width: 100%; }
+        .field { width: 100%; }
     }
 </style>
 </head>
@@ -389,232 +325,207 @@
 <jsp:include page="header.jsp" />
 
 <div class="container">
-    
-    <!-- Salesforce Intelligence Header Banner -->
-    <div class="welcome-banner">
-        <div class="welcome-text">
-            <h1><%= greeting %>, <%= user.toUpperCase() %>!</h1>
-            <p>Inventory Performance Dashboard</p>
+
+    <!-- Page header -->
+    <div class="page-header">
+        <div class="ph-left">
+            <div class="ph-icon"><i class="fas fa-warehouse"></i></div>
+            <div>
+                <p class="ph-sub">Inventory</p>
+                <h1 class="ph-title"><%= greeting %>, <%= h(user.toUpperCase()) %></h1>
+            </div>
         </div>
-        <div class="date-badge">
-            <i class="slate-icon far fa-calendar-alt"></i>
-            <%= new java.text.SimpleDateFormat("EEEE, dd MMMM yyyy").format(new java.util.Date()) %>
+        <div class="ph-date">
+            <i class="far fa-calendar-alt"></i><%= new SimpleDateFormat("EEEE, dd MMMM yyyy").format(new Date()) %>
         </div>
     </div>
 
-    <!-- Layout Framework Grid -->
-    <div class="dashboard-grid">
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-layer-group" style="color: #0176d3;"></i> Indents by Department</h3>
-            </div>
-            <div class="card-body" style="padding:0;">
-                <div class="table-container" style="max-height: 298px;">
-                    <table style="margin:0;">
-                        <thead>
-                            <tr>
-                                <th style="text-align:left; padding-left: 20px;">Department</th>
-                                <th>Total</th>
-                                <th>Pending</th>
-                                <th>Approved</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <%
-                            if(totalDeptMap != null){
-                                for(Map.Entry<String,Integer> entry : totalDeptMap.entrySet()){
-                                    String dName = entry.getKey(); 
-                                    int total = entry.getValue();
-                                    int pending = deptPendingMap != null ? deptPendingMap.getOrDefault(dName, 0) : 0;
-                        %>
-                            <tr>
-                                <td style="text-align:left; padding-left: 20px; font-weight: 600; color: var(--sf-blue-dark);"><%= dName %></td>
-                                <td style="font-weight: 600; color: var(--sf-text-main);"><%= total %></td>
-                                <td><span class="badge-status error"><%= pending %></span></td>
-                                <td><span class="badge-status success"><%= total - pending %></span></td>
-                            </tr>
-                        <%      }
-                            } 
-                        %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+    <!-- Today's cost by department -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">
+                <span class="ti" style="background:#8e5af7;"><i class="fas fa-rupee-sign"></i></span>
+                Today's cost by department
+            </h3>
+            <span class="today-total">Total today<b><%= inr.format(todayTotal) %></b></span>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-tasks" style="color: #1aa0be;"></i> Stage Summary</h3>
-            </div>
-            <div class="card-body">
-                <div class="stage-container">
-                    <%
-                        if(nextStageCountMap != null){
-                            String[][] list = {{"Approval Pending", "fas fa-user-check"}, {"PO Generation", "fas fa-file-invoice"}, 
-                                              {"Issue Pending", "fas fa-box"}, {"Management Note", "fas fa-clipboard-list"}};
-                            for(String[] s : list){
-                                int count = nextStageCountMap.getOrDefault(s[0], 0);
-                    %>
-                    <div class="stage-card">
-                        <div>
-                            <i class="<%= s[1] %>" style="color: var(--sf-text-light); margin-bottom: 8px; font-size:14px;"></i>
-                            <h4><%= s[0] %></h4>
-                        </div>
-                        <h2><%= count %></h2>
-                    </div>
-                    <%      }
-                        } 
-                    %>
+        <div class="card-body">
+        <% if (todayDeptMap.isEmpty()) { %>
+            <div class="empty" style="padding:12px 0;">No stock issued today yet.</div>
+        <% } else { %>
+            <div class="today-grid">
+            <% for (Map.Entry<String, Double> e : todayDeptMap.entrySet()) { %>
+                <div class="today-tile">
+                    <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                    <p class="t-val"><%= inr.format(e.getValue()) %></p>
                 </div>
+            <% } %>
             </div>
+        <% } %>
         </div>
     </div>
 
-    <!-- Graphical Matrix Viewports -->
+    <!-- Filters -->
+    <form class="filter-panel" method="get" action="Home">
+        <div class="field">
+            <label for="department">Department</label>
+            <select id="department" name="department">
+                <option value="All">All Departments</option>
+                <% for (String d : departments) { %>
+                    <option value="<%= h(d) %>" <%= d.equals(selectedDept) ? "selected" : "" %>><%= h(d) %></option>
+                <% } %>
+            </select>
+        </div>
+        <div class="field">
+            <label for="year">Financial Year</label>
+            <select id="year" name="year">
+                <% for (String y : years) { %>
+                    <option value="<%= h(y) %>" <%= y.equals(selectedYear) ? "selected" : "" %>><%= h(y) %></option>
+                <% } %>
+            </select>
+        </div>
+        <button type="submit" class="btn-brand"><i class="fas fa-sync-alt"></i>Update view</button>
+    </form>
+
+    <!-- KPI tiles -->
+    <div class="kpi-grid">
+        <div class="kpi">
+            <p class="k-label">Active departments</p>
+            <p class="k-value"><%= totalRows %></p>
+            <p class="k-note">FY <%= h(selectedYear) %></p>
+        </div>
+        <div class="kpi">
+            <p class="k-label">Total expenditure</p>
+            <p class="k-value"><%= inr.format(grandTotal) %></p>
+            <p class="k-note">Apr – Mar</p>
+        </div>
+        <div class="kpi">
+            <p class="k-label">Highest month</p>
+            <p class="k-value"><%= peakIdx >= 0 ? monthNames[peakIdx] : "—" %></p>
+            <p class="k-note"><%= peakIdx >= 0 ? inr.format(peakVal) : "No data" %></p>
+        </div>
+        <div class="kpi">
+            <p class="k-label">Top department</p>
+            <p class="k-value" style="font-size:20px;"><%= h(topDept) %></p>
+            <p class="k-note"><%= topDeptVal > 0 ? inr.format(topDeptVal) : "No data" %></p>
+        </div>
+    </div>
+
+    <!-- Charts -->
     <div class="chart-grid">
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-chart-bar" style="color: #ff9d3b;"></i> Departmental Consumption (₹)</h3>
+                <h3 class="card-title">
+                    <span class="ti" style="background:#0176d3;"><i class="fas fa-chart-bar"></i></span>
+                    Departmental consumption (₹)
+                </h3>
             </div>
             <div class="card-body">
-                <div class="scrollable-chart-area">
-                    <div id="deptChartWrapper">
-                        <canvas id="deptChart"></canvas>
-                    </div>
+                <div class="scroll-chart">
+                    <div id="deptChartWrapper"><canvas id="deptChart"></canvas></div>
                 </div>
             </div>
         </div>
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-chart-line" style="color: #4b97f3;"></i> Monthly Trend — Financial Year <%= selectedYear %></h3>
+                <h3 class="card-title">
+                    <span class="ti" style="background:#fe9339;"><i class="fas fa-chart-line"></i></span>
+                    Monthly trend
+                </h3>
+                <span class="card-meta">FY <%= h(selectedYear) %></span>
             </div>
             <div class="card-body">
-                <div style="height: 380px;">
-                    <canvas id="monthChart"></canvas>
-                </div>
+                <div style="height:360px;"><canvas id="monthChart"></canvas></div>
             </div>
         </div>
     </div>
 
-    <h1 class="page-title"><i class="fas fa-search-dollar" style="color: var(--sf-text-light);"></i> Expenditure Analysis</h1>
-    
-    <!-- Parametric Configuration Controls -->
-    <form class="filter-panel" method="get" action="Home">
-        <div style="display:flex; flex-direction:column; gap:6px;">
-            <label style="font-size:12px; font-weight:600; color: var(--sf-text-muted);">Select Department</label>
-            <select name="department">
-                <option value="All">All Departments</option>
-                <% if(departments != null){ for(String d : departments){ %>
-                    <option value="<%= d %>" <%= d.equals(selectedDept) ? "selected" : "" %>><%= d %></option>
-                <% }} %>
-            </select>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-    <label style="font-size:12px; font-weight:600; color: var(--sf-text-muted);">Financial Year</label>
-    <select name="year">
-        <% 
-            if(years != null){ 
-                for(String y : years){ 
-                    // Check if 'y' matches the selectedYear from request, 
-                    // OR if selectedYear is null/empty and 'y' is our target default year.
-                    boolean isSelected = y.equals(selectedYear) || 
-                                         ((selectedYear == null || selectedYear.trim().isEmpty()) && "2026-27".equals(y));
-        %>
-            <option value="<%= y %>" <%= isSelected ? "selected" : "" %>><%= y %></option>
-        <% 
-                }
-            } 
-        %>
-    </select>
-</div>
-        <button type="submit"><i class="fas fa-sync-alt" style="margin-right: 6px;"></i>Update View</button>
-    </form>
-
-    <!-- Context Metric Blocks -->
-    <div class="report-summary">
-        <div class="summary-item" style="border-top: 3px solid #54a3f5;">
-            <h3>Active Department</h3>
-            <p><%= totalRows %></p>
-        </div>
-        <div class="summary-item" style="border-top: 3px solid #1aa0be;">
-            <h3>Aggregated Balance</h3>
-            <% NumberFormat indianFmt = NumberFormat.getCurrencyInstance(new Locale("en", "IN")); %>
-            <p style="color: var(--sf-blue-dark); font-weight: 600;"><%= indianFmt.format(grandTotal) %></p>
-        </div>
-    </div>
-
-    <!-- Tabular Breakdown Layout -->
-    <div class="card" style="padding:0;">
+    <!-- Month-wise table -->
+    <div class="card">
         <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-table" style="color:var(--sf-text-light);"></i> Month-wise Expenditure</h3>
+            <h3 class="card-title">
+                <span class="ti" style="background:#2e844a;"><i class="fas fa-table"></i></span>
+                Month-wise expenditure
+            </h3>
+            <span class="card-meta"><%= dataMap.size() %> department<%= dataMap.size() == 1 ? "" : "s" %> · FY <%= h(selectedYear) %></span>
         </div>
+        <% if (dataMap.isEmpty()) { %>
+            <div class="empty">
+                <i class="far fa-folder-open"></i>
+                No expenditure found for this department and financial year. Try a different selection.
+            </div>
+        <% } else { %>
         <div class="table-container">
-            <table style="margin: 0;">
+            <table>
                 <thead>
                     <tr>
-                        <th style="text-align:left; padding-left:24px;">Department</th>
-                        <% for(String m : monthNames){ %><th><%= m.substring(0,3) %></th><% } %>
-                        <th style="background:#fafaf9; color:var(--sf-text-main); font-weight: 700; border-left: 1px solid var(--sf-border);">Subtotal</th>
+                        <th class="left">Department</th>
+                        <% for (String m : monthNames) { %><th><%= h(m) %></th><% } %>
+                        <th class="sub">Subtotal</th>
                     </tr>
                 </thead>
                 <tbody>
-                <% if(dataMap != null){ 
-                    for(Map.Entry<String,double[]> entry : dataMap.entrySet()){
-                        double total = 0; 
-                %>
+                <% for (Map.Entry<String, double[]> entry : dataMap.entrySet()) {
+                       double total = 0; %>
                     <tr>
-                        <td style="text-align:left; padding-left:24px; font-weight:600; color:var(--sf-text-main);"><%= entry.getKey() %></td>
-                        <% for(double val : entry.getValue()){ total += val; %>
-                            <td style="color: var(--sf-text-muted);"><%= val > 0 ? String.format("%,.0f", val) : "—" %></td>
+                        <td class="left dept"><%= h(entry.getKey()) %></td>
+                        <% for (double val : entry.getValue()) { total += val; %>
+                            <td class="<%= val > 0 ? "" : "zero" %>"><%= val > 0 ? String.format("%,.0f", val) : "—" %></td>
                         <% } %>
-                        <td style="font-weight:700; background:#fafdff; color: var(--sf-blue-dark); border-left: 1px solid var(--sf-border);"><%= String.format("%,.2f", total) %></td>
+                        <td class="sub"><%= String.format("%,.2f", total) %></td>
                     </tr>
-                <%  }
-                   } 
-                %>
+                <% } %>
                 </tbody>
+                <tfoot>
+                    <tr>
+                        <td class="left">Total</td>
+                        <% for (double v : monthTotals) { %><td><%= v > 0 ? String.format("%,.0f", v) : "—" %></td><% } %>
+                        <td><%= String.format("%,.2f", grandTotal) %></td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
+        <% } %>
     </div>
 </div>
 
 <script>
-(function() {
-    const dLabels = [<% if(dataMap != null){ for(Iterator<String> it = dataMap.keySet().iterator(); it.hasNext();){ %>"<%= it.next() %>"<%= it.hasNext() ? "," : "" %><% }} %>];
-    const dValues = [<% if(dataMap != null){ for(Iterator<double[]> it = dataMap.values().iterator(); it.hasNext();){ double[] arr = it.next(); double sum = 0; for(double v : arr) sum += v; %><%= sum %><%= it.hasNext() ? "," : "" %><% }} %>];
+(function () {
+    var dLabels = [<%= dLabels %>];
+    var dValues = [<%= dValues %>];
+    var mLabels = [<%= mLabels %>];
+    var mValues = [<%= mValues %>];
 
-    const mLabels = [<% for(int i=0; i<monthNames.length; i++){ %>"<%= monthNames[i] %>"<%= i < monthNames.length-1 ? "," : "" %><% } %>];
-    const mValues = [<%
-        double[] sums = new double[monthNames.length];
-        if(dataMap != null){ for(double[] vals : dataMap.values()){ for(int i=0; i<vals.length; i++) sums[i] += vals[i]; } }
-        for(int i=0; i<sums.length; i++){ %><%= sums[i] %><%= i < sums.length-1 ? "," : "" %><% } %>];
+    var font = { family: '"Salesforce Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif', size: 11 };
+    var inr = function (v) { return '₹' + Number(v).toLocaleString('en-IN'); };
+    Chart.defaults.font.family = font.family;
+    Chart.defaults.color = '#444444';
 
-    const chartHeight = Math.max(400, dLabels.length * 36);
-    document.getElementById('deptChartWrapper').style.height = chartHeight + 'px';
+    var tooltip = {
+        backgroundColor: '#032d60',
+        padding: 10,
+        cornerRadius: 4,
+        displayColors: false,
+        callbacks: { label: function (c) { return inr((c.parsed.x !== undefined && c.chart.options.indexAxis === 'y') ? c.parsed.x : c.parsed.y); } }
+    };
 
-    const sfBlue = '#1b5eae';
-    const sfOrange = '#ff9d3b';
+    var wrap = document.getElementById('deptChartWrapper');
+    wrap.style.height = Math.max(340, dLabels.length * 34) + 'px';
 
     new Chart(document.getElementById('deptChart'), {
         type: 'bar',
         data: {
             labels: dLabels,
-            datasets: [{
-                data: dValues,
-                backgroundColor: sfBlue,
-                hoverBackgroundColor: '#0176d3',
-                borderRadius: 2,
-                barThickness: 16
-            }]
+            datasets: [{ data: dValues, backgroundColor: '#0176d3', hoverBackgroundColor: '#014486', borderRadius: 2, barThickness: 16 }]
         },
         options: {
             indexAxis: 'y',
             maintainAspectRatio: false,
             responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { 
-                x: { grid: { color: '#eef0f1' }, ticks: { font: { size: 11, family: 'Segoe UI' } } },
-                y: { ticks: { autoSkip: false, font: { size: 11, weight: '600', family: 'Segoe UI' } }, grid: { display: false } }
+            plugins: { legend: { display: false }, tooltip: tooltip },
+            scales: {
+                x: { grid: { color: '#e5e5e5' }, ticks: { font: font, callback: function (v) { return inr(v); } } },
+                y: { grid: { display: false }, ticks: { autoSkip: false, font: { family: font.family, size: 11, weight: '600' } } }
             }
         }
     });
@@ -625,22 +536,25 @@
             labels: mLabels,
             datasets: [{
                 data: mValues,
-                borderColor: sfOrange,
-                backgroundColor: 'rgba(255, 157, 59, 0.05)',
+                borderColor: '#0176d3',
+                backgroundColor: 'rgba(1,118,211,0.08)',
                 fill: true,
-                tension: 0.2,
+                tension: 0.25,
+                borderWidth: 2,
                 pointRadius: 4,
                 pointHoverRadius: 6,
-                pointBackgroundColor: sfOrange
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#0176d3',
+                pointBorderWidth: 2
             }]
         },
         options: {
             maintainAspectRatio: false,
             responsive: true,
-            plugins: { legend: { display: false } },
-            scales: { 
-                y: { beginAtZero: true, grid: { color: '#eef0f1' }, ticks: { font: { family: 'Segoe UI' }, callback: v => '₹' + v.toLocaleString('en-IN') } },
-                x: { grid: { display: false }, ticks: { font: { family: 'Segoe UI' } } }
+            plugins: { legend: { display: false }, tooltip: tooltip },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#e5e5e5' }, ticks: { font: font, callback: function (v) { return inr(v); } } },
+                x: { grid: { display: false }, ticks: { font: font } }
             }
         }
     });
