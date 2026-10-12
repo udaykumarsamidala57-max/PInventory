@@ -267,7 +267,7 @@ function sortByPercentageDesc() {
 </head>
 
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="container">
     <div class="page-title">📘 Exam Marks Entry</div>

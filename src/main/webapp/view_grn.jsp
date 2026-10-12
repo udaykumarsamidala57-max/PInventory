@@ -564,7 +564,7 @@ function printGRN(grnNo){
 </head>
 
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="sap-fiori-page-header">
     <div class="sap-header-left">

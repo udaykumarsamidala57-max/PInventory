@@ -265,7 +265,7 @@ if (sess == null || sess.getAttribute("username") == null) {
     </style>
 </head>
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="main-content">
 

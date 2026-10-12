@@ -428,7 +428,7 @@ select:focus, textarea:focus, input[type=text]:focus{
 
 <body>
 
-<%@ include file="../header.jsp" %>
+<jsp:include page="../header.jsp" />
 
 <div class="container">
 

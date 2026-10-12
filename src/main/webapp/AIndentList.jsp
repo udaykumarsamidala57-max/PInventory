@@ -34,7 +34,7 @@ for (IndentItemFull i : indents) {
 </head>
 
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <script>
 var LOGIN_USER = "<%= loginUser %>";

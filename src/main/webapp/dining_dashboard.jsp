@@ -319,7 +319,7 @@ input[type="date"]:focus {
 </head>
 <body>
 
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="content">
 

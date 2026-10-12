@@ -40,7 +40,7 @@ function triggerPrint() { window.print(); }
 <body>
 
 <div class="print-exclude">
-    <%@ include file="header.jsp" %>
+    <jsp:include page="header.jsp" />
 </div>
 
 <div class="slds-scope main-content-wrapper">

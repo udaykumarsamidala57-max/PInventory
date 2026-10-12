@@ -121,7 +121,7 @@
     </style>
 </head>
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="approved-bubble" id="approvedBubble">
     <div class="count-container">

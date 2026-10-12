@@ -39,10 +39,10 @@ public class LoginServlet extends HttpServlet {
 
         try {
           
-            con = DBUtil.getConnection("SRS");
+            con = DBUtil.getAuthConnection();
 
             ps = con.prepareStatement(
-                    "SELECT role, department, branch FROM users WHERE username=? AND password=?");
+                    "SELECT id, role, department, branch FROM users WHERE username=? AND password=?");
 
             ps.setString(1, uname);
             ps.setString(2, pass);
@@ -50,6 +50,7 @@ public class LoginServlet extends HttpServlet {
             rs = ps.executeQuery();
 
             if (rs.next()) {
+                int userId = rs.getInt("id");
                 String role = rs.getString("role");
                 String department = rs.getString("department");
                 String branch = rs.getString("branch");
@@ -57,21 +58,13 @@ public class LoginServlet extends HttpServlet {
                 HttpSession session = request.getSession();
 
                 session.setAttribute("username", uname);
+                session.setAttribute("userId", userId);
                 session.setAttribute("role", role);
                 session.setAttribute("department", department);
+                session.setAttribute("assignedBranch", branch);
                 session.setAttribute("branch", branch);
 
-                // Redirect based on role/department
-                if ("Global".equalsIgnoreCase(role)) {
-                    response.sendRedirect("Home");
-                } else if ("incharge".equalsIgnoreCase(role)
-                        || "Finance".equalsIgnoreCase(department)) {
-                    response.sendRedirect("Home");
-                } else if ("HOSTEL".equalsIgnoreCase(department)) {
-                    response.sendRedirect("TrackRequestServlet");
-                } else {
-                    response.sendRedirect("Home");
-                }
+                response.sendRedirect("SelectStoreServlet");
 
             } else {
                 request.setAttribute("error", "Invalid Username or Password!");

@@ -370,7 +370,7 @@ textarea.mobile-input{
 </style>
 </head>
 <body>
-<%@ include file="../header.jsp" %>
+<jsp:include page="../header.jsp" />
 <div class="mobile-app-bar">
     <i class="fas fa-screwdriver-wrench" style="color: var(--slds-brand); font-size: 18px;"></i>
     <h1>Field Operations Workspace</h1>

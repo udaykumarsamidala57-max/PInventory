@@ -188,7 +188,7 @@ td {
 
 <body>
 
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <main class="main-content">
     <%

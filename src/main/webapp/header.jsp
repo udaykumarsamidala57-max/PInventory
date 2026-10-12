@@ -5,7 +5,7 @@
     HttpSession sesso = request.getSession(false);
 
     if (sesso == null || sesso.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
     
@@ -13,6 +13,11 @@
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
     String branchess = (String) sesso.getAttribute("branch");
+
+    if (users == null) users = "";
+    if (roles == null) roles = "";
+    if (depts == null) depts = "";
+    if (branchess == null || branchess.trim().isEmpty()) branchess = "SRS";
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
@@ -1054,7 +1059,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
 </div>
 <% } %>
    
-<a href="Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
+<% if ("Global".equalsIgnoreCase(roles)) { %>
+<a href="<%= request.getContextPath() %>/StoreAccessAdminServlet"><i class="fa-solid fa-user-lock"></i> Assign Stores</a>
+<% } %>
+<a href="<%= request.getContextPath() %>/SelectStoreServlet"><i class="fa-solid fa-code-branch"></i> Change Store</a>
+<a href="<%= request.getContextPath() %>/Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
 </div>
 
 <header>

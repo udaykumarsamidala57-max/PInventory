@@ -396,7 +396,7 @@
     </style>
 </head>
 <body>
-<%@ include file="../header.jsp" %>
+<jsp:include page="../header.jsp" />
 
 <div class="report-container">
     

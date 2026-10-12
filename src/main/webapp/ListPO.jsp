@@ -561,7 +561,7 @@ try {
     </script>
 </head>
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 <div class="sap-fiori-container">
 
     <div class="sap-object-header">

@@ -201,7 +201,7 @@ if ((!"Global".equalsIgnoreCase(role) &&  !"Finance".equalsIgnoreCase(dept))) {
     </style>
 </head>
 <body>
-<%@ include file="../header.jsp" %>
+<jsp:include page="../header.jsp" />
 
     <!-- Asset Registration Form Section -->
     <div class="dashboard-card">

@@ -6,6 +6,7 @@ com\controller\IndentPO.class
 com\controller\DiningHallServlet.class
 com\controller\Asset\EmployeeController.class
 com\bean\DBUtil5.class
+com\controller\SelectStoreServlet.class
 com\controller\HRA\viewResumeFile.class
 com\Employee\EmployeeTreeServlet.class
 com\controller\PurchaseOrderServlet.class
@@ -24,6 +25,7 @@ com\controller\HRA\VacancyServlet.class
 com\controller\StockAuditReportServlet.class
 com\controller\Admissions\SaveMarksServlet.class
 com\controller\PO$1MergedItem.class
+com\DAO\StoreAccessAdminDAO.class
 com\controller\Admissions\UpdateTCStatusServlet.class
 com\controller\test.class
 com\controller\VerifyOtpServlet.class
@@ -48,6 +50,7 @@ com\controller\HRA\VacancyServlet$Vacancy.class
 com\DAO\AllocationDAO.class
 com\DAO\ReportDAO.class
 com\controller\Admissions\AdmissionEnquiryServlet.class
+com\DAO\StoreAccessDAO.class
 com\controller\ViewGRNServlet.class
 com\controller\Asset\AllocationController.class
 com\controller\Admissions\MarksReport.class
@@ -64,6 +67,8 @@ com\Service\RequestBookingServlet.class
 com\Service\RequestReportServlet.class
 com\DAO\MaintenanceDAO.class
 com\controller\UpdateConsumptionByDateServlet.class
+com\controller\StoreAccessAdminServlet.class
+com\bean\UserStoreAssignments.class
 com\bean\POItems.class
 com\DAO\AuditDAO.class
 com\example\HomeServlet.class
