@@ -49,7 +49,7 @@
     <title>Create Exams</title>
 </head>
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 <h2>Create Admission Exams</h2>
 
 <form method="post">

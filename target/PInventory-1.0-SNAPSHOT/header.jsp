@@ -5,7 +5,7 @@
     HttpSession sesso = request.getSession(false);
 
     if (sesso == null || sesso.getAttribute("username") == null) {
-        response.sendRedirect("login.jsp");
+        response.sendRedirect(request.getContextPath() + "/login.jsp");
         return;
     }
     
@@ -13,6 +13,11 @@
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
     String branchess = (String) sesso.getAttribute("branch");
+
+    if (users == null) users = "";
+    if (roles == null) roles = "";
+    if (depts == null) depts = "";
+    if (branchess == null || branchess.trim().isEmpty()) branchess = "SRS";
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
@@ -899,11 +904,11 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Records <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IndentServlet"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
-      <a href="IndentlistServlet"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
+      <a href="<%= request.getContextPath() %>/IndentServlet"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
+      <a href="<%= request.getContextPath() %>/IndentlistServlet"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
       <a href="InventoryItems.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
-        <a href="AIndentListServlet"><i class="fa-solid fa-clipboard-check text-warning"></i> Approve Indent</a>
+        <a href="<%= request.getContextPath() %>/AIndentListServlet"><i class="fa-solid fa-clipboard-check text-warning"></i> Approve Indent</a>
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
         <a href="DIndentListServlet"><i class="fa-solid fa-utensils text-warning"></i> Approve Dining Indent</a>

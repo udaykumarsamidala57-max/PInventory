@@ -13,7 +13,7 @@
     if(subCategoryList == null) subCategoryList = new ArrayList<>();
     if(itemList == null) itemList = new ArrayList<>();
 %>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/design-system/2.21.4/styles/salesforce-lightning-design-system.min.css" />
 
 <div class="slds-container_large slds-container_center slds-p-around_medium">

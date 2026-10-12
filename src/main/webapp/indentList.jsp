@@ -365,7 +365,7 @@ h1 {
 
 <body>
 
-<jsp:include page="header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="main-content">
   <div class="card">

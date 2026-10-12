@@ -50,7 +50,7 @@ public class VerifyOtpServlet extends HttpServlet {
                     clear.setString(1, email);
                     clear.executeUpdate();
 
-                    response.sendRedirect("IndentServlet");
+                    response.sendRedirect(request.getContextPath() + "/indent/new");
                 } else {
                     request.setAttribute("error", "Invalid or expired OTP!");
                     request.setAttribute("email", email);

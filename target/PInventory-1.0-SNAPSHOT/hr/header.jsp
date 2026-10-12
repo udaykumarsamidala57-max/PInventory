@@ -109,10 +109,10 @@ body.sidebar-collapsed .sidebar { transform: translateX(-100%); }
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fas fa-file-alt text-primary"></i> Indent <i class="fas fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <a href="IndentServlet"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
-      <a href="IndentlistServlet"><i class="fas fa-list text-info"></i> Indent Report</a>
+      <a href="<%= request.getContextPath() %>/indent/new"><i class="fas fa-plus-circle text-success"></i> Item Requisition Form</a>
+      <a href="<%= request.getContextPath() %>/indent/report"><i class="fas fa-list text-info"></i> Indent Report</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
-        <a href="AIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Indent</a>
+        <a href="<%= request.getContextPath() %>/indent/approve"><i class="fas fa-check-circle text-warning"></i> Approve Indent</a>
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
         <a href="DIndentListServlet"><i class="fas fa-check-circle text-warning"></i> Approve Dining Hall Indent</a>

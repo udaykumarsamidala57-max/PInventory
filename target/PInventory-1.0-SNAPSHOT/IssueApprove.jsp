@@ -108,7 +108,7 @@
 </head>
 
 <body>
-    <%@ include file="header.jsp" %>
+    <jsp:include page="header.jsp" />
 
     <div class="page-content">
         <h2 class="page-title">Approved Indents Ready for Issue</h2>

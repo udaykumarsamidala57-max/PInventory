@@ -14,7 +14,6 @@ com\controller\Admissions\DashboardServlet.class
 com\controller\GRNServlet.class
 com\bean\GRNItem.class
 com\controller\MealSummaryServlet.class
-com\indent\bean\IndentBean.class
 com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\controller\Asset\AssetLocationController.class
@@ -49,7 +48,6 @@ com\Employee\EmployeeTreeServlet$1.class
 com\controller\SendOTPServlet.class
 com\controller\HRA\VacancyServlet$Vacancy.class
 com\DAO\AllocationDAO.class
-com\indent\bean\InventoryBean.class
 com\DAO\ReportDAO.class
 com\controller\Admissions\AdmissionEnquiryServlet.class
 com\DAO\StoreAccessDAO.class
@@ -81,7 +79,6 @@ com\controller\Home.class
 com\controller\Asset\MaintenanceController.class
 com\controller\Asset\TransferControlle.class
 com\bean\DBUtil4.class
-com\indent\controller\InventoryController.class
 com\controller\Asset\Staff.class
 com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\DAO\TransferDAO.class
@@ -89,7 +86,6 @@ com\bean\DBUtil6.class
 com\DAO\EmployeeDAO.class
 com\controller\SwitchBranchServlet.class
 com\controller\LoadIndentItemsServlet.class
-com\indent\controller\IndentController.class
 com\controller\Asset\LocationController.class
 com\Service\Incharge.class
 com\controller\Asset\ReportController.class

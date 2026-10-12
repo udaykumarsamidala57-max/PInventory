@@ -66,7 +66,7 @@
   <div class="topbar"><span class="brand">PInventory <span style="opacity:.7;font-weight:400">/ Store Access</span></span><a href="${pageContext.request.contextPath}/">Back to app</a></div>
   <main>
     <div class="titlebar">
-      <div><h1>Store access</h1><p class="subtitle">Choose the stores each user can access.</p></div>
+      <p class="subtitle">Choose the stores each user can access.</p></div>
       <div class="count"><strong><c:out value="${fn:length(users)}"/></strong> users</div>
     </div>
     <c:if test="${not empty message}"><div class="notice ${messageType == 'success' ? 'success' : 'error'}" role="status"><c:out value="${message}"/></div></c:if>
@@ -77,13 +77,13 @@
         <c:when test="${empty users}"><div class="empty">No users were found.</div></c:when>
         <c:otherwise>
           <c:forEach items="${users}" var="user">
-            <form class="user-row assignment-form" method="post" action="${pageContext.request.contextPath}/StoreAccessAdminServlet" data-search="<c:out value='${user.username}'/> <c:out value='${user.role}'/> <c:out value='${user.department}'/>">
-              <input type="hidden" name="csrfToken" value="<c:out value='${csrfToken}'/>">
-              <input type="hidden" name="userId" value="<c:out value='${user.userId}'/>">
+            <form class="user-row assignment-form" method="post" action="${pageContext.request.contextPath}/StoreAccessAdminServlet" data-search="<c:out value="${user.username}"/> <c:out value="${user.role}"/> <c:out value="${user.department}"/>">
+              <input type="hidden" name="csrfToken" value="<c:out value="${csrfToken}"/>">
+              <input type="hidden" name="userId" value="<c:out value="${user.userId}"/>">
               <div class="identity"><div class="username"><c:out value="${user.username}"/></div><div class="meta">ID <c:out value="${user.userId}"/> · <c:out value="${user.role}"/><c:if test="${not empty user.department}"> · <c:out value="${user.department}"/></c:if></div></div>
               <div class="stores">
                 <c:forEach items="${storeCodes}" var="code">
-                  <label class="store"><input type="checkbox" name="storeCodes" value="<c:out value='${code}'/>" <c:if test="${user.storeCodeFlags[code]}">checked</c:if>><span><c:out value="${code}"/></span></label>
+                  <label class="store"><input type="checkbox" name="storeCodes" value="<c:out value="${code}"/>" <c:if test="${user.storeCodeFlags[code]}">checked</c:if>><span><c:out value="${code}"/></span></label>
                 </c:forEach>
               </div>
               <div class="row-actions"><span class="status" aria-live="polite"></span><button class="save" type="submit">Save</button></div>

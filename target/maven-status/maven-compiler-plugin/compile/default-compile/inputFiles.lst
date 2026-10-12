@@ -1,7 +1,6 @@
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\SendPendingIndentPDF.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil2.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\resume.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\indent\controller\InventoryController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\AIndentListServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\AddStock.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\LoadIndentItemsServlet.java
@@ -19,7 +18,6 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\POListS
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\IndentlistServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\menu\MenuItemsServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\MarksReport.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\indent\controller\IndentController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\AuditController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\DiningHallServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\DBUtil5.java
@@ -50,7 +48,6 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Purchas
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\FetchConsumptionByDateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\SwitchBranchServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\StoreAccessAdminDAO.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\indent\bean\InventoryBean.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\StoreAccessAdminServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\VendorController.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\EmployeeDAO.java
@@ -90,7 +87,6 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\A
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\CandidateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\DIndentListServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\IndentItem.java
-C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\indent\bean\IndentBean.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\PO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\viewResumeFile.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\AllocationDAO.java

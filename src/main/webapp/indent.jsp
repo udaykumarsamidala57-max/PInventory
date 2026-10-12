@@ -17,452 +17,396 @@
 <title>Items Requisition Form</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-* {
+*, *::before, *::after {
     box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
 }
 
-html,
-body {
+html, body {
     margin: 0;
     padding: 0;
-    font-family: 'Poppins', sans-serif;
-    background: #f5f7fa;
-    color: #1e293b;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #f1f5f9;
+    color: #0f172a;
     font-size: 14px;
-    overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* =========================
-   MAIN CONTAINER
-   ========================= */
+/* ==========================================
+   APP CONTAINER & VIEWPORT WRAPPER
+   ========================================== */
 
 .main-content {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
-    padding: 12px;
+    padding: 16px;
+    min-height: 100vh;
 }
 
 .card {
     width: 100%;
-    max-width: 1050px;
-    min-width: 0;
-    background: #fff;
-    padding: 16px;
-    border-radius: 10px;
+    max-width: 1000px;
+    background: #ffffff;
+    padding: 24px;
+    border-radius: 16px;
     border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 8px rgba(15, 42, 77, 0.06);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
 }
 
-/* =========================
-   TITLE
-   ========================= */
-
+/* Header Styling */
 h2 {
-    margin: 0 0 14px;
-    padding: 0;
-    text-align: left;
+    margin: 0 0 20px 0;
     color: #0f2a4d;
-    font-size: 1.25rem;
-    font-weight: 600;
-    letter-spacing: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-h2::after {
-    display: none;
-}
-
-/* =========================
-   FORM SECTION
-   ========================= */
+/* ==========================================
+   GRID & FORM FIELD CONTROLS
+   ========================================== */
 
 .table-section {
     display: grid;
-    grid-template-columns: 125px minmax(0, 1fr) 125px minmax(0, 1fr);
-    gap: 8px 10px;
-    margin-bottom: 10px;
+    grid-template-columns: 120px 1fr 120px 1fr;
+    gap: 12px 16px;
     align-items: center;
+    margin-bottom: 20px;
 }
 
 label {
     margin: 0;
-    color: #475569;
-    font-size: 12px;
+    color: #64748b;
+    font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .2px;
+    letter-spacing: 0.05em;
 }
 
-/* =========================
-   INPUTS
-   ========================= */
-
+/* Touch-Optimized Inputs */
 input[type="text"],
 input[type="date"],
 input[type="number"],
 select {
     width: 100%;
-    height: 40px;
-    padding: 7px 10px;
+    height: 44px;
+    padding: 10px 14px;
     margin: 0;
-    border: 1px solid #cbd5e1;
-    border-radius: 6px;
-    background: #fff;
-    color: #1e293b;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 10px;
+    background-color: #f8fafc;
+    color: #0f172a;
     font-family: inherit;
     font-size: 14px;
+    font-weight: 500;
     outline: none;
-    transition: border-color .12s ease,
-                box-shadow .12s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    appearance: none;
+    -webkit-appearance: none;
 }
 
 input[type="text"]:focus,
 input[type="date"]:focus,
 input[type="number"]:focus,
 select:focus {
+    background-color: #ffffff;
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, .12);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
 }
 
-/* =========================
-   INDENT TYPE
-   ========================= */
+/* Custom Select Arrow */
+select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2064748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+    padding-right: 36px;
+}
+
+/* ==========================================
+   SEGMENTED CONTROL (RADIO TOGGLES)
+   ========================================== */
 
 .indent-type-group {
     display: flex;
     align-items: center;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 2px 0;
+    gap: 8px;
+    background: #f1f5f9;
+    padding: 4px;
+    border-radius: 10px;
+    width: 100%;
 }
 
 .indent-type-option {
+    flex: 1;
     display: flex;
     align-items: center;
-    gap: 5px;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 12px;
     margin: 0;
-    padding: 2px 0;
-    color: #334155;
+    color: #475569;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
+    border-radius: 8px;
     cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+}
+
+.indent-type-option:has(input:checked) {
+    background: #ffffff;
+    color: #2563eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .indent-type-option input {
-    margin: 0;
-    width: 15px;
-    height: 15px;
+    accent-color: #2563eb;
+    width: 16px;
+    height: 16px;
 }
 
-/* =========================
-   MAIN TABLE
-   ========================= */
+/* ==========================================
+   TABLE DESIGN (DESKTOP)
+   ========================================== */
+
+.table-wrapper {
+    width: 100%;
+    margin-top: 16px;
+}
 
 table.main-table {
     width: 100%;
-    margin-top: 10px;
     border-collapse: separate;
     border-spacing: 0;
-    border: 1px solid #dbe2ea;
-    border-radius: 7px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
     overflow: hidden;
     background: #fff;
 }
 
 thead {
     background: #0f2a4d;
-    color: #fff;
+    color: #ffffff;
 }
 
 thead th {
-    padding: 9px 7px;
-    border: none;
+    padding: 12px 10px;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: .3px;
-    white-space: nowrap;
+    letter-spacing: 0.05em;
+    text-align: left;
 }
 
-th,
-td {
-    padding: 6px;
-    text-align: center;
-    border-right: 1px solid #e2e8f0;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-th:last-child,
-td:last-child {
-    border-right: none;
+th, td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 tbody tr:last-child td {
     border-bottom: none;
 }
 
-tbody tr:hover {
-    background: #f8fafc;
-}
-
-/* Table inputs */
-table select,
-table input[type="text"],
-table input[type="number"] {
-    height: 36px;
-    width: 100%;
-    padding: 5px 7px;
-    border: 1px solid #cbd5e1;
-    border-radius: 5px;
-    font-size: 13px;
-}
-
-/* =========================
-   BUTTONS
-   ========================= */
+/* ==========================================
+   BUTTON SYSTEM
+   ========================================== */
 
 .btn {
-    min-height: 40px;
-    padding: 8px 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 20px;
     border: 0;
-    border-radius: 6px;
+    border-radius: 10px;
     font-family: inherit;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    box-shadow: none;
-    transition: background-color .1s ease,
-                transform .05s ease;
+    user-select: none;
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn:active {
-    transform: scale(.98);
+    transform: scale(0.97);
 }
 
 .btn-green {
     background: #16a34a;
-    color: #fff;
-}
-
-.btn-green:hover {
-    background: #15803d;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
 }
 
 .btn-info {
     background: #2563eb;
-    color: #fff;
-}
-
-.btn-info:hover {
-    background: #1d4ed8;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .btn-red {
-    background: #dc2626;
-    color: #fff;
+    background: #ef4444;
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.25);
 }
-
-.btn-red:hover {
-    background: #b91c1c;
-}
-
-/* =========================
-   BUTTON AREA
-   ========================= */
 
 .center-buttons {
-    margin-top: 12px;
+    margin-top: 20px;
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
 }
 
-/* =========================
-   RAPID ADD ITEM
-   ========================= */
-
 .btn-add-item {
-    min-width: 110px;
-    background: #2563eb;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 600;
-    border-radius: 6px;
+    width: 100%;
+    background: #eff6ff;
+    color: #2563eb;
+    border: 1.5px dashed #bfdbfe;
+    margin-top: 12px;
 }
 
 .btn-add-item:hover {
-    background: #1d4ed8;
+    background: #dbeafe;
 }
 
-/* =========================
-   TABLET
-   ========================= */
+/* ==========================================
+   MOBILE NATIVE APP TRANSFORMATIONS (< 640px)
+   ========================================== */
 
-@media (max-width: 992px) {
+@media (max-width: 640px) {
 
     .main-content {
-        padding: 8px;
+        padding: 0;
+        background: #f8fafc;
     }
 
     .card {
-        padding: 12px;
-    }
-
-    .table-section {
-        grid-template-columns: 110px minmax(0, 1fr);
-        gap: 7px 8px;
-    }
-}
-
-/* =========================
-   MOBILE
-   ========================= */
-
-@media (max-width: 600px) {
-
-    body {
-        font-size: 13px;
-    }
-
-    .main-content {
-        display: block;
-        padding: 5px;
-    }
-
-    .card {
-        width: 100%;
-        padding: 10px;
-        border-radius: 7px;
+        padding: 16px 16px 90px 16px; /* Safe space for bottom action bar */
+        border-radius: 0;
+        border: none;
         box-shadow: none;
+        background: transparent;
     }
 
     h2 {
-        font-size: 1.1rem;
-        margin-bottom: 10px;
+        font-size: 1.25rem;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #e2e8f0;
     }
 
-    /*
-       Single-column rapid-entry layout
-    */
-
+    /* Stack form items like native iOS/Android screens */
     .table-section {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 3px;
-        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        background: #ffffff;
+        padding: 16px;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
-    label {
-        margin-top: 3px;
-        font-size: 11px;
+    .table-section > label {
+        margin-bottom: -6px;
+        color: #475569;
     }
 
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    select {
-        height: 40px;
-        padding: 7px 9px;
-        font-size: 14px;
-        border-radius: 5px;
+    /* Convert Table into App-Style Cards */
+    table.main-table,
+    table.main-table thead,
+    table.main-table tbody,
+    table.main-table th,
+    table.main-table td,
+    table.main-table tr {
+        display: block;
     }
 
-    .indent-type-group {
-        gap: 10px;
-        min-height: 36px;
+    table.main-table thead {
+        display: none; /* Hide standard headers */
     }
 
-    .indent-type-option {
-        font-size: 13px;
+    table.main-table tbody tr {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        position: relative;
     }
 
-    /* Horizontal table scroll */
-    .table-wrapper {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+    table.main-table td {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        padding: 6px 0;
+        border: none;
     }
 
-    table.main-table {
-        min-width: 650px;
-        margin-top: 7px;
-    }
-
-    thead th {
-        padding: 8px 6px;
+    /* Render inline label above inputs inside items */
+    table.main-table td::before {
+        content: attr(data-label);
         font-size: 10px;
-    }
-
-    th,
-    td {
-        padding: 5px;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 4px;
+        letter-spacing: 0.03em;
     }
 
     table select,
     table input[type="text"],
     table input[type="number"] {
-        height: 36px;
-        font-size: 13px;
-    }
-
-    .center-buttons {
-        margin-top: 8px;
-        gap: 6px;
-    }
-
-    .btn {
-        min-height: 40px;
-        padding: 8px 12px;
-        font-size: 13px;
+        height: 42px;
+        font-size: 14px;
     }
 
     .btn-add-item {
-        width: 100%;
-        min-height: 44px;
+        height: 48px;
+        font-size: 15px;
+        border-radius: 12px;
+    }
+
+    /* Sticky Bottom Navigation Bar for Primary Actions */
+    .center-buttons {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        padding: 12px 16px;
+        margin: 0;
+        border-top: 1px solid #e2e8f0;
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+        z-index: 100;
+        gap: 8px;
+    }
+
+    .center-buttons .btn {
+        flex: 1;
+        min-height: 46px;
         font-size: 14px;
-    }
-}
-
-/* =========================
-   VERY SMALL PHONES
-   ========================= */
-
-@media (max-width: 380px) {
-
-    .main-content {
-        padding: 3px;
-    }
-
-    .card {
-        padding: 8px;
-    }
-
-    h2 {
-        font-size: 1rem;
-    }
-
-    input[type="text"],
-    input[type="date"],
-    input[type="number"],
-    select {
-        height: 38px;
-    }
-
-    .btn {
-        min-height: 38px;
-        padding: 7px 10px;
+        border-radius: 10px;
     }
 }
 </style>
 </head>
 
 <body>
-<jsp:include page="header.jsp" />
+<%@ include file="header.jsp" %>
 
 <div class="main-content">
   <div class="card">

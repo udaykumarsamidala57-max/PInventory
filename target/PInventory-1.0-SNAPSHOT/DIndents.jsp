@@ -61,7 +61,7 @@
 </head>
 
 <body>
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 <div id="loadingOverlay" class="loading-overlay"><div class="spinner"></div></div>
 
 <div class="main-content">

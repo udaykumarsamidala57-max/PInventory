@@ -315,7 +315,7 @@
 
 <body>
 
-<%@ include file="header.jsp" %>
+<jsp:include page="header.jsp" />
 
 <div class="main-content">
     <div class="card">
