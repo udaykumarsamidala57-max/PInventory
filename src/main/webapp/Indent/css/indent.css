@@ -1,0 +1,70 @@
+:root {
+  --indent-blue: #0176d3;
+  --indent-navy: #032d60;
+  --indent-ink: #181818;
+  --indent-muted: #5e5e5e;
+  --indent-border: #dddbda;
+  --indent-page: #f3f3f3;
+  --indent-green: #2e844a;
+  --indent-red: #ba0517;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--indent-page); color: var(--indent-ink); font: 14px/1.45 "Salesforce Sans", Inter, "Segoe UI", Arial, sans-serif; }
+a { color: var(--indent-blue); }
+.indent-topbar { min-height: 54px; padding: 0 max(16px, calc((100% - 1160px) / 2)); display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--indent-navy); color: #fff; }
+.indent-brand { color: #fff; text-decoration: none; font-weight: 700; }
+.indent-nav { display: flex; gap: 16px; }
+.indent-nav a { color: #fff; font-size: 13px; text-decoration: none; }
+.indent-nav a:hover { text-decoration: underline; }
+.indent-shell { width: min(1160px, calc(100% - 32px)); margin: 24px auto 48px; }
+.indent-titlebar { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; margin-bottom: 16px; }
+.indent-titlebar h1 { margin: 0; font-size: 23px; font-weight: 600; }
+.indent-subtitle { margin: 4px 0 0; color: var(--indent-muted); }
+.indent-panel { background: #fff; border: 1px solid var(--indent-border); border-radius: 5px; box-shadow: 0 2px 5px #0000000a; }
+.indent-panel-head { padding: 12px 16px; border-bottom: 1px solid var(--indent-border); font-weight: 600; }
+.indent-panel-body { padding: 16px; }
+.indent-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.indent-field { display: flex; flex-direction: column; gap: 5px; }
+.indent-field.full { grid-column: 1 / -1; }
+.indent-field label { font-size: 12px; font-weight: 600; }
+.indent-field input, .indent-field select, .indent-field textarea, .indent-search {
+  width: 100%; min-height: 36px; border: 1px solid #c9c9c9; border-radius: 4px; padding: 7px 10px; color: var(--indent-ink); background: #fff; font: inherit; outline: none;
+}
+.indent-field textarea { min-height: 82px; resize: vertical; }
+.indent-field input:focus, .indent-field select:focus, .indent-field textarea:focus, .indent-search:focus { border-color: var(--indent-blue); box-shadow: 0 0 3px #0176d3a6; }
+.indent-help { color: var(--indent-muted); font-size: 12px; }
+.indent-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+.indent-button { min-height: 34px; border: 1px solid var(--indent-blue); border-radius: 4px; padding: 6px 14px; color: #fff; background: var(--indent-blue); font: inherit; font-weight: 600; cursor: pointer; }
+.indent-button:hover { border-color: #014486; background: #014486; }
+.indent-button.secondary { color: var(--indent-blue); background: #fff; }
+.indent-button.secondary:hover { background: #f3f9ff; }
+.indent-button.danger { background: var(--indent-red); border-color: var(--indent-red); }
+.indent-button:disabled { opacity: .6; cursor: wait; }
+.indent-message { display: none; padding: 9px 12px; border: 1px solid; border-radius: 4px; margin: 0 0 12px; }
+.indent-message.show { display: block; }
+.indent-message.success { color: #194e31; background: #eaf5ee; border-color: #91db8b; }
+.indent-message.error { color: #8e030f; background: #fef1ee; border-color: #ea001e; }
+.indent-toolbar { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.indent-search { max-width: 340px; }
+.indent-table-wrap { overflow-x: auto; }
+.indent-table { width: 100%; border-collapse: collapse; background: #fff; }
+.indent-table th { padding: 9px 12px; text-align: left; color: var(--indent-muted); background: #fafaf9; border-bottom: 1px solid var(--indent-border); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+.indent-table td { padding: 10px 12px; border-bottom: 1px solid #ecebea; vertical-align: middle; }
+.indent-table tbody tr:last-child td { border-bottom: 0; }
+.indent-table .row-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.indent-chip { display: inline-block; border-radius: 12px; padding: 2px 8px; color: #444; background: #ecebea; font-size: 11px; font-weight: 600; }
+.indent-chip.pending { color: #8c4b02; background: #fef1d6; }
+.indent-chip.approved { color: #194e31; background: #eaf5ee; }
+.indent-chip.rejected { color: #8e030f; background: #fef1ee; }
+.indent-empty { padding: 26px; text-align: center; color: var(--indent-muted); }
+.indent-result { color: var(--indent-muted); font-size: 12px; margin-right: auto; align-self: center; }
+@media (max-width: 680px) {
+  .indent-topbar { padding: 0 12px; }
+  .indent-nav { gap: 10px; }
+  .indent-shell { width: calc(100% - 20px); margin-top: 16px; }
+  .indent-titlebar { align-items: flex-start; flex-direction: column; }
+  .indent-grid { grid-template-columns: 1fr; }
+  .indent-field.full { grid-column: auto; }
+  .indent-panel-body { padding: 12px; }
+}
