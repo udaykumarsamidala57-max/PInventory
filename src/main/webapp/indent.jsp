@@ -83,10 +83,8 @@
         <div class="items-empty">No items added yet. Tap “Add Item” to start.</div>
       </div>
 
-      <button type="button" class="btn btn-add-item" id="addItemBtn">+ Add Item</button>
-
       <div class="center-buttons">
-        <span class="item-count" aria-live="polite"></span>
+        <button type="button" class="btn btn-add-item" id="addItemBtn">+ Add Item</button>
         <button type="submit" class="btn btn-green">Save Indent</button>
       </div>
 
@@ -166,6 +164,7 @@ function addRow() {
     <td class="action"><button type="button" class="btn btn-red removeBtn">Remove</button></td>
   `;
   tbody.appendChild(tr);
+  tr.scrollIntoView({ behavior: "smooth", block: "nearest" });
 
   const catSel = tr.querySelector(".cat");
   const subSel = tr.querySelector(".subcat");
