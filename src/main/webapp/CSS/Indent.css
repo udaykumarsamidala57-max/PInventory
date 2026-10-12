@@ -1,0 +1,541 @@
+/* ==========================================================
+   Items Requisition Form – compact, mobile-first
+   Mobile (<= 860px): item rows become stacked cards
+   Desktop (> 860px): item rows are a multi-column table
+   Font is loaded via <link> in indent.jsp
+   ========================================================== */
+
+:root {
+    --navy: #0f2a4d;
+    --blue: #2563eb;
+    --green: #16a34a;
+    --red: #dc2626;
+    --stock: #fa6d16;
+    --ink: #0f172a;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --field-line: #cbd5e1;
+    --field-bg: #f8fafc;
+    --page: #f1f5f9;
+    --ctl-h: 40px;           /* control height, desktop */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: var(--page);
+    color: var(--ink);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+}
+
+/* ==========================================
+   PAGE SHELL
+   ========================================== */
+
+.main-content {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    min-height: 100vh;
+}
+
+.main-content .card {
+    width: 100%;
+    max-width: 1180px;
+    background: #fff;
+    padding: 18px 20px 20px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+}
+
+.main-content h2 {
+    margin: 0 0 14px;
+    color: var(--navy);
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+/* Counter used for "Item 1, Item 2…" and the item total – no JS needed */
+#indentForm { counter-reset: rowno; }
+
+/* ==========================================
+   HEADER FIELDS
+   ========================================== */
+
+.main-content .table-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1.5fr 1.5fr;
+    gap: 10px 14px;
+    margin-bottom: 14px;
+}
+
+.main-content .field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.main-content .field > label,
+.main-content .field > .field-label {
+    margin: 0;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* ==========================================
+   FORM CONTROLS
+   ========================================== */
+
+.main-content input[type="text"],
+.main-content input[type="date"],
+.main-content input[type="number"],
+.main-content select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    height: var(--ctl-h);
+    padding: 8px 12px;
+    margin: 0;
+    border: 1.5px solid var(--field-line);
+    border-radius: 10px;
+    background-color: var(--field-bg);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.3;
+    outline: none;
+    text-align: left;
+    transition: border-color .15s, box-shadow .15s, background-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.main-content input::-webkit-date-and-time-value { text-align: left; }
+
+.main-content input:focus,
+.main-content select:focus {
+    background-color: #fff;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.main-content input[readonly] {
+    background-color: #eef2f7;
+    color: #334155;
+}
+
+.main-content select:disabled {
+    background-color: #eef2f7;
+    color: #475569;
+    -webkit-text-fill-color: #475569;
+    opacity: 1;
+}
+
+.main-content select {
+    padding-right: 32px;
+    text-overflow: ellipsis;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+}
+
+/* ==========================================
+   INDENT TYPE – SEGMENTED CONTROL
+   ========================================== */
+
+.indent-type-group {
+    display: flex;
+    gap: 4px;
+    height: var(--ctl-h);
+    padding: 3px;
+    background: #e8edf3;
+    border-radius: 10px;
+}
+
+.main-content .indent-type-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 0;
+    padding: 0 10px;
+    color: #475569;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: none;
+    letter-spacing: 0;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: background-color .15s, color .15s;
+}
+
+.main-content .indent-type-option:has(input:checked) {
+    background: #fff;
+    color: var(--blue);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.main-content .indent-type-option:has(input:focus-visible) {
+    outline: 2px solid var(--blue);
+    outline-offset: 1px;
+}
+
+.main-content .indent-type-option input {
+    width: 16px;
+    height: 16px;
+    margin: 0;
+    accent-color: var(--blue);
+}
+
+/* ==========================================
+   ITEM LIST – DESKTOP TABLE
+   ========================================== */
+
+.main-content .table-wrapper { width: 100%; }
+
+table.main-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 0;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+}
+
+table.main-table thead { background: var(--navy); color: #fff; }
+
+table.main-table th {
+    padding: 10px 8px;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+table.main-table th:nth-child(1) { width: 15%; }   /* Category */
+table.main-table th:nth-child(2) { width: 15%; }   /* SubCategory */
+table.main-table th:nth-child(3) { width: 19%; }   /* Item */
+table.main-table th:nth-child(4) { width: 6%; }    /* UOM */
+table.main-table th:nth-child(5) { width: 9%; }    /* Stock */
+table.main-table th:nth-child(6) { width: 9%; }    /* Qty */
+table.main-table th:nth-child(8) { width: 96px; }  /* Action */
+
+table.main-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+table.main-table tbody tr { counter-increment: rowno; }
+table.main-table tbody tr:last-child td { border-bottom: 0; }
+
+table.main-table td.stock {
+    color: var(--stock);
+    font-weight: 700;
+}
+
+/* Dash for empty UOM / stock (display only, textContent stays empty) */
+table.main-table td.uom:empty::after,
+table.main-table td.stock:empty::after {
+    content: "—";
+    color: #94a3b8;
+    font-weight: 400;
+}
+
+/* Empty state: hide the table until the first item is added */
+.items-empty {
+    display: none;
+    padding: 18px 12px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    border: 1.5px dashed var(--field-line);
+    border-radius: 12px;
+    background: var(--field-bg);
+}
+.table-wrapper:has(tbody:empty) table.main-table { display: none; }
+.table-wrapper:has(tbody:empty) .items-empty { display: block; }
+
+/* ==========================================
+   BUTTONS
+   ========================================== */
+
+.main-content .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--ctl-h);
+    padding: 8px 18px;
+    border: 0;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: transform .12s, background-color .15s, box-shadow .15s;
+}
+
+.main-content .btn:active { transform: scale(0.97); }
+.main-content .btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.main-content .btn-green {
+    background: var(--green);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.25);
+}
+.main-content .btn-info {
+    background: var(--blue);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* Remove button – soft red, sits inside a row */
+.main-content .btn-red {
+    background: #fef2f2;
+    color: var(--red);
+    border: 1px solid #fecaca;
+    padding: 6px 12px;
+    font-size: 13px;
+}
+.main-content .btn-red:hover { background: #fee2e2; }
+
+/* Add item – full-width dashed */
+.main-content .btn-add-item {
+    width: 100%;
+    margin-top: 10px;
+    background: #eff6ff;
+    color: var(--blue);
+    border: 1.5px dashed #bfdbfe;
+    font-size: 14px;
+}
+.main-content .btn-add-item:hover { background: #dbeafe; }
+
+/* Footer: item count + save */
+.main-content .center-buttons {
+    margin-top: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.main-content .center-buttons .btn-green { min-width: 160px; }
+
+.item-count {
+    margin-right: auto;
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 500;
+}
+.item-count::before { content: "Items: " counter(rowno); }
+#indentForm:has(tbody:empty) .item-count::before { content: "No items yet"; }
+
+/* ==========================================
+   TABLET + MOBILE  (<= 860px)
+   Cards instead of table, bigger touch targets
+   ========================================== */
+
+@media (max-width: 860px), (pointer: coarse) {
+    :root { --ctl-h: 46px; }
+
+    /* 16px stops iOS from zooming into focused fields */
+    .main-content input[type="text"],
+    .main-content input[type="date"],
+    .main-content input[type="number"],
+    .main-content select {
+        font-size: 16px;
+    }
+
+    .main-content .indent-type-option { font-size: 15px; }
+    .main-content .btn { font-size: 15px; }
+}
+
+@media (max-width: 860px) {
+
+    .main-content { padding: 8px; }
+
+    .main-content .card {
+        padding: 12px 12px 96px;   /* room for sticky bar */
+        border-radius: 12px;
+    }
+
+    .main-content h2 {
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    /* Header fields: Indent no + Date side by side, rest full width */
+    .main-content .table-section {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 10px;
+        margin-bottom: 12px;
+    }
+    .main-content .field-wide { grid-column: 1 / -1; }
+
+    /* ---- Table → stacked cards ---- */
+    table.main-table {
+        display: block;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        overflow: visible;
+    }
+    table.main-table thead { display: none; }
+
+    table.main-table tbody {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    table.main-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-areas:
+            "head head act"
+            "cat  cat  cat"
+            "sub  sub  sub"
+            "item item item"
+            "uom  stock qty"
+            "purp purp purp";
+        gap: 8px;
+        align-items: end;
+        padding: 6px 12px 12px;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-left: 4px solid var(--blue);
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    table.main-table tbody tr::before {
+        content: "Item " counter(rowno);
+        grid-area: head;
+        align-self: center;
+        color: var(--navy);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    table.main-table td {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        text-align: left;
+    }
+
+    table.main-table td::before {
+        content: attr(data-label);
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    table.main-table td:nth-child(1) { grid-area: cat; }
+    table.main-table td:nth-child(2) { grid-area: sub; }
+    table.main-table td:nth-child(3) { grid-area: item; }
+    table.main-table td:nth-child(4) { grid-area: uom; }
+    table.main-table td:nth-child(5) { grid-area: stock; }
+    table.main-table td:nth-child(6) { grid-area: qty; }
+    table.main-table td:nth-child(7) { grid-area: purp; }
+
+    /* Read-only UOM / stock sit level with the Qty input */
+    table.main-table td.uom,
+    table.main-table td.stock {
+        font-size: 15px;
+        font-weight: 600;
+        line-height: var(--ctl-h);
+    }
+    table.main-table td.uom::before,
+    table.main-table td.stock::before { line-height: 1.3; }
+
+    /* Remove button lives in the card header */
+    table.main-table td:nth-child(8) {
+        grid-area: act;
+        align-self: center;
+        align-items: stretch;
+    }
+    table.main-table td:nth-child(8)::before { display: none; }
+
+    table.main-table .btn-red {
+        min-height: 44px;
+        width: 100%;
+    }
+
+    .items-empty { padding: 16px 12px; }
+
+    /* ---- Sticky action bar ---- */
+    .main-content .center-buttons {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        margin: 0;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+        gap: 12px;
+        background: rgba(255, 255, 255, 0.94);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--line);
+        box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+    }
+
+    .main-content .center-buttons .btn-green {
+        flex: 1;
+        min-width: 0;
+        min-height: 48px;
+        font-size: 16px;
+    }
+
+    .main-content .btn-add-item {
+        min-height: 48px;
+        font-size: 16px;
+        border-radius: 12px;
+    }
+}
+
+/* Tablet: two cards per row */
+@media (min-width: 560px) and (max-width: 860px) {
+    table.main-table tbody { grid-template-columns: 1fr 1fr; }
+}
+
+/* Very small phones */
+@media (max-width: 360px) {
+    .main-content .indent-type-option { font-size: 14px; padding: 0 6px; }
+    .main-content .center-buttons { padding-left: 8px; padding-right: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+}
