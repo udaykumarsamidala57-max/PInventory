@@ -28,16 +28,16 @@ import com.bean.DBUtil;
 public class Home extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
-    /** Financial year runs April → March. */
+    /** Financial year runs April → March[cite: 1]. */
     private static final String[] MONTH_NAMES = {
             "Apr", "May", "Jun", "Jul", "Aug", "Sep",
             "Oct", "Nov", "Dec", "Jan", "Feb", "Mar"
     };
 
-    /** Accepts "2026-27" or "2026-2027". */
+    /** Accepts "2026-27" or "2026-2027"[cite: 1]. */
     private static final Pattern FY_PATTERN = Pattern.compile("^(\\d{4})-(\\d{2}|\\d{4})$");
 
-    /** 2026 -> "2026-27" */
+    /** Format start year to label like "2026-27"[cite: 1] */
     private static String fyLabel(int startYear) {
         return startYear + "-" + String.format("%02d", (startYear + 1) % 100);
     }
@@ -53,45 +53,32 @@ public class Home extends HttpServlet {
         }
         String branch = (String) sess.getAttribute("branch");
 
-        // ===================== FILTERS =====================
-        String selectedDept = request.getParameter("department");
-        if (selectedDept == null || selectedDept.trim().isEmpty()) {
-            selectedDept = "All";
-        }
-
-        // Default financial year is fixed to 2026-27 (April 2026 – March 2027)
-        int currentFyStart = 2026;
-        String defaultFY = fyLabel(currentFyStart);
-
-        String selectedFY = defaultFY;
-        int fyStartYear = currentFyStart;
-        String yearParam = request.getParameter("year");
-        if (yearParam != null) {
-            Matcher m = FY_PATTERN.matcher(yearParam.trim());
-            if (m.matches()) {
-                fyStartYear = Integer.parseInt(m.group(1));
-                selectedFY = fyLabel(fyStartYear);
-            }
-        }
-
-        // 1 Apr (start year)  →  before 1 Apr (next year); safe for DATE and DATETIME columns
-        java.sql.Date fyStart = java.sql.Date.valueOf(LocalDate.of(fyStartYear, 4, 1));
-        java.sql.Date fyEndExclusive = java.sql.Date.valueOf(LocalDate.of(fyStartYear + 1, 4, 1));
-
-        // ===================== DATA =====================
+        // ===================== FILTERS & DATA COLLECTION =====================
         List<String> departments = new ArrayList<>();
         TreeSet<String> yearSet = new TreeSet<>(Collections.reverseOrder());
-        yearSet.add(defaultFY); // current FY is always selectable
         Map<String, double[]> dataMap = new LinkedHashMap<>();
         double grandTotal = 0;
+
         Map<String, Double> todayDeptMap = new LinkedHashMap<>();
         double todayTotal = 0;
+        Map<String, Double> last7DaysDeptMap = new LinkedHashMap<>();
+        double last7DaysTotal = 0;
+        Map<String, Double> last30DaysDeptMap = new LinkedHashMap<>();
+        double last30DaysTotal = 0;
+        Map<String, Double> last6MonthsDeptMap = new LinkedHashMap<>();
+        double last6MonthsTotal = 0;
+        Map<String, Double> thisYearDeptMap = new LinkedHashMap<>();
+        double thisYearTotal = 0;
 
         try (Connection con = DBUtil.getConnection(branch)) {
 
-            // Today's cost by department (independent of the filters).
-            // Uses today's date in IST passed from Java, so it does not depend on the DB server's clock/timezone.
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+            LocalDate startDate7 = today.minusDays(6);
+            LocalDate startDate30 = today.minusDays(29);
+            LocalDate startDate6M = today.minusMonths(6);
+            LocalDate startThisYear = LocalDate.of(today.getYear(), 1, 1);
+
+            // Today's cost by department (independent of filters)[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
                     "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
@@ -106,10 +93,86 @@ public class Home extends HttpServlet {
                     }
                 }
             } catch (Exception ex) {
-                ex.printStackTrace(); // a failure here must not break the rest of the dashboard
+                ex.printStackTrace();
             }
 
-            // Departments dropdown
+            // Last 7 days' cost by department (independent of filters)
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                    "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                    "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
+                    "GROUP BY dept ORDER BY v DESC")) {
+                ps.setDate(1, java.sql.Date.valueOf(startDate7));
+                ps.setDate(2, java.sql.Date.valueOf(today));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double v = rs.getDouble("v");
+                        last7DaysDeptMap.put(rs.getString("dept"), v);
+                        last7DaysTotal += v;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            // Last 30 days' cost by department
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                    "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                    "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
+                    "GROUP BY dept ORDER BY v DESC")) {
+                ps.setDate(1, java.sql.Date.valueOf(startDate30));
+                ps.setDate(2, java.sql.Date.valueOf(today));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double v = rs.getDouble("v");
+                        last30DaysDeptMap.put(rs.getString("dept"), v);
+                        last30DaysTotal += v;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            // Last 6 months' cost by department
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                    "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                    "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
+                    "GROUP BY dept ORDER BY v DESC")) {
+                ps.setDate(1, java.sql.Date.valueOf(startDate6M));
+                ps.setDate(2, java.sql.Date.valueOf(today));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double v = rs.getDouble("v");
+                        last6MonthsDeptMap.put(rs.getString("dept"), v);
+                        last6MonthsTotal += v;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            // This year's cost by department (Jan 1 to today)
+            try (PreparedStatement ps = con.prepareStatement(
+                    "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                    "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                    "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
+                    "GROUP BY dept ORDER BY v DESC")) {
+                ps.setDate(1, java.sql.Date.valueOf(startThisYear));
+                ps.setDate(2, java.sql.Date.valueOf(today));
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        double v = rs.getDouble("v");
+                        thisYearDeptMap.put(rs.getString("dept"), v);
+                        thisYearTotal += v;
+                    }
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            // Departments dropdown[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT DISTINCT department FROM stock_issues " +
                     "WHERE department IS NOT NULL AND department<>'' ORDER BY department");
@@ -119,7 +182,7 @@ public class Home extends HttpServlet {
                 }
             }
 
-            // Financial Year dropdown (Apr–Mar), label like 2026-27
+            // Financial Year dropdown (Apr–Mar), label like 2026-27[cite: 1]
             String fyQuery =
                 "SELECT DISTINCT " +
                 "CASE WHEN MONTH(issue_date) >= 4 " +
@@ -134,7 +197,43 @@ public class Home extends HttpServlet {
                 }
             }
 
-            // Month-wise expenditure for the selected FY
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Determine default financial year dynamically from available data
+        int currentYear = LocalDate.now(ZoneId.of("Asia/Kolkata")).getYear();
+        int defaultFyStart = (LocalDate.now(ZoneId.of("Asia/Kolkata")).getMonthValue() < 4) ? currentYear - 1 : currentYear;
+        String defaultFY = fyLabel(defaultFyStart);
+
+        if (!yearSet.isEmpty()) {
+            defaultFY = yearSet.first();
+        } else {
+            yearSet.add(defaultFY);
+        }
+
+        String selectedFY = defaultFY;
+        int fyStartYear = Integer.parseInt(selectedFY.substring(0, 4));
+
+        String selectedDept = request.getParameter("department");
+        if (selectedDept == null || selectedDept.trim().isEmpty()) {
+            selectedDept = "All";
+        }
+
+        String yearParam = request.getParameter("year");
+        if (yearParam != null) {
+            Matcher m = FY_PATTERN.matcher(yearParam.trim());
+            if (m.matches()) {
+                fyStartYear = Integer.parseInt(m.group(1));
+                selectedFY = fyLabel(fyStartYear);
+            }
+        }
+
+        java.sql.Date fyStart = java.sql.Date.valueOf(LocalDate.of(fyStartYear, 4, 1));
+        java.sql.Date fyEndExclusive = java.sql.Date.valueOf(LocalDate.of(fyStartYear + 1, 4, 1));
+
+        // ===================== MONTH-WISE DATA QUERY =====================
+        try (Connection con = DBUtil.getConnection(branch)) {
             StringBuilder sql = new StringBuilder(
                 "SELECT department, MONTH(issue_date) AS m, SUM(IFNULL(total_value,0)) AS v " +
                 "FROM stock_issues WHERE issue_date >= ? AND issue_date < ? "
@@ -159,7 +258,7 @@ public class Home extends HttpServlet {
                         int dbMonth = rs.getInt("m");
                         double val = rs.getDouble("v");
 
-                        // Calendar month -> FY index (Apr=0 ... Mar=11)
+                        // Calendar month -> FY index (Apr=0 ... Mar=11)[cite: 1]
                         int index = (dbMonth >= 4) ? (dbMonth - 4) : (dbMonth + 8);
 
                         dataMap.computeIfAbsent(dept, k -> new double[12])[index] += val;
@@ -167,14 +266,22 @@ public class Home extends HttpServlet {
                     }
                 }
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        // ===================== FORWARD =====================
+        // ===================== FORWARD =====================[cite: 1]
         request.setAttribute("todayDeptMap", todayDeptMap);
         request.setAttribute("todayTotal", todayTotal);
+        request.setAttribute("last7DaysDeptMap", last7DaysDeptMap);
+        request.setAttribute("last7DaysTotal", last7DaysTotal);
+        request.setAttribute("last30DaysDeptMap", last30DaysDeptMap);
+        request.setAttribute("last30DaysTotal", last30DaysTotal);
+        request.setAttribute("last6MonthsDeptMap", last6MonthsDeptMap);
+        request.setAttribute("last6MonthsTotal", last6MonthsTotal);
+        request.setAttribute("thisYearDeptMap", thisYearDeptMap);
+        request.setAttribute("thisYearTotal", thisYearTotal);
+
         request.setAttribute("departments", departments);
         request.setAttribute("years", new ArrayList<>(yearSet));
         request.setAttribute("dataMap", dataMap);
@@ -184,6 +291,6 @@ public class Home extends HttpServlet {
         request.setAttribute("grandTotal", grandTotal);
         request.setAttribute("totalRows", dataMap.size());
 
-        request.getRequestDispatcher("Home.jsp").forward(request, response);
+        request.getRequestDispatcher("/Home.jsp").forward(request, response);
     }
 }

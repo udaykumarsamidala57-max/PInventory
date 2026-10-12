@@ -2,13 +2,13 @@
 <%@ page import="java.util.*" %>
 <%@ page import="java.text.*" %>
 <%!
-    // HTML-escape for text/attributes
+    // HTML-escape for text/attributes[cite: 1]
     private static String h(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
                 .replace("\"", "&quot;").replace("'", "&#39;");
     }
-    // Escape for JS string literals
+    // Escape for JS string literals[cite: 1]
     private static String js(String s) {
         if (s == null) return "";
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'")
@@ -22,6 +22,13 @@
         return;
     }
 
+    // This page needs the date-range totals prepared by the Home servlet.
+    // Route direct Home.jsp requests through the servlet before rendering.
+    if (request.getAttribute("last30DaysDeptMap") == null) {
+        response.sendRedirect(request.getContextPath() + "/Home");
+        return;
+    }
+
     String user = (String) sess.getAttribute("username");
 
     @SuppressWarnings("unchecked")
@@ -31,12 +38,36 @@
     double todayTotal = tt != null ? tt : 0;
 
     @SuppressWarnings("unchecked")
+    Map<String, Double> last7DaysDeptMap = (Map<String, Double>) request.getAttribute("last7DaysDeptMap");
+    Double l7t = (Double) request.getAttribute("last7DaysTotal");
+    if (last7DaysDeptMap == null) last7DaysDeptMap = new LinkedHashMap<String, Double>();
+    double last7DaysTotal = l7t != null ? l7t : 0;
+
+    @SuppressWarnings("unchecked")
+    Map<String, Double> last30DaysDeptMap = (Map<String, Double>) request.getAttribute("last30DaysDeptMap");
+    Double l30t = (Double) request.getAttribute("last30DaysTotal");
+    if (last30DaysDeptMap == null) last30DaysDeptMap = new LinkedHashMap<String, Double>();
+    double last30DaysTotal = l30t != null ? l30t : 0;
+
+    @SuppressWarnings("unchecked")
+    Map<String, Double> last6MonthsDeptMap = (Map<String, Double>) request.getAttribute("last6MonthsDeptMap");
+    Double l6mt = (Double) request.getAttribute("last6MonthsTotal");
+    if (last6MonthsDeptMap == null) last6MonthsDeptMap = new LinkedHashMap<String, Double>();
+    double last6MonthsTotal = l6mt != null ? l6mt : 0;
+
+    @SuppressWarnings("unchecked")
+    Map<String, Double> thisYearDeptMap = (Map<String, Double>) request.getAttribute("thisYearDeptMap");
+    Double tyt = (Double) request.getAttribute("thisYearTotal");
+    if (thisYearDeptMap == null) thisYearDeptMap = new LinkedHashMap<String, Double>();
+    double thisYearTotal = tyt != null ? tyt : 0;
+
+    @SuppressWarnings("unchecked")
     List<String> departments = (List<String>) request.getAttribute("departments");
     @SuppressWarnings("unchecked")
     List<String> years = (List<String>) request.getAttribute("years");
     @SuppressWarnings("unchecked")
     Map<String, double[]> dataMap = (Map<String, double[]>) request.getAttribute("dataMap");
-    // Financial year months, always April to March
+    // Financial year months, always April to March[cite: 1]
     String[] monthNames = {"Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar"};
     String selectedDept = (String) request.getAttribute("selectedDept");
     String selectedYear = (String) request.getAttribute("selectedYear");
@@ -51,11 +82,11 @@
     double grandTotal = gt != null ? gt : 0;
     int totalRows = tr != null ? tr : 0;
 
-    // Greeting
+    // Greeting[cite: 1]
     int hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY);
     String greeting = hour < 12 ? "Good morning" : (hour < 17 ? "Good afternoon" : "Good evening");
 
-    // Aggregates for KPIs and charts
+    // Aggregates for KPIs and charts[cite: 1]
     double[] monthTotals = new double[monthNames.length];
     for (double[] vals : dataMap.values()) {
         for (int i = 0; i < vals.length && i < monthTotals.length; i++) monthTotals[i] += vals[i];
@@ -70,10 +101,12 @@
         if (s > topDeptVal) { topDeptVal = s; topDept = e.getKey(); }
     }
 
-    NumberFormat inr = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
-    inr.setMaximumFractionDigits(0);
+    DecimalFormatSymbols indianSymbols = DecimalFormatSymbols.getInstance(new Locale("en", "IN"));
+    NumberFormat inr = new DecimalFormat("₹#,##,##0", indianSymbols);
+    NumberFormat indianInteger = new DecimalFormat("#,##,##0", indianSymbols);
+    NumberFormat indianDecimal = new DecimalFormat("#,##,##0.00", indianSymbols);
 
-    // JSON-ish arrays for Chart.js
+    // JSON-ish arrays for Chart.js[cite: 1]
     StringBuilder dLabels = new StringBuilder();
     StringBuilder dValues = new StringBuilder();
     for (Iterator<Map.Entry<String, double[]>> it = dataMap.entrySet().iterator(); it.hasNext();) {
@@ -100,7 +133,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-    /* ---------- Salesforce Lightning-style tokens ---------- */
+    /* ---------- Salesforce Lightning-style tokens ----------[cite: 1] */
     :root {
         --brand: #0176d3;
         --brand-dark: #014486;
@@ -132,7 +165,7 @@
     }
     .container { width: 96%; max-width: 1600px; margin: 0 auto; padding: 16px 0 24px; }
 
-    /* ---------- Page header (record-home style) ---------- */
+    /* ---------- Page header (record-home style) ----------[cite: 1] */
     .page-header {
         background: var(--card);
         border: 1px solid var(--border);
@@ -162,7 +195,44 @@
     }
     .ph-date i { margin-right: 6px; color: var(--text-weaker); }
 
-    /* ---------- Today's cost ---------- */
+    /* ---------- Tabs & Panels ---------- */
+    .tab-header {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        border-bottom: 1px solid var(--border);
+        padding: 0 16px;
+        overflow-x: auto;
+    }
+    .tab-btn {
+        background: none;
+        border: none;
+        padding: 12px 14px;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-weak);
+        cursor: pointer;
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        white-space: nowrap;
+    }
+    .tab-btn:hover { color: var(--brand); }
+    .tab-btn.active { color: var(--brand); }
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: var(--brand);
+    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ---------- Cost Grids & Tiles ----------[cite: 1] */
     .today-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -180,7 +250,7 @@
     .today-total { font-size: 13px; color: var(--text-weak); }
     .today-total b { font-size: 16px; color: var(--navy); margin-left: 4px; }
 
-    /* ---------- Filter bar ---------- */
+    /* ---------- Filter bar ----------[cite: 1] */
     .filter-panel {
         background: var(--card);
         border: 1px solid var(--border);
@@ -220,7 +290,7 @@
     .btn-brand:focus-visible { outline: none; box-shadow: 0 0 3px #0176d3; }
     .btn-brand i { margin-right: 6px; }
 
-    /* ---------- KPI tiles ---------- */
+    /* ---------- KPI tiles ----------[cite: 1] */
     .kpi-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
@@ -242,7 +312,7 @@
     .kpi .k-value { font-size: 24px; font-weight: 300; color: var(--text); margin: 0; line-height: 1.2; word-break: break-word; }
     .kpi .k-note { font-size: 12px; color: var(--text-weaker); margin: 2px 0 0; }
 
-    /* ---------- Cards ---------- */
+    /* ---------- Cards ----------[cite: 1] */
     .card {
         background: var(--card);
         border: 1px solid var(--border);
@@ -271,7 +341,7 @@
     .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .scroll-chart { height: 360px; overflow-y: auto; }
 
-    /* ---------- Data table ---------- */
+    /* ---------- Data table ----------[cite: 1] */
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead th {
@@ -340,28 +410,114 @@
         </div>
     </div>
 
-    <!-- Today's cost by department -->
+    <!-- Multi-Period Cost Card with Tabs -->
     <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">
-                <span class="ti" style="background:#8e5af7;"><i class="fas fa-rupee-sign"></i></span>
-                Today's cost by department
-            </h3>
-            <span class="today-total">Total today<b><%= inr.format(todayTotal) %></b></span>
+        <div class="card-header" style="padding: 0 16px 0 0; flex-wrap: wrap;">
+            <div class="tab-header" style="border-bottom: none; padding: 0;">
+                <button type="button" class="tab-btn active" onclick="switchTab(event, 'todayTab')">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab(event, 'last7DaysTab')">
+                    <i class="fas fa-calendar-week"></i> Last 7 Days
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab(event, 'last30DaysTab')">
+                    <i class="fas fa-calendar-alt"></i> Last 30 Days
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab(event, 'last6MonthsTab')">
+                    <i class="fas fa-clock"></i> Last 6 Months
+                </button>
+                <button type="button" class="tab-btn" onclick="switchTab(event, 'thisYearTab')">
+                    <i class="fas fa-calendar"></i> This Year
+                </button>
+            </div>
+            <div style="padding: 8px 0;">
+                <span class="today-total period-total" id="todayTotalLabel">Total today<b><%= inr.format(todayTotal) %></b></span>
+                <span class="today-total period-total" id="last7DaysTotalLabel" style="display: none;">Total last 7 days<b><%= inr.format(last7DaysTotal) %></b></span>
+                <span class="today-total period-total" id="last30DaysTotalLabel" style="display: none;">Total last 30 days<b><%= inr.format(last30DaysTotal) %></b></span>
+                <span class="today-total period-total" id="last6MonthsTotalLabel" style="display: none;">Total last 6 months<b><%= inr.format(last6MonthsTotal) %></b></span>
+                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total this year<b><%= inr.format(thisYearTotal) %></b></span>
+            </div>
         </div>
         <div class="card-body">
-        <% if (todayDeptMap.isEmpty()) { %>
-            <div class="empty" style="padding:12px 0;">No stock issued today yet.</div>
-        <% } else { %>
-            <div class="today-grid">
-            <% for (Map.Entry<String, Double> e : todayDeptMap.entrySet()) { %>
-                <div class="today-tile">
-                    <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                    <p class="t-val"><%= inr.format(e.getValue()) %></p>
-                </div>
-            <% } %>
+            <!-- Today Tab Content -->
+            <div id="todayTab" class="tab-content active">
+                <% if (todayDeptMap.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued today yet.</div>
+                <% } else { %>
+                    <div class="today-grid">
+                    <% for (Map.Entry<String, Double> e : todayDeptMap.entrySet()) { %>
+                        <div class="today-tile">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
             </div>
-        <% } %>
+
+            <!-- Last 7 Days Tab Content -->
+            <div id="last7DaysTab" class="tab-content">
+                <% if (last7DaysDeptMap.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued in the last 7 days.</div>
+                <% } else { %>
+                    <div class="today-grid">
+                    <% for (Map.Entry<String, Double> e : last7DaysDeptMap.entrySet()) { %>
+                        <div class="today-tile" style="border-left-color: var(--success);">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Last 30 Days Tab Content -->
+            <div id="last30DaysTab" class="tab-content">
+                <% if (last30DaysDeptMap.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued in the last 30 days.</div>
+                <% } else { %>
+                    <div class="today-grid">
+                    <% for (Map.Entry<String, Double> e : last30DaysDeptMap.entrySet()) { %>
+                        <div class="today-tile" style="border-left-color: var(--warning);">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Last 6 Months Tab Content -->
+            <div id="last6MonthsTab" class="tab-content">
+                <% if (last6MonthsDeptMap.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued in the last 6 months.</div>
+                <% } else { %>
+                    <div class="today-grid">
+                    <% for (Map.Entry<String, Double> e : last6MonthsDeptMap.entrySet()) { %>
+                        <div class="today-tile" style="border-left-color: #8e5af7;">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- This Year Tab Content -->
+            <div id="thisYearTab" class="tab-content">
+                <% if (thisYearDeptMap.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued this year.</div>
+                <% } else { %>
+                    <div class="today-grid">
+                    <% for (Map.Entry<String, Double> e : thisYearDeptMap.entrySet()) { %>
+                        <div class="today-tile" style="border-left-color: var(--navy);">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
         </div>
     </div>
 
@@ -470,17 +626,17 @@
                     <tr>
                         <td class="left dept"><%= h(entry.getKey()) %></td>
                         <% for (double val : entry.getValue()) { total += val; %>
-                            <td class="<%= val > 0 ? "" : "zero" %>"><%= val > 0 ? String.format("%,.0f", val) : "—" %></td>
+                            <td class="<%= val > 0 ? "" : "zero" %>"><%= val > 0 ? indianInteger.format(val) : "—" %></td>
                         <% } %>
-                        <td class="sub"><%= String.format("%,.2f", total) %></td>
+                        <td class="sub"><%= indianDecimal.format(total) %></td>
                     </tr>
                 <% } %>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td class="left">Total</td>
-                        <% for (double v : monthTotals) { %><td><%= v > 0 ? String.format("%,.0f", v) : "—" %></td><% } %>
-                        <td><%= String.format("%,.2f", grandTotal) %></td>
+                        <% for (double v : monthTotals) { %><td><%= v > 0 ? indianInteger.format(v) : "—" %></td><% } %>
+                        <td><%= indianDecimal.format(grandTotal) %></td>
                     </tr>
                 </tfoot>
             </table>
@@ -490,6 +646,31 @@
 </div>
 
 <script>
+function switchTab(evt, tabId) {
+    var i, tabContent, tabBtns;
+    tabContent = document.getElementsByClassName("tab-content");
+    for (i = 0; i < tabContent.length; i++) {
+        tabContent[i].classList.remove("active");
+    }
+    tabBtns = document.getElementsByClassName("tab-btn");
+    for (i = 0; i < tabBtns.length; i++) {
+        tabBtns[i].classList.remove("active");
+    }
+    document.getElementById(tabId).classList.add("active");
+    evt.currentTarget.classList.add("active");
+
+    var totals = document.getElementsByClassName("period-total");
+    for (i = 0; i < totals.length; i++) {
+        totals[i].style.display = 'none';
+    }
+
+    if (tabId === 'todayTab') document.getElementById('todayTotalLabel').style.display = 'inline';
+    else if (tabId === 'last7DaysTab') document.getElementById('last7DaysTotalLabel').style.display = 'inline';
+    else if (tabId === 'last30DaysTab') document.getElementById('last30DaysTotalLabel').style.display = 'inline';
+    else if (tabId === 'last6MonthsTab') document.getElementById('last6MonthsTotalLabel').style.display = 'inline';
+    else if (tabId === 'thisYearTab') document.getElementById('thisYearTotalLabel').style.display = 'inline';
+}
+
 (function () {
     var dLabels = [<%= dLabels %>];
     var dValues = [<%= dValues %>];
