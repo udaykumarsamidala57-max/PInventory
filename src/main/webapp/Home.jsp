@@ -695,7 +695,12 @@
     .top-card.by-qty .top-val { color: var(--text-muted); font-weight: 400; }
     /* Vendor price comparison */
     .pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
-    .pc-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; display: flex; flex-direction: column; }
+    .pc-panel {
+        border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface);
+        min-width: 0; display: flex; flex-direction: column;
+        box-shadow: 0 1px 2px rgba(31, 42, 55, 0.06);
+    }
+    .pc-panel .pc-head { border-bottom-color: var(--border-strong); }
     .pc-head {
         display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
         padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
@@ -1045,7 +1050,7 @@
             <div class="tab-header">
                 <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
             </div>
-            <div><span class="today-total"> last 12 months &middot; unit price after discount, excl. GST</span></div>
+            <div><span class="today-total">Categories with most items first &middot; most widely purchased first &middot; 30 items per category a day, changes daily &middot; last 12 months &middot; unit price after discount, excl. GST</span></div>
         </div>
         <div class="card-body">
             <% if (priceByCat.isEmpty()) { %>
