@@ -99,6 +99,25 @@
     List<Map<String, Double>> cMaps = Arrays.asList(thisYearDeptMap, last60DaysDeptMap, last30DaysDeptMap, last7DaysDeptMap, todayDeptMap);
     double[] cTotals = { thisYearTotal, last60DaysTotal, last30DaysTotal, last7DaysTotal, todayTotal };
 
+    // Top 3 consumed items per department (same period order)
+    List<Map<String, List<Object[]>>> topMaps = new ArrayList<Map<String, List<Object[]>>>();
+    for (String k : new String[] { "topYear", "top60", "top30", "top7", "topToday" }) {
+        Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
+        topMaps.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
+    }
+    List<Map<String, List<Object[]>>> topMapsQ = new ArrayList<Map<String, List<Object[]>>>();
+    for (String k : new String[] { "topYearQ", "top60Q", "top30Q", "top7Q", "topTodayQ" }) {
+        Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
+        topMapsQ.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
+    }
+    String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab" };
+
+    // Vendor price comparison: { itemName, uom, totalValue, List<{vendor, avgRate, lastRate, qty, poCount, lastDate}> }
+    Map<String, List<Object[]>> priceByCat = (Map<String, List<Object[]>>) request.getAttribute("priceCompareByCat");
+    if (priceByCat == null) priceByCat = new LinkedHashMap<String, List<Object[]>>();
+    Map<String, Integer> priceCatTotals = (Map<String, Integer>) request.getAttribute("priceCatTotals");
+    if (priceCatTotals == null) priceCatTotals = new LinkedHashMap<String, Integer>();
+
     // Vendor-wise PO value: vendor -> {value, count}
     String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
     String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab" };
@@ -594,20 +613,125 @@
     }
     .po-card-title i { color: var(--accent); }
     /* Consumption + top-8 vendor tiles: share one row across the full width on any screen;
-       only if there are too many to stay readable do they wrap - never a scroll bar. */
+       only if there are too many to stay readable do they wrap - never a scroll bar.
+       Typography tuned for comfortable reading: steady sizes, soft contrast, no hyphen splits. */
     .fit-row {
-        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+        gap: 10px;
         overflow: hidden;
     }
-    .fit-row .today-tile { min-width: 0; padding: 8px 10px; }
-    .fit-row .today-tile .t-val { font-size: clamp(13px, 1.15vw, 17px); white-space: nowrap; }
-    .fit-row .today-tile .t-sub { white-space: nowrap; }
-    .fit-row .today-tile .t-dept {
-        white-space: normal; overflow: visible; text-overflow: clip;
-        overflow-wrap: break-word; word-break: normal; hyphens: auto; -webkit-hyphens: auto;
-        font-size: clamp(11px, 0.85vw, 12px); line-height: 1.35;
+    .fit-row .today-tile {
+        min-width: 0;
+        padding: 10px 12px;
+        display: flex; flex-direction: column; gap: 4px;
+        -webkit-font-smoothing: antialiased;
     }
+    .fit-row .today-tile .t-dept {
+        margin: 0;
+        font-size: 12px; font-weight: 500; line-height: 1.4;
+        color: #5b6575;
+        letter-spacing: 0.1px;
+        white-space: normal; overflow: visible; text-overflow: clip;
+        overflow-wrap: break-word; word-break: normal; hyphens: manual;
+    }
+    .fit-row .today-tile .t-val {
+        margin: 0;
+        font-size: 15px; font-weight: 600; line-height: 1.25;
+        color: #1f2a37;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+        white-space: nowrap;
+        margin-top: auto;
+    }
+    .fit-row .today-tile .t-sub {
+        margin: 0;
+        font-size: 11.5px; font-weight: 400; line-height: 1.3;
+        color: #8a94a3;
+        white-space: nowrap;
+    }
+    .po-card-title { font-size: 13px; font-weight: 600; color: #344054; }
+    /* Top 3 items per department */
+    .top-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+    .top-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; }
+    .top-head {
+        display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+        padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .top-dept { font-weight: 600; color: var(--text-heading); font-size: 12.5px; overflow-wrap: break-word; min-width: 0; }
+    .top-dtot { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .top-list { list-style: none; margin: 0; padding: 4px 0; counter-reset: top; }
+    .top-list li {
+        counter-increment: top;
+        display: grid; grid-template-columns: 18px 1fr; column-gap: 6px;
+        padding: 6px 12px; border-bottom: 1px solid var(--border);
+    }
+    .top-list li:last-child { border-bottom: none; }
+    .top-list li::before {
+        content: counter(top);
+        grid-row: span 2;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent);
+        font-size: 11px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .top-name { color: var(--text-heading); font-size: 12.5px; line-height: 1.35; overflow-wrap: break-word; min-width: 0; }
+    .top-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; margin-top: 1px; }
+    .top-qty { color: var(--text-muted); white-space: nowrap; }
+    .top-val { color: var(--text-heading); font-weight: 600; white-space: nowrap; }
+    .rank-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); }
+    .rank-label { font-size: 11.5px; color: var(--text-muted); padding: 0 6px 0 4px; }
+    .rank-btn {
+        border: 1px solid transparent; background: transparent; color: var(--text-muted);
+        font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+    .rank-btn:hover { color: var(--text-heading); }
+    .rank-btn.active { background: var(--surface); color: var(--accent); border-color: var(--border); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+    .top-card .rank-q { display: none; }
+    .top-card.by-qty .rank-v { display: none; }
+    .top-card.by-qty .rank-q { display: block; }
+    /* emphasise the figure being ranked on */
+    .top-card.by-qty .top-qty { color: var(--text-heading); font-weight: 600; }
+    .top-card.by-qty .top-val { color: var(--text-muted); font-weight: 400; }
+    /* Vendor price comparison */
+    .pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+    .pc-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; display: flex; flex-direction: column; }
+    .pc-head {
+        display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+        padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .pc-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .pc-name { font-weight: 600; font-size: 12.5px; color: var(--text-heading); line-height: 1.35; overflow-wrap: break-word; }
+    .pc-sub { font-size: 11.5px; color: #8a94a3; }
+    .pc-cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+    .pc-cat-btn {
+        border: 1px solid var(--border); background: var(--surface); color: #475467;
+        font: inherit; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px; transition: background .15s, border-color .15s, color .15s;
+    }
+    .pc-cat-btn:hover { border-color: #9dbbdc; color: var(--text-heading); }
+    .pc-cat-btn.active { background: var(--accent-soft); border-color: #9dbbdc; color: var(--accent); font-weight: 600; }
+    .pc-cat-n { font-size: 11px; color: #8a94a3; background: var(--surface-2); border-radius: 999px; padding: 0 6px; }
+    .pc-cat-btn.active .pc-cat-n { background: #ffffff; color: var(--accent); }
+    .pc-cat { display: none; }
+    .pc-cat.active { display: grid; }
+    .pc-use { font-size: 11.5px; color: var(--accent); }
+    .pc-use i { font-size: 10px; margin-right: 2px; }
+    .pc-spread {
+        flex-shrink: 0; font-size: 11px; font-weight: 600; color: #8a5a00;
+        background: #fdf6e7; border: 1px solid #f3e1b5; border-radius: 4px; padding: 1px 6px; white-space: nowrap;
+    }
+    .pc-list { list-style: none; margin: 0; padding: 2px 0; }
+    .pc-list li { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    .pc-list li:last-child { border-bottom: none; }
+    .pc-list li.pc-best { background: #f3faf6; }
+    .pc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .pc-vendor { font-size: 12.5px; color: #344054; line-height: 1.35; overflow-wrap: break-word; min-width: 0; }
+    .pc-rate { font-size: 13px; font-weight: 600; color: var(--text-heading); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .pc-rate small { font-size: 11px; font-weight: 400; color: #8a94a3; margin-left: 1px; }
+    .pc-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; font-size: 11px; color: #8a94a3; }
+    .pc-tag { color: #1f7a4d; font-weight: 600; white-space: nowrap; }
+    .pc-diff { color: #a15c07; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 </style>
@@ -847,9 +971,162 @@
         </div>
         <% } %>
     </div>
+
+    <!-- Top 3 most consumed items per department -->
+    <div class="card top-card" id="topCard">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title"><i class="fas fa-fire"></i> Top 3 Items by Department</span>
+                <% for (int t = 0; t < tTabIds.length; t++) { %>
+                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= tTabIds[t] %>')">
+                    <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
+                </button>
+                <% } %>
+            </div>
+            <div class="rank-toggle" role="group" aria-label="Rank items by">
+                
+                <button type="button" class="rank-btn active" data-mode="value" onclick="setTopRank('value')"><i class="fas fa-rupee-sign"></i> Value</button>
+                <button type="button" class="rank-btn" data-mode="qty" onclick="setTopRank('qty')"><i class="fas fa-sort-amount-down"></i> Quantity</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <% for (int t = 0; t < tTabIds.length; t++) {
+                 Map<String, List<Object[]>> tm = topMaps.get(t);
+                 // department order = highest consumption first (same as the consumption card)
+                 List<String> deptOrder = new ArrayList<String>(cMaps.get(t).keySet());
+                 for (String k : tm.keySet()) if (!deptOrder.contains(k)) deptOrder.add(k);
+            %>
+            <div id="<%= tTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+                <% if (tm.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued <%= pWhen[t] %>.</div>
+                <% } else { %>
+                    <div class="top-grid">
+                    <% for (String dn : deptOrder) {
+                         List<Object[]> items = tm.get(dn);
+                         if (items == null || items.isEmpty()) continue;
+                         Double dTot = cMaps.get(t).get(dn);
+                    %>
+                        <div class="top-panel">
+                            <div class="top-head">
+                                <span class="top-dept"><%= h(dn) %></span>
+                                <% if (dTot != null) { %><span class="top-dtot"><%= rupee(dTot) %></span><% } %>
+                            </div>
+                            <% for (int mode = 0; mode < 2; mode++) {
+                                 List<Object[]> list = (mode == 0 ? topMaps : topMapsQ).get(t).get(dn);
+                                 if (list == null) list = new ArrayList<Object[]>();
+                            %>
+                            <ol class="top-list <%= mode == 0 ? "rank-v" : "rank-q" %>">
+                            <% for (Object[] it : list) {
+                                 double q = (Double) it[2];
+                                 String uom = it[1] == null ? "" : String.valueOf(it[1]);
+                            %>
+                                <li>
+                                    <span class="top-name"><%= h(String.valueOf(it[0])) %></span>
+                                    <span class="top-meta">
+                                        <span class="top-qty"><%= fmtIN(q, (q % 1 == 0) ? 0 : 2) %> <%= h(uom) %></span>
+                                        <span class="top-val"><%= rupee((Double) it[3]) %></span>
+                                    </span>
+                                </li>
+                            <% } %>
+                            </ol>
+                            <% } %>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Vendor price comparison: 10 items bought from 2+ vendors -->
+    <div class="card">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
+            </div>
+            <div><span class="today-total"> last 12 months &middot; unit price after discount, excl. GST</span></div>
+        </div>
+        <div class="card-body">
+            <% if (priceByCat.isEmpty()) { %>
+                <div class="empty" style="padding:12px 0;">No item was bought from two or more different vendors in the last 12 months.</div>
+            <% } else { %>
+            <div class="pc-cats" role="tablist" aria-label="Filter by category">
+                <% int cb = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) { %>
+                <button type="button" class="pc-cat-btn <%= cb == 0 ? "active" : "" %>" data-cat="<%= cb %>" onclick="setPcCat(<%= cb %>)">
+                    <%= h(ce.getKey()) %> <span class="pc-cat-n" title="items bought from 2+ vendors"><%= priceCatTotals.containsKey(ce.getKey()) ? priceCatTotals.get(ce.getKey()) : ce.getValue().size() %></span>
+                </button>
+                <% cb++; } %>
+            </div>
+            <% int ci = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) {
+                 List<Object[]> catItems = ce.getValue();
+            %>
+            <div class="pc-grid pc-cat <%= ci == 0 ? "active" : "" %>" data-cat="<%= ci %>">
+            <% for (Object[] it : catItems) {
+                 List<Object[]> vendors = (List<Object[]>) it[3];
+                 String uom = it[1] == null ? "" : String.valueOf(it[1]).trim();
+                 double best = (Double) vendors.get(0)[1];
+                 double worst = (Double) vendors.get(vendors.size() - 1)[1];
+                 double spread = best > 0 ? (worst - best) / best * 100.0 : 0;
+            %>
+                <div class="pc-panel">
+                    <div class="pc-head">
+                        <div class="pc-item">
+                            <span class="pc-name"><%= h(String.valueOf(it[0])) %></span>
+                            <span class="pc-sub"><%= vendors.size() %> vendors &middot; <%= rupee((Double) it[2]) %> purchased</span>
+                            <% int poCnt = it.length > 4 ? (Integer) it[4] : 0; %>
+                            <span class="pc-use"><i class="fas fa-shopping-cart"></i> Bought on <%= poCnt %> PO<%= poCnt == 1 ? "" : "s" %></span>
+                        </div>
+                        <% if (spread >= 0.5) { %><span class="pc-spread" title="Highest vs lowest average price"><%= fmtIN(spread, 0) %>% gap</span><% } %>
+                    </div>
+                    <ul class="pc-list">
+                    <% for (int v = 0; v < vendors.size(); v++) {
+                         Object[] vr = vendors.get(v);
+                         double avg = (Double) vr[1];
+                         double diff = best > 0 ? (avg - best) / best * 100.0 : 0;
+                    %>
+                        <li class="<%= v == 0 ? "pc-best" : "" %>">
+                            <div class="pc-row">
+                                <span class="pc-vendor"><%= h(String.valueOf(vr[0])) %></span>
+                                <span class="pc-rate">&#8377;<%= fmtIN(avg, 2) %><% if (!uom.isEmpty()) { %><small>/<%= h(uom) %></small><% } %></span>
+                            </div>
+                            <div class="pc-meta">
+                                <span><%= vr[4] %> PO<%= ((Integer) vr[4]) == 1 ? "" : "s" %> &middot; last &#8377;<%= fmtIN((Double) vr[2], 2) %> on <%= vr[5] %></span>
+                                <% if (v == 0) { %><span class="pc-tag">Lowest</span><% } else { %><span class="pc-diff">+<%= fmtIN(diff, 1) %>%</span><% } %>
+                            </div>
+                        </li>
+                    <% } %>
+                    </ul>
+                </div>
+            <% } %>
+            </div>
+            <% ci++; } %>
+            <% } %>
+        </div>
+    </div>
 </div>
 
 <script>
+function setPcCat(idx) {
+    document.querySelectorAll('.pc-cat').forEach(function (g) { g.classList.toggle('active', g.getAttribute('data-cat') == idx); });
+    document.querySelectorAll('.pc-cat-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-cat') == idx); });
+}
+
+function setTopRank(mode) {
+    var card = document.getElementById('topCard');
+    if (!card) return;
+    card.classList.toggle('by-qty', mode === 'qty');
+    card.querySelectorAll('.rank-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+    });
+    try { localStorage.setItem('homeTopRank', mode); } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', function () {
+    var saved = null;
+    try { saved = localStorage.getItem('homeTopRank'); } catch (e) {}
+    if (saved === 'qty') setTopRank('qty');
+});
+
 function switchTab(evt, tabId) {
     // Works per card, so each card's tabs switch independently.
     var card = evt.currentTarget.closest('.card') || document;
