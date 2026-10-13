@@ -88,6 +88,18 @@ public class Home extends HttpServlet {
         Map<String, Double> thisYearDeptMap = new LinkedHashMap<>();
         double thisYearTotal = 0;
 
+        // Top 3 consumed items per department, per period: dept -> [ {itemName, uom, qty, value}, ... ]
+        Map<String, List<Object[]>> topYear = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top60 = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top30 = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top7 = new LinkedHashMap<>();
+        Map<String, List<Object[]>> topToday = new LinkedHashMap<>();
+        Map<String, List<Object[]>> topYearQ = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top60Q = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top30Q = new LinkedHashMap<>();
+        Map<String, List<Object[]>> top7Q = new LinkedHashMap<>();
+        Map<String, List<Object[]>> topTodayQ = new LinkedHashMap<>();
+
         // Vendor-wise purchase orders: vendor -> {total value, PO count}
         Map<String, double[]> poTodayMap = new LinkedHashMap<>();
         Map<String, double[]> po30Map = new LinkedHashMap<>();
@@ -206,6 +218,13 @@ public class Home extends HttpServlet {
             loadVendorPOs(con, today, startDate7, startDate30, startDate60, startThisYear,
                           poTodayMap, po7Map, po30Map, po60Map, poYearMap);
 
+            // Top 3 most consumed items in each department - ranked by value and by quantity
+            loadTopItems(con, startThisYear, today, topYear, topYearQ);
+            loadTopItems(con, startDate60, today, top60, top60Q);
+            loadTopItems(con, startDate30, today, top30, top30Q);
+            loadTopItems(con, startDate7, today, top7, top7Q);
+            loadTopItems(con, today, today, topToday, topTodayQ);
+
             // Departments dropdown[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT DISTINCT department FROM stock_issues " +
@@ -320,6 +339,16 @@ public class Home extends HttpServlet {
         request.setAttribute("po7Map", po7Map);
         request.setAttribute("po60Map", po60Map);
         request.setAttribute("poYearMap", poYearMap);
+        request.setAttribute("topYear", topYear);
+        request.setAttribute("top60", top60);
+        request.setAttribute("top30", top30);
+        request.setAttribute("top7", top7);
+        request.setAttribute("topToday", topToday);
+        request.setAttribute("topYearQ", topYearQ);
+        request.setAttribute("top60Q", top60Q);
+        request.setAttribute("top30Q", top30Q);
+        request.setAttribute("top7Q", top7Q);
+        request.setAttribute("topTodayQ", topTodayQ);
 
         request.setAttribute("departments", departments);
         request.setAttribute("years", new ArrayList<>(yearSet));
@@ -410,5 +439,47 @@ public class Home extends HttpServlet {
         sortByValue(todayMap); sortByValue(map7); sortByValue(map30); sortByValue(map60); sortByValue(mapYear);
         System.out.println("[Home] po_master rows=" + rows + ", unparsed dates=" + unparsed
                 + ", vendors this year=" + mapYear.size());
+    }
+
+    /**
+     * Top 3 most consumed items per department between from and to (inclusive).
+     * outByValue ranks by issued value (Rs.), outByQty ranks by issued quantity.
+     * Each entry: { String itemName, String uom, Double qty, Double value }.
+     */
+    private static void loadTopItems(Connection con, LocalDate from, LocalDate to,
+                                     Map<String, List<Object[]>> outByValue,
+                                     Map<String, List<Object[]>> outByQty) {
+        String sql =
+            "SELECT IFNULL(NULLIF(TRIM(si.department),''),'Unassigned') AS dept, " +
+            "       COALESCE(im.Item_name, CONCAT('Item #', si.item_id)) AS item_name, " +
+            "       IFNULL(im.UOM,'') AS uom, " +
+            "       SUM(IFNULL(si.qty_issued,0)) AS q, " +
+            "       SUM(IFNULL(si.total_value,0)) AS v " +
+            "FROM stock_issues si LEFT JOIN item_master im ON im.Item_id = si.item_id " +
+            "WHERE DATE(si.issue_date) >= ? AND DATE(si.issue_date) <= ? " +
+            "GROUP BY dept, si.item_id, im.Item_name, im.UOM";
+        Map<String, List<Object[]>> all = new LinkedHashMap<>();
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, java.sql.Date.valueOf(from));
+            ps.setDate(2, java.sql.Date.valueOf(to));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    all.computeIfAbsent(rs.getString("dept"), k -> new ArrayList<>())
+                       .add(new Object[] { rs.getString("item_name"), rs.getString("uom"),
+                                           rs.getDouble("q"), rs.getDouble("v") });
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        for (Map.Entry<String, List<Object[]>> e : all.entrySet()) {
+            List<Object[]> byV = new ArrayList<>(e.getValue());
+            byV.sort((x, y) -> Double.compare((Double) y[3], (Double) x[3]));
+            outByValue.put(e.getKey(), new ArrayList<>(byV.subList(0, Math.min(3, byV.size()))));
+
+            List<Object[]> byQ = new ArrayList<>(e.getValue());
+            byQ.sort((x, y) -> Double.compare((Double) y[2], (Double) x[2]));
+            outByQty.put(e.getKey(), new ArrayList<>(byQ.subList(0, Math.min(3, byQ.size()))));
+        }
     }
 }

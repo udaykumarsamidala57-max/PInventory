@@ -99,6 +99,19 @@
     List<Map<String, Double>> cMaps = Arrays.asList(thisYearDeptMap, last60DaysDeptMap, last30DaysDeptMap, last7DaysDeptMap, todayDeptMap);
     double[] cTotals = { thisYearTotal, last60DaysTotal, last30DaysTotal, last7DaysTotal, todayTotal };
 
+    // Top 3 consumed items per department (same period order)
+    List<Map<String, List<Object[]>>> topMaps = new ArrayList<Map<String, List<Object[]>>>();
+    for (String k : new String[] { "topYear", "top60", "top30", "top7", "topToday" }) {
+        Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
+        topMaps.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
+    }
+    List<Map<String, List<Object[]>>> topMapsQ = new ArrayList<Map<String, List<Object[]>>>();
+    for (String k : new String[] { "topYearQ", "top60Q", "top30Q", "top7Q", "topTodayQ" }) {
+        Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
+        topMapsQ.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
+    }
+    String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab" };
+
     // Vendor-wise PO value: vendor -> {value, count}
     String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
     String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab" };
@@ -608,6 +621,49 @@
         overflow-wrap: break-word; word-break: normal; hyphens: auto; -webkit-hyphens: auto;
         font-size: clamp(11px, 0.85vw, 12px); line-height: 1.35;
     }
+    /* Top 3 items per department */
+    .top-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+    .top-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; }
+    .top-head {
+        display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+        padding: 8px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .top-dept { font-weight: 600; color: var(--text-heading); font-size: 12.5px; overflow-wrap: break-word; min-width: 0; }
+    .top-dtot { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+    .top-list { list-style: none; margin: 0; padding: 4px 0; counter-reset: top; }
+    .top-list li {
+        counter-increment: top;
+        display: grid; grid-template-columns: 18px 1fr; column-gap: 6px;
+        padding: 6px 12px; border-bottom: 1px solid var(--border);
+    }
+    .top-list li:last-child { border-bottom: none; }
+    .top-list li::before {
+        content: counter(top);
+        grid-row: span 2;
+        width: 18px; height: 18px; border-radius: 50%;
+        background: var(--accent-soft); color: var(--accent);
+        font-size: 11px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .top-name { color: var(--text-heading); font-size: 12.5px; line-height: 1.35; overflow-wrap: break-word; min-width: 0; }
+    .top-meta { display: flex; justify-content: space-between; gap: 8px; font-size: 11.5px; margin-top: 1px; }
+    .top-qty { color: var(--text-muted); white-space: nowrap; }
+    .top-val { color: var(--text-heading); font-weight: 600; white-space: nowrap; }
+    .rank-toggle { display: inline-flex; align-items: center; gap: 2px; padding: 2px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-2); }
+    .rank-label { font-size: 11.5px; color: var(--text-muted); padding: 0 6px 0 4px; }
+    .rank-btn {
+        border: 1px solid transparent; background: transparent; color: var(--text-muted);
+        font: inherit; font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 4px; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 5px;
+    }
+    .rank-btn:hover { color: var(--text-heading); }
+    .rank-btn.active { background: var(--surface); color: var(--accent); border-color: var(--border); box-shadow: 0 1px 1px rgba(0,0,0,.04); }
+    .top-card .rank-q { display: none; }
+    .top-card.by-qty .rank-v { display: none; }
+    .top-card.by-qty .rank-q { display: block; }
+    /* emphasise the figure being ranked on */
+    .top-card.by-qty .top-qty { color: var(--text-heading); font-weight: 600; }
+    .top-card.by-qty .top-val { color: var(--text-muted); font-weight: 400; }
     .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 </style>
@@ -847,9 +903,91 @@
         </div>
         <% } %>
     </div>
+
+    <!-- Top 3 most consumed items per department -->
+    <div class="card top-card" id="topCard">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title"><i class="fas fa-fire"></i> Top 3 Items by Department</span>
+                <% for (int t = 0; t < tTabIds.length; t++) { %>
+                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= tTabIds[t] %>')">
+                    <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
+                </button>
+                <% } %>
+            </div>
+            <div class="rank-toggle" role="group" aria-label="Rank items by">
+                
+                <button type="button" class="rank-btn active" data-mode="value" onclick="setTopRank('value')"> Value</button>
+                <button type="button" class="rank-btn" data-mode="qty" onclick="setTopRank('qty')"> Quantity</button>
+            </div>
+        </div>
+        <div class="card-body">
+            <% for (int t = 0; t < tTabIds.length; t++) {
+                 Map<String, List<Object[]>> tm = topMaps.get(t);
+                 // department order = highest consumption first (same as the consumption card)
+                 List<String> deptOrder = new ArrayList<String>(cMaps.get(t).keySet());
+                 for (String k : tm.keySet()) if (!deptOrder.contains(k)) deptOrder.add(k);
+            %>
+            <div id="<%= tTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+                <% if (tm.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued <%= pWhen[t] %>.</div>
+                <% } else { %>
+                    <div class="top-grid">
+                    <% for (String dn : deptOrder) {
+                         List<Object[]> items = tm.get(dn);
+                         if (items == null || items.isEmpty()) continue;
+                         Double dTot = cMaps.get(t).get(dn);
+                    %>
+                        <div class="top-panel">
+                            <div class="top-head">
+                                <span class="top-dept"><%= h(dn) %></span>
+                                <% if (dTot != null) { %><span class="top-dtot"><%= rupee(dTot) %></span><% } %>
+                            </div>
+                            <% for (int mode = 0; mode < 2; mode++) {
+                                 List<Object[]> list = (mode == 0 ? topMaps : topMapsQ).get(t).get(dn);
+                                 if (list == null) list = new ArrayList<Object[]>();
+                            %>
+                            <ol class="top-list <%= mode == 0 ? "rank-v" : "rank-q" %>">
+                            <% for (Object[] it : list) {
+                                 double q = (Double) it[2];
+                                 String uom = it[1] == null ? "" : String.valueOf(it[1]);
+                            %>
+                                <li>
+                                    <span class="top-name"><%= h(String.valueOf(it[0])) %></span>
+                                    <span class="top-meta">
+                                        <span class="top-qty"><%= fmtIN(q, (q % 1 == 0) ? 0 : 2) %> <%= h(uom) %></span>
+                                        <span class="top-val"><%= rupee((Double) it[3]) %></span>
+                                    </span>
+                                </li>
+                            <% } %>
+                            </ol>
+                            <% } %>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
 </div>
 
 <script>
+function setTopRank(mode) {
+    var card = document.getElementById('topCard');
+    if (!card) return;
+    card.classList.toggle('by-qty', mode === 'qty');
+    card.querySelectorAll('.rank-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-mode') === mode);
+    });
+    try { localStorage.setItem('homeTopRank', mode); } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', function () {
+    var saved = null;
+    try { saved = localStorage.getItem('homeTopRank'); } catch (e) {}
+    if (saved === 'qty') setTopRank('qty');
+});
+
 function switchTab(evt, tabId) {
     // Works per card, so each card's tabs switch independently.
     var card = evt.currentTarget.closest('.card') || document;
