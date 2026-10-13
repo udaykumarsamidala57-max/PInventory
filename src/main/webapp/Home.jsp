@@ -113,8 +113,9 @@
     String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab" };
 
     // Vendor price comparison: { itemName, uom, totalValue, List<{vendor, avgRate, lastRate, qty, poCount, lastDate}> }
-    List<Object[]> priceCompare = (List<Object[]>) request.getAttribute("priceCompare");
-    if (priceCompare == null) priceCompare = new ArrayList<Object[]>();
+    Map<String, List<Object[]>> priceByCat = (Map<String, List<Object[]>>) request.getAttribute("priceCompareByCat");
+    if (priceByCat == null) priceByCat = new LinkedHashMap<String, List<Object[]>>();
+    List<Object[]> priceCompare = priceByCat.containsKey("All Categories") ? priceByCat.get("All Categories") : new ArrayList<Object[]>();
 
     // Vendor-wise PO value: vendor -> {value, count}
     String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
@@ -701,6 +702,20 @@
     .pc-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .pc-name { font-weight: 600; font-size: 12.5px; color: var(--text-heading); line-height: 1.35; overflow-wrap: break-word; }
     .pc-sub { font-size: 11.5px; color: #8a94a3; }
+    .pc-cats { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+    .pc-cat-btn {
+        border: 1px solid var(--border); background: var(--surface); color: #475467;
+        font: inherit; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 999px; cursor: pointer;
+        display: inline-flex; align-items: center; gap: 6px; transition: background .15s, border-color .15s, color .15s;
+    }
+    .pc-cat-btn:hover { border-color: #9dbbdc; color: var(--text-heading); }
+    .pc-cat-btn.active { background: var(--accent-soft); border-color: #9dbbdc; color: var(--accent); font-weight: 600; }
+    .pc-cat-n { font-size: 11px; color: #8a94a3; background: var(--surface-2); border-radius: 999px; padding: 0 6px; }
+    .pc-cat-btn.active .pc-cat-n { background: #ffffff; color: var(--accent); }
+    .pc-cat { display: none; }
+    .pc-cat.active { display: grid; }
+    .pc-use { font-size: 11.5px; color: var(--accent); }
+    .pc-use i { font-size: 10px; margin-right: 2px; }
     .pc-spread {
         flex-shrink: 0; font-size: 11px; font-weight: 600; color: #8a5a00;
         background: #fdf6e7; border: 1px solid #f3e1b5; border-radius: 4px; padding: 1px 6px; white-space: nowrap;
@@ -1029,14 +1044,24 @@
             <div class="tab-header">
                 <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
             </div>
-            <div><span class="today-total">Last 12 months &middot; unit price after discount, excl. GST</span></div>
+            <div><span class="today-total">Most widely purchased first &middot; 20 items per category a day, changes daily &middot; last 12 months &middot; unit price after discount, excl. GST</span></div>
         </div>
         <div class="card-body">
             <% if (priceCompare.isEmpty()) { %>
-                <div class="empty" style="padding:12px 0;">No items were bought from more than one vendor in the last 12 months.</div>
+                <div class="empty" style="padding:12px 0;">No item was bought from two or more different vendors in the last 12 months.</div>
             <% } else { %>
-            <div class="pc-grid">
-            <% for (Object[] it : priceCompare) {
+            <div class="pc-cats" role="tablist" aria-label="Filter by category">
+                <% int cb = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) { %>
+                <button type="button" class="pc-cat-btn <%= cb == 0 ? "active" : "" %>" data-cat="<%= cb %>" onclick="setPcCat(<%= cb %>)">
+                    <%= h(ce.getKey()) %> <span class="pc-cat-n"><%= ce.getValue().size() %></span>
+                </button>
+                <% cb++; } %>
+            </div>
+            <% int ci = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) {
+                 List<Object[]> catItems = ce.getValue();
+            %>
+            <div class="pc-grid pc-cat <%= ci == 0 ? "active" : "" %>" data-cat="<%= ci %>">
+            <% for (Object[] it : catItems) {
                  List<Object[]> vendors = (List<Object[]>) it[3];
                  String uom = it[1] == null ? "" : String.valueOf(it[1]).trim();
                  double best = (Double) vendors.get(0)[1];
@@ -1048,6 +1073,8 @@
                         <div class="pc-item">
                             <span class="pc-name"><%= h(String.valueOf(it[0])) %></span>
                             <span class="pc-sub"><%= vendors.size() %> vendors &middot; <%= rupee((Double) it[2]) %> purchased</span>
+                            <% int poCnt = it.length > 4 ? (Integer) it[4] : 0; %>
+                            <span class="pc-use"><i class="fas fa-shopping-cart"></i> Bought on <%= poCnt %> PO<%= poCnt == 1 ? "" : "s" %></span>
                         </div>
                         <% if (spread >= 0.5) { %><span class="pc-spread" title="Highest vs lowest average price"><%= fmtIN(spread, 0) %>% gap</span><% } %>
                     </div>
@@ -1072,12 +1099,18 @@
                 </div>
             <% } %>
             </div>
+            <% ci++; } %>
             <% } %>
         </div>
     </div>
 </div>
 
 <script>
+function setPcCat(idx) {
+    document.querySelectorAll('.pc-cat').forEach(function (g) { g.classList.toggle('active', g.getAttribute('data-cat') == idx); });
+    document.querySelectorAll('.pc-cat-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-cat') == idx); });
+}
+
 function setTopRank(mode) {
     var card = document.getElementById('topCard');
     if (!card) return;

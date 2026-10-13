@@ -219,7 +219,7 @@ public class Home extends HttpServlet {
                           poTodayMap, po7Map, po30Map, po60Map, poYearMap);
 
             // Vendor price comparison: 10 items bought from 2+ vendors in the last 12 months
-            request.setAttribute("priceCompare", loadPriceCompare(con, today.minusMonths(12), today));
+            request.setAttribute("priceCompareByCat", loadPriceCompare(con, today.minusMonths(12), today));
 
             // Top 3 most consumed items in each department - ranked by value and by quantity
             loadTopItems(con, startThisYear, today, topYear, topYearQ);
@@ -411,6 +411,7 @@ public class Home extends HttpServlet {
                                       Map<String, double[]> mapYear) {
         LocalDate earliest = fromYear.isBefore(from60) ? fromYear : from60;
         int rows = 0, unparsed = 0;
+        Map<String, String> vendorNames = new java.util.HashMap<>();   // UPPER-CASE key -> display name (first spelling seen)
         try (PreparedStatement ps = con.prepareStatement(
                 "SELECT vendor_name, PO_date, total_amount FROM po_master");
              ResultSet rs = ps.executeQuery()) {
@@ -421,7 +422,8 @@ public class Home extends HttpServlet {
                 if (d.isBefore(earliest) || d.isAfter(today)) continue;
 
                 String vendor = rs.getString("vendor_name");
-                vendor = (vendor == null || vendor.trim().isEmpty()) ? "Unknown vendor" : vendor.trim();
+                vendor = (vendor == null || vendor.trim().isEmpty()) ? "Unknown vendor"
+                       : vendorNames.computeIfAbsent(vendorKey(vendor), k -> cleanVendor(rs, "vendor_name"));
 
                 double amt = 0;
                 String amtRaw = rs.getString("total_amount");
@@ -488,19 +490,25 @@ public class Home extends HttpServlet {
 
     /**
      * Compares unit prices of the same item across vendors, from po_items + po_master.
-     * Unit price = net_amount / qty (after discount, before GST); falls back to rate.
-     * Keeps items bought from at least 2 vendors between from..to, top 10 by purchase value.
-     * Returns list of { String itemName, String uom, Double totalValue, List<Object[]> vendors }
+     * Unit price = (amount - discount_value) / qty  -> after discount, before GST.
+     * (po_items.net_amount includes GST, so it is not used here.)
+     * Vendor names are matched ignoring capitals and extra spaces. Keeps items bought from at least
+     * 2 different vendors between from..to and shows 20 of them a day, rotating daily.
+     * Items are ordered most widely purchased first (number of POs, then purchase value).
+     * Returns category -> list of { String itemName, String uom, Double totalValue, List<Object[]> vendors, Integer poCount, String category },
+     * starting with "All Categories"; each list holds 20 items for today (rotating daily).
      * where each vendor is { String vendor, Double avgRate, Double lastRate, Double qty, Integer poCount, String lastDate },
      * vendors sorted cheapest (avgRate) first.
      */
-    private static List<Object[]> loadPriceCompare(Connection con, LocalDate from, LocalDate to) {
+    private static Map<String, List<Object[]>> loadPriceCompare(Connection con, LocalDate from, LocalDate to) {
         String sql =
             "SELECT pi.item_id, " +
             "       COALESCE(im.Item_name, pi.description, CONCAT('Item #', pi.item_id)) AS item_name, " +
             "       IFNULL(im.UOM,'') AS uom, " +
+            "       IFNULL(NULLIF(TRIM(im.Category),''),'Uncategorised') AS category, " +
             "       pm.vendor_name, pm.PO_date, pm.PO_id, " +
-            "       IFNULL(pi.qty,0) AS qty, IFNULL(pi.rate,0) AS rate, pi.net_amount " +
+            "       IFNULL(pi.qty,0) AS qty, IFNULL(pi.rate,0) AS rate, " +
+            "       pi.amount, pi.discount_value, IFNULL(pi.discount_percent,0) AS discount_percent " +
             "FROM po_items pi JOIN po_master pm ON pm.PO_id = pi.PO_id " +
             "LEFT JOIN item_master im ON im.Item_id = pi.item_id " +
             "WHERE pi.item_id IS NOT NULL";
@@ -509,26 +517,32 @@ public class Home extends HttpServlet {
         Map<Integer, String[]> itemInfo = new LinkedHashMap<>();
         Map<Integer, Map<String, double[]>> acc = new LinkedHashMap<>();   // {sumValue, sumQty, lastRate, lastDateEpochDay, poCount}
         Map<Integer, Map<String, java.util.Set<Integer>>> poSets = new LinkedHashMap<>();
+        Map<String, String> vendorNames = new java.util.HashMap<>();
 
         try (PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 LocalDate d = parsePoDate(rs.getString("PO_date"));
                 if (d == null || d.isBefore(from) || d.isAfter(to)) continue;
-                String vendor = rs.getString("vendor_name");
-                if (vendor == null || vendor.trim().isEmpty()) continue;
-                vendor = vendor.trim();
+                String vendorRaw = rs.getString("vendor_name");
+                if (vendorRaw == null || vendorRaw.trim().isEmpty()) continue;
+                // same vendor regardless of capitals / extra spaces
+                String vendor = vendorNames.computeIfAbsent(vendorKey(vendorRaw), k -> cleanVendor(vendorRaw));
 
                 int itemId = rs.getInt("item_id");
                 double qty = rs.getDouble("qty");
                 double rate = rs.getDouble("rate");
-                double net = rs.getDouble("net_amount");
-                boolean netNull = rs.wasNull();
                 if (qty <= 0) continue;
-                double value = (!netNull && net > 0) ? net : rate * qty;
+                // Price after discount, before GST:  amount (qty x rate) - discount
+                double amount = rs.getDouble("amount");
+                if (rs.wasNull() || amount <= 0) amount = qty * rate;
+                double disc = rs.getDouble("discount_value");
+                if (rs.wasNull()) disc = amount * rs.getDouble("discount_percent") / 100.0;
+                double value = amount - disc;
+                if (value <= 0) continue;
                 double unit = value / qty;
 
-                itemInfo.putIfAbsent(itemId, new String[] { rs.getString("item_name"), rs.getString("uom") });
+                itemInfo.putIfAbsent(itemId, new String[] { rs.getString("item_name"), rs.getString("uom"), rs.getString("category") });
                 double[] a = acc.computeIfAbsent(itemId, k -> new LinkedHashMap<>())
                                 .computeIfAbsent(vendor, k -> new double[] { 0, 0, 0, Long.MIN_VALUE, 0 });
                 a[0] += value;
@@ -555,9 +569,58 @@ public class Home extends HttpServlet {
             }
             vendors.sort((x, y) -> Double.compare((Double) x[1], (Double) y[1]));
             String[] info = itemInfo.get(e.getKey());
-            items.add(new Object[] { info[0], info[1], total, vendors });
+            int poCount = 0;   // each PO has one vendor, so the per-vendor PO sets don't overlap
+            for (java.util.Set<Integer> set : poSets.get(e.getKey()).values()) poCount += set.size();
+            items.add(new Object[] { info[0], info[1], total, vendors, poCount, info[2] });
         }
-        items.sort((x, y) -> Double.compare((Double) y[2], (Double) x[2]));
-        return items.size() > 10 ? new ArrayList<>(items.subList(0, 10)) : items;
+        // Most widely purchased first: bought on more purchase orders, then higher purchase value.
+        java.util.Comparator<Object[]> widelyUsed = (x, y) -> {
+            int c = Integer.compare((Integer) y[4], (Integer) x[4]);
+            if (c == 0) c = Double.compare((Double) y[2], (Double) x[2]);
+            return c;
+        };
+        // "All Categories" first, then each category (largest purchase value first); 20 items each, rotating daily.
+        Map<String, List<Object[]>> byCat = new java.util.HashMap<>();
+        Map<String, Double> catValue = new java.util.HashMap<>();
+        for (Object[] it : items) {
+            String cat = String.valueOf(it[5]);
+            byCat.computeIfAbsent(cat, k -> new ArrayList<>()).add(it);
+            catValue.merge(cat, (Double) it[2], Double::sum);
+        }
+        List<String> cats = new ArrayList<>(byCat.keySet());
+        cats.sort((x, y) -> Double.compare(catValue.get(y), catValue.get(x)));
+
+        Map<String, List<Object[]>> out = new LinkedHashMap<>();
+        out.put("All Categories", dailyPick(items, widelyUsed, to));
+        for (String c : cats) out.put(c, dailyPick(byCat.get(c), widelyUsed, to));
+        return out;
+    }
+
+    /** Up to 20 items for today: whole list if 20 or fewer, otherwise a window that moves on each day. */
+    private static List<Object[]> dailyPick(List<Object[]> items, java.util.Comparator<Object[]> order, LocalDate day) {
+        final int PER_DAY = 20;
+        List<Object[]> sorted = new ArrayList<>(items);
+        sorted.sort(order);
+        if (sorted.size() <= PER_DAY) return sorted;
+        int n = sorted.size();
+        int start = (int) ((day.toEpochDay() * PER_DAY) % n);
+        List<Object[]> pick = new ArrayList<>();
+        for (int i = 0; i < PER_DAY; i++) pick.add(sorted.get((start + i) % n));
+        pick.sort(order);
+        return pick;
+    }
+
+    /** Key for matching vendor names: trimmed, single-spaced, upper case. */
+    private static String vendorKey(String v) {
+        return v.trim().replaceAll("\\s+", " ").toUpperCase(java.util.Locale.ROOT);
+    }
+
+    /** Display form of a vendor name: trimmed and single-spaced (keeps the first spelling seen). */
+    private static String cleanVendor(String v) {
+        return v.trim().replaceAll("\\s+", " ");
+    }
+
+    private static String cleanVendor(ResultSet rs, String col) {
+        try { return cleanVendor(rs.getString(col)); } catch (Exception e) { return "Unknown vendor"; }
     }
 }
