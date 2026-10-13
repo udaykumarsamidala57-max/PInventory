@@ -53,6 +53,24 @@ public class Home extends HttpServlet {
         }
         String branch = (String) sess.getAttribute("branch");
 
+        // ===================== ACCESS CONTROL =====================
+        // Dashboard: Finance department, or Global / Admin role only.
+        // RHM -> Book a Service Request; everyone else -> Indent.
+        String role = (String) sess.getAttribute("role");
+        String department = (String) sess.getAttribute("department");
+        role = role == null ? "" : role.trim();
+        department = department == null ? "" : department.trim();
+
+        boolean canSeeDashboard = "Finance".equalsIgnoreCase(department)
+                || "Global".equalsIgnoreCase(role)
+                || "Admin".equalsIgnoreCase(role);
+
+        if (!canSeeDashboard) {
+            String target = "RHM".equalsIgnoreCase(role) ? "/RequestBookingServlet" : "/IndentServlet";
+            response.sendRedirect(request.getContextPath() + target);
+            return;
+        }
+
         // ===================== FILTERS & DATA COLLECTION =====================
         List<String> departments = new ArrayList<>();
         TreeSet<String> yearSet = new TreeSet<>(Collections.reverseOrder());
@@ -75,11 +93,13 @@ public class Home extends HttpServlet {
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
             LocalDate startDate7 = today.minusDays(6);
             LocalDate startDate30 = today.minusDays(29);
-            LocalDate startDate6M = today.minusMonths(6);
             // "This Year" = current financial year: 1 April → today
             int fyStartYr = (today.getMonthValue() < 4) ? today.getYear() - 1 : today.getYear();
             LocalDate startThisYear = LocalDate.of(fyStartYr, 4, 1);
             request.setAttribute("thisYearFrom", "1 Apr " + fyStartYr);
+            // Last 6 months, but never earlier than 1 April of the current FY
+            LocalDate startDate6M = today.minusMonths(6);
+            if (startDate6M.isBefore(startThisYear)) startDate6M = startThisYear;
 
             // Today's cost by department (independent of filters)[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
