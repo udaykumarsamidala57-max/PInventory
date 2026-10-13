@@ -14,6 +14,31 @@
         return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("'", "\\'")
                 .replace("\n", " ").replace("\r", " ").replace("<", "\\u003c");
     }
+    // Indian digit grouping (12,34,56,789) - java.text.DecimalFormat cannot do this
+    private static String fmtIN(double v, int decimals) {
+        java.math.BigDecimal bd = new java.math.BigDecimal(v).setScale(decimals, java.math.RoundingMode.HALF_UP);
+        boolean neg = bd.signum() < 0;
+        String s = bd.abs().toPlainString();
+        String frac = "";
+        int dot = s.indexOf('.');
+        if (dot >= 0) { frac = s.substring(dot); s = s.substring(0, dot); }
+        if (s.length() > 3) {
+            String last3 = s.substring(s.length() - 3);
+            String rest = s.substring(0, s.length() - 3);
+            StringBuilder sb = new StringBuilder();
+            int first = rest.length() % 2;
+            if (first > 0) sb.append(rest, 0, first);
+            for (int i = first; i < rest.length(); i += 2) {
+                if (sb.length() > 0) sb.append(',');
+                sb.append(rest, i, i + 2);
+            }
+            s = sb.append(',').append(last3).toString();
+        }
+        return (neg ? "-" : "") + s + frac;
+    }
+    private static String rupee(double v)  { return "\u20B9" + fmtIN(v, 0); }
+    private static String indInt(double v) { return fmtIN(v, 0); }
+    private static String indDec(double v) { return fmtIN(v, 2); }
 %>
 <%
     HttpSession sess = request.getSession(false);
@@ -101,11 +126,6 @@
         if (s > topDeptVal) { topDeptVal = s; topDept = e.getKey(); }
     }
 
-    DecimalFormatSymbols indianSymbols = DecimalFormatSymbols.getInstance(new Locale("en", "IN"));
-    NumberFormat inr = new DecimalFormat("₹#,##,##0", indianSymbols);
-    NumberFormat indianInteger = new DecimalFormat("#,##,##0", indianSymbols);
-    NumberFormat indianDecimal = new DecimalFormat("#,##,##0.00", indianSymbols);
-
     // JSON-ish arrays for Chart.js[cite: 1]
     StringBuilder dLabels = new StringBuilder();
     StringBuilder dValues = new StringBuilder();
@@ -133,258 +153,211 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <style>
-    /* ---------- Salesforce Lightning-style tokens ----------[cite: 1] */
     :root {
-        --brand: #0176d3;
-        --brand-dark: #014486;
-        --brand-light: #eef4ff;
-        --navy: #032d60;
-        --bg: #f3f3f3;
-        --card: #ffffff;
-        --border: #e5e5e5;
-        --border-strong: #c9c9c9;
-        --text: #181818;
-        --text-weak: #444444;
-        --text-weaker: #5c5c5c;
-        --success: #2e844a;
-        --warning: #fe9339;
-        --focus: #1b96ff;
-        --radius: 0.25rem;
-        --radius-lg: 0.5rem;
-        --shadow: 0 2px 2px 0 rgba(0,0,0,0.10);
+        --accent: #2f6fb3;
+        --accent-hover: #255a94;
+        --accent-soft: #edf4fb;
+        --bg: #f4f6f9;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --head: #f1f5f9;
+        --border: #dde3ea;
+        --border-strong: #c3ccd6;
+        --text-heading: #1f2a37;
+        --text-body: #374151;
+        --text-muted: #667085;
+        --radius: 4px;
+        --focus: 0 0 0 3px rgba(47,111,179,0.18);
     }
-    * { box-sizing: border-box; }
+    *, *::before, *::after { box-sizing: border-box; }
     body {
-        font-family: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         background: var(--bg);
-        color: var(--text);
+        color: var(--text-body);
         margin: 0;
         font-size: 13px;
-        line-height: 1.5;
+        line-height: 1.45;
         -webkit-font-smoothing: antialiased;
+        font-variant-numeric: tabular-nums;
     }
-    .container { width: 96%; max-width: 1600px; margin: 0 auto; padding: 16px 0 24px; }
+    .container { width: 100%; max-width: 1600px; margin: 0 auto; padding: 14px 18px 28px; }
 
-    /* ---------- Page header (record-home style) ----------[cite: 1] */
+    /* ---------- Header ---------- */
     .page-header {
-        background: var(--card);
+        background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        padding: 14px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 16px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
+        border-radius: var(--radius);
+        padding: 10px 16px;
+        display: flex; justify-content: space-between; align-items: center;
+        gap: 12px; margin-bottom: 12px; flex-wrap: wrap;
     }
     .ph-left { display: flex; align-items: center; gap: 12px; }
     .ph-icon {
-        width: 40px; height: 40px; border-radius: var(--radius);
-        background: #3a9bdc; color: #fff;
+        width: 34px; height: 34px; border-radius: var(--radius);
+        background: var(--accent-soft); color: var(--accent);
         display: flex; align-items: center; justify-content: center;
-        font-size: 18px; flex-shrink: 0;
+        font-size: 15px; flex-shrink: 0;
     }
-    .ph-sub { font-size: 12px; color: var(--text-weaker); margin: 0; }
-    .ph-title { font-size: 20px; font-weight: 700; margin: 0; color: var(--text); line-height: 1.25; }
+    .ph-sub { font-size: 11px; font-weight: 600; color: var(--text-muted); margin: 0; letter-spacing: 0.02em; }
+    .ph-title { font-size: 17px; font-weight: 600; margin: 0; color: var(--text-heading); line-height: 1.25; }
     .ph-date {
-        font-size: 12px; color: var(--text-weak);
-        border: 1px solid var(--border-strong); border-radius: 15rem;
-        padding: 4px 12px; background: #fff; white-space: nowrap;
+        font-size: 12px; font-weight: 500; color: var(--text-body);
+        border: 1px solid var(--border); border-radius: var(--radius);
+        padding: 5px 10px; background: var(--surface-2); white-space: nowrap;
     }
-    .ph-date i { margin-right: 6px; color: var(--text-weaker); }
+    .ph-date i { color: var(--accent); margin-right: 6px; }
 
-    /* ---------- Tabs & Panels ---------- */
-    .tab-header {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        border-bottom: 1px solid var(--border);
-        padding: 0 16px;
-        overflow-x: auto;
-    }
-    .tab-btn {
-        background: none;
-        border: none;
-        padding: 12px 14px;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-weak);
-        cursor: pointer;
-        position: relative;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        white-space: nowrap;
-    }
-    .tab-btn:hover { color: var(--brand); }
-    .tab-btn.active { color: var(--brand); }
-    .tab-btn.active::after {
-        content: '';
-        position: absolute;
-        bottom: -1px;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--brand);
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* ---------- Cost Grids & Tiles ----------[cite: 1] */
-    .today-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-        gap: 10px;
-    }
-    .today-tile {
-        border: 1px solid var(--border);
-        border-left: 3px solid var(--brand);
-        border-radius: var(--radius);
-        padding: 10px 14px;
-        background: #fff;
-    }
-    .today-tile .t-dept { font-size: 12px; color: var(--text-weaker); margin: 0 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .today-tile .t-val { font-size: 18px; font-weight: 400; color: var(--navy); margin: 0; }
-    .today-total { font-size: 13px; color: var(--text-weak); }
-    .today-total b { font-size: 16px; color: var(--navy); margin-left: 4px; }
-
-    /* ---------- Filter bar ----------[cite: 1] */
-    .filter-panel {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        padding: 12px 20px;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: flex-end;
-        gap: 16px;
-        flex-wrap: wrap;
-    }
-    .field { display: flex; flex-direction: column; gap: 4px; }
-    .field label { font-size: 12px; color: var(--text-weak); }
-    .filter-panel select {
-        height: 32px;
-        min-width: 220px;
-        padding: 0 12px;
-        border: 1px solid var(--border-strong);
-        border-radius: var(--radius);
-        background: #fff;
-        color: var(--text);
-        font-size: 13px;
-        font-family: inherit;
-    }
-    .filter-panel select:focus {
-        outline: none; border-color: var(--focus);
-        box-shadow: 0 0 3px #0176d3;
-    }
-    .btn-brand {
-        height: 32px; padding: 0 16px;
-        background: var(--brand); color: #fff;
-        border: 1px solid var(--brand); border-radius: var(--radius);
-        font-size: 13px; font-weight: 400; font-family: inherit; cursor: pointer;
-    }
-    .btn-brand:hover { background: var(--brand-dark); border-color: var(--brand-dark); }
-    .btn-brand:focus-visible { outline: none; box-shadow: 0 0 3px #0176d3; }
-    .btn-brand i { margin-right: 6px; }
-
-    /* ---------- KPI tiles ----------[cite: 1] */
-    .kpi-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 12px;
-    }
-    .kpi {
-        background: var(--card);
-        border: 1px solid var(--border);
-        border-top: 3px solid var(--brand);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
-        padding: 14px 18px;
-    }
-    .kpi:nth-child(2) { border-top-color: var(--success); }
-    .kpi:nth-child(3) { border-top-color: var(--warning); }
-    .kpi:nth-child(4) { border-top-color: #8e5af7; }
-    .kpi .k-label { font-size: 12px; color: var(--text-weaker); margin: 0 0 4px; }
-    .kpi .k-value { font-size: 24px; font-weight: 300; color: var(--text); margin: 0; line-height: 1.2; word-break: break-word; }
-    .kpi .k-note { font-size: 12px; color: var(--text-weaker); margin: 2px 0 0; }
-
-    /* ---------- Cards ----------[cite: 1] */
+    /* ---------- Cards ---------- */
     .card {
-        background: var(--card);
+        background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow);
+        border-radius: var(--radius);
         margin-bottom: 12px;
         overflow: hidden;
     }
     .card-header {
-        padding: 12px 16px;
+        padding: 8px 14px;
         display: flex; align-items: center; justify-content: space-between;
+        gap: 10px; flex-wrap: wrap;
+        background: var(--surface-2);
         border-bottom: 1px solid var(--border);
+        min-height: 46px;
     }
     .card-title {
-        margin: 0; font-size: 15px; font-weight: 700; color: var(--text);
-        display: flex; align-items: center; gap: 10px;
+        margin: 0; font-size: 13.5px; font-weight: 600; color: var(--text-heading);
+        display: flex; align-items: center; gap: 8px;
     }
     .card-title .ti {
-        width: 28px; height: 28px; border-radius: var(--radius);
+        width: 22px; height: 22px; border-radius: var(--radius);
         display: inline-flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 13px;
+        background: var(--accent-soft); color: var(--accent); font-size: 11px;
     }
-    .card-meta { font-size: 12px; color: var(--text-weaker); }
-    .card-body { padding: 16px; }
+    .card-meta { font-size: 12px; color: var(--text-muted); }
+    .card-body { padding: 14px; }
+
+    /* ---------- Tabs ---------- */
+    .tab-header {
+        display: inline-flex; align-items: center; gap: 2px;
+        background: var(--head);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 2px; overflow-x: auto; max-width: 100%;
+    }
+    .tab-btn {
+        background: none; border: 1px solid transparent;
+        padding: 5px 12px; font-size: 12.5px; font-weight: 500; font-family: inherit;
+        color: var(--text-muted); cursor: pointer;
+        display: flex; align-items: center; gap: 6px; white-space: nowrap;
+        border-radius: 3px;
+    }
+    .tab-btn i { font-size: 11px; }
+    .tab-btn:hover { color: var(--text-heading); }
+    .tab-btn.active { background: var(--surface); color: var(--accent); font-weight: 600; border-color: var(--border); }
+    .tab-btn:focus-visible { outline: none; box-shadow: var(--focus); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ---------- Period tiles ---------- */
+    .today-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .today-tile {
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 9px 12px;
+        background: var(--surface);
+    }
+    .today-tile .t-dept {
+        font-size: 12px; color: var(--text-muted); margin: 0 0 2px;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .today-tile .t-val { font-size: 17px; font-weight: 600; color: var(--text-heading); margin: 0; }
+    .today-total { font-size: 12.5px; color: var(--text-muted); display: flex; align-items: baseline; }
+    .today-total b { font-size: 16px; font-weight: 600; color: var(--text-heading); margin-left: 8px; }
+
+    /* ---------- Filters ---------- */
+    .filter-panel {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 14px; margin-bottom: 12px;
+        display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap;
+    }
+    .field { display: flex; flex-direction: column; gap: 4px; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--text-muted); }
+    .filter-panel select {
+        height: 32px; min-width: 210px; padding: 0 10px;
+        border: 1px solid var(--border-strong); border-radius: var(--radius);
+        background: var(--surface); color: var(--text-heading);
+        font-size: 13px; font-family: inherit; cursor: pointer;
+    }
+    .filter-panel select:hover { border-color: var(--accent); }
+    .filter-panel select:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
+    .btn-brand {
+        height: 32px; padding: 0 16px;
+        background: var(--accent); color: #fff;
+        border: 1px solid var(--accent); border-radius: var(--radius);
+        font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn-brand:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+    .btn-brand:focus-visible { outline: none; box-shadow: var(--focus); }
+    .btn-brand i { margin-right: 6px; }
+
+    /* ---------- KPIs ---------- */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 12px; }
+    .kpi {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 12px 16px;
+    }
+    .kpi .k-label { font-size: 12px; font-weight: 500; color: var(--text-muted); margin: 0 0 4px; }
+    .kpi .k-value { font-size: 23px; font-weight: 600; color: var(--text-heading); margin: 0; line-height: 1.15; word-break: break-word; }
+    .kpi .k-note { font-size: 12px; color: var(--text-muted); margin: 4px 0 0; }
 
     .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .scroll-chart { height: 360px; overflow-y: auto; }
+    .scroll-chart { height: 340px; overflow-y: auto; }
 
-    /* ---------- Data table ----------[cite: 1] */
+    /* ---------- Table ---------- */
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     thead th {
-        background: #f3f3f3;
-        color: var(--text-weak);
-        font-weight: 700;
-        font-size: 12px;
+        background: var(--head);
+        color: var(--text-muted);
+        font-weight: 600; font-size: 12px;
         text-align: right;
-        padding: 8px 12px;
-        border-top: 1px solid var(--border);
-        border-bottom: 1px solid var(--border);
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border-strong);
         white-space: nowrap;
     }
     tbody td {
-        padding: 8px 12px;
-        text-align: right;
+        padding: 7px 10px; text-align: right;
         border-bottom: 1px solid var(--border);
-        color: var(--text-weak);
-        white-space: nowrap;
+        color: var(--text-body); white-space: nowrap;
     }
-    tbody tr:hover td { background: #f3f9ff; }
-    th.left, td.left { text-align: left; padding-left: 16px; }
-    td.dept { color: var(--brand); font-weight: 600; }
-    td.sub, th.sub { border-left: 1px solid var(--border); font-weight: 700; color: var(--text); background: #fafafa; }
-    td.zero { color: #b0adab; }
+    tbody tr:nth-child(even) td { background: var(--surface-2); }
+    tbody tr:hover td { background: var(--accent-soft); }
+    th.left, td.left { text-align: left; padding-left: 14px; }
+    td.dept { color: var(--text-heading); font-weight: 600; }
+    td.sub, th.sub { border-left: 1px solid var(--border); font-weight: 600; color: var(--text-heading); }
+    td.zero { color: #b5bdc8; }
     tfoot td {
-        padding: 9px 12px; text-align: right; font-weight: 700;
-        background: var(--brand-light); color: var(--navy);
-        border-top: 2px solid var(--border-strong);
+        padding: 9px 10px; text-align: right; font-weight: 600;
+        background: var(--head); color: var(--text-heading);
+        border-top: 1px solid var(--border-strong);
         white-space: nowrap;
     }
-    tfoot td.left { text-align: left; padding-left: 16px; }
+    tfoot td.left { text-align: left; padding-left: 14px; }
 
-    .empty {
-        padding: 36px 16px; text-align: center; color: var(--text-weaker);
-    }
-    .empty i { font-size: 28px; color: var(--border-strong); display: block; margin-bottom: 8px; }
+    .empty { padding: 30px 16px; text-align: center; color: var(--text-muted); }
+    .empty i { font-size: 24px; color: var(--border-strong); display: block; margin-bottom: 8px; }
 
     @media (max-width: 1100px) {
         .chart-grid { grid-template-columns: 1fr; }
-        .kpi-grid { grid-template-columns: 1fr 1fr; }
+        .kpi-grid { grid-template-columns: repeat(2, 1fr); }
     }
     @media (max-width: 600px) {
+        .container { padding: 8px; }
         .kpi-grid { grid-template-columns: 1fr; }
         .filter-panel select { min-width: 100%; }
         .field { width: 100%; }
@@ -412,8 +385,8 @@
 
     <!-- Multi-Period Cost Card with Tabs -->
     <div class="card">
-        <div class="card-header" style="padding: 0 16px 0 0; flex-wrap: wrap;">
-            <div class="tab-header" style="border-bottom: none; padding: 0;">
+        <div class="card-header">
+            <div class="tab-header">
                 <button type="button" class="tab-btn active" onclick="switchTab(event, 'todayTab')">
                     <i class="fas fa-calendar-day"></i> Today
                 </button>
@@ -430,12 +403,12 @@
                     <i class="fas fa-calendar"></i> This Year
                 </button>
             </div>
-            <div style="padding: 8px 0;">
-                <span class="today-total period-total" id="todayTotalLabel">Total today<b><%= inr.format(todayTotal) %></b></span>
-                <span class="today-total period-total" id="last7DaysTotalLabel" style="display: none;">Total last 7 days<b><%= inr.format(last7DaysTotal) %></b></span>
-                <span class="today-total period-total" id="last30DaysTotalLabel" style="display: none;">Total last 30 days<b><%= inr.format(last30DaysTotal) %></b></span>
-                <span class="today-total period-total" id="last6MonthsTotalLabel" style="display: none;">Total last 6 months<b><%= inr.format(last6MonthsTotal) %></b></span>
-                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total this year<b><%= inr.format(thisYearTotal) %></b></span>
+            <div>
+                <span class="today-total period-total" id="todayTotalLabel">Total today<b><%= rupee(todayTotal) %></b></span>
+                <span class="today-total period-total" id="last7DaysTotalLabel" style="display: none;">Total last 7 days<b><%= rupee(last7DaysTotal) %></b></span>
+                <span class="today-total period-total" id="last30DaysTotalLabel" style="display: none;">Total last 30 days<b><%= rupee(last30DaysTotal) %></b></span>
+                <span class="today-total period-total" id="last6MonthsTotalLabel" style="display: none;">Total last 6 months<b><%= rupee(last6MonthsTotal) %></b></span>
+                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total this year<b><%= rupee(thisYearTotal) %></b></span>
             </div>
         </div>
         <div class="card-body">
@@ -448,7 +421,7 @@
                     <% for (Map.Entry<String, Double> e : todayDeptMap.entrySet()) { %>
                         <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()) %></p>
                         </div>
                     <% } %>
                     </div>
@@ -462,9 +435,9 @@
                 <% } else { %>
                     <div class="today-grid">
                     <% for (Map.Entry<String, Double> e : last7DaysDeptMap.entrySet()) { %>
-                        <div class="today-tile" style="border-left-color: var(--success);">
+                        <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()) %></p>
                         </div>
                     <% } %>
                     </div>
@@ -478,9 +451,9 @@
                 <% } else { %>
                     <div class="today-grid">
                     <% for (Map.Entry<String, Double> e : last30DaysDeptMap.entrySet()) { %>
-                        <div class="today-tile" style="border-left-color: var(--warning);">
+                        <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()) %></p>
                         </div>
                     <% } %>
                     </div>
@@ -494,9 +467,9 @@
                 <% } else { %>
                     <div class="today-grid">
                     <% for (Map.Entry<String, Double> e : last6MonthsDeptMap.entrySet()) { %>
-                        <div class="today-tile" style="border-left-color: #8e5af7;">
+                        <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()) %></p>
                         </div>
                     <% } %>
                     </div>
@@ -510,9 +483,9 @@
                 <% } else { %>
                     <div class="today-grid">
                     <% for (Map.Entry<String, Double> e : thisYearDeptMap.entrySet()) { %>
-                        <div class="today-tile" style="border-left-color: var(--navy);">
+                        <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= inr.format(e.getValue()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()) %></p>
                         </div>
                     <% } %>
                     </div>
@@ -552,18 +525,18 @@
         </div>
         <div class="kpi">
             <p class="k-label">Total expenditure</p>
-            <p class="k-value"><%= inr.format(grandTotal) %></p>
+            <p class="k-value"><%= rupee(grandTotal) %></p>
             <p class="k-note">Apr – Mar</p>
         </div>
         <div class="kpi">
             <p class="k-label">Highest month</p>
             <p class="k-value"><%= peakIdx >= 0 ? monthNames[peakIdx] : "—" %></p>
-            <p class="k-note"><%= peakIdx >= 0 ? inr.format(peakVal) : "No data" %></p>
+            <p class="k-note"><%= peakIdx >= 0 ? rupee(peakVal) : "No data" %></p>
         </div>
         <div class="kpi">
             <p class="k-label">Top department</p>
-            <p class="k-value" style="font-size:20px;"><%= h(topDept) %></p>
-            <p class="k-note"><%= topDeptVal > 0 ? inr.format(topDeptVal) : "No data" %></p>
+            <p class="k-value" style="font-size:19px;"><%= h(topDept) %></p>
+            <p class="k-note"><%= topDeptVal > 0 ? rupee(topDeptVal) : "No data" %></p>
         </div>
     </div>
 
@@ -572,7 +545,7 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <span class="ti" style="background:#0176d3;"><i class="fas fa-chart-bar"></i></span>
+                    <span class="ti"><i class="fas fa-chart-bar"></i></span>
                     Departmental consumption (₹)
                 </h3>
             </div>
@@ -585,13 +558,13 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">
-                    <span class="ti" style="background:#fe9339;"><i class="fas fa-chart-line"></i></span>
+                    <span class="ti"><i class="fas fa-chart-line"></i></span>
                     Monthly trend
                 </h3>
                 <span class="card-meta">FY <%= h(selectedYear) %></span>
             </div>
             <div class="card-body">
-                <div style="height:360px;"><canvas id="monthChart"></canvas></div>
+                <div style="height:340px;"><canvas id="monthChart"></canvas></div>
             </div>
         </div>
     </div>
@@ -600,7 +573,7 @@
     <div class="card">
         <div class="card-header">
             <h3 class="card-title">
-                <span class="ti" style="background:#2e844a;"><i class="fas fa-table"></i></span>
+                <span class="ti"><i class="fas fa-table"></i></span>
                 Month-wise expenditure
             </h3>
             <span class="card-meta"><%= dataMap.size() %> department<%= dataMap.size() == 1 ? "" : "s" %> · FY <%= h(selectedYear) %></span>
@@ -626,17 +599,17 @@
                     <tr>
                         <td class="left dept"><%= h(entry.getKey()) %></td>
                         <% for (double val : entry.getValue()) { total += val; %>
-                            <td class="<%= val > 0 ? "" : "zero" %>"><%= val > 0 ? indianInteger.format(val) : "—" %></td>
+                            <td class="<%= val > 0 ? "" : "zero" %>"><%= val > 0 ? indInt(val) : "—" %></td>
                         <% } %>
-                        <td class="sub"><%= indianDecimal.format(total) %></td>
+                        <td class="sub"><%= indDec(total) %></td>
                     </tr>
                 <% } %>
                 </tbody>
                 <tfoot>
                     <tr>
                         <td class="left">Total</td>
-                        <% for (double v : monthTotals) { %><td><%= v > 0 ? indianInteger.format(v) : "—" %></td><% } %>
-                        <td><%= indianDecimal.format(grandTotal) %></td>
+                        <% for (double v : monthTotals) { %><td><%= v > 0 ? indInt(v) : "—" %></td><% } %>
+                        <td><%= indDec(grandTotal) %></td>
                     </tr>
                 </tfoot>
             </table>
@@ -678,26 +651,30 @@ function switchTab(evt, tabId) {
     var mValues = [<%= mValues %>];
 
     var font = { family: '"Salesforce Sans", -apple-system, "Segoe UI", Roboto, Arial, sans-serif', size: 11 };
-    var inr = function (v) { return '₹' + Number(v).toLocaleString('en-IN'); };
+    var inr = function (v) {
+        var n = Math.round(Number(v)), neg = n < 0, s = String(Math.abs(n));
+        if (s.length > 3) s = s.slice(0, -3).replace(/\B(?=(\d{2})+(?!\d))/g, ',') + ',' + s.slice(-3);
+        return (neg ? '-' : '') + '\u20B9' + s;
+    };
     Chart.defaults.font.family = font.family;
-    Chart.defaults.color = '#444444';
+    Chart.defaults.color = '#667085';
 
     var tooltip = {
-        backgroundColor: '#032d60',
-        padding: 10,
-        cornerRadius: 4,
+        backgroundColor: '#1f2a37',
+        padding: 8,
+        cornerRadius: 3,
         displayColors: false,
         callbacks: { label: function (c) { return inr((c.parsed.x !== undefined && c.chart.options.indexAxis === 'y') ? c.parsed.x : c.parsed.y); } }
     };
 
     var wrap = document.getElementById('deptChartWrapper');
-    wrap.style.height = Math.max(340, dLabels.length * 34) + 'px';
+    wrap.style.height = Math.max(320, dLabels.length * 30) + 'px';
 
     new Chart(document.getElementById('deptChart'), {
         type: 'bar',
         data: {
             labels: dLabels,
-            datasets: [{ data: dValues, backgroundColor: '#0176d3', hoverBackgroundColor: '#014486', borderRadius: 2, barThickness: 16 }]
+            datasets: [{ data: dValues, backgroundColor: '#5b94cf', hoverBackgroundColor: '#2f6fb3', borderRadius: 2, barThickness: 14 }]
         },
         options: {
             indexAxis: 'y',
@@ -705,8 +682,8 @@ function switchTab(evt, tabId) {
             responsive: true,
             plugins: { legend: { display: false }, tooltip: tooltip },
             scales: {
-                x: { grid: { color: '#e5e5e5' }, ticks: { font: font, callback: function (v) { return inr(v); } } },
-                y: { grid: { display: false }, ticks: { autoSkip: false, font: { family: font.family, size: 11, weight: '600' } } }
+                x: { grid: { color: '#e9edf2' }, border: { display: false }, ticks: { font: font, callback: function (v) { return inr(v); } } },
+                y: { grid: { display: false }, border: { display: false }, ticks: { autoSkip: false, color: '#374151', font: { family: font.family, size: 11, weight: '500' } } }
             }
         }
     });
@@ -717,16 +694,16 @@ function switchTab(evt, tabId) {
             labels: mLabels,
             datasets: [{
                 data: mValues,
-                borderColor: '#0176d3',
-                backgroundColor: 'rgba(1,118,211,0.08)',
+                borderColor: '#2f6fb3',
+                backgroundColor: 'rgba(47,111,179,0.07)',
                 fill: true,
                 tension: 0.25,
                 borderWidth: 2,
-                pointRadius: 4,
+                pointRadius: 3,
                 pointHoverRadius: 6,
                 pointBackgroundColor: '#ffffff',
-                pointBorderColor: '#0176d3',
-                pointBorderWidth: 2
+                pointBorderColor: '#2f6fb3',
+                pointBorderWidth: 1.5
             }]
         },
         options: {
@@ -734,8 +711,8 @@ function switchTab(evt, tabId) {
             responsive: true,
             plugins: { legend: { display: false }, tooltip: tooltip },
             scales: {
-                y: { beginAtZero: true, grid: { color: '#e5e5e5' }, ticks: { font: font, callback: function (v) { return inr(v); } } },
-                x: { grid: { display: false }, ticks: { font: font } }
+                y: { beginAtZero: true, grid: { color: '#e9edf2' }, border: { display: false }, ticks: { font: font, callback: function (v) { return inr(v); } } },
+                x: { grid: { display: false }, border: { color: '#c3ccd6' }, ticks: { font: font } }
             }
         }
     });

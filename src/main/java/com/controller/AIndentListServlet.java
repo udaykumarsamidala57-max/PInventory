@@ -194,7 +194,11 @@ public class AIndentListServlet extends HttpServlet {
             // ---------- 🟢 FIRST-LEVEL APPROVAL ----------
             else if ("Iapprove".equalsIgnoreCase(action)) {
                 String id = idStr;
-                String sql = "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
+                String reqStatus = request.getParameter("status");
+                boolean reject = "Rejected".equalsIgnoreCase(reqStatus) || "Cancelled".equalsIgnoreCase(reqStatus);
+                String sql = reject
+                        ? "UPDATE indent SET istatus='Cancelled', status='Cancelled', IstausApprove=?, Iapprovedate=? WHERE indent_id=?"
+                        : "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     ps.setString(1, user);
                     ps.setDate(2, today);
@@ -208,6 +212,18 @@ public class AIndentListServlet extends HttpServlet {
                 int id = Integer.parseInt(idStr);
                 String indentNext = request.getParameter("indentnext");
                 if (indentNext == null || indentNext.trim().isEmpty()) indentNext = "Issue";
+
+                // ---------- ❌ Final Reject → Cancelled ----------
+                if ("Rejected".equalsIgnoreCase(indentNext) || "Cancelled".equalsIgnoreCase(indentNext)) {
+                    String cancelSql = "UPDATE indent SET status='Cancelled', Fapprovedate=? WHERE indent_id=?";
+                    try (PreparedStatement ps = con.prepareStatement(cancelSql)) {
+                        ps.setDate(1, today);
+                        ps.setInt(2, id);
+                        ps.executeUpdate();
+                    }
+                    response.sendRedirect("AIndentListServlet");
+                    return;
+                }
 
                 int itemId = 0;
                 double indentQty = 0, balanceQty = 0;
