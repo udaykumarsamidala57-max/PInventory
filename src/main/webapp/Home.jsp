@@ -607,20 +607,43 @@
     }
     .po-card-title i { color: var(--accent); }
     /* Consumption + top-8 vendor tiles: share one row across the full width on any screen;
-       only if there are too many to stay readable do they wrap - never a scroll bar. */
+       only if there are too many to stay readable do they wrap - never a scroll bar.
+       Typography tuned for comfortable reading: steady sizes, soft contrast, no hyphen splits. */
     .fit-row {
-        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
-        gap: 8px;
+        grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+        gap: 10px;
         overflow: hidden;
     }
-    .fit-row .today-tile { min-width: 0; padding: 8px 10px; }
-    .fit-row .today-tile .t-val { font-size: clamp(13px, 1.15vw, 17px); white-space: nowrap; }
-    .fit-row .today-tile .t-sub { white-space: nowrap; }
-    .fit-row .today-tile .t-dept {
-        white-space: normal; overflow: visible; text-overflow: clip;
-        overflow-wrap: break-word; word-break: normal; hyphens: auto; -webkit-hyphens: auto;
-        font-size: clamp(11px, 0.85vw, 12px); line-height: 1.35;
+    .fit-row .today-tile {
+        min-width: 0;
+        padding: 10px 12px;
+        display: flex; flex-direction: column; gap: 4px;
+        -webkit-font-smoothing: antialiased;
     }
+    .fit-row .today-tile .t-dept {
+        margin: 0;
+        font-size: 12px; font-weight: 500; line-height: 1.4;
+        color: #5b6575;
+        letter-spacing: 0.1px;
+        white-space: normal; overflow: visible; text-overflow: clip;
+        overflow-wrap: break-word; word-break: normal; hyphens: manual;
+    }
+    .fit-row .today-tile .t-val {
+        margin: 0;
+        font-size: 15px; font-weight: 600; line-height: 1.25;
+        color: #1f2a37;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0;
+        white-space: nowrap;
+        margin-top: auto;
+    }
+    .fit-row .today-tile .t-sub {
+        margin: 0;
+        font-size: 11.5px; font-weight: 400; line-height: 1.3;
+        color: #8a94a3;
+        white-space: nowrap;
+    }
+    .po-card-title { font-size: 13px; font-weight: 600; color: #344054; }
     /* Top 3 items per department */
     .top-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
     .top-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; }
@@ -917,8 +940,8 @@
             </div>
             <div class="rank-toggle" role="group" aria-label="Rank items by">
                 
-                <button type="button" class="rank-btn active" data-mode="value" onclick="setTopRank('value')"> Value</button>
-                <button type="button" class="rank-btn" data-mode="qty" onclick="setTopRank('qty')"> Quantity</button>
+                <button type="button" class="rank-btn active" data-mode="value" onclick="setTopRank('value')"><i class="fas fa-rupee-sign"></i> Value</button>
+                <button type="button" class="rank-btn" data-mode="qty" onclick="setTopRank('qty')"><i class="fas fa-sort-amount-down"></i> Quantity</button>
             </div>
         </div>
         <div class="card-body">
