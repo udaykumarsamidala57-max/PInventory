@@ -119,7 +119,7 @@ try {
 <link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css?v=20261013e">
 </head>
 
 <body class="sidebar-collapsed">
@@ -317,42 +317,57 @@ try {
     <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
-            <span class="urgent-header" onclick="toggleUrgentPopup()">
-                <i class="fa-solid fa-triangle-exclamation"></i> <%= urgentCount %> Open Service Requests
-            </span>
+            <button type="button" class="urgent-header" onclick="toggleUrgentPopup(event)" aria-haspopup="true" aria-controls="urgentPopup">
+                <span class="urgent-dot"></span>
+                <span class="urgent-count"><%= urgentCount %></span>
+                <span class="urgent-label">Open Service Requests</span>
+                <i class="fa-solid fa-chevron-down urgent-caret"></i>
+            </button>
 
-            <div class="urgent-popup" id="urgentPopup">
-                <div class="popup-header-bar">
-                    <div class="popup-title-group">
-                        <i class="fa-solid fa-bell text-danger"></i>
-                        <span class="popup-title">Open Requests</span>
+            <div class="urgent-popup" id="urgentPopup" role="dialog" aria-label="Open service requests">
+                <div class="sr-pop-head">
+                    <div class="sr-icon-tile"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                    <div class="sr-pop-titles">
+                        <span class="sr-eyebrow">Service Requests</span>
+                        <span class="sr-pop-title">Open Requests</span>
                     </div>
-                    <div class="popup-action-group">
-                        <button class="popup-expand-btn" onclick="openUrgentModal()"><i class="fa-solid fa-expand"></i> Expand</button>
+                    <div class="sr-pop-stat">
+                        <span class="sr-pop-stat-num"><%= urgentCount %></span>
+                        <span class="sr-pop-stat-lbl"><%= urgentGroupedMap.size() %> dept<%= urgentGroupedMap.size() == 1 ? "" : "s" %></span>
                     </div>
+                    <button type="button" class="sr-expand-icon" onclick="openUrgentModal()" title="Expand to full view" aria-label="Expand to full view">
+                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    </button>
                 </div>
-                
+
                 <div class="popup-body">
-                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){
                          String deptName = entry.getKey();
                          List<String[]> deptRequests = entry.getValue();
                     %>
-                        <div class="dept-group-header">
-                            <span><i class="fa-solid fa-building text-primary"></i> <%= deptName %></span>
-                            <span class="dept-badge-count"><%= deptRequests.size() %></span>
-                        </div>
-
-                        <% for(String[] row : deptRequests){ %>
-                            <div class="urgent-item">
-                                <div class="urgent-item-header">
-                                    <span class="req-no">#<%= row[0] %></span>
-                                    <span class="req-location"><i class="fa-solid fa-location-dot"></i> <%= row[2] != null ? row[2] : "N/A" %></span>
-                                </div>
-                                <div class="req-desc"><%= row[3] %></div>
-                                <div class="req-user"><i class="fa-solid fa-user-circle"></i> <%= row[4] %></div>
+                        <div class="sr-group">
+                            <div class="dept-group-header">
+                                <span class="sr-group-name"><%= deptName %></span>
+                                <span class="dept-badge-count"><%= deptRequests.size() %></span>
                             </div>
-                        <% } %>
+                            <% for(String[] row : deptRequests){ %>
+                                <div class="urgent-item">
+                                    <div class="urgent-item-header">
+                                        <span class="req-no"><%= row[0] %></span>
+                                        <span class="req-location"><i class="fa-solid fa-location-dot"></i><%= row[2] != null ? row[2] : "N/A" %></span>
+                                    </div>
+                                    <div class="req-desc"><%= row[3] %></div>
+                                    <div class="req-user"><i class="fa-regular fa-user"></i><%= row[4] %></div>
+                                </div>
+                            <% } %>
+                        </div>
                     <% } %>
+                </div>
+
+                <div class="sr-pop-foot">
+                    <button type="button" class="popup-expand-btn" onclick="openUrgentModal()">
+                        <i class="fa-solid fa-up-right-and-down-left-from-center"></i> Expand &middot; View all <%= urgentCount %> requests
+                    </button>
                 </div>
             </div>
         </div>
@@ -369,47 +384,79 @@ try {
   </div>
 </header>
 
-<div class="urgent-modal-overlay" id="urgentModal">
-    <div class="urgent-modal-content">
+<div class="urgent-modal-overlay" id="urgentModal" onclick="if(event.target===this) closeUrgentModal()">
+    <div class="urgent-modal-content" role="dialog" aria-modal="true" aria-labelledby="srModalTitle">
         <div class="modal-header">
-            <h3><i class="fa-solid fa-list-check text-primary"></i> Open Service Requests Monitor (<%= urgentCount %> Total)</h3>
-            <button class="modal-close-btn" onclick="closeUrgentModal()"><i class="fa-solid fa-xmark"></i></button>
+            <div class="sr-head-left">
+                <div class="sr-icon-tile sr-icon-tile-lg"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <div>
+                    <span class="sr-eyebrow">Service Requests</span>
+                    <h3 id="srModalTitle">Open Requests Monitor</h3>
+                </div>
+            </div>
+            <div class="sr-head-stats">
+                <div class="sr-kpi">
+                    <span class="sr-kpi-lbl">Open</span>
+                    <span class="sr-kpi-val sr-kpi-alert"><%= urgentCount %></span>
+                </div>
+                <div class="sr-kpi">
+                    <span class="sr-kpi-lbl">Departments</span>
+                    <span class="sr-kpi-val"><%= urgentGroupedMap.size() %></span>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeUrgentModal()" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            </div>
         </div>
+
         <div class="modal-toolbar">
             <div class="modal-search-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="Search ticket, location, or requestor..." onkeyup="filterModalTable()">
+                <input type="text" id="modalSearchInput" class="modal-search-input" placeholder="Search ticket, location, description or requestor" oninput="filterModalTable()">
             </div>
+            <select id="modalDeptFilter" class="sr-select" onchange="filterModalTable()">
+                <option value="">All departments</option>
+                <% for(String dn : urgentGroupedMap.keySet()){ %>
+                    <option value="<%= dn %>"><%= dn %></option>
+                <% } %>
+            </select>
+            <span class="sr-result-count" id="srResultCount"><%= urgentCount %> of <%= urgentCount %> requests</span>
         </div>
+
         <div class="modal-body">
             <table class="modal-table" id="modalRequestsTable">
                 <thead>
                     <tr>
-                        <th>Ticket ID</th>
-                        <th>Department</th>
-                        <th>Location / Zone</th>
+                        <th style="width:130px;">Ticket</th>
+                        <th style="width:190px;">Department</th>
+                        <th style="width:200px;">Location</th>
                         <th>Description</th>
-                        <th>Requestor</th>
+                        <th style="width:190px;">Requested By</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){ 
+                    <% for(Map.Entry<String, List<String[]>> entry : urgentGroupedMap.entrySet()){
                          String deptName = entry.getKey();
                          List<String[]> deptRequests = entry.getValue();
                          for(String[] row : deptRequests){
+                             String reqBy = row[4] != null ? row[4] : "";
+                             String reqInit = reqBy.trim().isEmpty() ? "?" : reqBy.trim().substring(0,1).toUpperCase();
                     %>
-                        <tr>
-                            <td><strong class="text-primary"><%= row[0] %></strong></td>
+                        <tr data-dept="<%= deptName %>">
+                            <td><span class="sr-ticket"><%= row[0] %></span></td>
                             <td><span class="badge-dept"><%= deptName %></span></td>
-                            <td><i class="fa-solid fa-location-dot text-danger"></i> <%= row[2] != null ? row[2] : "N/A" %></td>
-                            <td style="max-width: 400px;"><%= row[3] %></td>
-                            <td><i class="fa-solid fa-user text-secondary"></i> <%= row[4] %></td>
+                            <td class="sr-muted"><i class="fa-solid fa-location-dot"></i> <%= row[2] != null ? row[2] : "N/A" %></td>
+                            <td class="sr-desc-cell"><%= row[3] %></td>
+                            <td><span class="sr-person"><span class="sr-avatar"><%= reqInit %></span><%= reqBy %></span></td>
                         </tr>
-                    <%   } 
-                       } 
+                    <%   }
+                       }
                     %>
                 </tbody>
             </table>
+            <div class="sr-empty" id="srEmpty">No requests match your search.</div>
+        </div>
+        <div class="sr-modal-foot">
+            <span class="sr-foot-note"><i class="fa-solid fa-circle-info"></i> Showing requests not yet Closed, Completed or Satisfied</span>
+            <button type="button" class="sr-btn-neutral" onclick="closeUrgentModal()">Close</button>
         </div>
     </div>
 </div>
@@ -501,41 +548,64 @@ if (sidebarOverlay) {
   });
 }
 
-function toggleUrgentPopup(){
+function toggleUrgentPopup(e){
+    if (e) e.stopPropagation();
     let popup = document.getElementById("urgentPopup");
-    popup.style.display = (popup.style.display === "block") ? "none" : "block";
+    let open = popup.style.display !== "block";
+    popup.style.display = open ? "block" : "none";
+    let btn = document.querySelector(".urgent-header");
+    if (btn) btn.classList.toggle("is-open", open);
 }
 
 function openUrgentModal(){
     document.getElementById("urgentPopup").style.display = "none";
+    let btn = document.querySelector(".urgent-header");
+    if (btn) btn.classList.remove("is-open");
     document.getElementById("urgentModal").classList.add("active");
+    document.body.style.overflow = "hidden";
+    let s = document.getElementById("modalSearchInput");
+    if (s) setTimeout(function(){ s.focus(); }, 50);
 }
 
 function closeUrgentModal(){
     document.getElementById("urgentModal").classList.remove("active");
+    document.body.style.overflow = "";
 }
 
 function filterModalTable() {
-    let input = document.getElementById("modalSearchInput");
-    let filter = input.value.toUpperCase();
-    let table = document.getElementById("modalRequestsTable");
-    let tr = table.getElementsByTagName("tr");
-
-    for (let i = 1; i < tr.length; i++) {
-        let tdText = tr[i].innerText;
-        if (tdText.toUpperCase().indexOf(filter) > -1) {
-            tr[i].style.display = "";
-        } else {
-            tr[i].style.display = "none";
-        }
-    }
+    let filter = document.getElementById("modalSearchInput").value.toUpperCase();
+    let deptSel = document.getElementById("modalDeptFilter");
+    let dept = deptSel ? deptSel.value : "";
+    let rows = document.querySelectorAll("#modalRequestsTable tbody tr");
+    let shown = 0;
+    rows.forEach(function(tr){
+        let ok = tr.innerText.toUpperCase().indexOf(filter) > -1
+              && (!dept || tr.getAttribute("data-dept") === dept);
+        tr.style.display = ok ? "" : "none";
+        if (ok) shown++;
+    });
+    let c = document.getElementById("srResultCount");
+    if (c) c.innerText = shown + " of " + rows.length + " requests";
+    let empty = document.getElementById("srEmpty");
+    if (empty) empty.style.display = shown === 0 ? "block" : "none";
 }
+
+document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") {
+        let m = document.getElementById("urgentModal");
+        if (m && m.classList.contains("active")) closeUrgentModal();
+        let p = document.getElementById("urgentPopup");
+        if (p) p.style.display = "none";
+    }
+});
 
 document.addEventListener("click", function(event){
     let wrapper = document.querySelector(".urgent-wrapper");
     if (wrapper && !wrapper.contains(event.target)){
         let popup = document.getElementById("urgentPopup");
         if(popup) popup.style.display = "none";
+        let btn = document.querySelector(".urgent-header");
+        if (btn) btn.classList.remove("is-open");
     }
 });
 </script>
