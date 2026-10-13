@@ -85,6 +85,8 @@
     Double tyt = (Double) request.getAttribute("thisYearTotal");
     if (thisYearDeptMap == null) thisYearDeptMap = new LinkedHashMap<String, Double>();
     double thisYearTotal = tyt != null ? tyt : 0;
+    String thisYearFrom = (String) request.getAttribute("thisYearFrom");
+    if (thisYearFrom == null) thisYearFrom = "1 Apr";
 
     @SuppressWarnings("unchecked")
     List<String> departments = (List<String>) request.getAttribute("departments");
@@ -408,7 +410,7 @@
                 <span class="today-total period-total" id="last7DaysTotalLabel" style="display: none;">Total last 7 days<b><%= rupee(last7DaysTotal) %></b></span>
                 <span class="today-total period-total" id="last30DaysTotalLabel" style="display: none;">Total last 30 days<b><%= rupee(last30DaysTotal) %></b></span>
                 <span class="today-total period-total" id="last6MonthsTotalLabel" style="display: none;">Total last 6 months<b><%= rupee(last6MonthsTotal) %></b></span>
-                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total this year<b><%= rupee(thisYearTotal) %></b></span>
+                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total since <%= thisYearFrom %><b><%= rupee(thisYearTotal) %></b></span>
             </div>
         </div>
         <div class="card-body">
@@ -479,7 +481,7 @@
             <!-- This Year Tab Content -->
             <div id="thisYearTab" class="tab-content">
                 <% if (thisYearDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued this year.</div>
+                    <div class="empty" style="padding:12px 0;">No stock issued since <%= thisYearFrom %>.</div>
                 <% } else { %>
                     <div class="today-grid">
                     <% for (Map.Entry<String, Double> e : thisYearDeptMap.entrySet()) { %>

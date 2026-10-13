@@ -76,7 +76,10 @@ public class Home extends HttpServlet {
             LocalDate startDate7 = today.minusDays(6);
             LocalDate startDate30 = today.minusDays(29);
             LocalDate startDate6M = today.minusMonths(6);
-            LocalDate startThisYear = LocalDate.of(today.getYear(), 1, 1);
+            // "This Year" = current financial year: 1 April → today
+            int fyStartYr = (today.getMonthValue() < 4) ? today.getYear() - 1 : today.getYear();
+            LocalDate startThisYear = LocalDate.of(fyStartYr, 4, 1);
+            request.setAttribute("thisYearFrom", "1 Apr " + fyStartYr);
 
             // Today's cost by department (independent of filters)[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
@@ -153,7 +156,7 @@ public class Home extends HttpServlet {
                 ex.printStackTrace();
             }
 
-            // This year's cost by department (Jan 1 to today)
+            // This year's cost by department (FY: April 1 to today)
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
                     "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
