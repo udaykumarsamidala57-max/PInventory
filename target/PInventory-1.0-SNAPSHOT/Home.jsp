@@ -75,10 +75,10 @@
     double last30DaysTotal = l30t != null ? l30t : 0;
 
     @SuppressWarnings("unchecked")
-    Map<String, Double> last6MonthsDeptMap = (Map<String, Double>) request.getAttribute("last6MonthsDeptMap");
-    Double l6mt = (Double) request.getAttribute("last6MonthsTotal");
-    if (last6MonthsDeptMap == null) last6MonthsDeptMap = new LinkedHashMap<String, Double>();
-    double last6MonthsTotal = l6mt != null ? l6mt : 0;
+    Map<String, Double> last60DaysDeptMap = (Map<String, Double>) request.getAttribute("last60DaysDeptMap");
+    Double l60t = (Double) request.getAttribute("last60DaysTotal");
+    if (last60DaysDeptMap == null) last60DaysDeptMap = new LinkedHashMap<String, Double>();
+    double last60DaysTotal = l60t != null ? l60t : 0;
 
     @SuppressWarnings("unchecked")
     Map<String, Double> thisYearDeptMap = (Map<String, Double>) request.getAttribute("thisYearDeptMap");
@@ -88,14 +88,20 @@
     String thisYearFrom = (String) request.getAttribute("thisYearFrom");
     if (thisYearFrom == null) thisYearFrom = "1 Apr";
 
+    // Dashboard periods, in display order: This Year (from 1 April) -> 60 -> 30 -> 7 days -> Today
+    String[] pLabels = { "This Year", "Last 60 Days", "Last 30 Days", "Last 7 Days", "Today" };
+    String[] pIcons  = { "fa-calendar", "fa-clock", "fa-calendar-alt", "fa-calendar-week", "fa-calendar-day" };
+    String[] pTotalText = { "Total since " + thisYearFrom, "Total last 60 days", "Total last 30 days", "Total last 7 days", "Total today" };
+    String[] pWhen = { "since " + thisYearFrom, "in the last 60 days", "in the last 30 days", "in the last 7 days", "today" };
+
+    // Consumption (stock issued) by department
+    String[] cTabIds = { "cYearTab", "c60Tab", "c30Tab", "c7Tab", "cTodayTab" };
+    List<Map<String, Double>> cMaps = Arrays.asList(thisYearDeptMap, last60DaysDeptMap, last30DaysDeptMap, last7DaysDeptMap, todayDeptMap);
+    double[] cTotals = { thisYearTotal, last60DaysTotal, last30DaysTotal, last7DaysTotal, todayTotal };
+
     // Vendor-wise PO value: vendor -> {value, count}
-    String[] poKeys   = { "poTodayMap", "po30Map", "po6MMap", "poYearMap" };
-    String[] poTabIds = { "poTodayTab", "po30Tab", "po6MTab", "poYearTab" };
-    String[] poLabels = { "Today", "Last 30 Days", "Last 6 Months", "This Year" };
-    String[] poIcons  = { "fa-calendar-day", "fa-calendar-alt", "fa-clock", "fa-calendar" };
-    String[] poTotalText = { "Total today", "Total last 30 days", "Total last 6 months", "Total since " + thisYearFrom };
-    String[] poEmptyText = { "No purchase orders raised today.", "No purchase orders in the last 30 days.",
-                             "No purchase orders in the last 6 months.", "No purchase orders since " + thisYearFrom + "." };
+    String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
+    String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab" };
     List<Map<String, double[]>> poMaps = new ArrayList<Map<String, double[]>>();
     for (String k : poKeys) {
         Map<String, double[]> m = (Map<String, double[]>) request.getAttribute(k);
@@ -587,7 +593,22 @@
         white-space: nowrap;
     }
     .po-card-title i { color: var(--accent); }
-    .po-grid { max-height: 300px; overflow-y: auto; }
+    /* Consumption + top-8 vendor tiles: share one row across the full width on any screen;
+       only if there are too many to stay readable do they wrap - never a scroll bar. */
+    .fit-row {
+        grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+        gap: 8px;
+        overflow: hidden;
+    }
+    .fit-row .today-tile { min-width: 0; padding: 8px 10px; }
+    .fit-row .today-tile .t-val { font-size: clamp(13px, 1.15vw, 17px); white-space: nowrap; }
+    .fit-row .today-tile .t-sub { white-space: nowrap; }
+    .fit-row .today-tile .t-dept {
+        white-space: normal; overflow: visible; text-overflow: clip;
+        overflow-wrap: break-word; word-break: normal; hyphens: auto; -webkit-hyphens: auto;
+        font-size: clamp(11px, 0.85vw, 12px); line-height: 1.35;
+    }
+    .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 </style>
 </head>
@@ -615,42 +636,33 @@
         </div>
     </div>
 
-    <!-- Multi-Period Cost Card with Tabs -->
+    <!-- Consumption cost by department (This Year -> 60 -> 30 -> 7 days -> Today) -->
     <div class="card">
         <div class="card-header">
             <div class="tab-header">
-                <button type="button" class="tab-btn active" onclick="switchTab(event, 'todayTab')">
-                    <i class="fas fa-calendar-day"></i> Today
+                <span class="po-card-title"><i class="fas fa-boxes"></i> Consumption by Department</span>
+                <% for (int t = 0; t < cTabIds.length; t++) { %>
+                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= cTabIds[t] %>')">
+                    <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
-                <button type="button" class="tab-btn" onclick="switchTab(event, 'last7DaysTab')">
-                    <i class="fas fa-calendar-week"></i> Last 7 Days
-                </button>
-                <button type="button" class="tab-btn" onclick="switchTab(event, 'last30DaysTab')">
-                    <i class="fas fa-calendar-alt"></i> Last 30 Days
-                </button>
-                <button type="button" class="tab-btn" onclick="switchTab(event, 'last6MonthsTab')">
-                    <i class="fas fa-clock"></i> Last 6 Months
-                </button>
-                <button type="button" class="tab-btn" onclick="switchTab(event, 'thisYearTab')">
-                    <i class="fas fa-calendar"></i> This Year
-                </button>
+                <% } %>
             </div>
             <div>
-                <span class="today-total period-total" id="todayTotalLabel">Total today<b><%= rupee(todayTotal) %></b></span>
-                <span class="today-total period-total" id="last7DaysTotalLabel" style="display: none;">Total last 7 days<b><%= rupee(last7DaysTotal) %></b></span>
-                <span class="today-total period-total" id="last30DaysTotalLabel" style="display: none;">Total last 30 days<b><%= rupee(last30DaysTotal) %></b></span>
-                <span class="today-total period-total" id="last6MonthsTotalLabel" style="display: none;">Total last 6 months<b><%= rupee(last6MonthsTotal) %></b></span>
-                <span class="today-total period-total" id="thisYearTotalLabel" style="display: none;">Total since <%= thisYearFrom %><b><%= rupee(thisYearTotal) %></b></span>
+                <% for (int t = 0; t < cTabIds.length; t++) { %>
+                <span class="today-total period-total" id="<%= cTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %><b><%= rupee(cTotals[t]) %></b></span>
+                <% } %>
             </div>
         </div>
         <div class="card-body">
-            <!-- Today Tab Content -->
-            <div id="todayTab" class="tab-content active">
-                <% if (todayDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued today yet.</div>
+            <% for (int t = 0; t < cTabIds.length; t++) {
+                 Map<String, Double> cm = cMaps.get(t);
+            %>
+            <div id="<%= cTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+                <% if (cm.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;">No stock issued <%= pWhen[t] %>.</div>
                 <% } else { %>
-                    <div class="today-grid">
-                    <% for (Map.Entry<String, Double> e : todayDeptMap.entrySet()) { %>
+                    <div class="today-grid fit-row">
+                    <% for (Map.Entry<String, Double> e : cm.entrySet()) { %>
                         <div class="today-tile">
                             <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
                             <p class="t-val"><%= rupee(e.getValue()) %></p>
@@ -659,70 +671,7 @@
                     </div>
                 <% } %>
             </div>
-
-            <!-- Last 7 Days Tab Content -->
-            <div id="last7DaysTab" class="tab-content">
-                <% if (last7DaysDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued in the last 7 days.</div>
-                <% } else { %>
-                    <div class="today-grid">
-                    <% for (Map.Entry<String, Double> e : last7DaysDeptMap.entrySet()) { %>
-                        <div class="today-tile">
-                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= rupee(e.getValue()) %></p>
-                        </div>
-                    <% } %>
-                    </div>
-                <% } %>
-            </div>
-
-            <!-- Last 30 Days Tab Content -->
-            <div id="last30DaysTab" class="tab-content">
-                <% if (last30DaysDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued in the last 30 days.</div>
-                <% } else { %>
-                    <div class="today-grid">
-                    <% for (Map.Entry<String, Double> e : last30DaysDeptMap.entrySet()) { %>
-                        <div class="today-tile">
-                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= rupee(e.getValue()) %></p>
-                        </div>
-                    <% } %>
-                    </div>
-                <% } %>
-            </div>
-
-            <!-- Last 6 Months Tab Content -->
-            <div id="last6MonthsTab" class="tab-content">
-                <% if (last6MonthsDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued in the last 6 months.</div>
-                <% } else { %>
-                    <div class="today-grid">
-                    <% for (Map.Entry<String, Double> e : last6MonthsDeptMap.entrySet()) { %>
-                        <div class="today-tile">
-                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= rupee(e.getValue()) %></p>
-                        </div>
-                    <% } %>
-                    </div>
-                <% } %>
-            </div>
-
-            <!-- This Year Tab Content -->
-            <div id="thisYearTab" class="tab-content">
-                <% if (thisYearDeptMap.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued since <%= thisYearFrom %>.</div>
-                <% } else { %>
-                    <div class="today-grid">
-                    <% for (Map.Entry<String, Double> e : thisYearDeptMap.entrySet()) { %>
-                        <div class="today-tile">
-                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
-                            <p class="t-val"><%= rupee(e.getValue()) %></p>
-                        </div>
-                    <% } %>
-                    </div>
-                <% } %>
-            </div>
+            <% } %>
         </div>
     </div>
 
@@ -730,10 +679,10 @@
     <div class="card">
         <div class="card-header">
             <div class="tab-header">
-                <span class="po-card-title"><i class="fas fa-file-invoice"></i> Purchase Orders by Vendor</span>
+                <span class="po-card-title"><i class="fas fa-file-invoice"></i> Top Vendors by PO Value</span>
                 <% for (int t = 0; t < poTabIds.length; t++) { %>
                 <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= poTabIds[t] %>')">
-                    <i class="fas <%= poIcons[t] %>"></i> <%= poLabels[t] %>
+                    <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
             </div>
@@ -742,7 +691,7 @@
                      double tv = 0; int tc = 0;
                      for (double[] a : poMaps.get(t).values()) { tv += a[0]; tc += (int) a[1]; }
                 %>
-                <span class="today-total period-total" id="<%= poTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= poTotalText[t] %> &middot; <%= tc %> PO<%= tc == 1 ? "" : "s" %><b><%= rupee(tv) %></b></span>
+                <span class="today-total period-total" id="<%= poTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %> &middot; <%= tc %> PO<%= tc == 1 ? "" : "s" %><b><%= rupee(tv) %></b></span>
                 <% } %>
             </div>
         </div>
@@ -752,10 +701,12 @@
             %>
             <div id="<%= poTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
                 <% if (pm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;"><%= poEmptyText[t] %></div>
+                    <div class="empty" style="padding:12px 0;">No purchase orders <%= pWhen[t] %>.</div>
                 <% } else { %>
-                    <div class="today-grid po-grid">
-                    <% for (Map.Entry<String, double[]> e : pm.entrySet()) {
+                    <div class="today-grid fit-row po-grid">
+                    <% int shown = 0;
+                       for (Map.Entry<String, double[]> e : pm.entrySet()) {
+                         if (shown++ >= 8) break;   // top 8 vendors by PO value (map is sorted highest first)
                          int cnt = (int) e.getValue()[1];
                     %>
                         <div class="today-tile">
@@ -765,6 +716,9 @@
                         </div>
                     <% } %>
                     </div>
+                    <% if (pm.size() > 8) { %>
+                    <p class="po-more">Showing top 8 of <%= pm.size() %> vendors by PO value &middot; header total includes all vendors</p>
+                    <% } %>
                 <% } %>
             </div>
             <% } %>

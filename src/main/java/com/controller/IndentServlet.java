@@ -53,7 +53,8 @@ public class IndentServlet extends HttpServlet {
             List<Map<String, String>> departments = new ArrayList<>();
 
             // 2. Fetch Department Options Based on Role
-            if ("Global".equalsIgnoreCase(role.trim())) {
+            //    Global and Admin can raise indents for ANY department -> load all from dept_cate.
+            if ("Global".equalsIgnoreCase(role.trim()) || "Admin".equalsIgnoreCase(role.trim())) {
 
                 String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
                                  "WHERE Department IS NOT NULL AND Department <> '' " +
@@ -65,36 +66,6 @@ public class IndentServlet extends HttpServlet {
                         Map<String, String> d = new HashMap<>();
                         d.put("name", rs.getString("Department"));
                         departments.add(d);
-                    }
-                }
-
-            } else if ("Admin".equalsIgnoreCase(role.trim())) {
-
-                // Hardcoded Admin Departments
-                String[] adminDepartments = {
-                    "Housekeeping",
-                    "Plumbing",
-                    "Electrical"
-                };
-
-                for (String dept : adminDepartments) {
-                    Map<String, String> d = new HashMap<>();
-                    d.put("name", dept);
-                    departments.add(d);
-                }
-
-                // Fallback: If DB contains distinct admin departments, fetch directly
-                if (departments.isEmpty()) {
-                    String deptSql = "SELECT DISTINCT Department FROM dept_cate " +
-                                     "WHERE Department IS NOT NULL AND Department <> '' " +
-                                     "ORDER BY Department ASC";
-                    try (PreparedStatement ps = con.prepareStatement(deptSql);
-                         ResultSet rs = ps.executeQuery()) {
-                        while (rs.next()) {
-                            Map<String, String> d = new HashMap<>();
-                            d.put("name", rs.getString("Department"));
-                            departments.add(d);
-                        }
                     }
                 }
 
