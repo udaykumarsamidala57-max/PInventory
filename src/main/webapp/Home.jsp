@@ -112,6 +112,10 @@
     }
     String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab" };
 
+    // Vendor price comparison: { itemName, uom, totalValue, List<{vendor, avgRate, lastRate, qty, poCount, lastDate}> }
+    List<Object[]> priceCompare = (List<Object[]>) request.getAttribute("priceCompare");
+    if (priceCompare == null) priceCompare = new ArrayList<Object[]>();
+
     // Vendor-wise PO value: vendor -> {value, count}
     String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
     String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab" };
@@ -687,6 +691,31 @@
     /* emphasise the figure being ranked on */
     .top-card.by-qty .top-qty { color: var(--text-heading); font-weight: 600; }
     .top-card.by-qty .top-val { color: var(--text-muted); font-weight: 400; }
+    /* Vendor price comparison */
+    .pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
+    .pc-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; display: flex; flex-direction: column; }
+    .pc-head {
+        display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
+        padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
+    }
+    .pc-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .pc-name { font-weight: 600; font-size: 12.5px; color: var(--text-heading); line-height: 1.35; overflow-wrap: break-word; }
+    .pc-sub { font-size: 11.5px; color: #8a94a3; }
+    .pc-spread {
+        flex-shrink: 0; font-size: 11px; font-weight: 600; color: #8a5a00;
+        background: #fdf6e7; border: 1px solid #f3e1b5; border-radius: 4px; padding: 1px 6px; white-space: nowrap;
+    }
+    .pc-list { list-style: none; margin: 0; padding: 2px 0; }
+    .pc-list li { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    .pc-list li:last-child { border-bottom: none; }
+    .pc-list li.pc-best { background: #f3faf6; }
+    .pc-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .pc-vendor { font-size: 12.5px; color: #344054; line-height: 1.35; overflow-wrap: break-word; min-width: 0; }
+    .pc-rate { font-size: 13px; font-weight: 600; color: var(--text-heading); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .pc-rate small { font-size: 11px; font-weight: 400; color: #8a94a3; margin-left: 1px; }
+    .pc-meta { display: flex; justify-content: space-between; gap: 8px; margin-top: 2px; font-size: 11px; color: #8a94a3; }
+    .pc-tag { color: #1f7a4d; font-weight: 600; white-space: nowrap; }
+    .pc-diff { color: #a15c07; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 </style>
@@ -989,6 +1018,59 @@
                     <% } %>
                     </div>
                 <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Vendor price comparison: 10 items bought from 2+ vendors -->
+    <div class="card">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
+            </div>
+            <div><span class="today-total">Last 12 months &middot; unit price after discount, excl. GST</span></div>
+        </div>
+        <div class="card-body">
+            <% if (priceCompare.isEmpty()) { %>
+                <div class="empty" style="padding:12px 0;">No items were bought from more than one vendor in the last 12 months.</div>
+            <% } else { %>
+            <div class="pc-grid">
+            <% for (Object[] it : priceCompare) {
+                 List<Object[]> vendors = (List<Object[]>) it[3];
+                 String uom = it[1] == null ? "" : String.valueOf(it[1]).trim();
+                 double best = (Double) vendors.get(0)[1];
+                 double worst = (Double) vendors.get(vendors.size() - 1)[1];
+                 double spread = best > 0 ? (worst - best) / best * 100.0 : 0;
+            %>
+                <div class="pc-panel">
+                    <div class="pc-head">
+                        <div class="pc-item">
+                            <span class="pc-name"><%= h(String.valueOf(it[0])) %></span>
+                            <span class="pc-sub"><%= vendors.size() %> vendors &middot; <%= rupee((Double) it[2]) %> purchased</span>
+                        </div>
+                        <% if (spread >= 0.5) { %><span class="pc-spread" title="Highest vs lowest average price"><%= fmtIN(spread, 0) %>% gap</span><% } %>
+                    </div>
+                    <ul class="pc-list">
+                    <% for (int v = 0; v < vendors.size(); v++) {
+                         Object[] vr = vendors.get(v);
+                         double avg = (Double) vr[1];
+                         double diff = best > 0 ? (avg - best) / best * 100.0 : 0;
+                    %>
+                        <li class="<%= v == 0 ? "pc-best" : "" %>">
+                            <div class="pc-row">
+                                <span class="pc-vendor"><%= h(String.valueOf(vr[0])) %></span>
+                                <span class="pc-rate">&#8377;<%= fmtIN(avg, 2) %><% if (!uom.isEmpty()) { %><small>/<%= h(uom) %></small><% } %></span>
+                            </div>
+                            <div class="pc-meta">
+                                <span><%= vr[4] %> PO<%= ((Integer) vr[4]) == 1 ? "" : "s" %> &middot; last &#8377;<%= fmtIN((Double) vr[2], 2) %> on <%= vr[5] %></span>
+                                <% if (v == 0) { %><span class="pc-tag">Lowest</span><% } else { %><span class="pc-diff">+<%= fmtIN(diff, 1) %>%</span><% } %>
+                            </div>
+                        </li>
+                    <% } %>
+                    </ul>
+                </div>
+            <% } %>
             </div>
             <% } %>
         </div>

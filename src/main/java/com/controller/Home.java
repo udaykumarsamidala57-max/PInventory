@@ -218,6 +218,9 @@ public class Home extends HttpServlet {
             loadVendorPOs(con, today, startDate7, startDate30, startDate60, startThisYear,
                           poTodayMap, po7Map, po30Map, po60Map, poYearMap);
 
+            // Vendor price comparison: 10 items bought from 2+ vendors in the last 12 months
+            request.setAttribute("priceCompare", loadPriceCompare(con, today.minusMonths(12), today));
+
             // Top 3 most consumed items in each department - ranked by value and by quantity
             loadTopItems(con, startThisYear, today, topYear, topYearQ);
             loadTopItems(con, startDate60, today, top60, top60Q);
@@ -481,5 +484,80 @@ public class Home extends HttpServlet {
             byQ.sort((x, y) -> Double.compare((Double) y[2], (Double) x[2]));
             outByQty.put(e.getKey(), new ArrayList<>(byQ.subList(0, Math.min(3, byQ.size()))));
         }
+    }
+
+    /**
+     * Compares unit prices of the same item across vendors, from po_items + po_master.
+     * Unit price = net_amount / qty (after discount, before GST); falls back to rate.
+     * Keeps items bought from at least 2 vendors between from..to, top 10 by purchase value.
+     * Returns list of { String itemName, String uom, Double totalValue, List<Object[]> vendors }
+     * where each vendor is { String vendor, Double avgRate, Double lastRate, Double qty, Integer poCount, String lastDate },
+     * vendors sorted cheapest (avgRate) first.
+     */
+    private static List<Object[]> loadPriceCompare(Connection con, LocalDate from, LocalDate to) {
+        String sql =
+            "SELECT pi.item_id, " +
+            "       COALESCE(im.Item_name, pi.description, CONCAT('Item #', pi.item_id)) AS item_name, " +
+            "       IFNULL(im.UOM,'') AS uom, " +
+            "       pm.vendor_name, pm.PO_date, pm.PO_id, " +
+            "       IFNULL(pi.qty,0) AS qty, IFNULL(pi.rate,0) AS rate, pi.net_amount " +
+            "FROM po_items pi JOIN po_master pm ON pm.PO_id = pi.PO_id " +
+            "LEFT JOIN item_master im ON im.Item_id = pi.item_id " +
+            "WHERE pi.item_id IS NOT NULL";
+
+        // itemKey -> {name, uom, vendor -> accumulators}
+        Map<Integer, String[]> itemInfo = new LinkedHashMap<>();
+        Map<Integer, Map<String, double[]>> acc = new LinkedHashMap<>();   // {sumValue, sumQty, lastRate, lastDateEpochDay, poCount}
+        Map<Integer, Map<String, java.util.Set<Integer>>> poSets = new LinkedHashMap<>();
+
+        try (PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                LocalDate d = parsePoDate(rs.getString("PO_date"));
+                if (d == null || d.isBefore(from) || d.isAfter(to)) continue;
+                String vendor = rs.getString("vendor_name");
+                if (vendor == null || vendor.trim().isEmpty()) continue;
+                vendor = vendor.trim();
+
+                int itemId = rs.getInt("item_id");
+                double qty = rs.getDouble("qty");
+                double rate = rs.getDouble("rate");
+                double net = rs.getDouble("net_amount");
+                boolean netNull = rs.wasNull();
+                if (qty <= 0) continue;
+                double value = (!netNull && net > 0) ? net : rate * qty;
+                double unit = value / qty;
+
+                itemInfo.putIfAbsent(itemId, new String[] { rs.getString("item_name"), rs.getString("uom") });
+                double[] a = acc.computeIfAbsent(itemId, k -> new LinkedHashMap<>())
+                                .computeIfAbsent(vendor, k -> new double[] { 0, 0, 0, Long.MIN_VALUE, 0 });
+                a[0] += value;
+                a[1] += qty;
+                if (d.toEpochDay() >= a[3]) { a[3] = d.toEpochDay(); a[2] = unit; }
+                poSets.computeIfAbsent(itemId, k -> new LinkedHashMap<>())
+                      .computeIfAbsent(vendor, k -> new java.util.HashSet<>()).add(rs.getInt("PO_id"));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        List<Object[]> items = new ArrayList<>();
+        for (Map.Entry<Integer, Map<String, double[]>> e : acc.entrySet()) {
+            if (e.getValue().size() < 2) continue;   // needs at least 2 vendors to compare
+            double total = 0;
+            List<Object[]> vendors = new ArrayList<>();
+            for (Map.Entry<String, double[]> v : e.getValue().entrySet()) {
+                double[] a = v.getValue();
+                total += a[0];
+                vendors.add(new Object[] { v.getKey(), a[0] / a[1], a[2], a[1],
+                        poSets.get(e.getKey()).get(v.getKey()).size(),
+                        LocalDate.ofEpochDay((long) a[3]).format(java.time.format.DateTimeFormatter.ofPattern("dd MMM yy")) });
+            }
+            vendors.sort((x, y) -> Double.compare((Double) x[1], (Double) y[1]));
+            String[] info = itemInfo.get(e.getKey());
+            items.add(new Object[] { info[0], info[1], total, vendors });
+        }
+        items.sort((x, y) -> Double.compare((Double) y[2], (Double) x[2]));
+        return items.size() > 10 ? new ArrayList<>(items.subList(0, 10)) : items;
     }
 }
