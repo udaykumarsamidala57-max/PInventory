@@ -219,7 +219,9 @@ public class Home extends HttpServlet {
                           poTodayMap, po7Map, po30Map, po60Map, poYearMap);
 
             // Vendor price comparison: 10 items bought from 2+ vendors in the last 12 months
-            request.setAttribute("priceCompareByCat", loadPriceCompare(con, today.minusMonths(12), today));
+            Map<String, Integer> priceCatTotals = new LinkedHashMap<>();
+            request.setAttribute("priceCompareByCat", loadPriceCompare(con, today.minusMonths(12), today, priceCatTotals));
+            request.setAttribute("priceCatTotals", priceCatTotals);
 
             // Top 3 most consumed items in each department - ranked by value and by quantity
             loadTopItems(con, startThisYear, today, topYear, topYearQ);
@@ -496,11 +498,13 @@ public class Home extends HttpServlet {
      * 2 different vendors between from..to and shows 20 of them a day, rotating daily.
      * Items are ordered most widely purchased first (number of POs, then purchase value).
      * Returns category -> list of { String itemName, String uom, Double totalValue, List<Object[]> vendors, Integer poCount, String category },
-     * starting with "All Categories"; each list holds 20 items for today (rotating daily).
+     * category with the most comparable items first; each list holds 30 items for today (rotating daily).
+     * catTotals receives the full number of comparable items per category.
      * where each vendor is { String vendor, Double avgRate, Double lastRate, Double qty, Integer poCount, String lastDate },
      * vendors sorted cheapest (avgRate) first.
      */
-    private static Map<String, List<Object[]>> loadPriceCompare(Connection con, LocalDate from, LocalDate to) {
+    private static Map<String, List<Object[]>> loadPriceCompare(Connection con, LocalDate from, LocalDate to,
+                                                                Map<String, Integer> catTotals) {
         String sql =
             "SELECT pi.item_id, " +
             "       COALESCE(im.Item_name, pi.description, CONCAT('Item #', pi.item_id)) AS item_name, " +
@@ -579,7 +583,7 @@ public class Home extends HttpServlet {
             if (c == 0) c = Double.compare((Double) y[2], (Double) x[2]);
             return c;
         };
-        // "All Categories" first, then each category (largest purchase value first); 20 items each, rotating daily.
+        // One list per category; 30 items each, rotating daily.
         Map<String, List<Object[]>> byCat = new java.util.HashMap<>();
         Map<String, Double> catValue = new java.util.HashMap<>();
         for (Object[] it : items) {
@@ -587,18 +591,24 @@ public class Home extends HttpServlet {
             byCat.computeIfAbsent(cat, k -> new ArrayList<>()).add(it);
             catValue.merge(cat, (Double) it[2], Double::sum);
         }
+        // Category with the most comparable items first (then larger purchase value).
         List<String> cats = new ArrayList<>(byCat.keySet());
-        cats.sort((x, y) -> Double.compare(catValue.get(y), catValue.get(x)));
+        cats.sort((x, y) -> {
+            int c = Integer.compare(byCat.get(y).size(), byCat.get(x).size());
+            return c != 0 ? c : Double.compare(catValue.get(y), catValue.get(x));
+        });
 
         Map<String, List<Object[]>> out = new LinkedHashMap<>();
-        out.put("All Categories", dailyPick(items, widelyUsed, to));
-        for (String c : cats) out.put(c, dailyPick(byCat.get(c), widelyUsed, to));
+        for (String c : cats) {
+            out.put(c, dailyPick(byCat.get(c), widelyUsed, to));
+            catTotals.put(c, byCat.get(c).size());
+        }
         return out;
     }
 
-    /** Up to 20 items for today: whole list if 20 or fewer, otherwise a window that moves on each day. */
+    /** Up to 30 items for today: whole list if 30 or fewer, otherwise a window that moves on each day. */
     private static List<Object[]> dailyPick(List<Object[]> items, java.util.Comparator<Object[]> order, LocalDate day) {
-        final int PER_DAY = 20;
+        final int PER_DAY = 30;
         List<Object[]> sorted = new ArrayList<>(items);
         sorted.sort(order);
         if (sorted.size() <= PER_DAY) return sorted;

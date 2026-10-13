@@ -115,7 +115,8 @@
     // Vendor price comparison: { itemName, uom, totalValue, List<{vendor, avgRate, lastRate, qty, poCount, lastDate}> }
     Map<String, List<Object[]>> priceByCat = (Map<String, List<Object[]>>) request.getAttribute("priceCompareByCat");
     if (priceByCat == null) priceByCat = new LinkedHashMap<String, List<Object[]>>();
-    List<Object[]> priceCompare = priceByCat.containsKey("All Categories") ? priceByCat.get("All Categories") : new ArrayList<Object[]>();
+    Map<String, Integer> priceCatTotals = (Map<String, Integer>) request.getAttribute("priceCatTotals");
+    if (priceCatTotals == null) priceCatTotals = new LinkedHashMap<String, Integer>();
 
     // Vendor-wise PO value: vendor -> {value, count}
     String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
@@ -1044,16 +1045,16 @@
             <div class="tab-header">
                 <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
             </div>
-            <div><span class="today-total">Most widely purchased first &middot; 20 items per category a day, changes daily &middot; last 12 months &middot; unit price after discount, excl. GST</span></div>
+            <div><span class="today-total"> last 12 months &middot; unit price after discount, excl. GST</span></div>
         </div>
         <div class="card-body">
-            <% if (priceCompare.isEmpty()) { %>
+            <% if (priceByCat.isEmpty()) { %>
                 <div class="empty" style="padding:12px 0;">No item was bought from two or more different vendors in the last 12 months.</div>
             <% } else { %>
             <div class="pc-cats" role="tablist" aria-label="Filter by category">
                 <% int cb = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) { %>
                 <button type="button" class="pc-cat-btn <%= cb == 0 ? "active" : "" %>" data-cat="<%= cb %>" onclick="setPcCat(<%= cb %>)">
-                    <%= h(ce.getKey()) %> <span class="pc-cat-n"><%= ce.getValue().size() %></span>
+                    <%= h(ce.getKey()) %> <span class="pc-cat-n" title="items bought from 2+ vendors"><%= priceCatTotals.containsKey(ce.getKey()) ? priceCatTotals.get(ce.getKey()) : ce.getValue().size() %></span>
                 </button>
                 <% cb++; } %>
             </div>
