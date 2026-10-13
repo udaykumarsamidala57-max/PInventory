@@ -88,6 +88,20 @@
     String thisYearFrom = (String) request.getAttribute("thisYearFrom");
     if (thisYearFrom == null) thisYearFrom = "1 Apr";
 
+    // Vendor-wise PO value: vendor -> {value, count}
+    String[] poKeys   = { "poTodayMap", "po30Map", "po6MMap", "poYearMap" };
+    String[] poTabIds = { "poTodayTab", "po30Tab", "po6MTab", "poYearTab" };
+    String[] poLabels = { "Today", "Last 30 Days", "Last 6 Months", "This Year" };
+    String[] poIcons  = { "fa-calendar-day", "fa-calendar-alt", "fa-clock", "fa-calendar" };
+    String[] poTotalText = { "Total today", "Total last 30 days", "Total last 6 months", "Total since " + thisYearFrom };
+    String[] poEmptyText = { "No purchase orders raised today.", "No purchase orders in the last 30 days.",
+                             "No purchase orders in the last 6 months.", "No purchase orders since " + thisYearFrom + "." };
+    List<Map<String, double[]>> poMaps = new ArrayList<Map<String, double[]>>();
+    for (String k : poKeys) {
+        Map<String, double[]> m = (Map<String, double[]>) request.getAttribute(k);
+        poMaps.add(m != null ? m : new LinkedHashMap<String, double[]>());
+    }
+
     @SuppressWarnings("unchecked")
     List<String> departments = (List<String>) request.getAttribute("departments");
     @SuppressWarnings("unchecked")
@@ -563,6 +577,18 @@
         .srm-overlay, .srm-dialog { transition: none; }
     }
 
+
+    /* Vendor-wise PO card */
+    .po-card-title {
+        display: inline-flex; align-items: center; gap: 6px;
+        font-weight: 600; color: var(--text-heading);
+        margin-right: 10px; padding-right: 12px;
+        border-right: 1px solid var(--border);
+        white-space: nowrap;
+    }
+    .po-card-title i { color: var(--accent); }
+    .po-grid { max-height: 300px; overflow-y: auto; }
+    .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -700,6 +726,51 @@
         </div>
     </div>
 
+    <!-- Vendor-wise Purchase Orders (cumulative) -->
+    <div class="card">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title"><i class="fas fa-file-invoice"></i> Purchase Orders by Vendor</span>
+                <% for (int t = 0; t < poTabIds.length; t++) { %>
+                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= poTabIds[t] %>')">
+                    <i class="fas <%= poIcons[t] %>"></i> <%= poLabels[t] %>
+                </button>
+                <% } %>
+            </div>
+            <div>
+                <% for (int t = 0; t < poTabIds.length; t++) {
+                     double tv = 0; int tc = 0;
+                     for (double[] a : poMaps.get(t).values()) { tv += a[0]; tc += (int) a[1]; }
+                %>
+                <span class="today-total period-total" id="<%= poTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= poTotalText[t] %> &middot; <%= tc %> PO<%= tc == 1 ? "" : "s" %><b><%= rupee(tv) %></b></span>
+                <% } %>
+            </div>
+        </div>
+        <div class="card-body">
+            <% for (int t = 0; t < poTabIds.length; t++) {
+                 Map<String, double[]> pm = poMaps.get(t);
+            %>
+            <div id="<%= poTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+                <% if (pm.isEmpty()) { %>
+                    <div class="empty" style="padding:12px 0;"><%= poEmptyText[t] %></div>
+                <% } else { %>
+                    <div class="today-grid po-grid">
+                    <% for (Map.Entry<String, double[]> e : pm.entrySet()) {
+                         int cnt = (int) e.getValue()[1];
+                    %>
+                        <div class="today-tile">
+                            <p class="t-dept" title="<%= h(e.getKey()) %>"><%= h(e.getKey()) %></p>
+                            <p class="t-val"><%= rupee(e.getValue()[0]) %></p>
+                            <p class="t-sub"><%= cnt %> PO<%= cnt == 1 ? "" : "s" %></p>
+                        </div>
+                    <% } %>
+                    </div>
+                <% } %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
     <!-- Filters -->
     <form class="filter-panel" method="get" action="Home">
         <div class="field">
@@ -826,28 +897,15 @@
 
 <script>
 function switchTab(evt, tabId) {
-    var i, tabContent, tabBtns;
-    tabContent = document.getElementsByClassName("tab-content");
-    for (i = 0; i < tabContent.length; i++) {
-        tabContent[i].classList.remove("active");
-    }
-    tabBtns = document.getElementsByClassName("tab-btn");
-    for (i = 0; i < tabBtns.length; i++) {
-        tabBtns[i].classList.remove("active");
-    }
-    document.getElementById(tabId).classList.add("active");
-    evt.currentTarget.classList.add("active");
-
-    var totals = document.getElementsByClassName("period-total");
-    for (i = 0; i < totals.length; i++) {
-        totals[i].style.display = 'none';
-    }
-
-    if (tabId === 'todayTab') document.getElementById('todayTotalLabel').style.display = 'inline';
-    else if (tabId === 'last7DaysTab') document.getElementById('last7DaysTotalLabel').style.display = 'inline';
-    else if (tabId === 'last30DaysTab') document.getElementById('last30DaysTotalLabel').style.display = 'inline';
-    else if (tabId === 'last6MonthsTab') document.getElementById('last6MonthsTotalLabel').style.display = 'inline';
-    else if (tabId === 'thisYearTab') document.getElementById('thisYearTotalLabel').style.display = 'inline';
+    // Works per card, so each card's tabs switch independently.
+    var card = evt.currentTarget.closest('.card') || document;
+    card.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
+    card.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
+    card.querySelectorAll('.period-total').forEach(function (el) { el.style.display = 'none'; });
+    document.getElementById(tabId).classList.add('active');
+    evt.currentTarget.classList.add('active');
+    var label = document.getElementById(tabId.replace(/Tab$/, 'TotalLabel'));
+    if (label) label.style.display = 'inline';
 }
 
 (function () {

@@ -83,10 +83,17 @@ public class Home extends HttpServlet {
         double last7DaysTotal = 0;
         Map<String, Double> last30DaysDeptMap = new LinkedHashMap<>();
         double last30DaysTotal = 0;
-        Map<String, Double> last6MonthsDeptMap = new LinkedHashMap<>();
-        double last6MonthsTotal = 0;
+        Map<String, Double> last60DaysDeptMap = new LinkedHashMap<>();
+        double last60DaysTotal = 0;
         Map<String, Double> thisYearDeptMap = new LinkedHashMap<>();
         double thisYearTotal = 0;
+
+        // Vendor-wise purchase orders: vendor -> {total value, PO count}
+        Map<String, double[]> poTodayMap = new LinkedHashMap<>();
+        Map<String, double[]> po30Map = new LinkedHashMap<>();
+        Map<String, double[]> po7Map = new LinkedHashMap<>();
+        Map<String, double[]> po60Map = new LinkedHashMap<>();
+        Map<String, double[]> poYearMap = new LinkedHashMap<>();
 
         try (Connection con = DBUtil.getConnection(branch)) {
 
@@ -97,9 +104,9 @@ public class Home extends HttpServlet {
             int fyStartYr = (today.getMonthValue() < 4) ? today.getYear() - 1 : today.getYear();
             LocalDate startThisYear = LocalDate.of(fyStartYr, 4, 1);
             request.setAttribute("thisYearFrom", "1 Apr " + fyStartYr);
-            // Last 6 months, but never earlier than 1 April of the current FY
-            LocalDate startDate6M = today.minusMonths(6);
-            if (startDate6M.isBefore(startThisYear)) startDate6M = startThisYear;
+            // Last 60 days, but never earlier than 1 April of the current FY
+            LocalDate startDate60 = today.minusDays(59);
+            if (startDate60.isBefore(startThisYear)) startDate60 = startThisYear;
 
             // Today's cost by department (independent of filters)[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
@@ -157,19 +164,19 @@ public class Home extends HttpServlet {
                 ex.printStackTrace();
             }
 
-            // Last 6 months' cost by department
+            // Last 60 days' cost by department
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
                     "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
                     "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
                     "GROUP BY dept ORDER BY v DESC")) {
-                ps.setDate(1, java.sql.Date.valueOf(startDate6M));
+                ps.setDate(1, java.sql.Date.valueOf(startDate60));
                 ps.setDate(2, java.sql.Date.valueOf(today));
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         double v = rs.getDouble("v");
-                        last6MonthsDeptMap.put(rs.getString("dept"), v);
-                        last6MonthsTotal += v;
+                        last60DaysDeptMap.put(rs.getString("dept"), v);
+                        last60DaysTotal += v;
                     }
                 }
             } catch (Exception ex) {
@@ -194,6 +201,10 @@ public class Home extends HttpServlet {
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
+
+            // Vendor-wise PO value (same periods as consumption; 60 days and Year never before 1 April)
+            loadVendorPOs(con, today, startDate7, startDate30, startDate60, startThisYear,
+                          poTodayMap, po7Map, po30Map, po60Map, poYearMap);
 
             // Departments dropdown[cite: 1]
             try (PreparedStatement ps = con.prepareStatement(
@@ -300,10 +311,15 @@ public class Home extends HttpServlet {
         request.setAttribute("last7DaysTotal", last7DaysTotal);
         request.setAttribute("last30DaysDeptMap", last30DaysDeptMap);
         request.setAttribute("last30DaysTotal", last30DaysTotal);
-        request.setAttribute("last6MonthsDeptMap", last6MonthsDeptMap);
-        request.setAttribute("last6MonthsTotal", last6MonthsTotal);
+        request.setAttribute("last60DaysDeptMap", last60DaysDeptMap);
+        request.setAttribute("last60DaysTotal", last60DaysTotal);
         request.setAttribute("thisYearDeptMap", thisYearDeptMap);
         request.setAttribute("thisYearTotal", thisYearTotal);
+        request.setAttribute("poTodayMap", poTodayMap);
+        request.setAttribute("po30Map", po30Map);
+        request.setAttribute("po7Map", po7Map);
+        request.setAttribute("po60Map", po60Map);
+        request.setAttribute("poYearMap", poYearMap);
 
         request.setAttribute("departments", departments);
         request.setAttribute("years", new ArrayList<>(yearSet));
@@ -315,5 +331,84 @@ public class Home extends HttpServlet {
         request.setAttribute("totalRows", dataMap.size());
 
         request.getRequestDispatcher("/Home.jsp").forward(request, response);
+    }
+
+    /** Date formats seen in po_master.PO_date (stored as VARCHAR). */
+    private static final java.time.format.DateTimeFormatter[] PO_DATE_FORMATS = {
+        java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"),
+        java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"),
+        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"),
+        java.time.format.DateTimeFormatter.ofPattern("yyyy/MM/dd"),
+        java.time.format.DateTimeFormatter.ofPattern("d-M-yyyy"),
+        java.time.format.DateTimeFormatter.ofPattern("d/M/yyyy")
+    };
+
+    private static LocalDate parsePoDate(String raw) {
+        if (raw == null) return null;
+        String t = raw.trim();
+        if (t.length() > 10 && t.charAt(4) == '-') t = t.substring(0, 10);   // "2026-10-13 00:00:00"
+        for (java.time.format.DateTimeFormatter f : PO_DATE_FORMATS) {
+            try { return LocalDate.parse(t, f); } catch (Exception ignore) { }
+        }
+        return null;
+    }
+
+    private static void addPo(Map<String, double[]> m, String vendor, double amt) {
+        double[] a = m.computeIfAbsent(vendor, k -> new double[2]);
+        a[0] += amt;
+        a[1] += 1;
+    }
+
+    /** Sorts a vendor map by value, highest first. */
+    private static void sortByValue(Map<String, double[]> m) {
+        List<Map.Entry<String, double[]>> list = new ArrayList<>(m.entrySet());
+        list.sort((x, y) -> Double.compare(y.getValue()[0], x.getValue()[0]));
+        m.clear();
+        for (Map.Entry<String, double[]> e : list) m.put(e.getKey(), e.getValue());
+    }
+
+    /**
+     * Vendor-wise PO value for Today / last 7 / 30 / 60 days / this FY.
+     * PO_date and total_amount are VARCHAR, so rows are read once and parsed in Java
+     * (handles yyyy-MM-dd from the PO form as well as older dd-MM-yyyy / dd/MM/yyyy rows).
+     */
+    private static void loadVendorPOs(Connection con, LocalDate today, LocalDate from7, LocalDate from30,
+                                      LocalDate from60, LocalDate fromYear,
+                                      Map<String, double[]> todayMap, Map<String, double[]> map7,
+                                      Map<String, double[]> map30, Map<String, double[]> map60,
+                                      Map<String, double[]> mapYear) {
+        LocalDate earliest = fromYear.isBefore(from60) ? fromYear : from60;
+        int rows = 0, unparsed = 0;
+        try (PreparedStatement ps = con.prepareStatement(
+                "SELECT vendor_name, PO_date, total_amount FROM po_master");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                rows++;
+                LocalDate d = parsePoDate(rs.getString("PO_date"));
+                if (d == null) { unparsed++; continue; }
+                if (d.isBefore(earliest) || d.isAfter(today)) continue;
+
+                String vendor = rs.getString("vendor_name");
+                vendor = (vendor == null || vendor.trim().isEmpty()) ? "Unknown vendor" : vendor.trim();
+
+                double amt = 0;
+                String amtRaw = rs.getString("total_amount");
+                if (amtRaw != null) {
+                    try { amt = Double.parseDouble(amtRaw.replace(",", "").replace("\u20B9", "").trim()); }
+                    catch (NumberFormatException ignore) { }
+                }
+
+                if (d.equals(today))          addPo(todayMap, vendor, amt);
+                if (!d.isBefore(from7))       addPo(map7, vendor, amt);
+                if (!d.isBefore(from30))      addPo(map30, vendor, amt);
+                if (!d.isBefore(from60))      addPo(map60, vendor, amt);
+                if (!d.isBefore(fromYear))    addPo(mapYear, vendor, amt);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        sortByValue(todayMap); sortByValue(map7); sortByValue(map30); sortByValue(map60); sortByValue(mapYear);
+        System.out.println("[Home] po_master rows=" + rows + ", unparsed dates=" + unparsed
+                + ", vendors this year=" + mapYear.size());
     }
 }
