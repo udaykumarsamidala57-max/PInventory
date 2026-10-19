@@ -212,10 +212,7 @@ body.paper-a5 .sign-title { font-size: 10px; }
     </div>
 
     <div class="action-bar">
-        <div class="paper-note">
-            <%= rows.size() %> item<%= rows.size() == 1 ? "" : "s" %> &middot; suggested paper: <b><%= autoPaper %></b>
-            (A5 up to <%= A5_MAX_ITEMS %> items, A4 for more)
-        </div>
+        
         <button class="btn <%= "A5".equals(paper) ? "primary" : "" %>" id="btnA5" onclick="printOn('A5')"><i class="fa fa-print"></i> Print A5</button>
         <button class="btn <%= "A4".equals(paper) ? "primary" : "" %>" id="btnA4" onclick="printOn('A4')"><i class="fa fa-print"></i> Print A4</button>
     </div>
