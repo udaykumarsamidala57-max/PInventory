@@ -62,6 +62,20 @@
             </label>
           </div>
         </div>
+
+        <!-- Event tag: shown only for Issue indents, to track event expenses -->
+        <div class="field field-wide" id="eventField" style="display:none">
+          <label for="eventSelect">Event <span style="font-weight:400;color:#667085">(optional &ndash; tag this issue to an event)</span></label>
+          <select name="eventId" id="eventSelect">
+            <option value="">-- No event --</option>
+            <c:forEach var="ev" items="${masterData.events}">
+              <option value="<c:out value='${ev.id}'/>"><c:out value="${ev.name}"/><c:if test="${not empty ev.date}"> (<c:out value="${ev.date}"/>)</c:if></option>
+            </c:forEach>
+          </select>
+          <c:if test="${empty masterData.events}">
+            <small style="color:#667085">No active events. Add one from the Events page.</small>
+          </c:if>
+        </div>
       </div>
 
       <div class="table-wrapper">
@@ -125,6 +139,18 @@ const items = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   restrictDateToToday();
+
+  // Event drop-down only for Issue indents
+  const eventField = document.getElementById("eventField");
+  const eventSelect = document.getElementById("eventSelect");
+  const syncEventField = () => {
+    const t = document.querySelector('input[name="indentType"]:checked');
+    const isIssue = t && t.value === "Issue";
+    eventField.style.display = isIssue ? "" : "none";
+    if (!isIssue) eventSelect.value = "";      // never send an event with a Purchase indent
+  };
+  document.querySelectorAll('input[name="indentType"]').forEach(r => r.addEventListener("change", syncEventField));
+  syncEventField();
 
   const deptSelect = document.getElementById("departmentSelect");
 

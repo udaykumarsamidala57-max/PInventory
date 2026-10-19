@@ -132,6 +132,9 @@ try {
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory Platform</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
+  <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <a href="<%= request.getContextPath() %>/EventsServlet"><i class="fa-solid fa-calendar-check text-primary"></i> Events</a>
+  <% } %>
 
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Records <i class="fa-solid fa-caret-down"></i></button>

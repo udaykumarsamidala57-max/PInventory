@@ -329,6 +329,24 @@
             </div>
         </div>
 
+        <%
+            String dhOk  = (String) sess.getAttribute("diningSuccess");
+            String dhErr = (String) sess.getAttribute("diningError");
+            sess.removeAttribute("diningSuccess");
+            sess.removeAttribute("diningError");
+            if (dhOk != null || dhErr != null) {
+                String dhMsg = (dhOk != null ? dhOk : dhErr).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+        %>
+        <div class="dh-msg <%= dhOk != null ? "dh-ok" : "dh-err" %>" role="alert">
+            <strong><%= dhOk != null ? "Saved" : "Not saved" %></strong> &ndash; <%= dhMsg %>
+        </div>
+        <style>
+            .dh-msg { margin: 0 0 14px; padding: 10px 14px; border-radius: 6px; font-size: 13.5px; line-height: 1.45; border: 1px solid; }
+            .dh-ok  { background: #f0f9f4; border-color: #b7e0c8; color: #1f6b43; }
+            .dh-err { background: #fff8eb; border-color: #f3d59b; color: #8a5a00; }
+        </style>
+        <% } %>
+
         <form action="DiningHallServlet" method="post" id="diningForm">
             <div class="form-grid">
                 <div class="form-group">

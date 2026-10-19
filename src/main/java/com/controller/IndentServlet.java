@@ -139,6 +139,16 @@ public class IndentServlet extends HttpServlet {
                 }
             }
 
+            // Active events (for tagging Issue indents). Never block the form if this fails.
+            List<Map<String, String>> events = new ArrayList<>();
+            try {
+                EventsServlet.ensureSchema(con, branch);
+                events = EventsServlet.activeEvents(con);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+            masterData.put("events", events);
+
             masterData.put("departments", departments);
             masterData.put("categories", categories);
             masterData.put("subcategories", subcats);
@@ -171,6 +181,8 @@ public class IndentServlet extends HttpServlet {
         String date = request.getParameter("date");
         String department = request.getParameter("department");
         String indentType = request.getParameter("indentType");
+        String eventIdText = request.getParameter("eventId");
+        eventIdText = eventIdText == null ? "" : eventIdText.trim();
 
         if (!"Global".equalsIgnoreCase(role) && (department == null || department.trim().isEmpty())) {
             department = deptSession;
@@ -210,6 +222,16 @@ public class IndentServlet extends HttpServlet {
 
         try {
             con = DBUtil.getConnection(branch);
+
+            // Event tag: only for Issue indents, and only an Active event
+            Integer eventId = null;
+            if ("Issue".equalsIgnoreCase(indentType) && !eventIdText.isEmpty()) {
+                EventsServlet.ensureSchema(con, branch);          // DDL must run before the transaction
+                eventId = Integer.valueOf(eventIdText);
+                if (!EventsServlet.isActiveEvent(con, eventId))
+                    throw new SQLException("The selected event is not active any more. Please choose another event.");
+            }
+
             con.setAutoCommit(false);
 
             try (PreparedStatement psSeqUpdate = con.prepareStatement(
@@ -228,9 +250,9 @@ public class IndentServlet extends HttpServlet {
             String insertSql =
                 "INSERT INTO indent (" +
                 "indent_no, indent_date, item_id, item_name, qty, department, requested_by," +
-                "purpose, remarks, uom, PurchaseorIssue, stock" +
+                "purpose, remarks, uom, PurchaseorIssue, stock" + (eventId != null ? ", event_id" : "") +
                 ") VALUES (?,?,?,?,?,?,?,?,?,?,?, " +
-                "(SELECT COALESCE(balance_qty,0) FROM stock WHERE stock.item_id = ?))";
+                "(SELECT COALESCE(balance_qty,0) FROM stock WHERE stock.item_id = ?)" + (eventId != null ? ", ?" : "") + ")";
 
             try (PreparedStatement ps = con.prepareStatement(insertSql)) {
                 for (IndentItem it : itemsList) {
@@ -246,6 +268,7 @@ public class IndentServlet extends HttpServlet {
                     ps.setString(10, it.getUom());
                     ps.setString(11, indentType);
                     ps.setInt(12, it.getItemId());
+                    if (eventId != null) ps.setInt(13, eventId);
                     ps.addBatch();
                 }
                 ps.executeBatch();

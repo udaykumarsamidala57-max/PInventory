@@ -695,7 +695,12 @@
     .top-card.by-qty .top-val { color: var(--text-muted); font-weight: 400; }
     /* Vendor price comparison */
     .pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 10px; }
-    .pc-panel { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); min-width: 0; display: flex; flex-direction: column; }
+    .pc-panel {
+        border: 1px solid var(--border-strong); border-radius: var(--radius); background: var(--surface);
+        min-width: 0; display: flex; flex-direction: column;
+        box-shadow: 0 1px 2px rgba(31, 42, 55, 0.06);
+    }
+    .pc-panel .pc-head { border-bottom-color: var(--border-strong); }
     .pc-head {
         display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;
         padding: 9px 12px; border-bottom: 1px solid var(--border); background: var(--surface-2);
@@ -972,6 +977,72 @@
         <% } %>
     </div>
 
+    <!-- Vendor price comparison: 10 items bought from 2+ vendors -->
+    <div class="card">
+        <div class="card-header">
+            <div class="tab-header">
+                <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
+            </div>
+            <div><span class="today-total"> last 12 months &middot; unit price after discount, excl. GST</span></div>
+        </div>
+        <div class="card-body">
+            <% if (priceByCat.isEmpty()) { %>
+                <div class="empty" style="padding:12px 0;">No item was bought from two or more different vendors in the last 12 months.</div>
+            <% } else { %>
+            <div class="pc-cats" role="tablist" aria-label="Filter by category">
+                <% int cb = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) { %>
+                <button type="button" class="pc-cat-btn <%= cb == 0 ? "active" : "" %>" data-cat="<%= cb %>" onclick="setPcCat(<%= cb %>)">
+                    <%= h(ce.getKey()) %> <span class="pc-cat-n" title="items bought from 2+ vendors"><%= priceCatTotals.containsKey(ce.getKey()) ? priceCatTotals.get(ce.getKey()) : ce.getValue().size() %></span>
+                </button>
+                <% cb++; } %>
+            </div>
+            <% int ci = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) {
+                 List<Object[]> catItems = ce.getValue();
+            %>
+            <div class="pc-grid pc-cat <%= ci == 0 ? "active" : "" %>" data-cat="<%= ci %>">
+            <% for (Object[] it : catItems) {
+                 List<Object[]> vendors = (List<Object[]>) it[3];
+                 String uom = it[1] == null ? "" : String.valueOf(it[1]).trim();
+                 double best = (Double) vendors.get(0)[1];
+                 double worst = (Double) vendors.get(vendors.size() - 1)[1];
+                 double spread = best > 0 ? (worst - best) / best * 100.0 : 0;
+            %>
+                <div class="pc-panel">
+                    <div class="pc-head">
+                        <div class="pc-item">
+                            <span class="pc-name"><%= h(String.valueOf(it[0])) %></span>
+                            <span class="pc-sub"><%= vendors.size() %> vendors &middot; <%= rupee((Double) it[2]) %> purchased</span>
+                            <% int poCnt = it.length > 4 ? (Integer) it[4] : 0; %>
+                            <span class="pc-use"><i class="fas fa-shopping-cart"></i> Bought on <%= poCnt %> PO<%= poCnt == 1 ? "" : "s" %></span>
+                        </div>
+                        <% if (spread >= 0.5) { %><span class="pc-spread" title="Highest vs lowest average price"><%= fmtIN(spread, 0) %>% gap</span><% } %>
+                    </div>
+                    <ul class="pc-list">
+                    <% for (int v = 0; v < vendors.size(); v++) {
+                         Object[] vr = vendors.get(v);
+                         double avg = (Double) vr[1];
+                         double diff = best > 0 ? (avg - best) / best * 100.0 : 0;
+                    %>
+                        <li class="<%= v == 0 ? "pc-best" : "" %>">
+                            <div class="pc-row">
+                                <span class="pc-vendor"><%= h(String.valueOf(vr[0])) %></span>
+                                <span class="pc-rate">&#8377;<%= fmtIN(avg, 2) %><% if (!uom.isEmpty()) { %><small>/<%= h(uom) %></small><% } %></span>
+                            </div>
+                            <div class="pc-meta">
+                                <span><%= vr[4] %> PO<%= ((Integer) vr[4]) == 1 ? "" : "s" %> &middot; last &#8377;<%= fmtIN((Double) vr[2], 2) %> on <%= vr[5] %></span>
+                                <% if (v == 0) { %><span class="pc-tag">Lowest</span><% } else { %><span class="pc-diff">+<%= fmtIN(diff, 1) %>%</span><% } %>
+                            </div>
+                        </li>
+                    <% } %>
+                    </ul>
+                </div>
+            <% } %>
+            </div>
+            <% ci++; } %>
+            <% } %>
+        </div>
+    </div>
+
     <!-- Top 3 most consumed items per department -->
     <div class="card top-card" id="topCard">
         <div class="card-header">
@@ -1035,72 +1106,6 @@
                     </div>
                 <% } %>
             </div>
-            <% } %>
-        </div>
-    </div>
-
-    <!-- Vendor price comparison: 10 items bought from 2+ vendors -->
-    <div class="card">
-        <div class="card-header">
-            <div class="tab-header">
-                <span class="po-card-title" style="border-right:none"><i class="fas fa-balance-scale"></i> Vendor Price Comparison</span>
-            </div>
-            <div><span class="today-total"> last 12 months &middot; unit price after discount, excl. GST</span></div>
-        </div>
-        <div class="card-body">
-            <% if (priceByCat.isEmpty()) { %>
-                <div class="empty" style="padding:12px 0;">No item was bought from two or more different vendors in the last 12 months.</div>
-            <% } else { %>
-            <div class="pc-cats" role="tablist" aria-label="Filter by category">
-                <% int cb = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) { %>
-                <button type="button" class="pc-cat-btn <%= cb == 0 ? "active" : "" %>" data-cat="<%= cb %>" onclick="setPcCat(<%= cb %>)">
-                    <%= h(ce.getKey()) %> <span class="pc-cat-n" title="items bought from 2+ vendors"><%= priceCatTotals.containsKey(ce.getKey()) ? priceCatTotals.get(ce.getKey()) : ce.getValue().size() %></span>
-                </button>
-                <% cb++; } %>
-            </div>
-            <% int ci = 0; for (Map.Entry<String, List<Object[]>> ce : priceByCat.entrySet()) {
-                 List<Object[]> catItems = ce.getValue();
-            %>
-            <div class="pc-grid pc-cat <%= ci == 0 ? "active" : "" %>" data-cat="<%= ci %>">
-            <% for (Object[] it : catItems) {
-                 List<Object[]> vendors = (List<Object[]>) it[3];
-                 String uom = it[1] == null ? "" : String.valueOf(it[1]).trim();
-                 double best = (Double) vendors.get(0)[1];
-                 double worst = (Double) vendors.get(vendors.size() - 1)[1];
-                 double spread = best > 0 ? (worst - best) / best * 100.0 : 0;
-            %>
-                <div class="pc-panel">
-                    <div class="pc-head">
-                        <div class="pc-item">
-                            <span class="pc-name"><%= h(String.valueOf(it[0])) %></span>
-                            <span class="pc-sub"><%= vendors.size() %> vendors &middot; <%= rupee((Double) it[2]) %> purchased</span>
-                            <% int poCnt = it.length > 4 ? (Integer) it[4] : 0; %>
-                            <span class="pc-use"><i class="fas fa-shopping-cart"></i> Bought on <%= poCnt %> PO<%= poCnt == 1 ? "" : "s" %></span>
-                        </div>
-                        <% if (spread >= 0.5) { %><span class="pc-spread" title="Highest vs lowest average price"><%= fmtIN(spread, 0) %>% gap</span><% } %>
-                    </div>
-                    <ul class="pc-list">
-                    <% for (int v = 0; v < vendors.size(); v++) {
-                         Object[] vr = vendors.get(v);
-                         double avg = (Double) vr[1];
-                         double diff = best > 0 ? (avg - best) / best * 100.0 : 0;
-                    %>
-                        <li class="<%= v == 0 ? "pc-best" : "" %>">
-                            <div class="pc-row">
-                                <span class="pc-vendor"><%= h(String.valueOf(vr[0])) %></span>
-                                <span class="pc-rate">&#8377;<%= fmtIN(avg, 2) %><% if (!uom.isEmpty()) { %><small>/<%= h(uom) %></small><% } %></span>
-                            </div>
-                            <div class="pc-meta">
-                                <span><%= vr[4] %> PO<%= ((Integer) vr[4]) == 1 ? "" : "s" %> &middot; last &#8377;<%= fmtIN((Double) vr[2], 2) %> on <%= vr[5] %></span>
-                                <% if (v == 0) { %><span class="pc-tag">Lowest</span><% } else { %><span class="pc-diff">+<%= fmtIN(diff, 1) %>%</span><% } %>
-                            </div>
-                        </li>
-                    <% } %>
-                    </ul>
-                </div>
-            <% } %>
-            </div>
-            <% ci++; } %>
             <% } %>
         </div>
     </div>

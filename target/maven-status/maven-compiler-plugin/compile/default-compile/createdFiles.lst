@@ -36,6 +36,7 @@ com\controller\Asset\AuditController.class
 com\controller\Asset\StaffIssuedAssetsServlet.class
 com\bean\DBUtil2.class
 com\controller\AddStock.class
+com\controller\DiningHallServlet$Line.class
 com\bean\AggregatedItem.class
 com\controller\SendPendingIndentPDF.class
 com\bean\IndentItemFull.class
@@ -102,3 +103,4 @@ com\bean\PO.class
 com\bean\Asset.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
 com\menu\MenuItemsServlet.class
+com\controller\EventsServlet.class
