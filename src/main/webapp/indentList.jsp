@@ -330,6 +330,61 @@ body {
 @media (max-width: 600px) {
   .main-content { padding: 8px 6px 20px; }
 }
+
+/* ---------- Mobile: Indent Report / Issue Report / Filter buttons ---------- */
+.m-bar { display: none; }
+@media (max-width: 768px) {
+  .m-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .m-btn {
+    height: 38px;
+    padding: 0 10px;
+    border: 1px solid var(--sf-border);
+    background: #fff;
+    color: var(--sf-text);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    position: relative;
+  }
+  .m-btn i { font-size: 12px; }
+  .m-btn .m-count {
+    background: #eef1f4; color: var(--sf-muted);
+    border-radius: 10px; padding: 0 7px;
+    font-size: 11px; line-height: 18px;
+  }
+  .m-tab[data-pane="purchase"].active { border-color: var(--sf-purchase); background: #fff6ee; color: #9a4a00; box-shadow: inset 0 -3px 0 var(--sf-purchase); }
+  .m-tab[data-pane="issue"].active    { border-color: var(--sf-issue);    background: var(--sf-green-bg); color: #1b5e30; box-shadow: inset 0 -3px 0 var(--sf-issue); }
+  .m-tab.active .m-count { background: #fff; color: inherit; }
+  .m-filter.open { border-color: var(--sf-blue); background: #eef6fd; color: var(--sf-blue-dark); }
+  .m-filter .m-dot {
+    display: none;
+    position: absolute; top: 5px; right: 5px;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--sf-red);
+  }
+  .m-filter.has-filters .m-dot { display: block; }
+
+  /* filters hidden until "Filter" is tapped */
+  .search-bar { display: none; }
+  .search-bar.m-open { display: flex; }
+
+  /* one report at a time */
+  .split[data-show="purchase"] .pane-issue,
+  .split[data-show="issue"] .pane-purchase { display: none; }
+  #expandAll { display: none; }
+}
+@media (max-width: 360px) {
+  .m-btn { font-size: 11.5px; padding: 0 7px; gap: 4px; }
+}
 </style>
 </head>
 
@@ -345,7 +400,20 @@ body {
     <span class="total">&middot; <%= indents.size() %> items</span>
   </div>
 
-  <div class="search-bar">
+  <!-- Mobile only: switch between the two reports and open the filters -->
+  <div class="m-bar">
+    <button type="button" class="m-btn m-tab active" data-pane="purchase" onclick="showReport('purchase')">
+      <i class="fa fa-cart-shopping"></i> Indent Report <span class="m-count" id="mCountPurchase"><%= purchaseList.size() %></span>
+    </button>
+    <button type="button" class="m-btn m-tab" data-pane="issue" onclick="showReport('issue')">
+      <i class="fa fa-dolly"></i> Issue Report <span class="m-count" id="mCountIssue"><%= issueList.size() %></span>
+    </button>
+    <button type="button" class="m-btn m-filter" id="mFilterBtn" onclick="toggleMobileFilters()" aria-expanded="false">
+      <i class="fa fa-filter"></i> Filter <span class="m-dot"></span>
+    </button>
+  </div>
+
+  <div class="search-bar" id="searchBar">
     <div class="filter-group grow">
       <label>Keyword Search</label>
       <input type="text" id="keywordSearch" placeholder="Search by any field..." onkeyup="filterTable()">
@@ -387,14 +455,14 @@ body {
     </div>
 
     <div class="actions-group">
-      <button class="btn" onclick="filterTable()"><i class="fa fa-filter"></i> Filter</button>
+      <button class="btn" onclick="filterTable(); closeMobileFilters()"><i class="fa fa-filter"></i> Filter</button>
       <button class="btn btn-secondary" onclick="resetFilters()"><i class="fa fa-rotate-left"></i> Reset</button>
       <button class="btn btn-success" onclick="downloadExcel()"><i class="fa fa-file-excel"></i> Download Excel</button>
       <button id="expandAll" class="btn btn-secondary" onclick="toggleExpand()">Collapse All</button>
     </div>
   </div>
 
-  <div class="split">
+  <div class="split" id="split" data-show="purchase">
 
   <% for (int p = 0; p < panes.size(); p++) {
        List<IndentItemFull> list = panes.get(p);
@@ -541,8 +609,37 @@ function updateCounts() {
     const n = Array.from(p.querySelectorAll('tbody tr.data-row'))
                    .filter(r => r.style.display !== 'none').length;
     p.querySelector('.pane-count').textContent = n;
+    const m = document.getElementById(p.classList.contains('pane-issue') ? 'mCountIssue' : 'mCountPurchase');
+    if (m) m.textContent = n;
   });
+  markActiveFilters();
 }
+
+/* ---------- Mobile: Indent Report / Issue Report tabs + Filter panel ---------- */
+function showReport(which) {
+  document.getElementById('split').dataset.show = which;
+  document.querySelectorAll('.m-tab').forEach(b => b.classList.toggle('active', b.dataset.pane === which));
+  try { localStorage.setItem('indentReportTab', which); } catch (e) {}
+}
+function toggleMobileFilters(force) {
+  const bar = document.getElementById('searchBar');
+  const open = (typeof force === 'boolean') ? force : !bar.classList.contains('m-open');
+  bar.classList.toggle('m-open', open);
+  const btn = document.getElementById('mFilterBtn');
+  btn.classList.toggle('open', open);
+  btn.setAttribute('aria-expanded', open);
+}
+function closeMobileFilters() { toggleMobileFilters(false); }
+function markActiveFilters() {
+  const any = ['keywordSearch', 'fromDate', 'toDate', 'deptFilter', 'statusFilter']
+      .some(id => document.getElementById(id).value.trim() !== '');
+  document.getElementById('mFilterBtn').classList.toggle('has-filters', any);
+}
+(function () {
+  let tab = 'purchase';
+  try { tab = localStorage.getItem('indentReportTab') || 'purchase'; } catch (e) {}
+  showReport(tab === 'issue' ? 'issue' : 'purchase');
+})();
 
 function filterTable() {
   const fromDate = document.getElementById('fromDate').value;
