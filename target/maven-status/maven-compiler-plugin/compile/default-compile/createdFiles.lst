@@ -17,8 +17,10 @@ com\controller\MealSummaryServlet.class
 com\controller\IndentServlet.class
 com\bean\DBUtil.class
 com\controller\Asset\AssetLocationController.class
+com\bean\AppConfig.class
 com\bean\DBUtil3.class
 com\DAO\AssetLocationDAO.class
+com\website\servlet\LatestNewsServlet.class
 com\controller\HRA\CandidateServlet.class
 com\controller\Asset\CategoryController.class
 com\controller\HRA\VacancyServlet.class
@@ -34,10 +36,12 @@ com\controller\Asset\VendorController.class
 com\DAO\CategoryDAO.class
 com\controller\Asset\AuditController.class
 com\controller\Asset\StaffIssuedAssetsServlet.class
+com\website\bean\PageBean$Section.class
 com\bean\DBUtil2.class
 com\controller\AddStock.class
 com\controller\DiningHallServlet$Line.class
 com\bean\AggregatedItem.class
+com\website\bean\PageBean.class
 com\controller\SendPendingIndentPDF.class
 com\bean\IndentItemFull.class
 com\controller\IssueApprove.class
@@ -48,6 +52,7 @@ com\controller\HRA\resume.class
 com\Employee\EmployeeTreeServlet$1.class
 com\controller\SendOTPServlet.class
 com\controller\HRA\VacancyServlet$Vacancy.class
+com\website\bean\PhotoUpload.class
 com\DAO\AllocationDAO.class
 com\DAO\ReportDAO.class
 com\controller\Admissions\AdmissionEnquiryServlet.class
@@ -56,16 +61,19 @@ com\controller\ViewGRNServlet.class
 com\controller\Asset\AllocationController.class
 com\controller\Admissions\MarksReport.class
 com\controller\Asset\AssetServlet.class
+com\website\bean\PhotoStore.class
 com\bean\Indentlist.class
 com\controller\Admissions\UploadCSVServlet.class
 com\controller\DiningHallConsumptionReportServlet.class
 com\controller\IndentlistServlet.class
+com\website\bean\WebsiteDB.class
 com\controller\Asset\DashboardController.class
 com\DAO\LocationDAO.class
 com\controller\POListServlet.class
 com\controller\AIndentListServlet.class
 com\Service\RequestBookingServlet.class
 com\Service\RequestReportServlet.class
+com\website\servlet\PageServlet.class
 com\DAO\MaintenanceDAO.class
 com\controller\UpdateConsumptionByDateServlet.class
 com\controller\StoreAccessAdminServlet.class
@@ -81,6 +89,7 @@ com\controller\Asset\MaintenanceController.class
 com\controller\Asset\TransferControlle.class
 com\bean\DBUtil4.class
 com\controller\Asset\Staff.class
+com\website\servlet\PhotoMoveServlet.class
 com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\DAO\TransferDAO.class
 com\bean\DBUtil6.class
@@ -91,6 +100,7 @@ com\controller\Asset\LocationController.class
 com\Service\Incharge.class
 com\controller\Asset\ReportController.class
 com\bean\Indent.class
+com\website\servlet\UpcomingEventsServlet.class
 com\Employee\EmployeeTreeServlet$Employee.class
 com\DAO\AssetDAO.class
 com\Service\TrackRequestServlet.class
@@ -100,6 +110,7 @@ com\controller\Admissions\UpdateAdmissionStatusServlet.class
 com\Employee\Employee.class
 com\controller\PO.class
 com\bean\PO.class
+com\website\bean\PageBean$SectionImage.class
 com\bean\Asset.class
 com\controller\PurchaseOrderServlet$1MergedItem.class
 com\menu\MenuItemsServlet.class

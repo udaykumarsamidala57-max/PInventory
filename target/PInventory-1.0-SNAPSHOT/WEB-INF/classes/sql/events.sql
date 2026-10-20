@@ -14,3 +14,7 @@ CREATE TABLE IF NOT EXISTS `events` (
   UNIQUE KEY `uq_events_name` (`event_name`),
   KEY `idx_events_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Tag Issue indents with an event (to track event expenses).
+-- Also added automatically by the app if missing. Skip this if the column already exists.
+ALTER TABLE `indent` ADD COLUMN `event_id` int DEFAULT NULL, ADD KEY `idx_indent_event` (`event_id`);

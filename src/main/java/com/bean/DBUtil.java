@@ -1,17 +1,13 @@
 package com.bean;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
 public class DBUtil {
 
-    private static final String HOST = "shuttle.proxy.rlwy.net";
-    private static final String PORT = "26985";
-    private static final String USER = "root";
-    private static final String PASSWORD = "vSZVibKCzvcovcGjaLlxrTddrjiNPVQn";
+    // Server, user and password come from the settings (see AppConfig), not from the code.
 
     // Store-code whitelist follows OFFICE_CENTRAL_ERP; user access is loaded from SQL.
     private static final Map<String, String> DATABASES = Map.of(
@@ -34,10 +30,7 @@ public class DBUtil {
     public static Connection getConnection(String storeCode) throws SQLException {
         String canonical = canonicalBranch(storeCode);
         String database = DATABASES.get(canonical);
-        String url = "jdbc:mysql://" + HOST + ":" + PORT + "/" + database
-                + "?useSSL=false&allowPublicKeyRetrieval=true"
-                + "&serverTimezone=UTC&tcpKeepAlive=true";
-        return DriverManager.getConnection(url, USER, PASSWORD);
+        return AppConfig.connect("MYSQL", database);
     }
 
     /** Uses the fixed SRS inventory database for authentication and user access assignments. */

@@ -119,7 +119,7 @@ try {
 <link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css?v=20261013e">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css?v=20261019e">
 </head>
 
 <body class="sidebar-collapsed">
@@ -130,14 +130,11 @@ try {
 <div class="sidebar" id="sidebar">
   <h2><i class="fa-solid fa-layer-group"></i> <%= branchess.toUpperCase() %> Workspace</h2>
 <% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
-  <div class="sidebar-label">Inventory Platform</div>
+  <div class="sidebar-label">Inventory</div>
   <a href="Home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
-  <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-  <a href="<%= request.getContextPath() %>/EventsServlet"><i class="fa-solid fa-calendar-check text-primary"></i> Events</a>
-  <% } %>
 
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Records <i class="fa-solid fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Process <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <a href="<%= request.getContextPath() %>/IndentServlet"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
       <a href="<%= request.getContextPath() %>/IndentlistServlet"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
@@ -147,6 +144,32 @@ try {
       <% } %>
       <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
         <a href="DIndentListServlet"><i class="fa-solid fa-utensils text-warning"></i> Approve Dining Indent</a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fa-solid fa-cart-shopping text-danger"></i> Purchase Execution <i class="fa-solid fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
+        <a href="POListServlet"><i class="fa-solid fa-file-circle-check text-success"></i> Approve PO</a>
+        <a href="ListPO.jsp"><i class="fa-solid fa-clipboard-list text-warning"></i> PO Report</a>
+      <% } %>
+      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+        <a href="IndentPO"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
+        <a href="VendorMaster.jsp"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="dropdown">
+    <button class="dropdown-btn"><i class="fa-solid fa-warehouse text-success"></i> GRN <i class="fa-solid fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+        <a href="GRNServlet"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
+      <% } %>
+      <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)){ %>
+        <a href="viewGRN"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
       <% } %>
     </div>
   </div>
@@ -163,34 +186,16 @@ try {
       <a href="Issuereport.jsp"><i class="fa-solid fa-receipt text-danger"></i> Issue Report</a>
     </div>
   </div>
-   <% } %>
-
-  <div class="dropdown">
-    <button class="dropdown-btn"><i class="fa-solid fa-cart-shopping text-danger"></i> Purchase Execution <i class="fa-solid fa-caret-down"></i></button>
-    <div class="dropdown-content">
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
-        <a href="POListServlet"><i class="fa-solid fa-file-circle-check text-success"></i> Approve PO</a>
-        <a href="ListPO.jsp"><i class="fa-solid fa-clipboard-list text-warning"></i> PO Report</a>
-      <% } %>
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-        <a href="IndentPO"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
-        <a href="GRNServlet"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
-        <a href="VendorMaster.jsp"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
-      <% } %>
-      <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)){ %>
-      <a href="viewGRN"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
-      <% } %>
-    </div>
-  </div>
+  <% } %>
 
   <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
-    <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall Operations <i class="fa-solid fa-caret-down"></i></button>
+    <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <a href="DiningHallServlet"><i class="fa-solid fa-kitchen-set text-primary"></i> DH Consumption Entry</a>
       <a href="DiningHallConsumptionReportServlet"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
       <% if ("Global".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)){ %>
-       <a href="editConsumption.jsp"><i class="fa-solid fa-chart-line text-success"></i>Edit Consumption</a>
+       <a href="editConsumption.jsp"><i class="fa-solid fa-chart-line text-success"></i> Edit Consumption</a>
        <% } %>
     </div>
   </div>
@@ -213,7 +218,7 @@ try {
     <div class="dropdown-content">
       <a href="ItemsMaster.jsp"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="AddStock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
-      <a href="MenuItemsServlet"><i class="fa-solid fa-square-plus text-success"></i>Dining Hall Menu Config</a>
+      <a href="MenuItemsServlet"><i class="fa-solid fa-square-plus text-success"></i> Dining Hall Menu Config</a>
       <a href="StockVerificationServlet"><i class="fas fa-clipboard-check text-success"></i> New Audit</a>
       <a href="StockAuditReportServlet"><i class="fas fa-chart-bar text-info"></i> Audit Report</a>
     </div>
@@ -221,7 +226,6 @@ try {
   <% } %>
 
   <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
-  <div class="sidebar-label">Asset Tracking</div>
   <div class="dropdown asset-menu">
     <button class="dropdown-btn"><i class="fa-solid fa-building text-warning"></i> Fixed Assets <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
@@ -231,6 +235,22 @@ try {
       <a href="AssetServlet"><i class="fa-solid fa-cubes"></i> Asset Creation</a>
       <a href="AssetLocationController"><i class="fa-solid fa-route"></i> Asset Relocation</a>
       <a href="StaffIssued"><i class="fa-solid fa-route"></i> Staff Issued Items</a>
+    </div>
+  </div>
+  <% } %>
+
+  <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <div class="sidebar-label">Website</div>
+  <div class="dropdown website-menu">
+    <button class="dropdown-btn"><i class="fa-solid fa-globe text-info"></i> Website <i class="fa-solid fa-caret-down"></i></button>
+    <div class="dropdown-content">
+      <a href="<%= request.getContextPath() %>/EventsServlet"><i class="fa-solid fa-calendar-check text-primary"></i> Events</a>
+      <a href="<%= request.getContextPath() %>/website/pages"><i class="fa-solid fa-sitemap text-info"></i> Page Builder</a>
+      <a href="<%= request.getContextPath() %>/website/latestNews.jsp"><i class="fa-solid fa-newspaper text-warning"></i> Latest News</a>
+      <a href="<%= request.getContextPath() %>/website/upcoming-events"><i class="fa-solid fa-calendar-days text-success"></i> Upcoming Events</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
+      <a href="<%= request.getContextPath() %>/website/move-photos"><i class="fa-solid fa-cloud-arrow-up text-purple"></i> Photo Storage</a>
+      <% } %>
     </div>
   </div>
   <% } %>
@@ -309,14 +329,16 @@ try {
       <h6>Overview</h6>
       <div class="adm-title" id="admPageTitle">Dashboard</div>
     </div>
+    <!-- Sub-menu of the current module (filled by script) -->
+    <nav class="subnav" id="subnav" aria-label="Module pages" hidden>
+      <button type="button" class="subnav-btn" id="subnavBtn" aria-haspopup="true" aria-expanded="false">
+        <i class="subnav-ico"></i><span class="subnav-name"></span><i class="fa-solid fa-chevron-down subnav-caret"></i>
+      </button>
+      <div class="subnav-tabs" id="subnavTabs"></div>
+    </nav>
   </div>
 
   <div class="header-right-group">
-    <p class="live-clock-badge">
-        <span><i class="fa-regular fa-calendar text-primary" style="margin-right: 4px;"></i> <%= todayDate %></span>
-        <span class="clock-time"><i class="fa-regular fa-clock text-primary" style="margin-right: 4px;"></i> <span id="istClock">--:--:-- -- IST</span></span>
-    </p>
-
     <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
@@ -376,6 +398,22 @@ try {
         </div>
         <% } %>
     <% } %>
+
+    <!-- Gmail-style app launcher (built from the menu below, so role rules stay in one place) -->
+    <div class="apps-wrap">
+      <button type="button" class="apps-btn" id="appsBtn" aria-label="Apps" aria-haspopup="true" aria-expanded="false" title="Apps">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M6 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm6 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/></svg>
+      </button>
+      <div class="apps-panel" id="appsPanel" role="dialog" aria-label="Apps">
+        <div class="apps-top">
+          <span class="apps-title">Apps</span>
+          <button type="button" class="apps-close" id="appsClose" aria-label="Close apps"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="apps-search"><i class="fa-solid fa-magnifying-glass"></i><input type="search" id="appsSearch" placeholder="Search apps" autocomplete="off"></div>
+        <div class="apps-body" id="appsBody"></div>
+        <div class="apps-foot" id="appsFoot"></div>
+      </div>
+    </div>
 
     <div class="user-info-card">
       <div class="user-initials"><%= initial %></div>
@@ -611,6 +649,161 @@ document.addEventListener("click", function(event){
         if (btn) btn.classList.remove("is-open");
     }
 });
+
+/* ===== Navigation: 9-dot launcher (modules) + in-page sub-menu ===== */
+(function () {
+  var btn = document.getElementById('appsBtn'), panel = document.getElementById('appsPanel');
+  var body = document.getElementById('appsBody'), foot = document.getElementById('appsFoot');
+  var search = document.getElementById('appsSearch'), side = document.getElementById('sidebar');
+  if (!btn || !panel || !side) return;
+
+  // Menu links are written relative to the app root; make them absolute so they also work
+  // from pages inside sub-folders (website/, Service/, Asset/ ...).
+  var CTX = '<%= request.getContextPath() %>';
+  side.querySelectorAll('a[href]').forEach(function (a) {
+    var h = a.getAttribute('href');
+    if (h && !/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(h)) a.setAttribute('href', CTX + '/' + h);
+  });
+
+  var FOOT = ['SelectStoreServlet', 'StoreAccessAdminServlet', 'Logout.jsp'];
+  var TONES = /\btext-(primary|success|info|warning|danger|purple|secondary)\b/;
+  var modules = [], current = null, sections = [], section = null;
+  function clean(t) { return (t || '').replace(/\s+/g, ' ').trim(); }
+  function toneOf(i) { var m = i && i.className.match(TONES); return m ? m[1] : 'primary'; }
+  function iconClass(i, dflt) { return i ? i.className.replace(/\btext-[a-z]+\b/g, '').trim() : dflt; }
+  function sec(name) { section = { name: name, mods: [] }; sections.push(section); return section; }
+  function mod(name, icon) {
+    current = { name: name, icon: icon, links: [] }; modules.push(current);
+    (section || sec('Apps')).mods.push(current); return current;
+  }
+  function abs(href) { var a = document.createElement('a'); a.href = href; return a; }
+
+  // ---- 1. Read the (server-side role-filtered) sidebar menu into modules
+  Array.prototype.forEach.call(side.children, function (n) {
+    if (n.classList.contains('sidebar-label')) { sec(clean(n.textContent)); current = null; return; }
+    if (n.tagName === 'A') {
+      var h = n.getAttribute('href') || '';
+      if (FOOT.some(function (f) { return h.indexOf(f) > -1; })) { foot.appendChild(footTile(n)); return; }
+      mod(clean(n.textContent), n.querySelector('i')).links.push(n); current = null; return;   // single page = its own module
+    }
+    if (n.classList.contains('dropdown')) {
+      var b = n.querySelector('.dropdown-btn');
+      var m = mod(clean(b ? b.textContent : 'Menu'), b ? b.querySelector('i:not(.fa-caret-down)') : null);
+      n.querySelectorAll('.dropdown-content a').forEach(function (a) { m.links.push(a); });
+    }
+  });
+  modules = modules.filter(function (m) { return m.links.length; });
+  modules.forEach(function (m) {
+    if (!m.icon) m.icon = m.links[0].querySelector('i');                 // label-only module: use first page's icon
+    m.pages = m.links.map(function (a) {
+      var u = abs(a.getAttribute('href') || '#');
+      return { a: a, href: u.href, path: u.pathname, query: u.search, name: clean(a.textContent), icon: a.querySelector('i') };
+    });
+  });
+  if (!foot.children.length) foot.style.display = 'none';
+
+  // ---- 2. Which module / page is open now?
+  var here = { path: location.pathname, query: location.search }, curMod = null, curPage = null;
+  modules.forEach(function (m) {
+    m.pages.forEach(function (p) {
+      var exact = p.path === here.path && p.query === here.query;
+      var loose = p.path === here.path;
+      if (exact && (!curPage || !curPage.exact)) { curMod = m; curPage = p; curPage.exact = true; }
+      else if (loose && !curPage) { curMod = m; curPage = p; }
+    });
+  });
+
+  // ---- 3. Launcher: one tile per module (search finds individual pages)
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function iconEl(i, dflt, big) {
+    var ic = el('span', 'app-icon'), ii = el('i', iconClass(i, dflt));
+    ic.setAttribute('data-tone', toneOf(i)); ic.appendChild(ii); return ic;
+  }
+  function footTile(a) {
+    var t = el('a', 'app-tile'); t.href = a.getAttribute('href') || '#';
+    t.appendChild(iconEl(a.querySelector('i'), 'fa-solid fa-circle'));
+    t.appendChild(el('span', 'app-label', clean(a.textContent))); return t;
+  }
+  var grid = el('div', 'mod-sections'), results = el('div', 'page-results');
+  sections.forEach(function (sc) {
+    var ms = sc.mods.filter(function (m) { return m.pages; });
+    if (!ms.length) return;
+    var box = el('section', 'mod-section');
+    box.appendChild(el('h4', 'mod-head', sc.name));
+    var g = el('div', 'mod-grid'); box.appendChild(g); grid.appendChild(box);
+    ms.forEach(function (m) { g.appendChild(modTile(m)); });
+  });
+  function modTile(m) {
+    var t = el('a', 'mod-tile' + (m === curMod ? ' is-current' : ''));
+    t.href = m.pages[0].href; t.title = m.pages.map(function (p) { return p.name; }).join(' · ');
+    t.appendChild(iconEl(m.icon, 'fa-solid fa-layer-group'));
+    var tx = el('span', 'mod-text');
+    tx.appendChild(el('span', 'mod-name', m.name));
+    tx.appendChild(el('span', 'mod-sub', m.pages.length + ' page' + (m.pages.length === 1 ? '' : 's')));
+    t.appendChild(tx); return t;
+  }
+  body.appendChild(grid); body.appendChild(results);
+
+  function showResults(q) {
+    q = q.trim().toLowerCase(); results.innerHTML = '';
+    grid.style.display = q ? 'none' : ''; results.style.display = q ? '' : 'none';
+    if (!q) return;
+    var n = 0;
+    modules.forEach(function (m) {
+      m.pages.forEach(function (p) {
+        if (p.name.toLowerCase().indexOf(q) < 0 && m.name.toLowerCase().indexOf(q) < 0) return;
+        var r = el('a', 'page-row' + (p === curPage ? ' is-current' : '')); r.href = p.href;
+        r.appendChild(iconEl(p.icon, 'fa-solid fa-file'));
+        var tx = el('span', 'mod-text'); tx.appendChild(el('span', 'mod-name', p.name)); tx.appendChild(el('span', 'mod-sub', m.name));
+        r.appendChild(tx); results.appendChild(r); n++;
+      });
+    });
+    if (!n) results.appendChild(el('div', 'page-none', 'No page matches "' + q + '"'));
+  }
+
+  var mobile = window.matchMedia('(max-width: 600px)');
+  function open(v) {
+    panel.classList.toggle('open', v); btn.classList.toggle('active', v);
+    btn.setAttribute('aria-expanded', v ? 'true' : 'false');
+    document.body.classList.toggle('apps-lock', v && mobile.matches);
+    if (v) { search.value = ''; showResults(''); body.scrollTop = 0; if (!mobile.matches) setTimeout(function () { search.focus(); }, 30); }
+    if (v) subOpen(false);
+  }
+  btn.addEventListener('click', function (e) { e.stopPropagation(); open(!panel.classList.contains('open')); });
+  panel.addEventListener('click', function (e) { e.stopPropagation(); });
+  var closeBtn = document.getElementById('appsClose');
+  if (closeBtn) closeBtn.addEventListener('click', function () { open(false); });
+  search.addEventListener('input', function () { showResults(search.value); });
+  search.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { var f = results.querySelector('.page-row'); if (f) location.href = f.href; }
+  });
+
+  // ---- 4. Sub-menu of the current module, shown in the header on every page
+  var nav = document.getElementById('subnav'), tabs = document.getElementById('subnavTabs'), sbtn = document.getElementById('subnavBtn');
+  function subOpen(v) { if (!nav) return; nav.classList.toggle('open', v); sbtn.setAttribute('aria-expanded', v ? 'true' : 'false'); }
+  if (nav && curMod) {
+    nav.hidden = false;
+    document.body.classList.add('has-subnav');
+    var ico = sbtn.querySelector('.subnav-ico');
+    ico.className = 'subnav-ico ' + iconClass(curMod.icon, 'fa-solid fa-layer-group');
+    ico.setAttribute('data-tone', toneOf(curMod.icon));
+    sbtn.querySelector('.subnav-name').textContent = curMod.name;
+    curMod.pages.forEach(function (p) {
+      var t = el('a', 'subnav-tab' + (p === curPage ? ' active' : ''));
+      t.href = p.href;
+      if (p === curPage) t.setAttribute('aria-current', 'page');
+      var i = el('i', iconClass(p.icon, 'fa-solid fa-file')); t.appendChild(i);
+      t.appendChild(el('span', null, p.name));
+      tabs.appendChild(t);
+    });
+    var act = tabs.querySelector('.active'); if (act && act.scrollIntoView) act.scrollIntoView({ block: 'nearest', inline: 'center' });
+    sbtn.addEventListener('click', function (e) { e.stopPropagation(); subOpen(!nav.classList.contains('open')); open(false); });
+    tabs.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+
+  document.addEventListener('click', function () { open(false); subOpen(false); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { open(false); subOpen(false); } });
+})();
 </script>
 </body>
 </html>

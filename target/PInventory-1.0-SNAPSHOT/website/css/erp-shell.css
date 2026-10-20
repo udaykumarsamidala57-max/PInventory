@@ -1,0 +1,11 @@
+/* Website pages shown inside the PInventory ERP shell (fixed ERP header on top, fixed footer below). */
+:root { --pb-top: 70px; --erp-head: 70px; --erp-foot: 46px; }
+@media (max-width: 600px) { :root { --pb-top: 58px; --erp-head: 58px; } }
+
+/* the ERP header leaves an empty <main> as the spacer under the fixed header */
+body > main { padding: var(--erp-head) 0 0 !important; min-height: 0 !important; }
+
+/* Page Builder side panels stop above the ERP footer */
+@media (min-width: 901px) {
+    .pb-side, .pb-outline { height: calc(100vh - var(--pb-top) - var(--erp-foot)); }
+}

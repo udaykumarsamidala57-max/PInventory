@@ -1,0 +1,3 @@
+# Local settings with passwords - never commit
+pinventory.properties
+*.local.properties

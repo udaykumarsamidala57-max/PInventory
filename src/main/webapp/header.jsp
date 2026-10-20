@@ -245,6 +245,12 @@ try {
     <button class="dropdown-btn"><i class="fa-solid fa-globe text-info"></i> Website <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
       <a href="<%= request.getContextPath() %>/EventsServlet"><i class="fa-solid fa-calendar-check text-primary"></i> Events</a>
+      <a href="<%= request.getContextPath() %>/website/pages"><i class="fa-solid fa-sitemap text-info"></i> Page Builder</a>
+      <a href="<%= request.getContextPath() %>/website/latestNews.jsp"><i class="fa-solid fa-newspaper text-warning"></i> Latest News</a>
+      <a href="<%= request.getContextPath() %>/website/upcoming-events"><i class="fa-solid fa-calendar-days text-success"></i> Upcoming Events</a>
+      <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
+      <a href="<%= request.getContextPath() %>/website/move-photos"><i class="fa-solid fa-cloud-arrow-up text-purple"></i> Photo Storage</a>
+      <% } %>
     </div>
   </div>
   <% } %>
@@ -650,6 +656,14 @@ document.addEventListener("click", function(event){
   var body = document.getElementById('appsBody'), foot = document.getElementById('appsFoot');
   var search = document.getElementById('appsSearch'), side = document.getElementById('sidebar');
   if (!btn || !panel || !side) return;
+
+  // Menu links are written relative to the app root; make them absolute so they also work
+  // from pages inside sub-folders (website/, Service/, Asset/ ...).
+  var CTX = '<%= request.getContextPath() %>';
+  side.querySelectorAll('a[href]').forEach(function (a) {
+    var h = a.getAttribute('href');
+    if (h && !/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(h)) a.setAttribute('href', CTX + '/' + h);
+  });
 
   var FOOT = ['SelectStoreServlet', 'StoreAccessAdminServlet', 'Logout.jsp'];
   var TONES = /\btext-(primary|success|info|warning|danger|purple|secondary)\b/;
