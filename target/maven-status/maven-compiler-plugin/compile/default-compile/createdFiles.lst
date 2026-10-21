@@ -1,7 +1,9 @@
 com\officecentral\inventory\model\IndentItem.class
 com\Service\MasterServlet.class
 com\officecentral\common\db\AdmissionsDB.class
+com\officecentral\inventory\purchase\POMailServlet.class
 com\officecentral\common\web\SelectStoreServlet.class
+com\officecentral\inventory\purchase\POPdf.class
 com\officecentral\inventory\model\GRNItem.class
 com\controller\Asset\EmployeeController.class
 com\officecentral\common\db\InventoryDB.class
@@ -9,11 +11,14 @@ com\officecentral\inventory\purchase\ApprovePOServlet.class
 com\controller\HRA\viewResumeFile.class
 com\Employee\EmployeeTreeServlet.class
 com\controller\Admissions\DashboardServlet.class
+com\officecentral\inventory\purchase\POPdf$Data.class
 com\officecentral\common\web\SendOTPServlet.class
 com\controller\Asset\AssetLocationController.class
 com\officecentral\inventory\issue\ApproveIssueServlet.class
 com\officecentral\common\db\HrDB.class
 com\officecentral\inventory\indent\EventsServlet.class
+com\officecentral\inventory\purchase\POAlert$Line.class
+com\officecentral\inventory\purchase\POAlert.class
 com\DAO\AssetLocationDAO.class
 com\officecentral\inventory\grn\GRNServlet.class
 com\website\servlet\LatestNewsServlet.class
@@ -82,6 +87,7 @@ com\officecentral\inventory\purchase\NewPOServlet$1MergedItem.class
 com\controller\Admissions\SaveEnquiryServlet.class
 com\officecentral\inventory\dining\DiningHallServlet.class
 com\officecentral\inventory\dining\MenuItemsServlet.class
+com\officecentral\inventory\purchase\POAlert$Recipient.class
 com\officecentral\common\web\RootServlet.class
 com\officecentral\inventory\stock\AddStockServlet.class
 com\controller\Asset\MaintenanceController.class

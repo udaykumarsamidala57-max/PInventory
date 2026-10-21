@@ -856,6 +856,9 @@
                                 <input type="hidden" name="poNumber" value="<%= po.getPoNumber() %>">
                                 <input type="submit" value="View / Print" class="action-btn print-btn" />
                             </form>
+                            <button type="button" class="action-btn mail-btn"
+                                data-po="<%= String.valueOf(po.getPoNumber()).replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;") %>"
+                                onclick="openPoMail(this.dataset.po)">Send Mail</button>
                         </td>
 
                         <td data-label="GRN">
@@ -929,6 +932,146 @@
         </div>
     </div>
 </div>
+
+<!-- ===== Send PO by mail (Finance / Global / Admin users of this store) ===== -->
+<style>
+    .mail-btn { margin-top: 6px; color: #0a6ed1; border-color: #0a6ed1; background: #fff; }
+    .mail-btn:hover { background: #e8f4ff; }
+    .pm-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, .45); display: none; align-items: center;
+                  justify-content: center; z-index: 3000; padding: 16px; }
+    .pm-overlay.open { display: flex; }
+    .pm-box { background: #fff; width: 100%; max-width: 520px; max-height: 90vh; display: flex; flex-direction: column;
+              border-radius: 10px; box-shadow: 0 18px 50px rgba(0,0,0,.25); overflow: hidden; }
+    .pm-head { padding: 14px 18px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .pm-head h3 { margin: 0; font-size: 16px; color: #1d2d3e; }
+    .pm-head small { display: block; color: #516273; font-weight: 400; margin-top: 2px; }
+    .pm-x { border: 0; background: none; font-size: 22px; line-height: 1; cursor: pointer; color: #516273; }
+    .pm-body { padding: 14px 18px; overflow: auto; }
+    .pm-tools { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 8px; color: #516273; }
+    .pm-tools label { white-space: nowrap; margin-left: 10px; cursor: pointer; }
+    .pm-list { border: 1px solid #e5e7eb; border-radius: 8px; max-height: 260px; overflow: auto; }
+    .pm-item { display: flex; gap: 10px; align-items: flex-start; padding: 9px 12px; border-bottom: 1px solid #f0f2f5; cursor: pointer; }
+    .pm-item:last-child { border-bottom: 0; }
+    .pm-item:hover { background: #f7f9fb; }
+    .pm-item input { margin-top: 3px; width: 16px; height: 16px; }
+    .pm-name { font-weight: 600; color: #1d2d3e; font-size: 14px; }
+    .pm-meta { font-size: 12px; color: #516273; word-break: break-all; }
+    .pm-tag { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 10px; background: #e8f4ff; color: #0a6ed1; margin-left: 6px; }
+    .pm-note { width: 100%; box-sizing: border-box; margin-top: 12px; min-height: 64px; border: 1px solid #d1d5db; border-radius: 6px;
+               padding: 8px 10px; font: inherit; font-size: 13px; resize: vertical; }
+    .pm-msg { margin-top: 10px; font-size: 13px; border-radius: 6px; padding: 8px 10px; display: none; white-space: pre-line; }
+    .pm-msg.ok { display: block; background: #e5f5ed; color: #107e3e; }
+    .pm-msg.err { display: block; background: #ffebeb; color: #bb0000; }
+    .pm-msg.info { display: block; background: #e8f4ff; color: #0a6ed1; }
+    .pm-foot { padding: 12px 18px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 8px; }
+    .pm-foot button { height: 36px; padding: 0 18px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    .pm-cancel { background: #fff; border: 1px solid #b3b9c1; color: #1d2d3e; }
+    .pm-send { background: #0070f2; border: 1px solid #0070f2; color: #fff; }
+    .pm-send:disabled { opacity: .55; cursor: not-allowed; }
+    @media (max-width: 600px) { .pm-box { max-height: 96vh; } .pm-foot button { flex: 1; } }
+</style>
+
+<div class="pm-overlay" id="pmOverlay" role="dialog" aria-modal="true" aria-labelledby="pmTitle">
+  <div class="pm-box">
+    <div class="pm-head">
+      <h3 id="pmTitle">Send Purchase Order<small id="pmSub"></small></h3>
+      <button type="button" class="pm-x" onclick="closePoMail()" aria-label="Close">&times;</button>
+    </div>
+    <div class="pm-body">
+      <div class="pm-tools">
+        <span>Finance, Global and Admin users of this store</span>
+        <label><input type="checkbox" id="pmAll"> Select all</label>
+      </div>
+      <div class="pm-list" id="pmList"></div>
+      <textarea class="pm-note" id="pmNote" maxlength="1000" placeholder="Message (optional) - shown at the top of the mail"></textarea>
+      <div class="pm-msg" id="pmMsg"></div>
+    </div>
+    <div class="pm-foot">
+      <button type="button" class="pm-cancel" onclick="closePoMail()">Close</button>
+      <button type="button" class="pm-send" id="pmSend" onclick="sendPoMail()" disabled>Send mail</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var CTX = '<%= request.getContextPath() %>';
+  var current = null;
+  var $ = function (id) { return document.getElementById(id); };
+
+  function msg(text, kind) { var m = $('pmMsg'); m.className = 'pm-msg ' + (kind || ''); m.textContent = text || ''; }
+  function chosen() { return Array.prototype.slice.call(document.querySelectorAll('#pmList input:checked')); }
+  function refresh() {
+    var all = document.querySelectorAll('#pmList input'), on = chosen().length;
+    $('pmSend').disabled = on === 0;
+    $('pmSend').textContent = on > 1 ? 'Send mail (' + on + ')' : 'Send mail';
+    $('pmAll').checked = all.length > 0 && on === all.length;
+  }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+  window.openPoMail = function (po) {
+    current = po;
+    $('pmSub').textContent = 'PO ' + po + ' – the PDF of the PO is attached';
+    $('pmList').innerHTML = '<div class="pm-item" style="cursor:default">Loading users…</div>';
+    $('pmNote').value = '';
+    $('pmAll').checked = false;
+    msg('');
+    refresh();
+    $('pmOverlay').classList.add('open');
+    fetch(CTX + '/po-mail?poNumber=' + encodeURIComponent(po), { credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.error) { $('pmList').innerHTML = ''; msg(d.error, 'err'); return; }
+        if (!d.users || !d.users.length) {
+          $('pmList').innerHTML = '<div class="pm-item" style="cursor:default">No Finance, Global or Admin user with an e-mail address is assigned to this store.</div>';
+          return;
+        }
+        $('pmList').innerHTML = d.users.map(function (u) {
+          var tag = u.department && u.department.toLowerCase() === 'finance' ? 'Finance' : u.role;
+          return '<label class="pm-item"><input type="checkbox" value="' + u.id + '">' +
+                 '<span><span class="pm-name">' + esc(u.name) + '</span><span class="pm-tag">' + esc(tag) + '</span>' +
+                 '<div class="pm-meta">' + esc(u.mail) + (u.department ? ' &middot; ' + esc(u.department) : '') + '</div></span></label>';
+        }).join('');
+        document.querySelectorAll('#pmList input').forEach(function (c) { c.addEventListener('change', refresh); });
+        refresh();
+      })
+      .catch(function () { $('pmList').innerHTML = ''; msg('Could not load the users. Please try again.', 'err'); });
+  };
+
+  window.closePoMail = function () { $('pmOverlay').classList.remove('open'); current = null; };
+
+  window.sendPoMail = function () {
+    var picks = chosen();
+    if (!current || !picks.length) return;
+    var body = new URLSearchParams();
+    body.append('poNumber', current);
+    body.append('note', $('pmNote').value);
+    picks.forEach(function (c) { body.append('userId', c.value); });
+    $('pmSend').disabled = true;
+    $('pmSend').textContent = 'Sending…';
+    msg('Sending the PO…', 'info');
+    fetch(CTX + '/po-mail', { method: 'POST', credentials: 'same-origin', body: body })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.error) { msg(d.error, 'err'); return; }
+        var lines = [];
+        if (d.sent && d.sent.length) lines.push('Sent to: ' + d.sent.join(', '));
+        if (d.failed && d.failed.length) lines.push('Not sent: ' + d.failed.map(function (f) { return f.to + ' (' + f.reason + ')'; }).join('; '));
+        msg(lines.join('\n'), d.ok ? 'ok' : 'err');
+      })
+      .catch(function () { msg('The mail could not be sent. Please try again.', 'err'); })
+      .then(function () { refresh(); });
+  };
+
+  $('pmAll').addEventListener('change', function () {
+    var on = this.checked;
+    document.querySelectorAll('#pmList input').forEach(function (c) { c.checked = on; });
+    refresh();
+  });
+  $('pmOverlay').addEventListener('click', function (e) { if (e.target === this) closePoMail(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && $('pmOverlay').classList.contains('open')) closePoMail(); });
+})();
+</script>
 
 <jsp:include page="/WEB-INF/views/layout/Footer.jsp" />
 </body>

@@ -113,18 +113,59 @@ public final class POAlert {
         }
     }
 
-    /** Mail addresses of Global users assigned to this store. */
+    /** A user who can receive PO mails. */
+    public static final class Recipient {
+        public final int id;
+        public final String username, role, department, mail;
+
+        Recipient(int id, String username, String role, String department, String mail) {
+            this.id = id;
+            this.username = username;
+            this.role = role;
+            this.department = department;
+            this.mail = mail;
+        }
+    }
+
+    /** Mail addresses of Global users assigned to this store (automatic new-PO alert). */
     static List<String> globalUsersOf(String branch) throws SQLException {
+        Set<String> mails = new LinkedHashSet<>();
+        for (Recipient r : recipients(branch, u -> "global".equalsIgnoreCase(trim(u.role)))) {
+            mails.add(r.mail.toLowerCase(Locale.ROOT));
+        }
+        return new ArrayList<>(mails);
+    }
+
+    /** Finance department, Global and Admin users of this store (manual "Send mail" on the PO list). */
+    public static List<Recipient> mailableUsersOf(String branch) throws SQLException {
+        return recipients(branch, u -> "global".equalsIgnoreCase(trim(u.role))
+                || "admin".equalsIgnoreCase(trim(u.role))
+                || "finance".equalsIgnoreCase(trim(u.department)));
+    }
+
+    /**
+     * Users with a mail address who are assigned to this store and match the filter.
+     * Store assignment = rows in user_database_access, or users.branch for users without rows
+     * (the same rule the store selection uses).
+     */
+    static List<Recipient> recipients(String branch, java.util.function.Predicate<Recipient> filter) throws SQLException {
         String store = InventoryDB.canonicalBranch(branch);
-        Map<Integer, String[]> users = new LinkedHashMap<>();          // id -> {mail, users.branch}
+        Map<Integer, Recipient> users = new LinkedHashMap<>();
+        Map<Integer, String> ownBranch = new HashMap<>();
         Map<Integer, Set<String>> assigned = new HashMap<>();
 
         try (Connection con = InventoryDB.getAuthConnection()) {
             try (PreparedStatement ps = con.prepareStatement(
-                    "SELECT id, mail, branch FROM users WHERE LOWER(TRIM(role)) = 'global' "
-                    + "AND mail IS NOT NULL AND TRIM(mail) <> ''");
+                    "SELECT id, username, role, department, mail, branch FROM users "
+                    + "WHERE mail IS NOT NULL AND TRIM(mail) <> '' ORDER BY username");
                  ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) users.put(rs.getInt("id"), new String[] { rs.getString("mail").trim(), rs.getString("branch") });
+                while (rs.next()) {
+                    Recipient r = new Recipient(rs.getInt("id"), rs.getString("username"), rs.getString("role"),
+                            rs.getString("department"), rs.getString("mail").trim());
+                    if (!filter.test(r)) continue;
+                    users.put(r.id, r);
+                    ownBranch.put(r.id, rs.getString("branch"));
+                }
             }
             if (users.isEmpty()) return new ArrayList<>();
 
@@ -145,23 +186,46 @@ public final class POAlert {
             }
         }
 
-        Set<String> mails = new LinkedHashSet<>();
-        for (Map.Entry<Integer, String[]> u : users.entrySet()) {
-            Set<String> stores = assigned.get(u.getKey());
+        List<Recipient> out = new ArrayList<>();
+        for (Recipient r : users.values()) {
+            Set<String> stores = assigned.get(r.id);
             boolean forThisStore;
             if (stores != null && !stores.isEmpty()) {
                 forThisStore = stores.contains(store);
             } else {
-                String own = u.getValue()[1];
+                String own = ownBranch.get(r.id);
                 try {
                     forThisStore = own != null && InventoryDB.canonicalBranch(own).equals(store);
                 } catch (SQLException e) {
                     forThisStore = false;
                 }
             }
-            if (forThisStore) mails.add(u.getValue()[0].toLowerCase(Locale.ROOT));
+            if (forThisStore) out.add(r);
         }
-        return new ArrayList<>(mails);
+        return out;
+    }
+
+    private static String trim(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    /** Builds the mail (heading, PO summary, items, optional note) used by both the alert and the manual send. */
+    static String mailBody(String heading, String branch, POPdf.Data d, String person, String personLabel,
+                           String note, String approveUrl, boolean withPdf, String reason) {
+        List<Line> lines = new ArrayList<>();
+        for (String[] r : d.items) lines.add(new Line(r[0], num(r[2]), num(r[3]), num(r[9])));
+        String html = body(branch, d.poNumber, d.poDate, d.vendorName, d.total, person, lines, approveUrl, withPdf);
+        html = html.replace("New Purchase Order created", esc(heading))
+                   .replace(">Created by<", ">" + esc(personLabel) + "<")
+                   .replace("Pending approval", "Approved".equalsIgnoreCase(d.approval) ? "Approved" : "Pending approval")
+                   .replace("You get this because you are a Global user of " + esc(storeName(branch)) + ".", esc(reason));
+        if (note != null && !note.trim().isEmpty()) {
+            String n = "<div style='background:#fff8e6;border-left:4px solid #b16500;padding:8px 12px;margin:0 0 14px;"
+                     + "font-size:13px;white-space:pre-wrap;'>" + esc(note.trim()) + "</div>";
+            html = html.replaceFirst("<table style='font-size:14px;", java.util.regex.Matcher.quoteReplacement(n)
+                     + "<table style='font-size:14px;");
+        }
+        return html;
     }
 
     /** Link to the PO approval page, as seen from the browser (works behind Railway's proxy too). */

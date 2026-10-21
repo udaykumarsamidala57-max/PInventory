@@ -2,6 +2,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inve
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\grn\GRNReportServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\HRA\resume.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\CreatePOServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\POMailServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\MenuItemsServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\stock\AddStockServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\common\db\EmployeeDB.java
@@ -30,6 +31,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\comm
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\MealSummaryServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\CategoryDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\LocationDAO.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\POPdf.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\DashboardServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\ConsumptionFetchServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\issue\ApproveIssueServlet.java
@@ -85,6 +87,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\R
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\common\web\SendOTPServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\indent\ApproveDiningIndentServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\common\web\SelectStoreServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\POAlert.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\website\servlet\LatestNewsServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\indent\IndentItemsServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Service\Incharge.java
