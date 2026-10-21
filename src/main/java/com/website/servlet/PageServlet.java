@@ -477,15 +477,26 @@ public class PageServlet extends HttpServlet {
                         "heading2"
                 );
 
-                Part filePart = req.getPart(
-                        "imageFile"
-                );
+                // Photo chosen from the Photo Library (bucket)
+                String libraryKey = req.getParameter("libraryKey");
+                if (libraryKey != null && !libraryKey.trim().isEmpty()) {
+                    saveLibraryImage(conn, sectionId, libraryKey.trim(), alt, order, heading1, heading2, branch);
+                    resp.sendRedirect("pages?action=view&id=" + pageId);
+                    return;
+                }
+
+                Part filePart = null;
+                try {
+                    filePart = req.getPart("imageFile");
+                } catch (Exception ignored) {
+                    // no file sent
+                }
 
                 if (filePart == null
                         || filePart.getSize() <= 0) {
 
                     throw new ServletException(
-                            "Please select an image or video."
+                            "Please choose a photo from the Photo Library."
                     );
                 }
 
@@ -567,6 +578,13 @@ public class PageServlet extends HttpServlet {
                 String heading2 = req.getParameter(
                         "heading2"
                 );
+
+                String libraryKey = req.getParameter("libraryKey");
+                if (libraryKey != null && !libraryKey.trim().isEmpty()) {
+                    replaceWithLibraryImage(conn, imageId, libraryKey.trim(), alt, order, heading1, heading2, branch);
+                    resp.sendRedirect("pages?action=view&id=" + pageId);
+                    return;
+                }
 
                 Part filePart = null;
 
@@ -860,6 +878,83 @@ public class PageServlet extends HttpServlet {
                     );
                 }
             }
+        }
+    }
+
+    // =========================================================
+    // PHOTO FROM THE PHOTO LIBRARY
+    // =========================================================
+
+    /** Checks that the key is a photo / video in this website's Photo Library. */
+    private static void checkLibraryKey(String key, String branch) throws ServletException {
+        if (!com.website.bean.MediaLibrary.inLibrary(branch, key) || !com.website.bean.MediaLibrary.isMedia(key)) {
+            throw new ServletException("Please choose a photo from this website's Photo Library.");
+        }
+    }
+
+    /**
+     * Adds a library photo to a section.
+     * SRS: the row just points to the library file (nothing is copied).
+     * Sanpoly (its public site still reads photos from MySQL): the photo is copied into MySQL.
+     */
+    private void saveLibraryImage(Connection conn, Long sectionId, String key, String alt, int order,
+                                  String heading1, String heading2, String branch)
+            throws SQLException, ServletException {
+        checkLibraryKey(key, branch);
+        String type = com.website.bean.MediaLibrary.contentTypeOf(key);
+        if (PhotoUpload.on(branch) && PhotoUpload.hasKeyColumn(conn, "section_images")) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "INSERT INTO section_images (section_id, image_data, image_type, alt_text, sequence_order, "
+                    + "Heading1, Heading2, file_key) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                ps.setLong(1, sectionId);
+                ps.setBytes(2, new byte[0]);
+                ps.setString(3, type);
+                ps.setString(4, alt);
+                ps.setInt(5, order);
+                ps.setString(6, heading1);
+                ps.setString(7, heading2);
+                ps.setString(8, key);
+                ps.executeUpdate();
+            }
+            return;
+        }
+        byte[] data = download(key);
+        saveImageToDb(conn, sectionId, new java.io.ByteArrayInputStream(data), type, alt, order,
+                heading1, heading2, data.length, branch);
+    }
+
+    /** Replaces a section photo with a library photo (same rules as saveLibraryImage). */
+    private void replaceWithLibraryImage(Connection conn, Long imageId, String key, String alt, int order,
+                                         String heading1, String heading2, String branch)
+            throws SQLException, ServletException {
+        checkLibraryKey(key, branch);
+        String type = com.website.bean.MediaLibrary.contentTypeOf(key);
+        if (PhotoUpload.on(branch) && PhotoUpload.hasKeyColumn(conn, "section_images")) {
+            String old = PhotoUpload.keyOf(conn, "section_images", imageId);
+            updateImageMetadata(conn, imageId, alt, order, heading1, heading2);
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "UPDATE section_images SET file_key = ?, image_type = ?, image_data = ? WHERE id = ?")) {
+                ps.setString(1, key);
+                ps.setString(2, type);
+                ps.setBytes(3, new byte[0]);
+                ps.setLong(4, imageId);
+                ps.executeUpdate();
+            }
+            if (old != null && !old.equals(key)) {
+                PhotoUpload.deleteFilesIfUnused(conn, "section_images", java.util.Collections.singletonList(old));
+            }
+            return;
+        }
+        byte[] data = download(key);
+        updateImageWithFile(conn, imageId, new java.io.ByteArrayInputStream(data), type, alt, order,
+                heading1, heading2, data.length, branch);
+    }
+
+    private static byte[] download(String key) throws ServletException {
+        try {
+            return com.website.bean.PhotoStore.get(key);
+        } catch (Exception e) {
+            throw new ServletException("Could not read the photo from the Photo Library: " + e.getMessage(), e);
         }
     }
 

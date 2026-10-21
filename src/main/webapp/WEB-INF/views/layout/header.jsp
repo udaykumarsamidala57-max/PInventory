@@ -244,6 +244,7 @@ try {
   <div class="dropdown website-menu">
     <button class="dropdown-btn"><i class="fa-solid fa-globe text-info"></i> Website <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <a href="<%= request.getContextPath() %>/website/media"><i class="fa-solid fa-images text-primary"></i> Photo Library</a>
       <a href="<%= request.getContextPath() %>/website/pages"><i class="fa-solid fa-sitemap text-info"></i> Page Builder</a>
       <a href="<%= request.getContextPath() %>/website/latestNews.jsp"><i class="fa-solid fa-newspaper text-warning"></i> Latest News</a>
       <a href="<%= request.getContextPath() %>/website/upcoming-events"><i class="fa-solid fa-calendar-days text-success"></i> Upcoming Events</a>

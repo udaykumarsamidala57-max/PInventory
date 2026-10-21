@@ -121,6 +121,7 @@ public final class PhotoUpload {
     /** removes a photo file from the bucket; problems are ignored */
     public static void deleteFile(String key) {
         if (key == null || key.trim().isEmpty() || !PhotoStore.enabled()) return;
+        if (MediaLibrary.isLibraryKey(key)) return;      // Photo Library files are only removed from the Photo Library
         try {
             PhotoStore.delete(key.trim());
         } catch (Exception e) {

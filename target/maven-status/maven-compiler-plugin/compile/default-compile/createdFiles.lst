@@ -13,6 +13,7 @@ com\Employee\EmployeeTreeServlet.class
 com\controller\Admissions\DashboardServlet.class
 com\officecentral\inventory\purchase\POPdf$Data.class
 com\officecentral\common\web\SendOTPServlet.class
+com\website\bean\PhotoStore$Item.class
 com\controller\Asset\AssetLocationController.class
 com\officecentral\inventory\issue\ApproveIssueServlet.class
 com\officecentral\common\db\HrDB.class
@@ -90,6 +91,8 @@ com\officecentral\inventory\dining\MenuItemsServlet.class
 com\officecentral\inventory\purchase\POAlert$Recipient.class
 com\officecentral\common\web\RootServlet.class
 com\officecentral\inventory\stock\AddStockServlet.class
+com\website\bean\PhotoStore$Listing.class
+com\website\bean\MediaLibrary.class
 com\controller\Asset\MaintenanceController.class
 com\controller\Asset\TransferControlle.class
 com\officecentral\inventory\stock\StockAuditServlet.class
@@ -100,6 +103,7 @@ com\website\servlet\PhotoMoveServlet.class
 com\officecentral\inventory\dining\ConsumptionUpdateServlet.class
 com\controller\Admissions\LoadStudentsAndExamsServlet.class
 com\officecentral\common\web\PageRouterServlet.class
+com\website\servlet\MediaServlet.class
 com\officecentral\common\web\SwitchStoreServlet.class
 com\DAO\TransferDAO.class
 com\DAO\EmployeeDAO.class

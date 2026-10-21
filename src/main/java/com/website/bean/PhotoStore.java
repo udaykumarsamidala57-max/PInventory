@@ -179,6 +179,119 @@ public final class PhotoStore {
         c.disconnect();
     }
 
+    /** downloads a whole file (used to copy a library photo into MySQL for sites that still read photos from there) */
+    public static byte[] get(String key) throws IOException {
+        requireEnabled();
+        HttpURLConnection c = signed("GET", key, null);
+        c.setReadTimeout(120000);
+        int code = c.getResponseCode();
+        if (code < 200 || code >= 300) throw new IOException("Download failed (" + code + "): " + errorBody(c));
+        try (InputStream in = c.getInputStream()) {
+            return in.readAllBytes();
+        } finally {
+            c.disconnect();
+        }
+    }
+
+    /** One entry of a folder listing. */
+    public static final class Item {
+        public final String key;
+        public final long size;
+        public final String modified;
+
+        Item(String key, long size, String modified) {
+            this.key = key;
+            this.size = size;
+            this.modified = modified;
+        }
+    }
+
+    /** Folder listing: sub-folders (full prefixes ending in "/") and files directly inside the prefix. */
+    public static final class Listing {
+        public final java.util.List<String> folders = new java.util.ArrayList<>();
+        public final java.util.List<Item> files = new java.util.ArrayList<>();
+    }
+
+    /** Lists one folder level under prefix (e.g. "srs/library/events/"), like a file browser. */
+    public static Listing list(String prefix) throws IOException {
+        requireEnabled();
+        Listing out = new Listing();
+        String token = null;
+        int pages = 0;
+        do {
+            Map<String, String> q = new TreeMap<>();
+            q.put("list-type", "2");
+            q.put("prefix", prefix == null ? "" : prefix);
+            q.put("delimiter", "/");
+            q.put("max-keys", "1000");
+            if (token != null) q.put("continuation-token", token);
+            HttpURLConnection c = signed("GET", "", q);
+            int code = c.getResponseCode();
+            if (code < 200 || code >= 300) throw new IOException("Listing failed (" + code + "): " + errorBody(c));
+            org.w3c.dom.Document doc;
+            try (InputStream in = c.getInputStream()) {
+                javax.xml.parsers.DocumentBuilderFactory f = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+                f.setNamespaceAware(false);
+                f.setExpandEntityReferences(false);
+                f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                doc = f.newDocumentBuilder().parse(in);
+            } catch (javax.xml.parsers.ParserConfigurationException | org.xml.sax.SAXException e) {
+                throw new IOException("Could not read the bucket listing: " + e.getMessage(), e);
+            } finally {
+                c.disconnect();
+            }
+            org.w3c.dom.NodeList cps = doc.getElementsByTagName("CommonPrefixes");
+            for (int i = 0; i < cps.getLength(); i++) {
+                String pfx = text((org.w3c.dom.Element) cps.item(i), "Prefix");
+                if (pfx != null) out.folders.add(pfx);
+            }
+            org.w3c.dom.NodeList cs = doc.getElementsByTagName("Contents");
+            for (int i = 0; i < cs.getLength(); i++) {
+                org.w3c.dom.Element e = (org.w3c.dom.Element) cs.item(i);
+                String k = text(e, "Key");
+                if (k == null) continue;
+                long size = 0;
+                try { size = Long.parseLong(text(e, "Size")); } catch (Exception ignore) { }
+                out.files.add(new Item(k, size, text(e, "LastModified")));
+            }
+            boolean more = "true".equalsIgnoreCase(text(doc.getDocumentElement(), "IsTruncated"));
+            token = more ? text(doc.getDocumentElement(), "NextContinuationToken") : null;
+        } while (token != null && ++pages < 20);
+        return out;
+    }
+
+    private static String text(org.w3c.dom.Element parent, String tag) {
+        org.w3c.dom.NodeList n = parent.getElementsByTagName(tag);
+        return n.getLength() == 0 ? null : n.item(0).getTextContent();
+    }
+
+    /** A signed request (header auth) that may carry query parameters. */
+    private static HttpURLConnection signed(String method, String key, Map<String, String> query) throws IOException {
+        String amzDate = amzDate(new Date());
+        String payload = "UNSIGNED-PAYLOAD";
+        String q = query == null || query.isEmpty() ? "" : canonicalQuery(new TreeMap<>(query));
+        HttpURLConnection c = (HttpURLConnection) new URL(objectUrl(key, q.isEmpty() ? null : q)).openConnection();
+        c.setRequestMethod(method);
+        c.setConnectTimeout(20000);
+        c.setReadTimeout(60000);
+        c.setRequestProperty("x-amz-date", amzDate);
+        c.setRequestProperty("x-amz-content-sha256", payload);
+
+        String day = amzDate.substring(0, 8);
+        String scope = day + "/" + REGION + "/s3/aws4_request";
+        String signedHeaders = "host;x-amz-content-sha256;x-amz-date";
+        String canonical = method + "\n" + canonicalPath(key) + "\n" + q + "\n"
+                + "host:" + host() + "\n"
+                + "x-amz-content-sha256:" + payload + "\n"
+                + "x-amz-date:" + amzDate + "\n\n"
+                + signedHeaders + "\n" + payload;
+        String toSign = "AWS4-HMAC-SHA256\n" + amzDate + "\n" + scope + "\n" + hex(sha256(canonical));
+        String signature = hex(hmac(signingKey(day), toSign));
+        c.setRequestProperty("Authorization", "AWS4-HMAC-SHA256 Credential=" + KEY_ID + "/" + scope
+                + ", SignedHeaders=" + signedHeaders + ", Signature=" + signature);
+        return c;
+    }
+
     // =========================================================
     // SIGNED LINK FOR SHOWING A PHOTO
     // =========================================================

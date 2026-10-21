@@ -556,11 +556,11 @@
             </div>
             <div class="pb-dialog-body">
                 <div class="pb-field">
-                    <label class="pb-drop js-drop">
-                        <input type="file" name="imageFile" accept="image/*,video/*" required>
-                        <span class="pb-drop-preview"><svg><use href="#i-image"/></svg></span>
-                        <span><b>Choose a file or drop it here</b><small>JPG, PNG, WebP or MP4 &middot; up to 200 MB</small></span>
-                    </label>
+                    <div class="pb-drop lib-pick" role="button" tabindex="0" data-required="1">
+                        <input type="hidden" name="libraryKey" class="lib-key">
+                        <span class="pb-drop-preview lib-prev"><svg><use href="#i-image"/></svg></span>
+                        <span><b class="lib-label">Choose from Photo Library</b><small>Upload photos first in Website &rarr; Photo Library</small></span>
+                    </div>
                 </div>
                 <div class="pb-row">
                     <div class="pb-field">
@@ -585,7 +585,7 @@
             </div>
             <div class="pb-dialog-foot">
                 <button type="button" class="pb-btn" data-close>Cancel</button>
-                <button type="submit" class="pb-btn primary js-busy"><svg><use href="#i-upload"/></svg> Upload</button>
+                <button type="submit" class="pb-btn primary"><svg><use href="#i-image"/></svg> Add photo</button>
             </div>
         </form>
     </div>
@@ -605,7 +605,7 @@
             <div class="pb-dialog-body">
                 <div class="pb-current">
                     <span class="pb-drop-preview" id="editImagePreview"></span>
-                    <span><b>Current file</b><small>Choose a new file below only if you want to replace it.</small></span>
+                    <span><b>Current file</b><small>Pick a library photo below only if you want to replace it.</small></span>
                 </div>
                 <div class="pb-row">
                     <div class="pb-field">
@@ -628,11 +628,11 @@
                     </div>
                 </div>
                 <div class="pb-field">
-                    <label class="pb-drop js-drop">
-                        <input type="file" name="imageFile" accept="image/*,video/*">
-                        <span class="pb-drop-preview"><svg><use href="#i-upload"/></svg></span>
-                        <span><b>Replace file <small style="display:inline">(optional)</small></b><small>Leave empty to keep the current one</small></span>
-                    </label>
+                    <div class="pb-drop lib-pick" role="button" tabindex="0">
+                        <input type="hidden" name="libraryKey" class="lib-key">
+                        <span class="pb-drop-preview lib-prev"><svg><use href="#i-image"/></svg></span>
+                        <span><b class="lib-label">Replace with a library photo <small style="display:inline">(optional)</small></b><small>Leave as it is to keep the current one</small></span>
+                    </div>
                 </div>
             </div>
             <div class="pb-dialog-foot">
@@ -645,7 +645,131 @@
 
 </c:if>
 
+<!-- Photo Library picker -->
+<div class="pb-modal" id="libraryModal" role="dialog" aria-modal="true" aria-labelledby="libTitle">
+    <div class="pb-dialog wide">
+        <div class="pb-dialog-head">
+            <div><h3 id="libTitle">Photo Library</h3><p id="libCrumbs">Loading&hellip;</p></div>
+            <button type="button" class="pb-icon-btn" data-close><svg><use href="#i-x"/></svg></button>
+        </div>
+        <div class="pb-dialog-body">
+            <div class="lib-grid" id="libGrid"></div>
+        </div>
+        <div class="pb-dialog-foot" style="justify-content:space-between">
+            <a class="pb-btn" href="media" target="_blank" rel="noopener">Open Photo Library to upload</a>
+            <span>
+                <button type="button" class="pb-btn" id="libRefresh">Refresh</button>
+                <button type="button" class="pb-btn" data-close>Cancel</button>
+            </span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .lib-pick { cursor: pointer; }
+    .lib-pick:focus-visible { outline: 2px solid #0176d3; outline-offset: 2px; }
+    .lib-pick.missing { border-color: #ea001e; background: #fff5f5; }
+    .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 10px; min-height: 160px; max-height: 58vh; overflow: auto; padding: 2px; }
+    .lib-item { border: 1px solid #e3ddd7; border-radius: 8px; overflow: hidden; background: #fff; cursor: pointer; text-align: left; padding: 0; font: inherit; }
+    .lib-item:hover, .lib-item:focus-visible { border-color: #0176d3; box-shadow: 0 0 0 2px rgba(1,118,211,.18); outline: none; }
+    .lib-item .t { aspect-ratio: 4 / 3; background: #f4f1ee; display: grid; place-items: center; overflow: hidden; }
+    .lib-item .t img, .lib-item .t video { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .lib-item .t svg { width: 40px; height: 40px; color: #e6a700; }
+    .lib-item .n { padding: 6px 8px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lib-item.folder .n { font-weight: 600; }
+    .lib-msg { grid-column: 1 / -1; padding: 30px 10px; text-align: center; color: #706e6b; font-size: 13.5px; }
+    #libCrumbs a { color: #0176d3; text-decoration: none; cursor: pointer; }
+    #libCrumbs a:hover { text-decoration: underline; }
+</style>
+
 <script src="<c:url value='/website/js/builder.js'/>"></script>
+<script>
+// Photos come only from the Photo Library (bucket): pick one, its place is sent as libraryKey
+(function () {
+    var target = null, folder = '';
+    var grid = document.getElementById('libGrid'), crumbs = document.getElementById('libCrumbs');
+    var FOLDER_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/></svg>';
+    function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
+
+    function reset(pick) {
+        var key = pick.querySelector('.lib-key'), prev = pick.querySelector('.lib-prev'), label = pick.querySelector('.lib-label');
+        key.value = '';
+        if (!prev.hasAttribute('data-empty')) prev.setAttribute('data-empty', prev.innerHTML);
+        if (!label.hasAttribute('data-empty')) label.setAttribute('data-empty', label.innerHTML);
+        prev.innerHTML = prev.getAttribute('data-empty');
+        label.innerHTML = label.getAttribute('data-empty');
+        pick.classList.remove('missing');
+    }
+    document.querySelectorAll('.lib-pick').forEach(function (pick) {
+        reset(pick);
+        var open = function () { target = pick; load(folder); openModal('libraryModal'); };
+        pick.addEventListener('click', open);
+        pick.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+        var form = pick.closest('form');
+        form.addEventListener('submit', function (e) {
+            if (pick.hasAttribute('data-required') && !pick.querySelector('.lib-key').value) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                pick.classList.add('missing');
+                open();
+            }
+        }, true);
+    });
+    // a new add / edit starts with nothing chosen
+    document.querySelectorAll('.js-upload, .btn-edit-image').forEach(function (b) {
+        b.addEventListener('click', function () { document.querySelectorAll('.lib-pick').forEach(reset); });
+    });
+
+    function load(path) {
+        folder = path || '';
+        grid.innerHTML = '<div class="lib-msg">Loading&hellip;</div>';
+        fetch('media?format=json&folder=' + encodeURIComponent(folder), { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d.ok) { grid.innerHTML = '<div class="lib-msg">' + esc(d.message || 'Could not open the Photo Library.') + '</div>'; return; }
+                var parts = folder ? folder.replace(/\/$/, '').split('/') : [], acc = '';
+                var c = parts.length ? '<a data-go="">' + esc(d.site) + ' library</a>' : esc(d.site) + ' library';
+                parts.forEach(function (p, i) { acc += p + '/'; c += ' / ' + (i === parts.length - 1 ? '<b>' + esc(p) + '</b>' : '<a data-go="' + esc(acc) + '">' + esc(p) + '</a>'); });
+                crumbs.innerHTML = c;
+                var h = '';
+                if (folder) {
+                    var up = parts.slice(0, -1).join('/');
+                    h += '<button type="button" class="lib-item folder" data-go="' + esc(up ? up + '/' : '') + '"><div class="t">' + FOLDER_SVG + '</div><div class="n">&larr; Back</div></button>';
+                }
+                d.folders.forEach(function (f) {
+                    h += '<button type="button" class="lib-item folder" data-go="' + esc(f.path) + '"><div class="t">' + FOLDER_SVG + '</div><div class="n">' + esc(f.name) + '</div></button>';
+                });
+                d.files.forEach(function (f, i) {
+                    var m = f.type.indexOf('video/') === 0 ? '<video src="' + esc(f.url) + '" muted preload="metadata"></video>' : '<img src="' + esc(f.url) + '" alt="" loading="lazy">';
+                    h += '<button type="button" class="lib-item" data-pick="' + i + '" title="' + esc(f.name) + '"><div class="t">' + m + '</div><div class="n">' + esc(f.name) + '</div></button>';
+                });
+                if (!d.folders.length && !d.files.length) h += '<div class="lib-msg">No photos here yet. Use &ldquo;Open Photo Library to upload&rdquo;, then press Refresh.</div>';
+                grid.innerHTML = h;
+                grid._files = d.files;
+            })
+            .catch(function () { grid.innerHTML = '<div class="lib-msg">Could not open the Photo Library. Please try again.</div>'; });
+    }
+
+    function choose(f) {
+        if (!target) return;
+        target.querySelector('.lib-key').value = f.key;
+        target.querySelector('.lib-prev').innerHTML = f.type.indexOf('video/') === 0
+            ? '<video src="' + esc(f.url) + '" muted></video>' : '<img src="' + esc(f.url) + '" alt="">';
+        target.querySelector('.lib-label').textContent = f.name;
+        target.classList.remove('missing');
+        closeModal('libraryModal');
+    }
+
+    grid.addEventListener('click', function (e) {
+        var g = e.target.closest('[data-go]');
+        if (g) { load(g.getAttribute('data-go')); return; }
+        var p = e.target.closest('[data-pick]');
+        if (p) choose(grid._files[+p.getAttribute('data-pick')]);
+    });
+    crumbs.addEventListener('click', function (e) { var a = e.target.closest('[data-go]'); if (a) load(a.getAttribute('data-go')); });
+    document.getElementById('libRefresh').addEventListener('click', function () { load(folder); });
+})();
+</script>
 
 </body>
 </html>

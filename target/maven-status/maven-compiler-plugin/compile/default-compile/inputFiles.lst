@@ -22,6 +22,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\A
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\issue\IssueServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\TransferDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\AdmissionEnquiryServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\website\servlet\MediaServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Employee\EmployeeTreeServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\Service\RequestReportServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\model\PO.java
@@ -68,6 +69,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inve
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\Staff.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\NewPOServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\AssetLocationDAO.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\website\bean\MediaLibrary.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\UpdateTCStatusServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\bean\Asset.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\common\db\InventoryDB.java
