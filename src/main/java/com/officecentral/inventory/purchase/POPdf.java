@@ -184,10 +184,18 @@ public final class POPdf {
         intro.setSpacingAfter(9f);
         doc.add(intro);
 
-        // ---- items
-        String[] heads = { "SL.NO", "ITEM DESCRIPTION", "UOM", "QTY", "RATE", "AMOUNT", "DISC %", "DISC VAL",
-                           "GST %", "GST VAL", "NET AMT" };
-        float[] widths = { 5, 25, 8, 8, 9, 9, 7, 9, 6, 8, 10 };
+        // ---- items (discount columns only when some item has a discount, like the print page)
+        boolean anyDiscount = false;
+        for (String[] r : d.items) {
+            if (Math.abs(num(r[5])) > 0.0001 || Math.abs(num(r[6])) > 0.0001) anyDiscount = true;
+        }
+        String[] heads = anyDiscount
+                ? new String[] { "SL.NO", "ITEM DESCRIPTION", "UOM", "QTY", "RATE", "AMOUNT", "DISC %", "DISC VAL",
+                                 "GST %", "GST VAL", "NET AMT" }
+                : new String[] { "SL.NO", "ITEM DESCRIPTION", "UOM", "QTY", "RATE", "AMOUNT",
+                                 "GST %", "GST VAL", "NET AMT" };
+        float[] widths = anyDiscount ? new float[] { 5, 25, 8, 8, 9, 9, 7, 9, 6, 8, 10 }
+                                     : new float[] { 5, 41, 8, 8, 9, 9, 6, 8, 10 };
         PdfPTable items = new PdfPTable(widths);
         items.setWidthPercentage(100);
         items.setHeaderRows(1);
@@ -209,7 +217,10 @@ public final class POPdf {
             items.addCell(td(String.valueOf(sl), cell, Element.ALIGN_CENTER, bg));
             items.addCell(td(nz(r[0]), cell, Element.ALIGN_LEFT, bg));
             items.addCell(td(r[1], cell, Element.ALIGN_CENTER, bg));
-            for (int k = 2; k <= 8; k++) items.addCell(td(r[k], cell, Element.ALIGN_RIGHT, bg));
+            for (int k = 2; k <= 8; k++) {
+                if (!anyDiscount && (k == 5 || k == 6)) continue;
+                items.addCell(td(r[k], cell, Element.ALIGN_RIGHT, bg));
+            }
             items.addCell(td(r[9], cellB, Element.ALIGN_RIGHT, bg));
             sl++;
         }
@@ -221,7 +232,7 @@ public final class POPdf {
         sum.setTotalWidth(210f);
         sum.setLockedWidth(true);
         sum.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        sumRow(sum, "Total Discount:", nz(d.totalDis), sumF, false);
+        if (anyDiscount) sumRow(sum, "Total Discount:", nz(d.totalDis), sumF, false);
         sumRow(sum, "Total GST:", nz(d.totalGst), sumF, false);
         String sc = d.serviceCharge == null ? "" : d.serviceCharge.trim();
         if (!sc.isEmpty() && !sc.equals("0")) sumRow(sum, "Service Charges:", sc, sumF, false);
@@ -399,6 +410,14 @@ public final class POPdf {
 
     private static Font font(float size, int style, BaseColor color) {
         return new Font(Font.FontFamily.HELVETICA, size, style, color);
+    }
+
+    private static double num(String s) {
+        try {
+            return Double.parseDouble(s);
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     private static String f2(double v) {

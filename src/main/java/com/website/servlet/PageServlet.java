@@ -115,6 +115,7 @@ public class PageServlet extends HttpServlet {
 
                 case "delete":
 
+                    if (!WebsiteDB.guardDelete(req, resp)) return;
                     Long pageId = parseLongOrNull(
                             req.getParameter("id")
                     );
@@ -138,6 +139,7 @@ public class PageServlet extends HttpServlet {
 
                 case "deleteSection":
 
+                    if (!WebsiteDB.guardDelete(req, resp)) return;
                     Long sectionId = parseLongOrNull(
                             req.getParameter("sectionId")
                     );
@@ -165,6 +167,7 @@ public class PageServlet extends HttpServlet {
 
                 case "deleteImage":
 
+                    if (!WebsiteDB.guardDelete(req, resp)) return;
                     Long deleteImageId = parseLongOrNull(
                             req.getParameter("imageId")
                     );
@@ -1699,4 +1702,4 @@ public class PageServlet extends HttpServlet {
 
         PhotoUpload.deleteFilesIfUnused(conn, "section_images", files);
     }
-}
+}

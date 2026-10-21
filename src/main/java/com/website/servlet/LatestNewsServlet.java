@@ -36,6 +36,7 @@ public class LatestNewsServlet extends HttpServlet {
 
         try {
             if ("delete".equals(action)) {
+                if (!WebsiteDB.guardDelete(request, response)) return;
                 deleteNews(request, response, branch);
             } else {
                 response.sendRedirect("latestNews.jsp");
@@ -209,4 +210,4 @@ public class LatestNewsServlet extends HttpServlet {
 
         response.sendRedirect("latestNews.jsp?success=deleted");
     }
-}
+}

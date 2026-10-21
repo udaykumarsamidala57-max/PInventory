@@ -113,7 +113,11 @@ public class UpcomingEventsServlet extends HttpServlet {
                 handleUpdate(request);
                 break;
             case "delete":
-                handleDelete(request);
+                if (WebsiteDB.canDelete(sess)) {
+                    handleDelete(request);
+                } else {
+                    request.setAttribute("errorMessage", "Deleting events is not allowed for your user.");
+                }
                 break;
             case "insert":
             default:
@@ -298,4 +302,4 @@ public class UpcomingEventsServlet extends HttpServlet {
             ps.setNull(paramIndex, Types.TIME);
         }
     }
-}
+}

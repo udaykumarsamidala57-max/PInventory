@@ -109,6 +109,17 @@ public class DashboardServlet extends HttpServlet {
         Map<String, double[]> po60Map = new LinkedHashMap<>();
         Map<String, double[]> poYearMap = new LinkedHashMap<>();
 
+        // "Between dates" (from / to chosen on the page): consumption, vendor POs and top items for that range
+        Map<String, Double> rangeDeptMap = new LinkedHashMap<>();
+        double rangeTotal = 0;
+        Map<String, double[]> poRangeMap = new LinkedHashMap<>();
+        Map<String, List<Object[]>> topRange = new LinkedHashMap<>();
+        Map<String, List<Object[]>> topRangeQ = new LinkedHashMap<>();
+        LocalDate rangeFrom = parseDay(request.getParameter("from"));
+        LocalDate rangeTo = parseDay(request.getParameter("to"));
+        boolean hasRange = rangeFrom != null && rangeTo != null;
+        if (hasRange && rangeFrom.isAfter(rangeTo)) { LocalDate x = rangeFrom; rangeFrom = rangeTo; rangeTo = x; }
+
         try (Connection con = InventoryDB.getConnection(branch)) {
 
             LocalDate today = LocalDate.now(ZoneId.of("Asia/Kolkata"));
@@ -214,6 +225,32 @@ public class DashboardServlet extends HttpServlet {
                 }
             } catch (Exception ex) {
                 ex.printStackTrace();
+            }
+
+            // ---- Between dates
+            if (!hasRange) {                       // just the starting values shown in the date boxes
+                rangeFrom = startDate30;
+                rangeTo = today;
+            } else {
+                try (PreparedStatement ps = con.prepareStatement(
+                        "SELECT IFNULL(NULLIF(TRIM(department),''),'Unassigned') AS dept, " +
+                        "SUM(IFNULL(total_value,0)) AS v FROM stock_issues " +
+                        "WHERE DATE(issue_date) >= ? AND DATE(issue_date) <= ? " +
+                        "GROUP BY dept ORDER BY v DESC")) {
+                    ps.setDate(1, java.sql.Date.valueOf(rangeFrom));
+                    ps.setDate(2, java.sql.Date.valueOf(rangeTo));
+                    try (ResultSet rs = ps.executeQuery()) {
+                        while (rs.next()) {
+                            double v = rs.getDouble("v");
+                            rangeDeptMap.put(rs.getString("dept"), v);
+                            rangeTotal += v;
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                loadVendorPOsBetween(con, rangeFrom, rangeTo, poRangeMap);
+                loadTopItems(con, rangeFrom, rangeTo, topRange, topRangeQ);
             }
 
             // Vendor-wise PO value (same periods as consumption; 60 days and Year never before 1 April)
@@ -356,6 +393,17 @@ public class DashboardServlet extends HttpServlet {
         request.setAttribute("top30Q", top30Q);
         request.setAttribute("top7Q", top7Q);
         request.setAttribute("topTodayQ", topTodayQ);
+        request.setAttribute("hasRange", hasRange);
+        request.setAttribute("rangeFrom", rangeFrom == null ? "" : rangeFrom.toString());
+        request.setAttribute("rangeTo", rangeTo == null ? "" : rangeTo.toString());
+        request.setAttribute("rangeLabel", rangeFrom == null || rangeTo == null ? "" :
+                rangeFrom.format(java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy")) + " \u2013 "
+              + rangeTo.format(java.time.format.DateTimeFormatter.ofPattern("d MMM yyyy")));
+        request.setAttribute("rangeDeptMap", rangeDeptMap);
+        request.setAttribute("rangeTotal", rangeTotal);
+        request.setAttribute("poRangeMap", poRangeMap);
+        request.setAttribute("topRange", topRange);
+        request.setAttribute("topRangeQ", topRangeQ);
 
         request.setAttribute("departments", departments);
         request.setAttribute("years", new ArrayList<>(yearSet));
@@ -387,6 +435,43 @@ public class DashboardServlet extends HttpServlet {
             try { return LocalDate.parse(t, f); } catch (Exception ignore) { }
         }
         return null;
+    }
+
+    /** A date from the page (yyyy-MM-dd), or null. */
+    private static LocalDate parseDay(String s) {
+        if (s == null || s.trim().isEmpty()) return null;
+        try {
+            return LocalDate.parse(s.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /** Vendor-wise PO value between two dates (both included), highest first. Same rules as loadVendorPOs. */
+    private static void loadVendorPOsBetween(Connection con, LocalDate from, LocalDate to, Map<String, double[]> out) {
+        Map<String, String> vendorNames = new java.util.HashMap<>();
+        try (PreparedStatement ps = con.prepareStatement("SELECT vendor_name, PO_date, total_amount FROM po_master");
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                LocalDate d = parsePoDate(rs.getString("PO_date"));
+                if (d == null || d.isBefore(from) || d.isAfter(to)) continue;
+
+                String vendor = rs.getString("vendor_name");
+                vendor = (vendor == null || vendor.trim().isEmpty()) ? "Unknown vendor"
+                       : vendorNames.computeIfAbsent(vendorKey(vendor), k -> cleanVendor(rs, "vendor_name"));
+
+                double amt = 0;
+                String amtRaw = rs.getString("total_amount");
+                if (amtRaw != null) {
+                    try { amt = Double.parseDouble(amtRaw.replace(",", "").replace("\u20B9", "").trim()); }
+                    catch (NumberFormatException ignore) { }
+                }
+                addPo(out, vendor, amt);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        sortByValue(out);
     }
 
     private static void addPo(Map<String, double[]> m, String vendor, double amt) {

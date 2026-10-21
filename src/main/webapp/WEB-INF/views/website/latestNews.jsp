@@ -601,7 +601,9 @@
                             <td style="white-space: nowrap; color: var(--slds-text-muted);"><%= rowCreated != null ? rowCreated.toString().substring(0, 16) : "" %></td>
                             <td class="actions-cell">
                                 <a href="latestNews.jsp?edit=<%= rowId %>" class="btn btn-secondary btn-sm">Edit</a>
+                                <% if (WebsiteDB.canDelete(session)) { %>
                                 <a href="LatestNewsServlet?action=delete&amp;id=<%= rowId %>" class="btn btn-danger btn-sm" onclick="return confirm('Permanently delete this news record?');">Delete</a>
+                                <% } %>
                             </td>
                         </tr>
                         <%
@@ -645,4 +647,4 @@
 
 
 </body>
-</html>
+</html>

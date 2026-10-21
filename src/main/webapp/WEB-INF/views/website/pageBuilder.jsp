@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<% request.setAttribute("canDelete", com.website.bean.WebsiteDB.canDelete(session)); %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,11 +116,11 @@
                                         data-slug="${fn:escapeXml(p.slug)}" data-parent-id="${p.parentId}">
                                     <svg><use href="#i-edit"/></svg>
                                 </button>
-                                <a href="pages?action=delete&id=${p.id}" class="pb-icon-btn danger js-confirm" title="Delete page"
+                                <c:if test="${canDelete}"><a href="pages?action=delete&id=${p.id}" class="pb-icon-btn danger js-confirm" title="Delete page"
                                    data-confirm="Delete the page &quot;${fn:escapeXml(p.title)}&quot; and all its sections? This cannot be undone."
                                    data-flash="Page deleted">
                                     <svg><use href="#i-trash"/></svg>
-                                </a>
+                                </a></c:if>
                             </div>
                         </div>
 
@@ -143,11 +144,11 @@
                                                             data-slug="${fn:escapeXml(sub.slug)}" data-parent-id="${sub.parentId}">
                                                         <svg><use href="#i-edit"/></svg>
                                                     </button>
-                                                    <a href="pages?action=delete&id=${sub.id}" class="pb-icon-btn danger js-confirm" title="Delete page"
+                                                    <c:if test="${canDelete}"><a href="pages?action=delete&id=${sub.id}" class="pb-icon-btn danger js-confirm" title="Delete page"
                                                        data-confirm="Delete the page &quot;${fn:escapeXml(sub.title)}&quot; and all its sections? This cannot be undone."
                                                        data-flash="Page deleted">
                                                         <svg><use href="#i-trash"/></svg>
-                                                    </a>
+                                                    </a></c:if>
                                                 </div>
                                             </div>
                                         </li>
@@ -259,12 +260,12 @@
                                         data-seq="${sec.sequenceOrder}" data-title="${fn:escapeXml(sec.title)}">
                                     <svg><use href="#i-edit"/></svg>
                                 </button>
-                                <a href="pages?action=deleteSection&sectionId=${sec.id}&pageId=${activePage.id}"
+                                <c:if test="${canDelete}"><a href="pages?action=deleteSection&sectionId=${sec.id}&pageId=${activePage.id}"
                                    class="pb-icon-btn danger js-confirm" title="Delete section"
                                    data-confirm="Delete this section and all its photos? This cannot be undone."
                                    data-flash="Section deleted">
                                     <svg><use href="#i-trash"/></svg>
-                                </a>
+                                </a></c:if>
                                 <button type="button" class="pb-icon-btn pb-collapse" title="Collapse / expand">
                                     <svg><use href="#i-down"/></svg>
                                 </button>
@@ -313,11 +314,11 @@
                                                         data-section="${sec.id}">
                                                     <svg><use href="#i-edit"/></svg>
                                                 </button>
-                                                <a href="pages?action=deleteImage&imageId=${img.id}&pageId=${activePage.id}"
+                                                <c:if test="${canDelete}"><a href="pages?action=deleteImage&imageId=${img.id}&pageId=${activePage.id}"
                                                    class="pb-icon-btn danger js-confirm" title="Delete"
                                                    data-confirm="Delete this photo / video?" data-flash="Photo deleted" data-target="section-${sec.id}">
                                                     <svg><use href="#i-trash"/></svg>
-                                                </a>
+                                                </a></c:if>
                                             </div>
                                         </div>
                                         <div class="pb-caption">

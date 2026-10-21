@@ -56,9 +56,8 @@ public class PhotoMoveServlet extends HttpServlet {
 
         HttpSession sess = req.getSession(false);
         String role = sess == null ? null : (String) sess.getAttribute("role");
-        if (sess == null || sess.getAttribute("username") == null
-                || !("Global".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role))) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Please log in as an admin first.");
+        if (!WebsiteDB.allowed(sess)) {                        // Global users only
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "The website tools are for Global users only.");
             return;
         }
 

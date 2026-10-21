@@ -41,12 +41,33 @@ public class WebsiteDB {
         return siteOf(sess == null ? null : (String) sess.getAttribute("branch"));
     }
 
-    /** Website pages are for role Global / Admin or the Finance department (same as the Website menu). */
+    /** Website pages are for users with role Global only (same rule as the Website menu). */
     public static boolean allowed(HttpSession sess) {
         if (sess == null || sess.getAttribute("username") == null) return false;
         String role = (String) sess.getAttribute("role");
-        String dept = (String) sess.getAttribute("department");
-        return "Global".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role) || "Finance".equalsIgnoreCase(dept);
+        return role != null && "Global".equalsIgnoreCase(role.trim());
+    }
+
+    /**
+     * Deleting pages, sections, photos, news or events is only for these users (comma separated).
+     * Default: udaykumar. Can be changed with the setting WEBSITE_DELETE_USERS (Railway variable / pinventory.properties).
+     */
+    public static boolean canDelete(HttpSession sess) {
+        if (!allowed(sess)) return false;
+        String user = String.valueOf(sess.getAttribute("username")).trim();
+        String list = com.officecentral.common.config.AppConfig.get("WEBSITE_DELETE_USERS");
+        if (list == null) list = "udaykumar";
+        for (String u : list.split(",")) {
+            if (u.trim().equalsIgnoreCase(user)) return true;
+        }
+        return false;
+    }
+
+    /** Stops a delete for everyone else. Returns false (and answers 403) when this user may not delete. */
+    public static boolean guardDelete(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        if (canDelete(req.getSession(false))) return true;
+        resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Deleting on the website is not allowed for your user.");
+        return false;
     }
 
     /** Logged in and allowed? Otherwise sends the user to login / Home and returns false. */

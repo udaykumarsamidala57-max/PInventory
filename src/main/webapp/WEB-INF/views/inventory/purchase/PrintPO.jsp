@@ -432,18 +432,43 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
     ResultSet rsItems = pstItems.executeQuery();
 %>
 
+<%
+    // Read the items first, so the discount columns can be left out when no item has a discount
+    java.util.List<String[]> poRows = new java.util.ArrayList<String[]>();
+    boolean anyDiscount = false;
+    while (rsItems.next()) {
+        double dp = rsItems.getDouble("discount_percent"), dv = rsItems.getDouble("discount_value");
+        if (Math.abs(dp) > 0.0001 || Math.abs(dv) > 0.0001) anyDiscount = true;
+        poRows.add(new String[] {
+            rsItems.getString("description"),
+            rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-",
+            String.format("%.2f", rsItems.getDouble("qty")),
+            String.format("%.2f", rsItems.getDouble("rate")),
+            String.format("%.2f", rsItems.getDouble("amount")),
+            String.format("%.2f", dp),
+            String.format("%.2f", dv),
+            String.format("%.2f", rsItems.getDouble("gst_percent")),
+            String.format("%.2f", rsItems.getDouble("gst_value")),
+            String.format("%.2f", rsItems.getDouble("net_amount")) });
+    }
+    rsItems.close();
+    pstItems.close();
+%>
+
 <div class="table-container">
     <table class="items-table">
         <thead>
             <tr>
                 <th style="width: 5%;">Sl.No</th>
-                <th style="width: 25%;">Item Description</th>
+                <th style="width: <%= anyDiscount ? "25%" : "41%" %>;">Item Description</th>
                 <th style="width: 8%;">UOM</th>
                 <th style="width: 8%;">Qty</th>
                 <th style="width: 9%;">Rate</th>
                 <th style="width: 9%;">Amount</th>
+                <% if (anyDiscount) { %>
                 <th style="width: 7%;">Disc %</th>
                 <th style="width: 9%;">Disc Val</th>
+                <% } %>
                 <th style="width: 6%;">GST %</th>
                 <th style="width: 8%;">GST Val</th>
                 <th style="width: 10%;">Net Amt</th>
@@ -452,25 +477,25 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
         <tbody>
         <%
             int sl = 1;
-            while (rsItems.next()) {
+            for (String[] r : poRows) {
         %>
             <tr>
                 <td style="text-align:center;"><%= sl++ %></td>
-                <td style="text-align:left;"><%= rsItems.getString("description") %></td>
-                <td style="text-align:center;"><%= rsItems.getString("UOM") != null ? rsItems.getString("UOM") : "-" %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("qty")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("rate")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("amount")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_percent")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("discount_value")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_percent")) %></td>
-                <td style="text-align:right;"><%= String.format("%.2f", rsItems.getDouble("gst_value")) %></td>
-                <td style="text-align:right; font-weight:600;"><%= String.format("%.2f", rsItems.getDouble("net_amount")) %></td>
+                <td style="text-align:left;"><%= r[0] %></td>
+                <td style="text-align:center;"><%= r[1] %></td>
+                <td style="text-align:right;"><%= r[2] %></td>
+                <td style="text-align:right;"><%= r[3] %></td>
+                <td style="text-align:right;"><%= r[4] %></td>
+                <% if (anyDiscount) { %>
+                <td style="text-align:right;"><%= r[5] %></td>
+                <td style="text-align:right;"><%= r[6] %></td>
+                <% } %>
+                <td style="text-align:right;"><%= r[7] %></td>
+                <td style="text-align:right;"><%= r[8] %></td>
+                <td style="text-align:right; font-weight:600;"><%= r[9] %></td>
             </tr>
         <%
             }
-            rsItems.close();
-            pstItems.close();
         %>
         </tbody>
     </table>
@@ -478,10 +503,12 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
 
 <div class="summary-wrapper">
     <div class="summary-card">
+        <% if (anyDiscount) { %>
         <div class="summary-row">
             <span>Total Discount:</span>
             <span><%= rsPO.getString("total_dis") %></span>
         </div>
+        <% } %>
         <div class="summary-row">
             <span>Total GST:</span>
             <span><%= rsPO.getString("total_gst") %></span>

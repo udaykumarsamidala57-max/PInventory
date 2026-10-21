@@ -37,6 +37,17 @@
         return (neg ? "-" : "") + s + frac;
     }
     private static String rupee(double v)  { return "\u20B9" + fmtIN(v, 0); }
+
+    /** From / To date boxes shown right after the "Today" tab. Picking dates reloads the dashboard for that range. */
+    private static String rangeBoxes(String card, String tabId, String from, String to, boolean applied) {
+        return "<span class='range-inline" + (applied ? " active" : "") + "' data-tab='" + h(tabId) + "' data-card='" + h(card) + "'"
+             + " title='Show figures between two dates'>"
+             + "<i class='fas fa-calendar-check'></i>"
+             + "<input type='date' class='range-from' aria-label='From date' value='" + (applied ? h(from) : "") + "'>"
+             + "<span class='range-sep'>to</span>"
+             + "<input type='date' class='range-to' aria-label='To date' value='" + (applied ? h(to) : "") + "'>"
+             + "</span>";
+    }
     private static String indInt(double v) { return fmtIN(v, 0); }
     private static String indDec(double v) { return fmtIN(v, 2); }
 %>
@@ -88,29 +99,47 @@
     String thisYearFrom = (String) request.getAttribute("thisYearFrom");
     if (thisYearFrom == null) thisYearFrom = "1 Apr";
 
-    // Dashboard periods, in display order: This Year (from 1 April) -> 60 -> 30 -> 7 days -> Today
-    String[] pLabels = { "This Year", "Last 60 Days", "Last 30 Days", "Last 7 Days", "Today" };
-    String[] pIcons  = { "fa-calendar", "fa-clock", "fa-calendar-alt", "fa-calendar-week", "fa-calendar-day" };
-    String[] pTotalText = { "Total since " + thisYearFrom, "Total last 60 days", "Total last 30 days", "Total last 7 days", "Total today" };
-    String[] pWhen = { "since " + thisYearFrom, "in the last 60 days", "in the last 30 days", "in the last 7 days", "today" };
+    // "Between dates" - the 6th period, chosen on the page (from / to)
+    boolean hasRange = Boolean.TRUE.equals(request.getAttribute("hasRange"));
+    String rangeFrom = (String) request.getAttribute("rangeFrom");
+    String rangeTo = (String) request.getAttribute("rangeTo");
+    String rangeLabel = (String) request.getAttribute("rangeLabel");
+    if (rangeFrom == null) rangeFrom = "";
+    if (rangeTo == null) rangeTo = "";
+    if (rangeLabel == null) rangeLabel = "";
+    @SuppressWarnings("unchecked")
+    Map<String, Double> rangeDeptMap = (Map<String, Double>) request.getAttribute("rangeDeptMap");
+    if (rangeDeptMap == null) rangeDeptMap = new LinkedHashMap<String, Double>();
+    Double rgt = (Double) request.getAttribute("rangeTotal");
+    double rangeTotal = rgt != null ? rgt : 0;
+    final int RANGE_TAB = 5;
+    int activeTab = hasRange ? RANGE_TAB : 0;      // after "Apply", the cards open on Between dates
+
+    // Dashboard periods, in display order: This Year (from 1 April) -> 60 -> 30 -> 7 days -> Today -> Between dates
+    String[] pLabels = { "This Year", "Last 60 Days", "Last 30 Days", "Last 7 Days", "Today", "Between Dates" };
+    String[] pIcons  = { "fa-calendar", "fa-clock", "fa-calendar-alt", "fa-calendar-week", "fa-calendar-day", "fa-calendar-check" };
+    String[] pTotalText = { "Total since " + thisYearFrom, "Total last 60 days", "Total last 30 days", "Total last 7 days", "Total today",
+                            hasRange ? "Total " + rangeLabel : "Choose dates" };
+    String[] pWhen = { "since " + thisYearFrom, "in the last 60 days", "in the last 30 days", "in the last 7 days", "today",
+                       "between " + rangeLabel };
 
     // Consumption (stock issued) by department
-    String[] cTabIds = { "cYearTab", "c60Tab", "c30Tab", "c7Tab", "cTodayTab" };
-    List<Map<String, Double>> cMaps = Arrays.asList(thisYearDeptMap, last60DaysDeptMap, last30DaysDeptMap, last7DaysDeptMap, todayDeptMap);
-    double[] cTotals = { thisYearTotal, last60DaysTotal, last30DaysTotal, last7DaysTotal, todayTotal };
+    String[] cTabIds = { "cYearTab", "c60Tab", "c30Tab", "c7Tab", "cTodayTab", "cRangeTab" };
+    List<Map<String, Double>> cMaps = Arrays.asList(thisYearDeptMap, last60DaysDeptMap, last30DaysDeptMap, last7DaysDeptMap, todayDeptMap, rangeDeptMap);
+    double[] cTotals = { thisYearTotal, last60DaysTotal, last30DaysTotal, last7DaysTotal, todayTotal, rangeTotal };
 
     // Top 3 consumed items per department (same period order)
     List<Map<String, List<Object[]>>> topMaps = new ArrayList<Map<String, List<Object[]>>>();
-    for (String k : new String[] { "topYear", "top60", "top30", "top7", "topToday" }) {
+    for (String k : new String[] { "topYear", "top60", "top30", "top7", "topToday", "topRange" }) {
         Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
         topMaps.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
     }
     List<Map<String, List<Object[]>>> topMapsQ = new ArrayList<Map<String, List<Object[]>>>();
-    for (String k : new String[] { "topYearQ", "top60Q", "top30Q", "top7Q", "topTodayQ" }) {
+    for (String k : new String[] { "topYearQ", "top60Q", "top30Q", "top7Q", "topTodayQ", "topRangeQ" }) {
         Map<String, List<Object[]>> m = (Map<String, List<Object[]>>) request.getAttribute(k);
         topMapsQ.add(m != null ? m : new LinkedHashMap<String, List<Object[]>>());
     }
-    String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab" };
+    String[] tTabIds = { "tYearTab", "t60Tab", "t30Tab", "t7Tab", "tTodayTab", "tRangeTab" };
 
     // Vendor price comparison: { itemName, uom, totalValue, List<{vendor, avgRate, lastRate, qty, poCount, lastDate}> }
     Map<String, List<Object[]>> priceByCat = (Map<String, List<Object[]>>) request.getAttribute("priceCompareByCat");
@@ -119,8 +148,8 @@
     if (priceCatTotals == null) priceCatTotals = new LinkedHashMap<String, Integer>();
 
     // Vendor-wise PO value: vendor -> {value, count}
-    String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap" };
-    String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab" };
+    String[] poKeys   = { "poYearMap", "po60Map", "po30Map", "po7Map", "poTodayMap", "poRangeMap" };
+    String[] poTabIds = { "poYearTab", "po60Tab", "po30Tab", "po7Tab", "poTodayTab", "poRangeTab" };
     List<Map<String, double[]>> poMaps = new ArrayList<Map<String, double[]>>();
     for (String k : poKeys) {
         Map<String, double[]> m = (Map<String, double[]>) request.getAttribute(k);
@@ -739,6 +768,20 @@
     .pc-diff { color: #a15c07; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
     .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
+
+    /* From / To dates beside "Today" */
+    .range-inline { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px; padding: 2px 8px;
+                    border: 1px solid transparent; border-radius: 3px; color: var(--text-muted); white-space: nowrap; }
+    .range-inline.active { background: var(--surface); border-color: var(--border); color: var(--accent); }
+    .range-inline .fa-calendar-check { font-size: 12px; }
+    .range-inline input[type=date] { height: 26px; padding: 0 4px; border: 1px solid var(--border); border-radius: 3px;
+                                     font: inherit; font-size: 12px; color: var(--text); background: var(--surface); width: 122px; }
+    .range-inline input[type=date]:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
+    .range-inline.active input[type=date] { border-color: var(--accent); }
+    .range-sep { font-size: 11.5px; }
+    .range-inline.loading { opacity: .6; }
+    .range-inline.loading .fa-calendar-check { animation: rngpulse .8s ease-in-out infinite alternate; }
+    @keyframes rngpulse { from { opacity: .3; } to { opacity: 1; } }
 </style>
 </head>
 <body>
@@ -765,20 +808,21 @@
         </div>
     </div>
 
-    <!-- Consumption cost by department (This Year -> 60 -> 30 -> 7 days -> Today) -->
-    <div class="card">
+    <!-- Consumption cost by department (This Year -> 60 -> 30 -> 7 days -> Today -> Between dates) -->
+    <div class="card" id="consCard">
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-boxes"></i> Consumption by Department</span>
-                <% for (int t = 0; t < cTabIds.length; t++) { %>
-                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= cTabIds[t] %>')">
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
+                <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= cTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("consCard", cTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div>
                 <% for (int t = 0; t < cTabIds.length; t++) { %>
-                <span class="today-total period-total" id="<%= cTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %><b><%= rupee(cTotals[t]) %></b></span>
+                <span class="today-total period-total" id="<%= cTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == activeTab ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %><b><%= rupee(cTotals[t]) %></b></span>
                 <% } %>
             </div>
         </div>
@@ -786,9 +830,9 @@
             <% for (int t = 0; t < cTabIds.length; t++) {
                  Map<String, Double> cm = cMaps.get(t);
             %>
-            <div id="<%= cTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+            <div id="<%= cTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
                 <% if (cm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued <%= pWhen[t] %>.</div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No stock issued " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="today-grid fit-row">
                     <% for (Map.Entry<String, Double> e : cm.entrySet()) { %>
@@ -805,22 +849,23 @@
     </div>
 
     <!-- Vendor-wise Purchase Orders (cumulative) -->
-    <div class="card">
+    <div class="card" id="poCard">
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-file-invoice"></i> Top Vendors by PO Value</span>
-                <% for (int t = 0; t < poTabIds.length; t++) { %>
-                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= poTabIds[t] %>')">
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
+                <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= poTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("poCard", poTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div>
                 <% for (int t = 0; t < poTabIds.length; t++) {
                      double tv = 0; int tc = 0;
                      for (double[] a : poMaps.get(t).values()) { tv += a[0]; tc += (int) a[1]; }
                 %>
-                <span class="today-total period-total" id="<%= poTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == 0 ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %> &middot; <%= tc %> PO<%= tc == 1 ? "" : "s" %><b><%= rupee(tv) %></b></span>
+                <span class="today-total period-total" id="<%= poTabIds[t].replace("Tab", "TotalLabel") %>" <%= t == activeTab ? "" : "style=\"display: none;\"" %>><%= pTotalText[t] %> &middot; <%= tc %> PO<%= tc == 1 ? "" : "s" %><b><%= rupee(tv) %></b></span>
                 <% } %>
             </div>
         </div>
@@ -828,9 +873,9 @@
             <% for (int t = 0; t < poTabIds.length; t++) {
                  Map<String, double[]> pm = poMaps.get(t);
             %>
-            <div id="<%= poTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+            <div id="<%= poTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
                 <% if (pm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No purchase orders <%= pWhen[t] %>.</div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No purchase orders " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="today-grid fit-row po-grid">
                     <% int shown = 0;
@@ -856,6 +901,7 @@
 
     <!-- Filters -->
     <form class="filter-panel" method="get" action="home">
+        <% if (hasRange) { %><input type="hidden" name="from" value="<%= h(rangeFrom) %>"><input type="hidden" name="to" value="<%= h(rangeTo) %>"><% } %>
         <div class="field">
             <label for="department">Department</label>
             <select id="department" name="department">
@@ -1048,11 +1094,12 @@
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-fire"></i> Top 3 Items by Department</span>
-                <% for (int t = 0; t < tTabIds.length; t++) { %>
-                <button type="button" class="tab-btn <%= t == 0 ? "active" : "" %>" onclick="switchTab(event, '<%= tTabIds[t] %>')">
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
+                <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= tTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("topCard", tTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div class="rank-toggle" role="group" aria-label="Rank items by">
                 
@@ -1067,9 +1114,9 @@
                  List<String> deptOrder = new ArrayList<String>(cMaps.get(t).keySet());
                  for (String k : tm.keySet()) if (!deptOrder.contains(k)) deptOrder.add(k);
             %>
-            <div id="<%= tTabIds[t] %>" class="tab-content <%= t == 0 ? "active" : "" %>">
+            <div id="<%= tTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
                 <% if (tm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;">No stock issued <%= pWhen[t] %>.</div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No stock issued " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="top-grid">
                     <% for (String dn : deptOrder) {
@@ -1135,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function switchTab(evt, tabId) {
     // Works per card, so each card's tabs switch independently.
     var card = evt.currentTarget.closest('.card') || document;
+    card.querySelectorAll('.range-inline').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.period-total').forEach(function (el) { el.style.display = 'none'; });
@@ -1143,6 +1191,78 @@ function switchTab(evt, tabId) {
     var label = document.getElementById(tabId.replace(/Tab$/, 'TotalLabel'));
     if (label) label.style.display = 'inline';
 }
+
+// From / To beside "Today": as soon as both dates are chosen the dashboard reloads for that range
+(function () {
+    function showRange(box) {
+        var card = box.closest('.card');
+        var tab = document.getElementById(box.getAttribute('data-tab'));
+        if (!card || !tab) return;
+        card.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
+        card.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
+        card.querySelectorAll('.period-total').forEach(function (el) { el.style.display = 'none'; });
+        tab.classList.add('active');
+        box.classList.add('active');
+        var label = document.getElementById(tab.id.replace(/Tab$/, 'TotalLabel'));
+        if (label) label.style.display = 'inline';
+    }
+    var busy = null;
+    function apply(box) {
+        var f = box.querySelector('.range-from'), t = box.querySelector('.range-to');
+        if (f.value && !t.value) {                         // only From picked: up to today
+            var d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            t.value = d.toISOString().slice(0, 10);
+        }
+        if (!f.value || !t.value) return;
+        var ok = function (v) { var y = +v.slice(0, 4); return y >= 2000 && y <= 2100; };   // ignore half-typed years
+        if (!ok(f.value) || !ok(t.value)) return;
+        var p = new URLSearchParams(location.search);
+        if (p.get('from') === f.value && p.get('to') === t.value && box.dataset.loaded === '1') { showRange(box); return; }
+        p.set('from', f.value);
+        p.set('to', t.value);
+
+        // fetch the figures for that range in the background and swap them into the three cards (no page reload)
+        if (busy) busy.abort();
+        busy = new AbortController();
+        var boxes = document.querySelectorAll('.range-inline');
+        boxes.forEach(function (b) {
+            b.classList.add('loading');
+            b.querySelector('.range-from').value = f.value;
+            b.querySelector('.range-to').value = t.value;
+        });
+        fetch('home?' + p.toString(), { credentials: 'same-origin', signal: busy.signal })
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                if (!doc.getElementById('consCard')) { location.href = 'home?' + p.toString(); return; }   // e.g. logged out
+                boxes.forEach(function (b) {
+                    var tabId = b.getAttribute('data-tab');
+                    var fresh = doc.getElementById(tabId), here = document.getElementById(tabId);
+                    if (fresh && here) here.innerHTML = fresh.innerHTML;
+                    var labelId = tabId.replace(/Tab$/, 'TotalLabel');
+                    var freshLabel = doc.getElementById(labelId), hereLabel = document.getElementById(labelId);
+                    if (freshLabel && hereLabel) hereLabel.innerHTML = freshLabel.innerHTML;
+                    b.dataset.loaded = '1';
+                    showRange(b);
+                });
+                history.replaceState(null, '', 'home?' + p.toString() + location.hash);
+            })
+            .catch(function (e) { if (e.name !== 'AbortError') alert('Could not load the figures for these dates. Please try again.'); })
+            .then(function () { boxes.forEach(function (b) { b.classList.remove('loading'); }); });
+    }
+    document.querySelectorAll('.range-inline').forEach(function (box) {
+        if (box.classList.contains('active')) box.dataset.loaded = '1';
+        var timer = null;                                     // one pause for both boxes
+        box.querySelectorAll('input[type=date]').forEach(function (inp) {
+            inp.addEventListener('change', function () {        // small pause so typing a date by keyboard finishes first
+                clearTimeout(timer);
+                timer = setTimeout(function () { apply(box); }, 900);
+            });
+            // with a range already applied, clicking the boxes brings its figures back
+            inp.addEventListener('focus', function () { if (inp.value) showRange(box); });
+        });
+    });
+})();
 
 (function () {
     var dLabels = [<%= dLabels %>];
