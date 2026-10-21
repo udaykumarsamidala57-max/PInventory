@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/SaveEnquiryServlet")
 public class SaveEnquiryServlet extends HttpServlet {
@@ -36,7 +36,7 @@ public class SaveEnquiryServlet extends HttpServlet {
 
         int count = 0;
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
 
             String sql = "SELECT COUNT(*) FROM admission_enquiry WHERE father_mobile_no = ? OR mother_mobile_no = ?";
             PreparedStatement ps = con.prepareStatement(sql);
@@ -91,7 +91,7 @@ public class SaveEnquiryServlet extends HttpServlet {
         if (segment == null) segment = "";
         if (address == null) address = "";
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
 
             // ===============================
             // 🛡️ MOBILE LIMIT CHECK (SERVER SIDE)

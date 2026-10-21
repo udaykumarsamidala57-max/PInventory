@@ -3,7 +3,7 @@ package com.DAO;
 import java.sql.*;
 import java.util.*;
 
-import com.bean.DBUtil4;
+import com.officecentral.common.db.AssetDB;
 
 public class AssetLocationDAO {
 
@@ -13,7 +13,7 @@ public class AssetLocationDAO {
      */
     private Connection getConnection() throws Exception {
 
-        return DBUtil4.getConnection();
+        return AssetDB.getConnection();
     }
 
     /* =========================

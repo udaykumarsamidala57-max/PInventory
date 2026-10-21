@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/MasterServlet")
 public class MasterServlet extends HttpServlet {
@@ -52,7 +52,7 @@ public class MasterServlet extends HttpServlet {
         PreparedStatement ps = null;
 
         try {
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             // =========================================
             // ADD DEPARTMENT
@@ -120,7 +120,7 @@ public class MasterServlet extends HttpServlet {
         ArrayList<HashMap<String,Object>> incharges = new ArrayList<HashMap<String,Object>>();
 
         try {
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             // =========================================
             // INCHARGE LIST
@@ -179,7 +179,7 @@ public class MasterServlet extends HttpServlet {
             request.setAttribute("complaints", complaints);
             request.setAttribute("incharges", incharges);
 
-            RequestDispatcher rd = request.getRequestDispatcher("/Service/Mater.jsp");
+            RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/service/Mater.jsp");
             rd.forward(request, response);
 
         } catch (Exception e) {

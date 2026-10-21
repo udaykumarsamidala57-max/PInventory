@@ -2,8 +2,8 @@ package com.controller.Asset;
 
 import com.DAO.AssetDAO;
 import com.bean.Asset;
-import com.bean.DBUtil4;
-import com.bean.DBUtil;
+import com.officecentral.common.db.AssetDB;
+import com.officecentral.common.db.InventoryDB;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -101,7 +101,7 @@ public class AssetServlet extends HttpServlet {
         List<Map<String, Object>> categoriesList = new ArrayList<>();
         String catSql = "SELECT category_id, category_name FROM asset_categories ORDER BY category_name ASC";
         
-        try (Connection conn = DBUtil4.getConnection();
+        try (Connection conn = AssetDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(catSql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -119,7 +119,7 @@ public class AssetServlet extends HttpServlet {
         List<Map<String, Object>> subcategoriesList = new ArrayList<>();
         String subCatSql = "SELECT subcategory_id, subcategory_name, category_id FROM asset_subcategories ORDER BY subcategory_name ASC";
         
-        try (Connection conn = DBUtil4.getConnection();
+        try (Connection conn = AssetDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(subCatSql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -148,7 +148,7 @@ public class AssetServlet extends HttpServlet {
         String dept = (String) sess.getAttribute("department");
         String branch = (String) sess.getAttribute("branch");
         
-        try (Connection conn = DBUtil.getConnection(branch);
+        try (Connection conn = InventoryDB.getConnection(branch);
              PreparedStatement ps = conn.prepareStatement(vendorSql);
              ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
@@ -163,7 +163,7 @@ public class AssetServlet extends HttpServlet {
         request.setAttribute("vendorsList", vendorsList);
         
         // 5. Forward control structure cleanly to your dedicated folder view
-        request.getRequestDispatcher("/Asset/asset.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/assets/asset.jsp").forward(request, response);
     }
 
     // Safely handles empty string conversions for alternate DB data types

@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import com.bean.DBUtil4;
+import com.officecentral.common.db.AssetDB;
 
 public class EmployeeDAO {
 
@@ -25,7 +25,7 @@ public class EmployeeDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                 "INSERT INTO locations "
@@ -60,7 +60,7 @@ public class EmployeeDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "SELECT * FROM locations "
@@ -88,7 +88,7 @@ public class EmployeeDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                 "SELECT * FROM locations "
@@ -121,7 +121,7 @@ public class EmployeeDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                 "UPDATE locations SET "
@@ -162,7 +162,7 @@ public class EmployeeDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                 "DELETE FROM locations "

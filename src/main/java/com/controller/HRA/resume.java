@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import com.bean.DBUtil2;
+import com.officecentral.common.db.HrDB;
 
 @WebServlet("/resume")
 @MultipartConfig(maxFileSize = 1024 * 1024 * 10) // 10MB
@@ -46,7 +46,7 @@ public class resume extends HttpServlet {
 
         String sql = "SELECT * FROM candidate_recruitment ORDER BY sl_no DESC";
 
-        try (Connection con = DBUtil2.getConnection();
+        try (Connection con = HrDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -68,7 +68,7 @@ public class resume extends HttpServlet {
         }
 
         request.setAttribute("resumeList", resumeList);
-        request.getRequestDispatcher("hr/RecruitmentDashboard.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/hr/RecruitmentDashboard.jsp")
                .forward(request, response);
     }
 
@@ -95,7 +95,7 @@ public class resume extends HttpServlet {
                 (hasNewFile ? ", resume=? " : "") +
                 "WHERE sl_no=?";
 
-        try (Connection con = DBUtil2.getConnection();
+        try (Connection con = HrDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             int i = 1;

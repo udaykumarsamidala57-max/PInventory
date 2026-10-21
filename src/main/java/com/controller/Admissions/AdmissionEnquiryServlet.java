@@ -1,6 +1,6 @@
 package com.controller.Admissions;
 
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 import java.io.IOException;
 import java.sql.*;
 import javax.servlet.*;
@@ -54,7 +54,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
 
         String action = req.getParameter("action");
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
 
             con.setAutoCommit(false); // 🔥 TRANSACTION START
 
@@ -96,7 +96,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
             }
 
             // ================= FORWARD =================
-            req.getRequestDispatcher("admission_enquirys.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/views/admissions/admission_enquirys.jsp").forward(req, resp);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -126,7 +126,7 @@ public class AdmissionEnquiryServlet extends HttpServlet {
 
         boolean isInsert = (id == null || id.trim().isEmpty());
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
 
             con.setAutoCommit(false);  // 🔥 VERY IMPORTANT
 

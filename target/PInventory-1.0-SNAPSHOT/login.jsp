@@ -151,7 +151,7 @@
         <h2>User Login</h2>
 
       
-        <form action="LoginServlet" method="post"> 
+        <form action="login" method="post"> 
             <label>Username</label> 
             <input type="text" name="username" placeholder="Enter your username" required> 
 
@@ -173,7 +173,7 @@
         <hr>
 
        
-        <form action="SendOTPServlet" method="post">
+        <form action="send-otp" method="post">
             <button type="submit" class="google-login">
                 <img src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png" alt="Google">
                 Login with Gmail OTP

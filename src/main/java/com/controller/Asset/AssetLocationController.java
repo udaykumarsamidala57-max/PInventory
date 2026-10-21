@@ -65,7 +65,7 @@ public class AssetLocationController extends HttpServlet {
                 req.setAttribute("assets", dao.getAssets(categoryId, subcategoryId));
             }
 
-            RequestDispatcher rd = req.getRequestDispatcher("/Asset/assignAssetLocation.jsp");
+            RequestDispatcher rd = req.getRequestDispatcher("/WEB-INF/views/assets/assignAssetLocation.jsp");
             rd.forward(req, resp);
 
         } catch (Exception e) {

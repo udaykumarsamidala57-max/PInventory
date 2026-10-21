@@ -325,7 +325,7 @@ public final class PhotoStore {
     }
 
     private static String env(String name, String def) {
-        String v = com.bean.AppConfig.get(name);          // env var, -D, or the local settings file
+        String v = com.officecentral.common.config.AppConfig.get(name);          // env var, -D, or the local settings file
         if (v == null || v.trim().isEmpty()) v = System.getProperty("photostore." + name);
         return (v == null || v.trim().isEmpty()) ? def : v.trim();
     }

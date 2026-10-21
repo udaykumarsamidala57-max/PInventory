@@ -1,6 +1,6 @@
 package com.controller.HRA;
 
-import com.bean.DBUtil2;
+import com.officecentral.common.db.HrDB;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -30,7 +30,7 @@ public class CandidateServlet extends HttpServlet {
                 + "total_experience, present_salary, expected_salary, remarks, resume) "
                 + "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
-        try (Connection con = DBUtil2.getConnection();
+        try (Connection con = HrDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             // Mapping form fields to DB columns

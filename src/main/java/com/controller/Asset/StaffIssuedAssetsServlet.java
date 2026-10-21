@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil4;
+import com.officecentral.common.db.AssetDB;
 
 @WebServlet("/StaffIssued")
 public class StaffIssuedAssetsServlet extends HttpServlet {
@@ -28,7 +28,7 @@ public class StaffIssuedAssetsServlet extends HttpServlet {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                 "SELECT a.asset_id, " +
@@ -76,6 +76,6 @@ public class StaffIssuedAssetsServlet extends HttpServlet {
             try { if(con != null) con.close(); } catch(Exception e) {}
         }
 
-        request.getRequestDispatcher("Asset/StaffIssued.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/assets/StaffIssued.jsp").forward(request, response);
     }
 }

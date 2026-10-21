@@ -6,7 +6,7 @@ import javax.servlet.*;
 import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @MultipartConfig
 @WebServlet("/UploadCSVServlet")
@@ -54,7 +54,7 @@ public class UploadCSVServlet extends HttpServlet {
         int successCount = 0;
         int failCount = 0;
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
 
             String sql = "INSERT INTO student_master "
                     + "(admission_no, student_name, gender, class, section, "

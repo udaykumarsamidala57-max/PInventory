@@ -1,6 +1,6 @@
 package com.controller.HRA;
 
-import com.bean.DBUtil2;
+import com.officecentral.common.db.HrDB;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -17,7 +17,7 @@ public class VacancyServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
     private Connection getConnection() throws SQLException {
-        return DBUtil2.getConnection();
+        return HrDB.getConnection();
     }
 
     // Session validation helper
@@ -87,7 +87,7 @@ public class VacancyServlet extends HttpServlet {
 
         List<Vacancy> vacancies = fetchVacancies(request);
         request.setAttribute("vacancies", vacancies);
-        request.getRequestDispatcher("/hr/vacancies.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/hr/vacancies.jsp").forward(request, response);
     }
 
     private List<Vacancy> fetchVacancies(HttpServletRequest request) {
@@ -193,7 +193,7 @@ public class VacancyServlet extends HttpServlet {
 
         List<Vacancy> vacancies = fetchVacancies(request);
         request.setAttribute("vacancies", vacancies);
-        request.getRequestDispatcher("/hr/vacancies.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/hr/vacancies.jsp").forward(request, response);
     }
 
     // =========================

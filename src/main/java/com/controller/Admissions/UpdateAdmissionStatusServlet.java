@@ -12,7 +12,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;	
 import javax.servlet.http.HttpServletResponse;
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/UpdateAdmissionStatus")
 public class UpdateAdmissionStatusServlet extends HttpServlet {
@@ -23,7 +23,7 @@ public class UpdateAdmissionStatusServlet extends HttpServlet {
         String enquiryId = request.getParameter("enquiry_id");
         String status = request.getParameter("status"); 
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
             String sql = "UPDATE admission_enquiry SET Admission_status = ? WHERE enquiry_id = ?";
             try (PreparedStatement ps = con.prepareStatement(sql)) {
                 ps.setString(1, status);
@@ -49,7 +49,7 @@ public class UpdateAdmissionStatusServlet extends HttpServlet {
 
         if (classIdRaw == null) return;
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
             int classId = Integer.parseInt(classIdRaw);
             boolean isAllDates = "All".equalsIgnoreCase(examDate);
 

@@ -87,7 +87,7 @@ public class UpcomingEventsServlet extends HttpServlet {
         }
 
         request.setAttribute("events", eventList);
-        RequestDispatcher dispatcher = request.getRequestDispatcher("/website/upcoming_events.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("/WEB-INF/views/website/upcoming_events.jsp");
         dispatcher.forward(request, response);
     }
 

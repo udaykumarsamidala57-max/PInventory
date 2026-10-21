@@ -187,7 +187,7 @@ public class CategoryController extends HttpServlet {
 
             RequestDispatcher rd =
                     request.getRequestDispatcher(
-                    "/Asset/addCategory.jsp");
+                    "/WEB-INF/views/assets/addCategory.jsp");
 
             rd.forward(request, response);
 

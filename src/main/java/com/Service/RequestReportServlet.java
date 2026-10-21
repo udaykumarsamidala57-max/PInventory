@@ -16,7 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/RequestReport")
 public class RequestReportServlet extends HttpServlet {
@@ -64,7 +64,7 @@ public class RequestReportServlet extends HttpServlet {
                 "ORDER BY id ASC";
 
         try (
-                Connection con = DBUtil5.getConnection(branch);
+                Connection con = ServiceDB.getConnection(branch);
                 PreparedStatement psMain = con.prepareStatement(mainSql);
                 ResultSet rsMain = psMain.executeQuery();
                 PreparedStatement psDetail = con.prepareStatement(detailsSql)
@@ -176,7 +176,7 @@ public class RequestReportServlet extends HttpServlet {
         }
 
         request.getRequestDispatcher(
-                "/Service/requestReportView.jsp"
+                "/WEB-INF/views/service/requestReportView.jsp"
         ).forward(request, response);
     }
 

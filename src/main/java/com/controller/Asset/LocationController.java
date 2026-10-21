@@ -85,7 +85,7 @@ public class LocationController extends HttpServlet {
 
             RequestDispatcher rd =
             	    request.getRequestDispatcher(
-            	        "/Asset/AddLocations.jsp"
+            	        "/WEB-INF/views/assets/AddLocations.jsp"
             	    );
 
             rd.forward(request, response);

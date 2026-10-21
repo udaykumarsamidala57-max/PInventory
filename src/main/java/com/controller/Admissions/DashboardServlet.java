@@ -7,7 +7,7 @@ import java.util.*;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/dashboard")
 public class DashboardServlet extends HttpServlet {
@@ -21,7 +21,7 @@ public class DashboardServlet extends HttpServlet {
             return;
         }
 
-        try (Connection con = DBUtil3.getConnection()) {
+        try (Connection con = AdmissionsDB.getConnection()) {
             /* --- 1. Total Enquiries --- */
             int totalEnq = 0;
             try (PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM admission_enquiry");
@@ -94,7 +94,7 @@ public class DashboardServlet extends HttpServlet {
             request.setAttribute("semi", semiTotal);
             request.setAttribute("dashboardMatrix", dashboardMatrix);
             request.setAttribute("capacityMap", capacityMap);
-            request.getRequestDispatcher("dashboard.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/admissions/dashboard.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

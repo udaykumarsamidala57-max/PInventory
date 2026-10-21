@@ -85,7 +85,7 @@ public class Staff extends HttpServlet {
 
             RequestDispatcher rd =
                     request.getRequestDispatcher(
-                        "/Asset/Employee.jsp"
+                        "/WEB-INF/views/assets/Employee.jsp"
                     );
 
             rd.forward(request, response);

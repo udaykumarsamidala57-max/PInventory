@@ -215,7 +215,7 @@ public class PageServlet extends HttpServlet {
                     );
 
                     req.getRequestDispatcher(
-                            "/website/pageBuilder.jsp"
+                            "/WEB-INF/views/website/pageBuilder.jsp"
                     ).forward(req, resp);
 
                     break;
@@ -234,7 +234,7 @@ public class PageServlet extends HttpServlet {
                     );
 
                     req.getRequestDispatcher(
-                            "/website/pageBuilder.jsp"
+                            "/WEB-INF/views/website/pageBuilder.jsp"
                     ).forward(req, resp);
 
                     break;

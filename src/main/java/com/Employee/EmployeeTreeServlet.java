@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil6;
+import com.officecentral.common.db.EmployeeDB;
 
 @WebServlet(urlPatterns = {"/EmployeeTree", "/EmployeePhoto"})
 public class EmployeeTreeServlet extends HttpServlet {
@@ -54,7 +54,7 @@ public class EmployeeTreeServlet extends HttpServlet {
             
         List<Employee> employees = new ArrayList<>();
 
-        try (Connection con = DBUtil6.getConnection();
+        try (Connection con = EmployeeDB.getConnection();
              PreparedStatement ps = con.prepareStatement(
                      "SELECT emp_id, emp_code, emp_name, designation, department, reporting_to, tire "
                    + "FROM employee_master "
@@ -119,7 +119,7 @@ public class EmployeeTreeServlet extends HttpServlet {
             treeHtml.append("</ul>");
 
             request.setAttribute("treeHtml", treeHtml.toString());
-            request.getRequestDispatcher("/Employee/EmployeeTree.jsp").forward(request, response);
+            request.getRequestDispatcher("/WEB-INF/views/employee/EmployeeTree.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -138,7 +138,7 @@ public class EmployeeTreeServlet extends HttpServlet {
 
         String sql = "SELECT photo FROM employee_master WHERE emp_id = ?";
 
-        try (Connection con = DBUtil6.getConnection();
+        try (Connection con = EmployeeDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
             ps.setInt(1, Integer.parseInt(empIdParam));

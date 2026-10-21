@@ -5,7 +5,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
 import java.sql.*;
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/UpdateTCStatusServlet")
 public class UpdateTCStatusServlet extends HttpServlet {
@@ -40,7 +40,7 @@ public class UpdateTCStatusServlet extends HttpServlet {
 
             System.out.println("Updating TC: sno=" + sno + " status=" + status); // DEBUG
 
-            con = DBUtil3.getConnection();
+            con = AdmissionsDB.getConnection();
 
             ps = con.prepareStatement(
                 "UPDATE student_master SET TC_Status=? WHERE sno=?");

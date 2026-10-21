@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/TrackRequestServlet")
 public class TrackRequestServlet extends HttpServlet {
@@ -64,7 +64,7 @@ public class TrackRequestServlet extends HttpServlet {
                     session.getAttribute("role"))
                     .trim();
 
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             ArrayList<HashMap<String,Object>>
             requestList =
@@ -282,7 +282,7 @@ public class TrackRequestServlet extends HttpServlet {
 
         RequestDispatcher rd =
         request.getRequestDispatcher(
-        "/Service/TrackRequest.jsp");
+        "/WEB-INF/views/service/TrackRequest.jsp");
 
         rd.forward(request, response);
     }
@@ -356,7 +356,7 @@ public class TrackRequestServlet extends HttpServlet {
             String roles = (String) sess.getAttribute("role");
             String dept = (String) sess.getAttribute("department");
 
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             PreparedStatement ps =
             con.prepareStatement(

@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import com.bean.DBUtil4;
+import com.officecentral.common.db.AssetDB;
 
 public class CategoryDAO {
 
@@ -24,7 +24,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "SELECT * FROM asset_categories "
@@ -69,7 +69,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "SELECT * FROM asset_subcategories "
@@ -119,7 +119,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "INSERT INTO asset_categories "
@@ -151,7 +151,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "UPDATE asset_categories "
@@ -182,7 +182,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String subSql =
                     "DELETE FROM asset_subcategories "
@@ -222,7 +222,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "INSERT INTO asset_subcategories "
@@ -255,7 +255,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "UPDATE asset_subcategories "
@@ -286,7 +286,7 @@ public class CategoryDAO {
 
         try {
 
-            con = DBUtil4.getConnection();
+            con = AssetDB.getConnection();
 
             String sql =
                     "DELETE FROM asset_subcategories "

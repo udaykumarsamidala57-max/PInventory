@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/Incharge")
 public class Incharge extends HttpServlet {
@@ -108,7 +108,7 @@ public class Incharge extends HttpServlet {
         System.out.println("==================================");
 
         try (
-                Connection con = DBUtil5.getConnection(branch);
+                Connection con = ServiceDB.getConnection(branch);
 
                 PreparedStatement ps =
                         con.prepareStatement(sql);
@@ -273,7 +273,7 @@ public class Incharge extends HttpServlet {
         }
 
         request.getRequestDispatcher(
-                "/Service/Incharge.jsp"
+                "/WEB-INF/views/service/Incharge.jsp"
         ).forward(request, response);
     }
 
@@ -367,7 +367,7 @@ public class Incharge extends HttpServlet {
                 "WHERE id = ?";
 
         try (
-                Connection con = DBUtil5.getConnection(branch);
+                Connection con = ServiceDB.getConnection(branch);
 
                 PreparedStatement verifyPs =
                         con.prepareStatement(verifySql);

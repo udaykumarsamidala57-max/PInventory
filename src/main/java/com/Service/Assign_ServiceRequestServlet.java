@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/Assign_ServiceRequestServlet")
 public class Assign_ServiceRequestServlet extends HttpServlet {
@@ -51,7 +51,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
         ResultSet rs = null;
 
         try {
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             String sql =
                 "SELECT sr.*, " +
@@ -106,7 +106,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
 
         request.setAttribute("requestList", requestList);
 
-        RequestDispatcher rd = request.getRequestDispatcher("/Service/AssignService.jsp");
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/service/AssignService.jsp");
         rd.forward(request, response);
     }
 
@@ -123,7 +123,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
         ResultSet rs = null;
 
         try {
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             String sql =
                 "SELECT * " +
@@ -174,7 +174,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
         ResultSet rs = null;
 
         try {
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
 
             String sql =
                 "SELECT * " +
@@ -248,7 +248,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
             int requestId = Integer.parseInt(request.getParameter("request_id"));
             String actionType = request.getParameter("action_type");
 
-            con = DBUtil5.getConnection(branch);
+            con = ServiceDB.getConnection(branch);
             con.setAutoCommit(false);
 
             int updatedRows = 0;

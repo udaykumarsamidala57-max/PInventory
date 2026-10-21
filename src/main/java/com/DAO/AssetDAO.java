@@ -4,14 +4,14 @@ import com.bean.Asset;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import com.bean.DBUtil4;
+import com.officecentral.common.db.AssetDB;
 
 public class AssetDAO {
 
     public void insertAsset(Asset asset) throws SQLException {
         String sql = "INSERT INTO assets (asset_code, asset_name, category_id, subcategory_id, vendor_name, brand, model_number, serial_number, purchase_date, purchase_cost, warranty_expiry, depreciation_method, useful_life_years, salvage_value, asset_status, qr_code, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
-        try (Connection conn = DBUtil4.getConnection(); 
+        try (Connection conn = AssetDB.getConnection(); 
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             setPreparedStatementValues(ps, asset);
@@ -28,7 +28,7 @@ public class AssetDAO {
                      "LEFT JOIN asset_subcategories sc ON a.subcategory_id = sc.subcategory_id " +
                      "ORDER BY a.created_at DESC";
         
-        try (Connection conn = DBUtil4.getConnection();
+        try (Connection conn = AssetDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             
@@ -47,7 +47,7 @@ public class AssetDAO {
                      "LEFT JOIN asset_categories c ON a.category_id = c.category_id " +
                      "LEFT JOIN asset_subcategories sc ON a.subcategory_id = sc.subcategory_id " +
                      "WHERE a.asset_id = ?";
-        try (Connection conn = DBUtil4.getConnection();
+        try (Connection conn = AssetDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             ps.setInt(1, id);
@@ -63,7 +63,7 @@ public class AssetDAO {
     public void updateAsset(Asset asset) throws SQLException {
         String sql = "UPDATE assets SET asset_code=?, asset_name=?, category_id=?, subcategory_id=?, vendor_name=?, brand=?, model_number=?, serial_number=?, purchase_date=?, purchase_cost=?, warranty_expiry=?, depreciation_method=?, useful_life_years=?, salvage_value=?, asset_status=?, qr_code=?, description=? WHERE asset_id=?";
         
-        try (Connection conn = DBUtil4.getConnection();
+        try (Connection conn = AssetDB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
             setPreparedStatementValues(ps, asset);

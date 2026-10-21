@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.DBUtil5;
+import com.officecentral.common.db.ServiceDB;
 
 @WebServlet("/RequestBookingServlet")
 public class RequestBookingServlet extends HttpServlet {
@@ -63,7 +63,7 @@ public class RequestBookingServlet extends HttpServlet {
         String sql = "SELECT * FROM departments ORDER BY department_name";
 
         // Connection is requested and closed automatically here
-        try (Connection con = DBUtil5.getConnection(branch);
+        try (Connection con = ServiceDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
 
@@ -79,7 +79,7 @@ public class RequestBookingServlet extends HttpServlet {
         }
 
         request.setAttribute("departments", list);
-        request.getRequestDispatcher("/Service/request_booking.jsp").forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views/service/request_booking.jsp").forward(request, response);
     }
 
     /** JSON list of all complaint types with their department (for the Home page request modal). */
@@ -102,7 +102,7 @@ public class RequestBookingServlet extends HttpServlet {
                    + "ORDER BY d.department_name, c.complaint_name";
 
         StringBuilder json = new StringBuilder("[");
-        try (Connection con = DBUtil5.getConnection(branch);
+        try (Connection con = ServiceDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql);
              ResultSet rs = ps.executeQuery()) {
             boolean first = true;
@@ -165,7 +165,7 @@ public class RequestBookingServlet extends HttpServlet {
         String dept = (String) sess.getAttribute("department");
         
         // Connection is requested and closed automatically here
-        try (Connection con = DBUtil5.getConnection(branch);
+        try (Connection con = ServiceDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, departmentId);
@@ -221,7 +221,7 @@ public class RequestBookingServlet extends HttpServlet {
             String dept = (String) sess.getAttribute("department");
 
             // Connection is requested and closed automatically here
-            try (Connection con = DBUtil5.getConnection(branch);
+            try (Connection con = ServiceDB.getConnection(branch);
                  PreparedStatement countPs = con.prepareStatement(countSql);
                  ResultSet countRs = countPs.executeQuery()) {
 

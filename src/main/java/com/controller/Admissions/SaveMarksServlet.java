@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/SaveMarksServlet")
 public class SaveMarksServlet extends HttpServlet {
@@ -26,7 +26,7 @@ public class SaveMarksServlet extends HttpServlet {
         PreparedStatement psUpdateStudent = null;
 
         try {
-            con = DBUtil3.getConnection();
+            con = AdmissionsDB.getConnection();
             con.setAutoCommit(false);
 
             /* ================= UPSERT MARKS ================= */

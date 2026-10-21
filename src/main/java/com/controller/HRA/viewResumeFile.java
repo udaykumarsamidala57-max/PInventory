@@ -8,7 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import com.bean.DBUtil2;
+import com.officecentral.common.db.HrDB;
 
 // Rename the URL mapping to avoid conflicts with JSP files
 @WebServlet("/viewResumeFile") 
@@ -22,7 +22,7 @@ public class viewResumeFile extends HttpServlet {
         // CRITICAL FIX: Ensure SQL column matches the rs.getBlob column name
         String sql = "SELECT resume FROM candidate_recruitment WHERE sl_no = ?";
 
-        try (Connection con = DBUtil2.getConnection();
+        try (Connection con = HrDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             
             ps.setInt(1, Integer.parseInt(id));

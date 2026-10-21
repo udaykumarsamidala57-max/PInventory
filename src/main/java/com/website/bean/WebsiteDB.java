@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.bean.AppConfig;
+import com.officecentral.common.config.AppConfig;
 
 /**
  * Database for the Website module (the school website content: pages, news, upcoming events).
@@ -20,7 +20,7 @@ import com.bean.AppConfig;
 public class WebsiteDB {
 
 
-    // Server, user and password are not kept in the code: see com.bean.AppConfig
+    // Server, user and password are not kept in the code: see com.officecentral.common.config.AppConfig
     // (WEBSITE_SRS_DB_HOST / _PORT / _USER / _PASSWORD and WEBSITE_SANPOLY_DB_...).
 
     static {
@@ -57,7 +57,7 @@ public class WebsiteDB {
             return false;
         }
         if (!allowed(sess)) {
-            resp.sendRedirect(req.getContextPath() + "/Home");
+            resp.sendRedirect(req.getContextPath() + "/home");
             return false;
         }
         return true;

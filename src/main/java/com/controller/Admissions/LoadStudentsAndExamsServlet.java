@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/LoadStudentsAndExamsServlet")
 public class LoadStudentsAndExamsServlet extends HttpServlet {
@@ -38,7 +38,7 @@ public class LoadStudentsAndExamsServlet extends HttpServlet {
         Connection con = null;
 
         try {
-            con = DBUtil3.getConnection();
+            con = AdmissionsDB.getConnection();
 
             /* =========================
                1. LOAD EXAMS (SUBJECTS)

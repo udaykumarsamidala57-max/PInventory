@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
-import com.bean.DBUtil6;
+import com.officecentral.common.db.EmployeeDB;
 
 @WebServlet("/EmployeeServlet")
 @MultipartConfig(
@@ -75,7 +75,7 @@ public class Employee extends HttpServlet {
                 ex.printStackTrace();
             }
 
-            con = DBUtil6.getConnection();
+            con = EmployeeDB.getConnection();
 
             String sql =
                     "INSERT INTO employee_master "

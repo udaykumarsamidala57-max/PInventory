@@ -17,7 +17,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.bean.DBUtil3;
+import com.officecentral.common.db.AdmissionsDB;
 
 @WebServlet("/MarksReport")
 public class MarksReport extends HttpServlet {
@@ -44,7 +44,7 @@ public class MarksReport extends HttpServlet {
             int classId = Integer.parseInt(classIdRaw);
             String className = "Unknown Class"; // Placeholder
 
-            try (Connection con = DBUtil3.getConnection()) {
+            try (Connection con = AdmissionsDB.getConnection()) {
 
                 // 1. LOAD EXAMS, BASE MAX MARKS, AND CLASS NAME
                 ArrayList<Integer> examIds = new ArrayList<>();
