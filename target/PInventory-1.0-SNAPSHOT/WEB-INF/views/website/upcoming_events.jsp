@@ -1,6 +1,7 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<% request.setAttribute("canDelete", com.website.bean.WebsiteDB.canDelete(session)); %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -608,6 +609,7 @@
                                 <i class="bi bi-pencil"></i> Edit
                             </button>
                             
+                            <c:if test="${canDelete}">
                             <form action="upcoming-events" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this event?');">
                                 <input type="hidden" name="action" value="delete">
                                 <input type="hidden" name="id" value="${event.id}">
@@ -615,6 +617,7 @@
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
+                            </c:if>
                         </div>
 
                         <div class="event-image-wrapper">
@@ -767,4 +770,4 @@
 
 
 </body>
-</html>
+</html>

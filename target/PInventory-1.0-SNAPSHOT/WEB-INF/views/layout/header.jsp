@@ -239,7 +239,7 @@ try {
   </div>
   <% } %>
 
-  <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <% if ("Global".equalsIgnoreCase(roles == null ? "" : roles.trim())) {   /* Website: Global users only */ %>
   <div class="sidebar-label">Website</div>
   <div class="dropdown website-menu">
     <button class="dropdown-btn"><i class="fa-solid fa-globe text-info"></i> Website <i class="fa-solid fa-caret-down"></i></button>
@@ -247,9 +247,7 @@ try {
       <a href="<%= request.getContextPath() %>/website/pages"><i class="fa-solid fa-sitemap text-info"></i> Page Builder</a>
       <a href="<%= request.getContextPath() %>/website/latestNews.jsp"><i class="fa-solid fa-newspaper text-warning"></i> Latest News</a>
       <a href="<%= request.getContextPath() %>/website/upcoming-events"><i class="fa-solid fa-calendar-days text-success"></i> Upcoming Events</a>
-      <% if ("Global".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
       <a href="<%= request.getContextPath() %>/website/move-photos"><i class="fa-solid fa-cloud-arrow-up text-purple"></i> Photo Storage</a>
-      <% } %>
     </div>
   </div>
   <% } %>

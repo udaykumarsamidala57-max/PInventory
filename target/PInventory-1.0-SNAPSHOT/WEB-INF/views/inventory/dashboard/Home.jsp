@@ -38,23 +38,15 @@
     }
     private static String rupee(double v)  { return "\u20B9" + fmtIN(v, 0); }
 
-    /** From / To form inside the "Between dates" tab. Keeps the department / year filters of the page. */
-    private static String rangeForm(String anchor, String from, String to, String dept, String year, boolean applied) {
-        StringBuilder b = new StringBuilder();
-        b.append("<form class='range-form' method='get' action='home#").append(anchor).append("'>");
-        if (dept != null && !dept.isEmpty()) b.append("<input type='hidden' name='department' value='").append(h(dept)).append("'>");
-        if (year != null && !year.isEmpty()) b.append("<input type='hidden' name='year' value='").append(h(year)).append("'>");
-        b.append("<label>From <input type='date' name='from' value='").append(h(from)).append("' required></label>");
-        b.append("<label>To <input type='date' name='to' value='").append(h(to)).append("' required></label>");
-        b.append("<button type='submit' class='range-apply'><i class='fas fa-filter'></i> Apply</button>");
-        if (applied) {
-            StringBuilder q = new StringBuilder();
-            if (dept != null && !dept.isEmpty()) q.append("department=").append(java.net.URLEncoder.encode(dept, java.nio.charset.StandardCharsets.UTF_8));
-            if (year != null && !year.isEmpty()) q.append(q.length() > 0 ? "&" : "").append("year=").append(java.net.URLEncoder.encode(year, java.nio.charset.StandardCharsets.UTF_8));
-            b.append("<a class='range-clear' href='home").append(q.length() > 0 ? "?" + q : "").append("#").append(anchor).append("'>Clear</a>");
-        }
-        b.append("</form>");
-        return b.toString();
+    /** From / To date boxes shown right after the "Today" tab. Picking dates reloads the dashboard for that range. */
+    private static String rangeBoxes(String card, String tabId, String from, String to, boolean applied) {
+        return "<span class='range-inline" + (applied ? " active" : "") + "' data-tab='" + h(tabId) + "' data-card='" + h(card) + "'"
+             + " title='Show figures between two dates'>"
+             + "<i class='fas fa-calendar-check'></i>"
+             + "<input type='date' class='range-from' aria-label='From date' value='" + (applied ? h(from) : "") + "'>"
+             + "<span class='range-sep'>to</span>"
+             + "<input type='date' class='range-to' aria-label='To date' value='" + (applied ? h(to) : "") + "'>"
+             + "</span>";
     }
     private static String indInt(double v) { return fmtIN(v, 0); }
     private static String indDec(double v) { return fmtIN(v, 2); }
@@ -777,18 +769,19 @@
     .po-more { margin: 8px 0 0; font-size: 11.5px; color: var(--text-muted); }
     .today-tile .t-sub { margin: 2px 0 0; font-size: 11.5px; color: var(--text-muted); }
 
-    /* "Between dates" tab */
-    .range-form { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; margin: 0 0 14px;
-                  padding: 10px 12px; background: #f7f9fb; border: 1px solid #e3e8ee; border-radius: 8px; }
-    .range-form label { display: flex; flex-direction: column; gap: 3px; font-size: 11.5px; font-weight: 600; color: var(--text-muted); }
-    .range-form input[type=date] { height: 34px; padding: 0 8px; border: 1px solid #c9d1db; border-radius: 6px; font: inherit;
-                                   font-size: 13px; color: #1d2d3e; background: #fff; }
-    .range-apply { height: 34px; padding: 0 16px; border: 1px solid #0176d3; background: #0176d3; color: #fff; border-radius: 6px;
-                   font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-    .range-apply:hover { background: #015a9e; border-color: #015a9e; }
-    .range-clear { height: 34px; display: inline-flex; align-items: center; font-size: 13px; color: #0176d3; text-decoration: none; }
-    .range-clear:hover { text-decoration: underline; }
-    @media (max-width: 600px) { .range-form label { flex: 1 1 130px; } .range-form input[type=date] { width: 100%; } .range-apply { flex: 1 1 100%; justify-content: center; } }
+    /* From / To dates beside "Today" */
+    .range-inline { display: inline-flex; align-items: center; gap: 5px; margin-left: 4px; padding: 2px 8px;
+                    border: 1px solid transparent; border-radius: 3px; color: var(--text-muted); white-space: nowrap; }
+    .range-inline.active { background: var(--surface); border-color: var(--border); color: var(--accent); }
+    .range-inline .fa-calendar-check { font-size: 12px; }
+    .range-inline input[type=date] { height: 26px; padding: 0 4px; border: 1px solid var(--border); border-radius: 3px;
+                                     font: inherit; font-size: 12px; color: var(--text); background: var(--surface); width: 122px; }
+    .range-inline input[type=date]:focus { outline: none; border-color: var(--accent); box-shadow: var(--focus); }
+    .range-inline.active input[type=date] { border-color: var(--accent); }
+    .range-sep { font-size: 11.5px; }
+    .range-inline.loading { opacity: .6; }
+    .range-inline.loading .fa-calendar-check { animation: rngpulse .8s ease-in-out infinite alternate; }
+    @keyframes rngpulse { from { opacity: .3; } to { opacity: 1; } }
 </style>
 </head>
 <body>
@@ -820,11 +813,12 @@
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-boxes"></i> Consumption by Department</span>
-                <% for (int t = 0; t < cTabIds.length; t++) { %>
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
                 <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= cTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("consCard", cTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div>
                 <% for (int t = 0; t < cTabIds.length; t++) { %>
@@ -837,9 +831,8 @@
                  Map<String, Double> cm = cMaps.get(t);
             %>
             <div id="<%= cTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
-                <% if (t == RANGE_TAB) { %><%= rangeForm("consCard", rangeFrom, rangeTo, request.getParameter("department"), request.getParameter("year"), hasRange) %><% } %>
                 <% if (cm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose the From and To dates and press Apply." : "No stock issued " + pWhen[t] + "." %></div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No stock issued " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="today-grid fit-row">
                     <% for (Map.Entry<String, Double> e : cm.entrySet()) { %>
@@ -860,11 +853,12 @@
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-file-invoice"></i> Top Vendors by PO Value</span>
-                <% for (int t = 0; t < poTabIds.length; t++) { %>
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
                 <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= poTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("poCard", poTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div>
                 <% for (int t = 0; t < poTabIds.length; t++) {
@@ -880,9 +874,8 @@
                  Map<String, double[]> pm = poMaps.get(t);
             %>
             <div id="<%= poTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
-                <% if (t == RANGE_TAB) { %><%= rangeForm("poCard", rangeFrom, rangeTo, request.getParameter("department"), request.getParameter("year"), hasRange) %><% } %>
                 <% if (pm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose the From and To dates and press Apply." : "No purchase orders " + pWhen[t] + "." %></div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No purchase orders " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="today-grid fit-row po-grid">
                     <% int shown = 0;
@@ -1101,11 +1094,12 @@
         <div class="card-header">
             <div class="tab-header">
                 <span class="po-card-title"><i class="fas fa-fire"></i> Top 3 Items by Department</span>
-                <% for (int t = 0; t < tTabIds.length; t++) { %>
+                <% for (int t = 0; t < RANGE_TAB; t++) { %>
                 <button type="button" class="tab-btn <%= t == activeTab ? "active" : "" %>" onclick="switchTab(event, '<%= tTabIds[t] %>')">
                     <i class="fas <%= pIcons[t] %>"></i> <%= pLabels[t] %>
                 </button>
                 <% } %>
+                <%= rangeBoxes("topCard", tTabIds[RANGE_TAB], rangeFrom, rangeTo, hasRange) %>
             </div>
             <div class="rank-toggle" role="group" aria-label="Rank items by">
                 
@@ -1121,9 +1115,8 @@
                  for (String k : tm.keySet()) if (!deptOrder.contains(k)) deptOrder.add(k);
             %>
             <div id="<%= tTabIds[t] %>" class="tab-content <%= t == activeTab ? "active" : "" %>">
-                <% if (t == RANGE_TAB) { %><%= rangeForm("topCard", rangeFrom, rangeTo, request.getParameter("department"), request.getParameter("year"), hasRange) %><% } %>
                 <% if (tm.isEmpty()) { %>
-                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose the From and To dates and press Apply." : "No stock issued " + pWhen[t] + "." %></div>
+                    <div class="empty" style="padding:12px 0;"><%= (t == RANGE_TAB && !hasRange) ? "Choose From and To dates." : "No stock issued " + pWhen[t] + "." %></div>
                 <% } else { %>
                     <div class="top-grid">
                     <% for (String dn : deptOrder) {
@@ -1189,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', function () {
 function switchTab(evt, tabId) {
     // Works per card, so each card's tabs switch independently.
     var card = evt.currentTarget.closest('.card') || document;
+    card.querySelectorAll('.range-inline').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
     card.querySelectorAll('.period-total').forEach(function (el) { el.style.display = 'none'; });
@@ -1197,6 +1191,78 @@ function switchTab(evt, tabId) {
     var label = document.getElementById(tabId.replace(/Tab$/, 'TotalLabel'));
     if (label) label.style.display = 'inline';
 }
+
+// From / To beside "Today": as soon as both dates are chosen the dashboard reloads for that range
+(function () {
+    function showRange(box) {
+        var card = box.closest('.card');
+        var tab = document.getElementById(box.getAttribute('data-tab'));
+        if (!card || !tab) return;
+        card.querySelectorAll('.tab-content').forEach(function (el) { el.classList.remove('active'); });
+        card.querySelectorAll('.tab-btn').forEach(function (el) { el.classList.remove('active'); });
+        card.querySelectorAll('.period-total').forEach(function (el) { el.style.display = 'none'; });
+        tab.classList.add('active');
+        box.classList.add('active');
+        var label = document.getElementById(tab.id.replace(/Tab$/, 'TotalLabel'));
+        if (label) label.style.display = 'inline';
+    }
+    var busy = null;
+    function apply(box) {
+        var f = box.querySelector('.range-from'), t = box.querySelector('.range-to');
+        if (f.value && !t.value) {                         // only From picked: up to today
+            var d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+            t.value = d.toISOString().slice(0, 10);
+        }
+        if (!f.value || !t.value) return;
+        var ok = function (v) { var y = +v.slice(0, 4); return y >= 2000 && y <= 2100; };   // ignore half-typed years
+        if (!ok(f.value) || !ok(t.value)) return;
+        var p = new URLSearchParams(location.search);
+        if (p.get('from') === f.value && p.get('to') === t.value && box.dataset.loaded === '1') { showRange(box); return; }
+        p.set('from', f.value);
+        p.set('to', t.value);
+
+        // fetch the figures for that range in the background and swap them into the three cards (no page reload)
+        if (busy) busy.abort();
+        busy = new AbortController();
+        var boxes = document.querySelectorAll('.range-inline');
+        boxes.forEach(function (b) {
+            b.classList.add('loading');
+            b.querySelector('.range-from').value = f.value;
+            b.querySelector('.range-to').value = t.value;
+        });
+        fetch('home?' + p.toString(), { credentials: 'same-origin', signal: busy.signal })
+            .then(function (r) { return r.text(); })
+            .then(function (html) {
+                var doc = new DOMParser().parseFromString(html, 'text/html');
+                if (!doc.getElementById('consCard')) { location.href = 'home?' + p.toString(); return; }   // e.g. logged out
+                boxes.forEach(function (b) {
+                    var tabId = b.getAttribute('data-tab');
+                    var fresh = doc.getElementById(tabId), here = document.getElementById(tabId);
+                    if (fresh && here) here.innerHTML = fresh.innerHTML;
+                    var labelId = tabId.replace(/Tab$/, 'TotalLabel');
+                    var freshLabel = doc.getElementById(labelId), hereLabel = document.getElementById(labelId);
+                    if (freshLabel && hereLabel) hereLabel.innerHTML = freshLabel.innerHTML;
+                    b.dataset.loaded = '1';
+                    showRange(b);
+                });
+                history.replaceState(null, '', 'home?' + p.toString() + location.hash);
+            })
+            .catch(function (e) { if (e.name !== 'AbortError') alert('Could not load the figures for these dates. Please try again.'); })
+            .then(function () { boxes.forEach(function (b) { b.classList.remove('loading'); }); });
+    }
+    document.querySelectorAll('.range-inline').forEach(function (box) {
+        if (box.classList.contains('active')) box.dataset.loaded = '1';
+        var timer = null;                                     // one pause for both boxes
+        box.querySelectorAll('input[type=date]').forEach(function (inp) {
+            inp.addEventListener('change', function () {        // small pause so typing a date by keyboard finishes first
+                clearTimeout(timer);
+                timer = setTimeout(function () { apply(box); }, 900);
+            });
+            // with a range already applied, clicking the boxes brings its figures back
+            inp.addEventListener('focus', function () { if (inp.value) showRange(box); });
+        });
+    });
+})();
 
 (function () {
     var dLabels = [<%= dLabels %>];
