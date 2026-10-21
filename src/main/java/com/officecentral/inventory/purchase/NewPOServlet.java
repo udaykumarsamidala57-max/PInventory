@@ -264,6 +264,10 @@ public class NewPOServlet extends HttpServlet {
                 psUpdate.close();
             }
 
+            // E-mail the Global users of this store (in the background; never blocks the PO)
+            POAlert.newPO(branch, poNo, (String) sess.getAttribute("username"),
+                    POAlert.approveUrl(request), POAlert.headerImage(getServletContext()));
+
             // =====================================================
             // STEP 5: REDIRECT
             // =====================================================

@@ -277,6 +277,11 @@ public class PurchaseOrderServlet extends HttpServlet {
             }
 
             con.commit(); // ✅ Transaction success
+
+            // E-mail the Global users of this store (in the background; never blocks the PO)
+            POAlert.newPO(branch, poNo, (String) sess.getAttribute("username"),
+                    POAlert.approveUrl(request), POAlert.headerImage(getServletContext()));
+
             response.sendRedirect("approve-po");
 
         } catch (Exception e) {
