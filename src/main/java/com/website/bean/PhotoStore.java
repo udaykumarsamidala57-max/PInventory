@@ -193,6 +193,84 @@ public final class PhotoStore {
         }
     }
 
+    /**
+     * Copies a file inside the bucket (used to move photos). Uses the bucket's own copy;
+     * if the storage does not support that, the file is downloaded and uploaded again.
+     */
+    public static void copy(String fromKey, String toKey) throws IOException {
+        requireEnabled();
+        Map<String, String> hdr = new TreeMap<>();
+        hdr.put("x-amz-copy-source", "/" + BUCKET + "/" + encode(fromKey, false));
+        HttpURLConnection c = signed("PUT", toKey, null, hdr);
+        c.setDoOutput(true);
+        c.setFixedLengthStreamingMode(0);
+        c.getOutputStream().close();
+        int code = c.getResponseCode();
+        String body = "";
+        if (code >= 200 && code < 300) {
+            try (InputStream in = c.getInputStream()) { body = new String(in.readAllBytes(), StandardCharsets.UTF_8); }
+        } else {
+            body = errorBody(c);
+        }
+        c.disconnect();
+        if (code >= 200 && code < 300 && !body.contains("<Error>")) return;
+        // fallback: download + upload
+        byte[] data = get(fromKey);
+        String type = sniff(data, null);
+        if (type == null) type = guessType(fromKey);
+        put(toKey, data, type);
+    }
+
+    private static String guessType(String key) {
+        String k = key.toLowerCase(Locale.ROOT);
+        if (k.endsWith(".jpg") || k.endsWith(".jpeg")) return "image/jpeg";
+        if (k.endsWith(".png")) return "image/png";
+        if (k.endsWith(".webp")) return "image/webp";
+        if (k.endsWith(".gif")) return "image/gif";
+        if (k.endsWith(".mp4")) return "video/mp4";
+        return "application/octet-stream";
+    }
+
+    /** Every file under a prefix, at any depth (no folder grouping). */
+    public static java.util.List<Item> listAll(String prefix) throws IOException {
+        requireEnabled();
+        java.util.List<Item> out = new java.util.ArrayList<>();
+        String token = null;
+        int pages = 0;
+        do {
+            Map<String, String> q = new TreeMap<>();
+            q.put("list-type", "2");
+            q.put("prefix", prefix == null ? "" : prefix);
+            q.put("max-keys", "1000");
+            if (token != null) q.put("continuation-token", token);
+            HttpURLConnection c = signed("GET", "", q);
+            int code = c.getResponseCode();
+            if (code < 200 || code >= 300) throw new IOException("Listing failed (" + code + "): " + errorBody(c));
+            org.w3c.dom.Document doc;
+            try (InputStream in = c.getInputStream()) {
+                javax.xml.parsers.DocumentBuilderFactory f = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+                f.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                doc = f.newDocumentBuilder().parse(in);
+            } catch (javax.xml.parsers.ParserConfigurationException | org.xml.sax.SAXException e) {
+                throw new IOException("Could not read the bucket listing: " + e.getMessage(), e);
+            } finally {
+                c.disconnect();
+            }
+            org.w3c.dom.NodeList cs = doc.getElementsByTagName("Contents");
+            for (int i = 0; i < cs.getLength(); i++) {
+                org.w3c.dom.Element e = (org.w3c.dom.Element) cs.item(i);
+                String k = text(e, "Key");
+                if (k == null) continue;
+                long size = 0;
+                try { size = Long.parseLong(text(e, "Size")); } catch (Exception ignore) { }
+                out.add(new Item(k, size, text(e, "LastModified")));
+            }
+            boolean more = "true".equalsIgnoreCase(text(doc.getDocumentElement(), "IsTruncated"));
+            token = more ? text(doc.getDocumentElement(), "NextContinuationToken") : null;
+        } while (token != null && ++pages < 50);
+        return out;
+    }
+
     /** One entry of a folder listing. */
     public static final class Item {
         public final String key;
@@ -267,6 +345,12 @@ public final class PhotoStore {
 
     /** A signed request (header auth) that may carry query parameters. */
     private static HttpURLConnection signed(String method, String key, Map<String, String> query) throws IOException {
+        return signed(method, key, query, null);
+    }
+
+    /** Same, with extra x-amz-* headers (lower-case names) that are included in the signature. */
+    private static HttpURLConnection signed(String method, String key, Map<String, String> query,
+                                            Map<String, String> amzHeaders) throws IOException {
         String amzDate = amzDate(new Date());
         String payload = "UNSIGNED-PAYLOAD";
         String q = query == null || query.isEmpty() ? "" : canonicalQuery(new TreeMap<>(query));
@@ -277,13 +361,29 @@ public final class PhotoStore {
         c.setRequestProperty("x-amz-date", amzDate);
         c.setRequestProperty("x-amz-content-sha256", payload);
 
+        Map<String, String> h = new TreeMap<>();
+        h.put("host", host());
+        h.put("x-amz-content-sha256", payload);
+        h.put("x-amz-date", amzDate);
+        if (amzHeaders != null) {
+            for (Map.Entry<String, String> e : amzHeaders.entrySet()) {
+                h.put(e.getKey().toLowerCase(Locale.ROOT), e.getValue().trim());
+                c.setRequestProperty(e.getKey(), e.getValue());
+            }
+        }
+        StringBuilder canonHeaders = new StringBuilder();
+        StringBuilder names = new StringBuilder();
+        for (Map.Entry<String, String> e : h.entrySet()) {
+            canonHeaders.append(e.getKey()).append(':').append(e.getValue()).append('\n');
+            if (names.length() > 0) names.append(';');
+            names.append(e.getKey());
+        }
+        String signedHeaders = names.toString();
+
         String day = amzDate.substring(0, 8);
         String scope = day + "/" + REGION + "/s3/aws4_request";
-        String signedHeaders = "host;x-amz-content-sha256;x-amz-date";
         String canonical = method + "\n" + canonicalPath(key) + "\n" + q + "\n"
-                + "host:" + host() + "\n"
-                + "x-amz-content-sha256:" + payload + "\n"
-                + "x-amz-date:" + amzDate + "\n\n"
+                + canonHeaders + "\n"
                 + signedHeaders + "\n" + payload;
         String toSign = "AWS4-HMAC-SHA256\n" + amzDate + "\n" + scope + "\n" + hex(sha256(canonical));
         String signature = hex(hmac(signingKey(day), toSign));

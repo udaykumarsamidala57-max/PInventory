@@ -114,7 +114,8 @@ public final class PhotoUpload {
             p.executeUpdate();
         }
 
-        if (old != null && !old.equals(key)) deleteFile(old);
+        // the previous photo is removed only when no page, news item or event still shows it
+        if (old != null && !old.equals(key) && !usedAnywhere(conn, old)) deleteFile(old);
         return key;
     }
 
@@ -133,17 +134,32 @@ public final class PhotoUpload {
         for (String k : keys) deleteFile(k);
     }
 
-    /** removes files only when no row in the table still uses them (e.g. after a delete that did not cascade) */
+    /** every table whose rows can point to a bucket photo */
+    private static final String[] PHOTO_TABLES = { "section_images", "latest_news", "upcoming_events" };
+
+    /** true when any page section, news item or event still uses this photo (or when that cannot be checked) */
+    public static boolean usedAnywhere(Connection conn, String key) {
+        for (String t : PHOTO_TABLES) {
+            if (!hasKeyColumn(conn, t)) continue;
+            try (PreparedStatement p = conn.prepareStatement("SELECT 1 FROM " + t + " WHERE file_key = ? LIMIT 1")) {
+                p.setString(1, key);
+                try (ResultSet rs = p.executeQuery()) {
+                    if (rs.next()) return true;
+                }
+            } catch (SQLException e) {
+                return true;                                   // not sure: keep the file
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Removes files that nothing uses any more (after a delete). A photo can be shared, e.g. an earlier
+     * upload picked again in the Page Builder, so every photo table is checked - not only the given one.
+     */
     public static void deleteFilesIfUnused(Connection conn, String table, List<String> keys) {
         for (String k : keys) {
-            boolean used = true;
-            try (PreparedStatement p = conn.prepareStatement("SELECT 1 FROM " + table + " WHERE file_key = ?")) {
-                p.setString(1, k);
-                try (ResultSet rs = p.executeQuery()) { used = rs.next(); }
-            } catch (SQLException e) {
-                used = true;
-            }
-            if (!used) deleteFile(k);
+            if (!usedAnywhere(conn, k)) deleteFile(k);
         }
     }
 

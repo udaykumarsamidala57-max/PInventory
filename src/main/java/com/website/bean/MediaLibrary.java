@@ -35,6 +35,16 @@ public final class MediaLibrary {
         return key != null && key.contains("/library/");
     }
 
+    /** e.g. "srs/" - everything of this website in the bucket (library + earlier uploads) */
+    public static String siteRoot(String site) {
+        return root(site).substring(0, root(site).length() - "library/".length());
+    }
+
+    /** true for a photo / video of this website anywhere in the bucket (library or earlier uploads) */
+    public static boolean inSite(String site, String key) {
+        return key != null && key.startsWith(siteRoot(site)) && !key.contains("..") && !key.endsWith("/") && isMedia(key);
+    }
+
     /** true when the key belongs to this site's library */
     public static boolean inLibrary(String site, String key) {
         return key != null && key.startsWith(root(site)) && !key.contains("..") && !key.endsWith("/");
@@ -117,6 +127,125 @@ public final class MediaLibrary {
         if (l == null) return false;
         for (PhotoStore.Item i : l.files) if (i.key.equals(key)) return true;
         return false;
+    }
+
+    /** Result of a move. */
+    public static final class MoveResult {
+        public int files;          // files moved
+        public int rowsUpdated;    // MySQL rows that now point to the new places
+        public final List<String> notes = new ArrayList<>();
+    }
+
+    private static final String[] PHOTO_TABLES = { "section_images", "latest_news", "upcoming_events" };
+
+    /**
+     * Moves files and folders into a library folder, and points every page / news / event row to the new places.
+     *   sources: full bucket keys of files ("srs/library/a.jpg", "srs/sections/12-x.jpg")
+     *            or full folder prefixes ending in "/" ("srs/library/Events/", "srs/news/")
+     *   target:  library folder, relative to the library ("" = top level, "Events/2026/")
+     * Order: copy everything -> update MySQL in one transaction -> delete the old files.
+     * If MySQL fails, the copies are removed again and nothing changes.
+     */
+    public static MoveResult move(String site, List<String> sources, String target, Connection conn)
+            throws IOException, SQLException {
+        String siteRoot = siteRoot(site);
+        String targetPrefix = root(site) + cleanFolder(target);
+        MoveResult r = new MoveResult();
+
+        // names already used in the target folder
+        java.util.Set<String> used = new java.util.HashSet<>();
+        PhotoStore.Listing there = PhotoStore.list(targetPrefix);
+        for (PhotoStore.Item i : there.files) used.add(i.key);
+        for (String f : there.folders) used.add(f);
+
+        java.util.Map<String, String> plan = new java.util.LinkedHashMap<>();   // old key -> new key
+        for (String src : sources) {
+            if (src == null || !src.startsWith(siteRoot) || src.contains("..") || src.equals(siteRoot)
+                    || src.equals(root(site))) {
+                r.notes.add("Skipped " + src);
+                continue;
+            }
+            if (src.endsWith("/")) {                                   // a folder
+                if (targetPrefix.startsWith(src)) {
+                    r.notes.add("A folder cannot be moved into itself: " + shortName(src));
+                    continue;
+                }
+                String parent = src.substring(0, src.substring(0, src.length() - 1).lastIndexOf('/') + 1);
+                if (parent.equals(targetPrefix)) { r.notes.add(shortName(src) + " is already there"); continue; }
+                String name = shortName(src);
+                String dest = targetPrefix + name + "/";
+                for (int n = 1; used.contains(dest); n++) dest = targetPrefix + name + "-" + n + "/";
+                used.add(dest);
+                for (PhotoStore.Item i : PhotoStore.listAll(src)) {
+                    plan.put(i.key, dest + i.key.substring(src.length()));
+                }
+            } else {                                                   // one file
+                String parent = src.substring(0, src.lastIndexOf('/') + 1);
+                if (parent.equals(targetPrefix)) { r.notes.add(shortName(src) + " is already there"); continue; }
+                String name = src.substring(src.lastIndexOf('/') + 1);
+                String base = name, ext = "";
+                int dot = name.lastIndexOf('.');
+                if (dot > 0) { base = name.substring(0, dot); ext = name.substring(dot); }
+                String dest = targetPrefix + name;
+                for (int n = 1; used.contains(dest); n++) dest = targetPrefix + base + "-" + n + ext;
+                used.add(dest);
+                plan.put(src, dest);
+            }
+        }
+        if (plan.isEmpty()) return r;
+        if (plan.size() > 3000) throw new IllegalStateException("Too many files in one move (" + plan.size() + "). Move smaller folders.");
+
+        // 1) copy
+        List<String> copied = new ArrayList<>();
+        try {
+            for (java.util.Map.Entry<String, String> e : plan.entrySet()) {
+                PhotoStore.copy(e.getKey(), e.getValue());
+                copied.add(e.getValue());
+            }
+        } catch (IOException e) {
+            for (String k : copied) try { PhotoStore.delete(k); } catch (IOException ignore) { }
+            throw new IOException("Moving stopped, nothing was changed: " + e.getMessage(), e);
+        }
+
+        // 2) point MySQL rows to the new places (all or nothing)
+        boolean auto = conn.getAutoCommit();
+        try {
+            conn.setAutoCommit(false);
+            for (String t : PHOTO_TABLES) {
+                if (!PhotoUpload.hasKeyColumn(conn, t)) continue;
+                try (PreparedStatement ps = conn.prepareStatement("UPDATE " + t + " SET file_key = ? WHERE file_key = ?")) {
+                    for (java.util.Map.Entry<String, String> e : plan.entrySet()) {
+                        ps.setString(1, e.getValue());
+                        ps.setString(2, e.getKey());
+                        ps.addBatch();
+                    }
+                    for (int n : ps.executeBatch()) if (n > 0) r.rowsUpdated += n;
+                }
+            }
+            conn.commit();
+        } catch (SQLException e) {
+            try { conn.rollback(); } catch (SQLException ignore) { }
+            for (String k : copied) try { PhotoStore.delete(k); } catch (IOException ignore) { }
+            throw new SQLException("Moving stopped, nothing was changed (database): " + e.getMessage(), e);
+        } finally {
+            try { conn.setAutoCommit(auto); } catch (SQLException ignore) { }
+        }
+
+        // 3) remove the old files
+        for (String oldKey : plan.keySet()) {
+            try {
+                PhotoStore.delete(oldKey);
+            } catch (IOException e) {
+                r.notes.add("Old copy left behind: " + oldKey);
+            }
+        }
+        for (String k : plan.keySet()) if (!k.endsWith("/" + MARKER)) r.files++;
+        return r;
+    }
+
+    private static String shortName(String keyOrPrefix) {
+        String s = keyOrPrefix.endsWith("/") ? keyOrPrefix.substring(0, keyOrPrefix.length() - 1) : keyOrPrefix;
+        return s.substring(s.lastIndexOf('/') + 1);
     }
 
     /** Pages (titles) that still show this library file, at most 5. */

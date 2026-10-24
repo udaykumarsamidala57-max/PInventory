@@ -686,7 +686,7 @@
 <script>
 // Photos come only from the Photo Library (bucket): pick one, its place is sent as libraryKey
 (function () {
-    var target = null, folder = '';
+    var target = null, folder = '', area = '';
     var grid = document.getElementById('libGrid'), crumbs = document.getElementById('libCrumbs');
     var FOLDER_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/></svg>';
     function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
@@ -702,7 +702,7 @@
     }
     document.querySelectorAll('.lib-pick').forEach(function (pick) {
         reset(pick);
-        var open = function () { target = pick; load(folder); openModal('libraryModal'); };
+        var open = function () { target = pick; load(folder, area); openModal('libraryModal'); };
         pick.addEventListener('click', open);
         pick.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
         var form = pick.closest('form');
@@ -720,24 +720,28 @@
         b.addEventListener('click', function () { document.querySelectorAll('.lib-pick').forEach(reset); });
     });
 
-    function load(path) {
+    function load(path, ar) {
         folder = path || '';
+        area = ar === 'old' ? 'old' : '';
         grid.innerHTML = '<div class="lib-msg">Loading&hellip;</div>';
-        fetch('media?format=json&folder=' + encodeURIComponent(folder), { credentials: 'same-origin' })
+        fetch('media?format=json&folder=' + encodeURIComponent(folder) + (area ? '&area=old' : ''), { credentials: 'same-origin' })
             .then(function (r) { return r.json(); })
             .then(function (d) {
                 if (!d.ok) { grid.innerHTML = '<div class="lib-msg">' + esc(d.message || 'Could not open the Photo Library.') + '</div>'; return; }
                 var parts = folder ? folder.replace(/\/$/, '').split('/') : [], acc = '';
-                var c = parts.length ? '<a data-go="">' + esc(d.site) + ' library</a>' : esc(d.site) + ' library';
-                parts.forEach(function (p, i) { acc += p + '/'; c += ' / ' + (i === parts.length - 1 ? '<b>' + esc(p) + '</b>' : '<a data-go="' + esc(acc) + '">' + esc(p) + '</a>'); });
+                var ao = area ? ' data-area="old"' : '';
+                var c = (parts.length || area) ? '<a data-go="">' + esc(d.site) + ' library</a>' : esc(d.site) + ' library';
+                if (area) c += ' / ' + (parts.length ? '<a data-go=""' + ao + '>Earlier uploads</a>' : '<b>Earlier uploads</b>');
+                parts.forEach(function (p, i) { acc += p + '/'; c += ' / ' + (i === parts.length - 1 ? '<b>' + esc(p) + '</b>' : '<a data-go="' + esc(acc) + '"' + ao + '>' + esc(p) + '</a>'); });
                 crumbs.innerHTML = c;
                 var h = '';
-                if (folder) {
+                if (folder || area) {
                     var up = parts.slice(0, -1).join('/');
-                    h += '<button type="button" class="lib-item folder" data-go="' + esc(up ? up + '/' : '') + '"><div class="t">' + FOLDER_SVG + '</div><div class="n">&larr; Back</div></button>';
+                    var backArea = (area && parts.length) ? ao : '';
+                    h += '<button type="button" class="lib-item folder" data-go="' + esc(up ? up + '/' : '') + '"' + backArea + '><div class="t">' + FOLDER_SVG + '</div><div class="n">&larr; Back</div></button>';
                 }
                 d.folders.forEach(function (f) {
-                    h += '<button type="button" class="lib-item folder" data-go="' + esc(f.path) + '"><div class="t">' + FOLDER_SVG + '</div><div class="n">' + esc(f.name) + '</div></button>';
+                    h += '<button type="button" class="lib-item folder" data-go="' + esc(f.path) + '"' + (f.area ? ' data-area="' + esc(f.area) + '"' : '') + '><div class="t">' + FOLDER_SVG + '</div><div class="n">' + esc(f.name) + '</div></button>';
                 });
                 d.files.forEach(function (f, i) {
                     var m = f.type.indexOf('video/') === 0 ? '<video src="' + esc(f.url) + '" muted preload="metadata"></video>' : '<img src="' + esc(f.url) + '" alt="" loading="lazy">';
@@ -762,12 +766,12 @@
 
     grid.addEventListener('click', function (e) {
         var g = e.target.closest('[data-go]');
-        if (g) { load(g.getAttribute('data-go')); return; }
+        if (g) { load(g.getAttribute('data-go'), g.getAttribute('data-area')); return; }
         var p = e.target.closest('[data-pick]');
         if (p) choose(grid._files[+p.getAttribute('data-pick')]);
     });
-    crumbs.addEventListener('click', function (e) { var a = e.target.closest('[data-go]'); if (a) load(a.getAttribute('data-go')); });
-    document.getElementById('libRefresh').addEventListener('click', function () { load(folder); });
+    crumbs.addEventListener('click', function (e) { var a = e.target.closest('[data-go]'); if (a) load(a.getAttribute('data-go'), a.getAttribute('data-area')); });
+    document.getElementById('libRefresh').addEventListener('click', function () { load(folder, area); });
 })();
 </script>
 

@@ -50,6 +50,9 @@ public class MediaServlet extends HttpServlet {
         HttpSession sess = req.getSession(false);
         String site = WebsiteDB.site(sess);
         String folder = MediaLibrary.cleanFolder(req.getParameter("folder"));
+        // area "old" = photos uploaded before the Photo Library (sections / news / events folders): view and pick only
+        boolean old = "old".equals(req.getParameter("area"));
+        req.setAttribute("area", old ? "old" : "");
 
         if (!PhotoStore.enabled()) {
             if (json) { send(resp, 200, err("The photo bucket is not set up (BUCKET, ACCESS_KEY_ID, SECRET_ACCESS_KEY).")); return; }
@@ -61,14 +64,23 @@ public class MediaServlet extends HttpServlet {
         JsonArray folders = new JsonArray();
         JsonArray files = new JsonArray();
         try {
-            String root = MediaLibrary.root(site);
+            String root = old ? MediaLibrary.siteRoot(site) : MediaLibrary.root(site);
             PhotoStore.Listing l = PhotoStore.list(root + folder);
+            if (!old && folder.isEmpty()) {                     // entry point to the earlier uploads
+                JsonObject o = new JsonObject();
+                o.addProperty("path", "");
+                o.addProperty("name", "Earlier uploads");
+                o.addProperty("area", "old");
+                folders.add(o);
+            }
             for (String f : l.folders) {
                 String rel = f.substring(root.length());
+                if (old && folder.isEmpty() && rel.equals("library/")) continue;   // the library itself
                 JsonObject o = new JsonObject();
                 o.addProperty("path", rel);
                 String name = rel.substring(0, rel.length() - 1);
                 o.addProperty("name", name.contains("/") ? name.substring(name.lastIndexOf('/') + 1) : name);
+                if (old) o.addProperty("area", "old");
                 folders.add(o);
             }
             for (PhotoStore.Item i : l.files) {
@@ -93,6 +105,7 @@ public class MediaServlet extends HttpServlet {
             out.addProperty("ok", true);
             out.addProperty("site", site);
             out.addProperty("folder", folder);
+            out.addProperty("area", old ? "old" : "");
             out.add("folders", folders);
             out.add("files", files);
             send(resp, 200, out);
@@ -149,6 +162,22 @@ public class MediaServlet extends HttpServlet {
                         + (skipped.isEmpty() ? "" : " Skipped: " + String.join(", ", skipped));
                 ok = saved > 0 || skipped.isEmpty();
 
+            } else if ("move".equals(action)) {
+                // move files / folders (library or earlier uploads) into a library folder; MySQL rows follow
+                String[] sources = req.getParameterValues("source");
+                if (sources == null || sources.length == 0) throw new IllegalArgumentException("Choose what to move.");
+                String target = MediaLibrary.cleanFolder(req.getParameter("target"));
+                MediaLibrary.MoveResult r;
+                try (Connection conn = WebsiteDB.getConnection(site)) {
+                    r = MediaLibrary.move(site, java.util.Arrays.asList(sources), target, conn);
+                }
+                msg = r.files == 0 && !r.notes.isEmpty() ? String.join("; ", r.notes)
+                    : "Moved " + r.files + " file" + (r.files == 1 ? "" : "s") + " to " + (target.isEmpty() ? "the top folder" : target)
+                      + (r.rowsUpdated > 0 ? " (" + r.rowsUpdated + " page / news / event photo" + (r.rowsUpdated == 1 ? "" : "s") + " updated)" : "")
+                      + (r.notes.isEmpty() ? "." : ". " + String.join("; ", r.notes));
+                ok = r.files > 0 || r.notes.isEmpty();
+                folder = target;
+
             } else if ("deleteFile".equals(action)) {
                 if (!WebsiteDB.canDelete(sess)) throw new IllegalStateException("Deleting is not allowed for your user.");
                 String key = req.getParameter("key");
@@ -203,7 +232,8 @@ public class MediaServlet extends HttpServlet {
         req.setAttribute("folder", folder);
         req.setAttribute("foldersJson", folders.toString());
         req.setAttribute("filesJson", files.toString());
-        req.setAttribute("canDelete", WebsiteDB.canDelete(req.getSession(false)));
+        boolean oldArea = "old".equals(req.getAttribute("area"));
+        req.setAttribute("canDelete", !oldArea && WebsiteDB.canDelete(req.getSession(false)));
         req.getRequestDispatcher("/WEB-INF/views/website/media.jsp").forward(req, resp);
     }
 

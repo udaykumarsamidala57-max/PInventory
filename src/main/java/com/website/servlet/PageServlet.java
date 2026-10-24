@@ -887,7 +887,7 @@ public class PageServlet extends HttpServlet {
 
     /** Checks that the key is a photo / video in this website's Photo Library. */
     private static void checkLibraryKey(String key, String branch) throws ServletException {
-        if (!com.website.bean.MediaLibrary.inLibrary(branch, key) || !com.website.bean.MediaLibrary.isMedia(key)) {
+        if (!com.website.bean.MediaLibrary.inSite(branch, key)) {          // library or earlier uploads of this website
             throw new ServletException("Please choose a photo from this website's Photo Library.");
         }
     }

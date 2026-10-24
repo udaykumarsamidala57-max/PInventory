@@ -60,6 +60,24 @@
         .viewer.on { display: flex; }
         .viewer img, .viewer video { max-width: 100%; max-height: 82vh; border-radius: 4px; }
         .viewer .cap { color: #fff; margin-top: 10px; font-size: 13px; text-align: center; word-break: break-all; }
+        .tile .sel { position: absolute; top: 6px; left: 6px; width: 22px; height: 22px; margin: 0; cursor: pointer; accent-color: var(--blue); z-index: 2; }
+        .tile.picked { border-color: var(--blue); box-shadow: 0 0 0 2px rgba(1,118,211,.25); }
+        .selbar { display: none; align-items: center; gap: 10px; flex-wrap: wrap; margin: 12px 14px 0; padding: 8px 12px; border-radius: 6px;
+                  background: #e8f4ff; color: #0a5aa8; font-size: 13px; font-weight: 600; }
+        .selbar.on { display: flex; }
+        .mv-overlay { position: fixed; inset: 0; background: rgba(15,23,42,.45); display: none; align-items: center; justify-content: center; z-index: 3500; padding: 16px; }
+        .mv-overlay.on { display: flex; }
+        .mv-box { background: #fff; width: 100%; max-width: 460px; border-radius: 10px; box-shadow: 0 18px 50px rgba(0,0,0,.25); display: flex; flex-direction: column; max-height: 86vh; }
+        .mv-head { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+        .mv-head h3 { margin: 0; font-size: 16px; }
+        .mv-head p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+        .mv-list { overflow: auto; padding: 6px 0; min-height: 140px; }
+        .mv-row { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; font-size: 14px; border: 0; background: none; width: 100%; text-align: left; font: inherit; }
+        .mv-row:hover { background: #f4f6f9; }
+        .mv-row svg { color: #e6a700; flex: 0 0 auto; }
+        .mv-row.up { color: var(--blue); font-weight: 600; }
+        .mv-foot { padding: 12px 16px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+        .mv-new { margin-right: auto; }
         @media (max-width: 600px) { .grid { grid-template-columns: repeat(2, 1fr); } .ml-actions .btn { flex: 1; justify-content: center; } }
     </style>
 </head>
@@ -102,6 +120,12 @@
                 <b>Drop photos here</b> or click <b>Upload photos</b> &middot; JPG, PNG, WebP, GIF, MP4 &middot; up to 200 MB each &middot; several at once</div>
         </form>
         <div class="progress" id="progress"></div>
+        <div class="selbar" id="selbar">
+            <span id="selCount"></span>
+            <button type="button" class="btn primary" id="moveBtn"><i class="bi bi-folder-symlink"></i> Move to&hellip;</button>
+            <button type="button" class="btn" id="selClear">Clear</button>
+            <span style="font-weight:400">Pages, news and events using these photos are updated automatically.</span>
+        </div>
 
         <div id="content"></div>
     </div>
@@ -114,11 +138,33 @@
     <input type="hidden" name="key">
 </form>
 
+<form id="moveForm" method="post" action="media" hidden>
+    <input type="hidden" name="action" value="move">
+    <input type="hidden" name="folder" value="<c:out value='${folder}'/>">
+    <input type="hidden" name="target">
+</form>
+
+<div class="mv-overlay" id="mvOverlay" role="dialog" aria-modal="true" aria-labelledby="mvTitle">
+    <div class="mv-box">
+        <div class="mv-head"><h3 id="mvTitle">Move to folder</h3><p id="mvPath"></p></div>
+        <div class="mv-list" id="mvList"></div>
+        <div class="mv-foot">
+            <button type="button" class="btn mv-new" id="mvNew"><i class="bi bi-folder-plus"></i> New folder here</button>
+            <button type="button" class="btn" id="mvCancel">Cancel</button>
+            <button type="button" class="btn primary" id="mvGo">Move here</button>
+        </div>
+    </div>
+</div>
+
 <div class="viewer" id="viewer"><div><div id="viewerMedia"></div><div class="cap" id="viewerCap"></div></div></div>
 
 <script>
 (function () {
     var folder = '<c:out value="${folder}"/>';
+    var area = '<c:out value="${area}"/>';            // "old" = earlier uploads (read-only)
+    var site_ = '<c:out value="${site}"/>';
+    var libRoot = site_.toLowerCase().replace(/[^a-z0-9_-]/g, '') + '/library/';    // e.g. srs/library/
+    var siteRoot = libRoot.replace(/library\/$/, '');                                // e.g. srs/
     var site = '<c:out value="${site}"/>';
     var canDelete = ${canDelete ? 'true' : 'false'};
     var folders = ${empty foldersJson ? '[]' : foldersJson};
@@ -126,24 +172,42 @@
     var $ = function (id) { return document.getElementById(id); };
     function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : String(s); return d.innerHTML; }
     function size(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB'; }
-    function go(path) { location.href = 'media?folder=' + encodeURIComponent(path); }
+    function go(path, ar) { location.href = 'media?folder=' + encodeURIComponent(path) + (ar === 'old' ? '&area=old' : ''); }
 
     // breadcrumbs
     var parts = folder ? folder.replace(/\/$/, '').split('/') : [];
-    var html = '<i class="bi bi-hdd-stack" style="color:#706e6b"></i> ' + (parts.length ? '<a href="#" data-go="">' + esc(site) + ' library</a>' : '<span class="here">' + esc(site) + ' library</span>');
+    var atTop = !parts.length && area !== 'old';
+    var html = '<i class="bi bi-hdd-stack" style="color:#706e6b"></i> ' + (atTop ? '<span class="here">' + esc(site) + ' library</span>' : '<a href="#" data-go="">' + esc(site) + ' library</a>');
+    if (area === 'old') {
+        html += ' <span class="sep">/</span> ' + (parts.length ? '<a href="#" data-go="" data-area="old">Earlier uploads</a>' : '<span class="here">Earlier uploads</span>');
+    }
     var acc = '';
     parts.forEach(function (p, i) {
         acc += p + '/';
-        html += ' <span class="sep">/</span> ' + (i === parts.length - 1 ? '<span class="here">' + esc(p) + '</span>' : '<a href="#" data-go="' + esc(acc) + '">' + esc(p) + '</a>');
+        html += ' <span class="sep">/</span> ' + (i === parts.length - 1 ? '<span class="here">' + esc(p) + '</span>'
+              : '<a href="#" data-go="' + esc(acc) + '"' + (area === 'old' ? ' data-area="old"' : '') + '>' + esc(p) + '</a>');
     });
     $('crumbs').innerHTML = html;
-    $('crumbs').addEventListener('click', function (e) { var a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); go(a.getAttribute('data-go')); } });
+    $('crumbs').addEventListener('click', function (e) { var a = e.target.closest('a[data-go]'); if (a) { e.preventDefault(); go(a.getAttribute('data-go'), a.getAttribute('data-area')); } });
+
+    // earlier uploads can be viewed and picked in the Page Builder, not changed here
+    if (area === 'old') {
+        ['newFolderBtn', 'uploadBtn', 'delFolderBtn', 'uploadForm'].forEach(function (id) { var el = $(id); if (el) el.style.display = 'none'; });
+        var note = document.createElement('div');
+        note.className = 'notice ok';
+        note.style.background = '#e8f4ff'; note.style.color = '#0a5aa8';
+        note.innerHTML = '<b>Earlier uploads</b> &middot; photos added to pages, news and events before the Photo Library existed. ' +
+                         'You can view them here and pick them in the Page Builder. They cannot be changed here.';
+        $('content').parentNode.insertBefore(note, $('content'));
+    }
 
     // folders + files
     var out = '';
     if (folders.length) {
         out += '<div class="sec">Folders</div><div class="grid">' + folders.map(function (f) {
-            return '<a class="tile folder" href="#" data-go="' + esc(f.path) + '"><div class="thumb"><svg viewBox="0 0 24 24" width="54" height="54" fill="currentColor" aria-hidden="true"><path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/></svg></div>' +
+            var src = (area === 'old' ? siteRoot : libRoot) + f.path;
+            var box = (f.area === 'old' && area !== 'old') ? '' : '<input type="checkbox" class="sel" data-src="' + esc(src) + '" title="Select to move">';
+            return '<a class="tile folder" href="#" data-go="' + esc(f.path) + '"' + (f.area ? ' data-area="' + esc(f.area) + '"' : '') + '>' + box + '<div class="thumb"' + (f.area === 'old' && area !== 'old' ? ' style="background:#eef4fb;color:#0176d3"' : '') + '><svg viewBox="0 0 24 24" width="54" height="54" fill="currentColor" aria-hidden="true"><path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/></svg></div>' +
                    '<div class="meta"><div class="name">' + esc(f.name) + '</div><div class="sub">Folder</div></div></a>';
         }).join('') + '</div>';
     }
@@ -152,17 +216,20 @@
             var media = f.type.indexOf('video/') === 0
                 ? '<video src="' + esc(f.url) + '" muted preload="metadata"></video>'
                 : '<img src="' + esc(f.url) + '" alt="" loading="lazy">';
-            return '<div class="tile" data-i="' + i + '"><div class="thumb" data-view="' + i + '" style="cursor:zoom-in">' + media + '</div>' +
+            return '<div class="tile" data-i="' + i + '"><input type="checkbox" class="sel" data-src="' + esc(f.key) + '" title="Select to move">' +
+                   '<div class="thumb" data-view="' + i + '" style="cursor:zoom-in">' + media + '</div>' +
                    '<div class="meta"><div class="name" title="' + esc(f.name) + '">' + esc(f.name) + '</div><div class="sub">' + size(f.size) + '</div></div>' +
                    (canDelete ? '<button type="button" class="del" title="Delete" data-del="' + i + '"><i class="bi bi-trash"></i></button>' : '') + '</div>';
         }).join('') + '</div>';
     }
-    if (!folders.length && !files.length) out = '<div class="empty"><i class="bi bi-images" style="font-size:28px"></i><br>This folder is empty. Create a folder or upload photos.</div>';
+    if (area === 'old' && !folders.length && !files.length) out = '<div class="empty">No earlier uploads here.</div>';
+    else if (!folders.length && !files.length) out = '<div class="empty"><i class="bi bi-images" style="font-size:28px"></i><br>This folder is empty. Create a folder or upload photos.</div>';
     $('content').innerHTML = out;
 
     $('content').addEventListener('click', function (e) {
+        if (e.target.classList.contains('sel')) { e.stopPropagation(); setTimeout(updateSel, 0); return; }
         var g = e.target.closest('[data-go]');
-        if (g) { e.preventDefault(); go(g.getAttribute('data-go')); return; }
+        if (g) { e.preventDefault(); go(g.getAttribute('data-go'), g.getAttribute('data-area')); return; }
         var d = e.target.closest('[data-del]');
         if (d) {
             var f = files[+d.getAttribute('data-del')];
@@ -180,6 +247,62 @@
     });
     $('viewer').addEventListener('click', function () { this.classList.remove('on'); $('viewerMedia').innerHTML = ''; });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') $('viewer').click(); });
+
+    // ---------- select + move ----------
+    function picked() { return Array.prototype.slice.call(document.querySelectorAll('#content .sel:checked')); }
+    function updateSel() {
+        var p = picked();
+        document.querySelectorAll('#content .tile').forEach(function (t) { var c = t.querySelector('.sel'); t.classList.toggle('picked', !!(c && c.checked)); });
+        $('selbar').classList.toggle('on', p.length > 0);
+        $('selCount').textContent = p.length + ' selected';
+    }
+    $('selClear').addEventListener('click', function () { picked().forEach(function (c) { c.checked = false; }); updateSel(); });
+
+    var mvFolder = '';
+    function mvLoad(path) {
+        mvFolder = path || '';
+        $('mvPath').textContent = 'Into: ' + site + ' library' + (mvFolder ? ' / ' + mvFolder.replace(/\/$/, '').split('/').join(' / ') : ' (top level)');
+        $('mvList').innerHTML = '<div style="padding:12px 16px;color:#706e6b">Loading\u2026</div>';
+        fetch('media?format=json&folder=' + encodeURIComponent(mvFolder), { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) {
+                if (!d.ok) { $('mvList').innerHTML = '<div style="padding:12px 16px;color:#ba0517">' + esc(d.message) + '</div>'; return; }
+                var svg = '<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M10 4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6z"/></svg>';
+                var h = '';
+                if (mvFolder) {
+                    var parts = mvFolder.replace(/\/$/, '').split('/'); parts.pop();
+                    h += '<button type="button" class="mv-row up" data-mv="' + esc(parts.length ? parts.join('/') + '/' : '') + '">&larr; Up one level</button>';
+                }
+                d.folders.forEach(function (f) {
+                    if (f.area) return;                                  // not into "Earlier uploads"
+                    h += '<button type="button" class="mv-row" data-mv="' + esc(f.path) + '">' + svg + esc(f.name) + '</button>';
+                });
+                if (!h) h = '<div style="padding:12px 16px;color:#706e6b">No folders inside. Press \u201cMove here\u201d or create a new folder.</div>';
+                $('mvList').innerHTML = h;
+            });
+    }
+    $('moveBtn').addEventListener('click', function () { mvLoad(area === 'old' ? '' : folder); $('mvOverlay').classList.add('on'); });
+    $('mvList').addEventListener('click', function (e) { var r = e.target.closest('[data-mv]'); if (r) mvLoad(r.getAttribute('data-mv')); });
+    $('mvCancel').addEventListener('click', function () { $('mvOverlay').classList.remove('on'); });
+    $('mvOverlay').addEventListener('click', function (e) { if (e.target === this) this.classList.remove('on'); });
+    $('mvNew').addEventListener('click', function () {
+        var n = prompt('Name of the new folder:');
+        if (!n || !n.trim()) return;
+        var b = new URLSearchParams(); b.append('action', 'createFolder'); b.append('folder', mvFolder); b.append('name', n.trim()); b.append('format', 'json');
+        fetch('media', { method: 'POST', credentials: 'same-origin', body: b }).then(function (r) { return r.json(); })
+            .then(function (d) { if (d.ok) mvLoad(d.folder); else alert(d.message); });
+    });
+    $('mvGo').addEventListener('click', function () {
+        var p = picked();
+        if (!p.length) return;
+        if (!confirm('Move ' + p.length + ' item' + (p.length === 1 ? '' : 's') + ' to "' + (mvFolder || 'top level') + '"?')) return;
+        var f = $('moveForm');
+        f.target.value = mvFolder;
+        f.querySelectorAll('input[name=source]').forEach(function (x) { x.remove(); });
+        p.forEach(function (c) { var i = document.createElement('input'); i.type = 'hidden'; i.name = 'source'; i.value = c.getAttribute('data-src'); f.appendChild(i); });
+        $('mvGo').disabled = true; $('mvGo').textContent = 'Moving\u2026';
+        f.submit();
+    });
 
     function post(action, extra) {
         var f = $('actionForm');
