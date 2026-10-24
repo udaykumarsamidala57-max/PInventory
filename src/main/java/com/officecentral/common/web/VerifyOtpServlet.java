@@ -79,6 +79,7 @@ public class VerifyOtpServlet extends HttpServlet {
                     session.setAttribute("department", rs.getString("department"));
                     session.setAttribute("assignedBranch", branch);
                     session.setAttribute("branch", branch);
+                    session.setAttribute("showAndroidAppPopup", Boolean.TRUE);
                 }
             }
 

@@ -63,6 +63,7 @@ public class LoginServlet extends HttpServlet {
                 session.setAttribute("department", department);
                 session.setAttribute("assignedBranch", branch);
                 session.setAttribute("branch", branch);
+                session.setAttribute("showAndroidAppPopup", Boolean.TRUE);
 
                 response.sendRedirect("select-store");
 

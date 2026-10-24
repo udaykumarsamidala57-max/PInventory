@@ -29,7 +29,7 @@
         box-sizing: border-box;
     }
 
-    .login-brand{display:block;width:min(100%,270px);height:auto;margin:0 auto 18px;object-fit:contain}
+    .login-brand{display:block;width:min(100%,205px);height:auto;margin:0 auto 13px;object-fit:contain}
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-15px); }
