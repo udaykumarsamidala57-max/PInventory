@@ -119,7 +119,7 @@ try {
 <link href="https://fonts.googleapis.com/css2?family=Salesforce+Sans:wght@300;400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css?v=20261019e">
+<link rel="stylesheet" href="<%= request.getContextPath() %>/CSS/header.css?v=20261024b">
 </head>
 
 <body class="sidebar-collapsed">
@@ -322,7 +322,7 @@ try {
 <header>
   <div class="header-left-group">
     <button class="toggle-btn" id="menu-toggle"><i class="fa-solid fa-bars"></i></button>
-    <div class="header-brand-title"><%= branchess.toUpperCase() %><span>|OFFICE CENTRAL ERP</span></div>
+    <div class="header-brand-title"><span class="header-store-name"><%= branchess.toUpperCase() %></span><img class="header-brand-logo" src="<%= request.getContextPath() %>/assets/branding/office-central-ofc.png" alt="Office Central OFC"></div>
     <div class="header-title-wrapper">
       <h6>Overview</h6>
       <div class="adm-title" id="admPageTitle">Dashboard</div>
@@ -337,18 +337,6 @@ try {
   </div>
 
   <div class="header-right-group">
-    <!-- Download OFC ERP Android app -->
-    <a class="app-download-btn" href="<%= request.getContextPath() %>/mobile-app/pinventory.apk" download="OFC-ERP.apk"
-       title="Download the OFC ERP Android app"><i class="fa-brands fa-android"></i><span>Android App</span></a>
-    <style>
-      .app-download-btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;margin-right:10px;
-        border-radius:50px;background:linear-gradient(135deg,#032d60 0%,#0176d3 100%);color:#fff !important;
-        font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap;box-shadow:0 4px 12px rgba(3,45,96,.25);
-        transition:transform .15s ease,box-shadow .15s ease}
-      .app-download-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(3,45,96,.35)}
-      .app-download-btn i{font-size:18px;color:#3ddc84}
-      @media (max-width:768px){.app-download-btn span{display:none}.app-download-btn{width:36px;padding:0;justify-content:center;margin-right:6px}}
-    </style>
     <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
@@ -430,10 +418,42 @@ try {
       <div class="user-meta">
         <span class="u-name"><%= users.toLowerCase() %></span>
         <span class="u-role"><i class="fa-solid fa-shield-halved text-primary"></i> <%= roles %></span>
+        <button type="button" class="android-app-small" onclick="openAndroidAppModal()" aria-haspopup="dialog" aria-controls="androidAppModal">
+          <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M12 10 8.5 4.5M28 10l3.5-5.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.2"/><path d="M8.5 15a11.5 11.5 0 0 1 23 0h-23Z" fill="currentColor"/><circle cx="15" cy="11" r="1.15" fill="#fff"/><circle cx="25" cy="11" r="1.15" fill="#fff"/><g fill="currentColor"><rect x="10" y="16.5" width="20" height="13" rx="2.5"/><rect x="5" y="17" width="4" height="11" rx="2"/><rect x="31" y="17" width="4" height="11" rx="2"/><rect x="13" y="28" width="4.5" height="8" rx="2.1"/><rect x="22.5" y="28" width="4.5" height="8" rx="2.1"/></g></svg>
+          Download Android App
+        </button>
       </div>
     </div>
   </div>
 </header>
+<div class="android-app-overlay" id="androidAppModal" hidden onclick="if(event.target===this)closeAndroidAppModal()">
+  <section class="android-app-dialog" role="dialog" aria-modal="true" aria-labelledby="androidAppTitle" aria-describedby="androidAppDescription">
+    <button type="button" class="android-app-close" onclick="closeAndroidAppModal()" aria-label="Close download dialog">×</button>
+    <div class="android-app-mark" aria-hidden="true">
+      <svg viewBox="0 0 40 40"><path d="M12 10 8.5 4.5M28 10l3.5-5.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.2"/><path d="M8.5 15a11.5 11.5 0 0 1 23 0h-23Z" fill="currentColor"/><circle cx="15" cy="11" r="1.15" fill="#fff"/><circle cx="25" cy="11" r="1.15" fill="#fff"/><g fill="currentColor"><rect x="10" y="16.5" width="20" height="13" rx="2.5"/><rect x="5" y="17" width="4" height="11" rx="2"/><rect x="31" y="17" width="4" height="11" rx="2"/><rect x="13" y="28" width="4.5" height="8" rx="2.1"/><rect x="22.5" y="28" width="4.5" height="8" rx="2.1"/></g></svg>
+    </div>
+    <h2 id="androidAppTitle">Office Central ERP</h2>
+    <p id="androidAppDescription">Download Android App</p>
+    <a class="android-app-download" href="<%= request.getContextPath() %>/mobile-app/pinventory.apk" download="OFC-ERP.apk"><span aria-hidden="true">↓</span> Download for Android</a>
+    <span class="android-app-footnote">✓ Official OFC ERP app</span>
+  </section>
+</div>
+<script>
+  var androidAppTrigger=null;
+  function openAndroidAppModal(){
+    androidAppTrigger=document.activeElement;
+    var modal=document.getElementById('androidAppModal');
+    modal.hidden=false;
+    modal.querySelector('.android-app-close').focus();
+  }
+  function closeAndroidAppModal(){
+    var modal=document.getElementById('androidAppModal');
+    if(!modal||modal.hidden)return;
+    modal.hidden=true;
+    if(androidAppTrigger)androidAppTrigger.focus();
+  }
+  document.addEventListener('keydown',function(event){if(event.key==='Escape')closeAndroidAppModal();});
+</script>
 
 <div class="urgent-modal-overlay" id="urgentModal" onclick="if(event.target===this) closeUrgentModal()">
     <div class="urgent-modal-content" role="dialog" aria-modal="true" aria-labelledby="srModalTitle">

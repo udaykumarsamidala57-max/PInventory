@@ -1,8 +1,8 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0",
+  "versionCode": 2,
+  "versionName": "1.1",
   "apk": "mobile-app/pinventory.apk",
-  "sha256": "",
-  "notes": "",
+  "sha256": "8ada8c6bbb4e950767b47a92c5389798133d4a6403debeddcd10380417ef8fba",
+  "notes": "OFC ERP Android app",
   "mandatory": false
 }

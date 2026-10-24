@@ -9,23 +9,27 @@
         font-family: 'Poppins', sans-serif;
         background: linear-gradient(135deg, #1a2980, #26d0ce);
         margin: 0;
-        height: 100vh;
+        min-height: 100vh;
+        height: auto;
+        padding: 24px 0;
         display: flex;
         justify-content: center;
         align-items: center;
     }
 
     .login-container {
-        width: 360px;
-        background: rgba(255, 255, 255, 0.12);
+        width: min(100%, 390px);
+        background: #fff;
         backdrop-filter: blur(20px);
         padding: 35px 30px;
         border-radius: 18px;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-        color: #fff;
+        color: #16324f;
         animation: fadeIn 0.8s ease;
         box-sizing: border-box;
     }
+
+    .login-brand{display:block;width:min(100%,205px);height:auto;margin:0 auto 13px;object-fit:contain}
 
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(-15px); }
@@ -36,12 +40,12 @@
         text-align: center;
         margin-bottom: 25px;
         font-weight: 700;
-        color: #fff;
+        color: #16324f;
     }
 
     label {
         font-weight: 500;
-        color: #f5f5f5;
+        color: #536273;
         display: block;
         margin-bottom: 6px;
         font-size: 14px;
@@ -72,7 +76,7 @@
         align-items: center;
         gap: 8px;
         font-size: 13px;
-        color: #f5f5f5;
+        color: #536273;
         margin-top: -10px;
         margin-bottom: 20px;
     }
@@ -148,6 +152,7 @@
 </head>
 <body>
     <div class="login-container">
+        <img class="login-brand" src="<%= request.getContextPath() %>/assets/branding/office-central-ofc.png" alt="Office Central OFC logo">
         <h2>User Login</h2>
 
       
