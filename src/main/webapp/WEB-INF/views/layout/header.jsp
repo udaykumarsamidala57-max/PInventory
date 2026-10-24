@@ -337,6 +337,18 @@ try {
   </div>
 
   <div class="header-right-group">
+    <!-- Download OFC ERP Android app -->
+    <a class="app-download-btn" href="<%= request.getContextPath() %>/mobile-app/pinventory.apk" download="OFC-ERP.apk"
+       title="Download the OFC ERP Android app"><i class="fa-brands fa-android"></i><span>Android App</span></a>
+    <style>
+      .app-download-btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;margin-right:10px;
+        border-radius:50px;background:linear-gradient(135deg,#032d60 0%,#0176d3 100%);color:#fff !important;
+        font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap;box-shadow:0 4px 12px rgba(3,45,96,.25);
+        transition:transform .15s ease,box-shadow .15s ease}
+      .app-download-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(3,45,96,.35)}
+      .app-download-btn i{font-size:18px;color:#3ddc84}
+      @media (max-width:768px){.app-download-btn span{display:none}.app-download-btn{width:36px;padding:0;justify-content:center;margin-right:6px}}
+    </style>
     <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
