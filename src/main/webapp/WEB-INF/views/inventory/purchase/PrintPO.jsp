@@ -369,7 +369,7 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
 %>
 
 <header>
-    <img src="Header.png" alt="School Logo">
+    <div style="text-align:center;font-weight:700;color:#032d60;letter-spacing:.5px;margin:8px 0 4px;">OFFICE CENTRAL ERP</div>
 </header>
 
 <div class="contact-line">

@@ -208,12 +208,11 @@ header {
     font-weight: 800;
     font-size: 23px;
 }
-.header-brand-title .header-brand-logo {
-    display: block;
-    width: 88px;
-    height: auto;
-    max-height: 42px;
-    object-fit: contain;
+.header-brand-title .header-erp-name {
+    color: var(--accent-dark);
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: .25px;
 }
 
 .header-title-wrapper {
@@ -1235,14 +1234,16 @@ body.has-subnav .header-title-wrapper { display: none; }
 .subnav-tabs { mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent); }
 @media (max-width: 1100px) { .subnav-tabs { mask-image: none; -webkit-mask-image: none; } }
 
-/* Keep the store name first, followed by the compact Office Central logo. */
+/* Keep the store name first, followed by the Office Central ERP text. */
 @media (max-width: 600px) {
     .header-brand-title {
-        display: flex !important; flex-direction: row; align-items: center; gap: 5px; line-height: 1;
+        display: flex !important; flex-direction: column; align-items: flex-start; gap: 2px; line-height: 1;
         font-size: 13px; max-width: none; overflow: visible;
     }
     .header-brand-title .header-store-name { font-size: 16px; }
-    .header-brand-title .header-brand-logo { width: 58px; max-height: 32px; }
+    .header-brand-title .header-erp-name { font-size: 10px; }
+
+
     body.has-subnav .subnav-name { display: none; }      /* phone: module button shows icon + arrow */
     .subnav-btn { padding: 0 6px; gap: 4px; }
 }
@@ -1260,13 +1261,15 @@ body.has-subnav .header-title-wrapper { display: none; }
 /* Android app download button and popup */
 .user-meta .android-app-small{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;margin-top:4px;padding:3px 7px;border:1px solid #d9e5ee;border-radius:7px;background:#f7fbfd;color:#176b3a;cursor:pointer;font-family:inherit;font-size:10px;font-weight:600;line-height:1.2;white-space:nowrap;transition:background .16s,border-color .16s}
 .user-meta .android-app-small:hover{border-color:#a9cfb5;background:#eaf7ee}
-.android-app-small svg{width:13px;height:13px;flex:none}
 .android-app-overlay{position:fixed;z-index:4000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(13,29,48,.58);backdrop-filter:blur(3px);animation:androidModalFade .18s ease-out}
 .android-app-overlay[hidden]{display:none}
 .android-app-dialog{position:relative;box-sizing:border-box;width:min(100%,370px);padding:30px;border:1px solid #e3eaf2;border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(8,27,48,.28);color:#16324f;text-align:center;animation:androidModalRise .22s ease-out}
 .android-app-close{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:9px;background:#f2f5f8;color:#627487;cursor:pointer;font-size:17px}
-.android-app-description{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 18px;color:#64788c;font-size:12px;font-weight:600}
+.android-app-logo{display:block;width:min(100%,190px);height:auto;margin:0 auto 10px;object-fit:contain;animation:androidBrandFloat 2.8s ease-in-out infinite}
+.android-app-brand{margin:0 0 10px;color:#032d60;font-size:15px;font-weight:800;letter-spacing:.5px}
+.android-app-dialog h2{margin:0 0 8px;color:#16324f;font-size:20px;line-height:1.3}
 .android-app-description .android-mini-icon{width:22px;height:22px;flex:none;color:#2e9c58;animation:androidMiniMove 1.8s ease-in-out infinite}
+.android-app-description{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 18px;color:#64788c;font-size:12px;font-weight:600}
 .android-app-dialog p{margin:0 0 18px;color:#64788c;font-size:12px}
 .android-app-download{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border-radius:10px;background:#1266a8;color:#fff!important;text-decoration:none;font-size:13px;font-weight:700;transition:background .18s,transform .18s}
 .android-app-download:hover{background:#0c528b;transform:translateY(-1px)}
@@ -1274,6 +1277,7 @@ body.has-subnav .header-title-wrapper { display: none; }
 .android-app-small:focus-visible,.android-app-close:focus-visible,.android-app-download:focus-visible{outline:3px solid rgba(1,118,211,.35);outline-offset:2px}
 @keyframes androidModalFade{from{opacity:0}to{opacity:1}}
 @keyframes androidModalRise{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes androidBrandFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
 @keyframes androidMiniMove{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
 @keyframes androidModalFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-@media(prefers-reduced-motion:reduce){.android-app-overlay,.android-app-dialog,.android-app-description .android-mini-icon,.android-app-download{animation:none;transition:none}}
+@media(prefers-reduced-motion:reduce){.android-app-overlay,.android-app-dialog,.android-app-logo,.android-app-description .android-mini-icon,.android-app-download{animation:none;transition:none}}

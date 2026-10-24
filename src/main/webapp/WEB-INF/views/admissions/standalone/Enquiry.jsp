@@ -112,11 +112,6 @@ button:hover {
     margin-bottom: 10px;
 }
 
-.logo-box img {
-    max-width: 160px;
-    width: 100%;
-    height: auto;
-}
 </style>
 
 </head>
@@ -124,7 +119,7 @@ button:hover {
 
 <div class="form-box">
 <div class="logo-box">
-    <img src="Logo.png" alt="School Logo">
+    <h1 style="margin:0;color:#032d60;font-size:18px;">OFFICE CENTRAL ERP</h1>
 </div>
 <h2>📘 Admission Enquiry Form (2026-27)</h2>
 

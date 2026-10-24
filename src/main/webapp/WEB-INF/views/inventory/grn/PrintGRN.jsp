@@ -130,7 +130,7 @@ if (grnNo != null && !grnNo.trim().isEmpty()) {
 %>
 
 <header>
-    <img src="Header.png">
+    <div style="text-align:center;font-weight:700;color:#032d60;letter-spacing:.5px;margin:8px 0 4px;">OFFICE CENTRAL ERP</div>
     <h6>Website: www.sandurschool.edu.in | Email: srsadmin@sandurschool.com | Ph: 08395-260246</h6>
 </header>
 

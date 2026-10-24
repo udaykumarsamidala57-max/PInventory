@@ -29,9 +29,8 @@
         box-sizing: border-box;
     }
 
-    .login-brand{display:block;width:min(100%,205px);height:auto;margin:0 auto 13px;object-fit:contain}
-
-    @keyframes fadeIn {
+    .login-brand-text{margin:0 auto 14px;text-align:center;color:#032d60;font-size:17px;font-weight:800;letter-spacing:.6px}
+@keyframes fadeIn {
         from { opacity: 0; transform: translateY(-15px); }
         to { opacity: 1; transform: translateY(0); }
     }
@@ -132,13 +131,7 @@
         transform: scale(1.03);
         background: #f2f2f2;
     }
-
-    .google-login img {
-        width: 22px;
-        margin-right: 10px;
-    }
-
-    input::placeholder {
+input::placeholder {
         color: #777;
     }
 
@@ -152,7 +145,7 @@
 </head>
 <body>
     <div class="login-container">
-        <img class="login-brand" src="<%= request.getContextPath() %>/assets/branding/office-central-ofc.png" alt="Office Central OFC logo">
+        <div class="login-brand-text">OFFICE CENTRAL ERP</div>
         <h2>User Login</h2>
 
       
@@ -180,8 +173,8 @@
      
         <form action="send-otp" method="post">
             <button type="submit" class="google-login">
-                <img src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png" alt="Google">
-                Login with Gmail OTP
+
+Login with Gmail OTP
             </button>
             <input type="email" name="email" placeholder="Enter your registered Gmail" required style="margin-top:15px;">
         </form>

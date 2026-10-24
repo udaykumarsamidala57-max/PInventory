@@ -112,11 +112,6 @@ button:hover {
     margin-bottom: 10px;
 }
 
-.logo-box img {
-    max-width: 160px;
-    width: 100%;
-    height: auto;
-}
 </style>
 
 </head>
@@ -124,7 +119,7 @@ button:hover {
 
 <div class="form-box">
 <div class="logo-box">
-   <h1>Sandur Residential School</h1>
+   <h1>OFFICE CENTRAL ERP</h1>
 </div>
 <h2>📘 Admission Enquiry Form (2026-27)</h2>
 

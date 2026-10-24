@@ -52,9 +52,10 @@
 </main>
 <% if (showAndroidAppPopup) { %>
 <div class="login-app-overlay" id="loginAppDownloadPopup" onclick="if(event.target===this)closeLoginAppPopup()">
-  <section class="login-app-dialog" role="dialog" aria-modal="true" aria-label="Download Android App">
+  <section class="login-app-dialog" role="dialog" aria-modal="true" aria-labelledby="loginAppTitle" aria-describedby="loginAppDescription">
     <button type="button" class="login-app-close" onclick="closeLoginAppPopup()" aria-label="Close download dialog">×</button>
-    <img class="login-app-logo" src="<%= request.getContextPath() %>/assets/branding/office-central-ofc.png" alt="Office Central OFC">
+<svg class="login-app-logo" viewBox="0 0 520 210" role="img" aria-label="OFC Office Central logo" xmlns="http://www.w3.org/2000/svg"><g font-family="Arial,Helvetica,sans-serif" font-weight="700" text-anchor="middle"><circle cx="120" cy="75" r="70" fill="#142c70"/><circle cx="260" cy="75" r="70" fill="#ff8615"/><circle cx="400" cy="75" r="70" fill="#0ba99d"/><text x="120" y="100" fill="#fff" font-size="82">O</text><text x="260" y="101" fill="#fff" font-size="88">F</text><text x="400" y="100" fill="#fff" font-size="82">C</text><text x="260" y="190" fill="#142c70" font-size="46" letter-spacing="-2">Office Central</text></g></svg>
+    <h2 id="loginAppTitle">Take work with you</h2>
 
     <p id="loginAppDescription" class="login-app-description"><svg class="android-mini-icon" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor"><path d="M6 9a6 6 0 0 1 12 0H6Z"/><circle cx="9" cy="6.6" r=".65" fill="#fff"/><circle cx="15" cy="6.6" r=".65" fill="#fff"/><rect x="7" y="10" width="10" height="7" rx="1.4"/><rect x="4.5" y="10.5" width="2" height="6" rx="1"/><rect x="17.5" y="10.5" width="2" height="6" rx="1"/><rect x="8" y="16" width="2.4" height="4" rx="1.1"/><rect x="13.6" y="16" width="2.4" height="4" rx="1.1"/></g><path d="M8.5 4.5 7.2 2.8M15.5 4.5l1.3-1.7" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>Download Android App</p>
     <a class="login-app-download" href="<%= request.getContextPath() %>/mobile-app/pinventory.apk" download="OFC-ERP.apk">↓&nbsp; Download Android App</a>
@@ -65,7 +66,9 @@
   .login-app-overlay{position:fixed;z-index:3000;inset:0;display:grid;place-items:center;padding:20px;background:rgba(13,29,48,.58);backdrop-filter:blur(3px);animation:loginAppFade .2s ease-out}
   .login-app-dialog{position:relative;box-sizing:border-box;width:min(100%,370px);padding:30px;border:1px solid #e3eaf2;border-radius:18px;background:#fff;box-shadow:0 24px 70px rgba(8,27,48,.28);color:#16324f;text-align:center;animation:loginAppRise .24s ease-out}
   .login-app-close{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:9px;background:#f2f5f8;color:#627487;cursor:pointer;font-size:17px}
-  .login-app-logo{display:block;width:min(100%,190px);height:auto;margin:0 auto 12px;animation:loginAppLogo 2.5s ease-in-out infinite}
+.login-app-logo{display:block;width:min(100%,190px);height:auto;margin:2px auto 10px;object-fit:contain;animation:loginAppLogoFloat 2.8s ease-in-out infinite}
+  .login-app-brand{margin:2px 0 10px;color:#032d60;font-size:15px;font-weight:800;letter-spacing:.5px}
+  .login-app-dialog h2{margin:0 0 8px;color:#16324f;font-size:20px;line-height:1.3}
   .login-app-description{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 0 18px;color:#64788c;font-size:12px;font-weight:600}
   .login-app-description .android-mini-icon{width:22px;height:22px;flex:none;color:#2e9c58;animation:loginAndroidMove 1.8s ease-in-out infinite}
   .login-app-dialog p{margin:0 0 18px;color:#64788c;font-size:12px}
@@ -75,8 +78,9 @@
   .login-app-dialog button:focus-visible,.login-app-download:focus-visible{outline:3px solid rgba(1,118,211,.35);outline-offset:2px}
   @keyframes loginAppFade{from{opacity:0}to{opacity:1}}
   @keyframes loginAppRise{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-  @keyframes loginAppLogo{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  @keyframes loginAppLogoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
   @keyframes loginAndroidMove{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-3px) rotate(2deg)}}
+  
   @media(prefers-reduced-motion:reduce){.login-app-overlay,.login-app-dialog,.login-app-logo,.login-app-description .android-mini-icon,.login-app-download{animation:none;transition:none}}
 </style>
 <script>
