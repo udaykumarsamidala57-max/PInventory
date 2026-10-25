@@ -18,8 +18,9 @@ import com.google.gson.Gson;
  * Returns the stock_ledger transactions behind one number on the Stock Ledger report
  * (stockReport.jsp) / Stock Report (Stock.jsp) as JSON, for the drill-down pop-up.
  *
- * GET /stock-ledger-detail?itemId=..&type=OPENING|RECEIPT|ISSUE|ALL&fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd
- * (fromDate/toDate may both be omitted = all dates)
+ * GET /stock-ledger-detail?itemId=..&type=OPENING|RECEIPT|ISSUE|ALL&fromDate=yyyy-MM-dd&toDate=yyyy-MM-dd&fy=2025
+ * Dates are limited to one financial year. fy (previous years) is honoured only for the Global role
+ * or Finance department; everyone else always gets the current year.
  *
  * Data comes from StockLedgerDAO, which the mobile app also uses, so web and app always match.
  * Read-only; uses the logged-in user's store (session "branch").
@@ -43,6 +44,8 @@ public class StockLedgerDetailServlet extends HttpServlet {
             return;
         }
         String branch = (String) sess.getAttribute("branch");
+        boolean canChoose = StockLedgerDAO.canChooseYear(
+                (String) sess.getAttribute("role"), (String) sess.getAttribute("department"));
 
         int itemId;
         try {
@@ -53,8 +56,10 @@ public class StockLedgerDetailServlet extends HttpServlet {
         }
 
         try {
+            int fy = StockLedgerDAO.resolveFy(request.getParameter("fy"), canChoose);
             LocalDate[] range = StockLedgerDAO.parseRange(request.getParameter("fromDate"), request.getParameter("toDate"));
-            Map<String, Object> result = dao.detail(branch, itemId, request.getParameter("type"), range);
+            Map<String, Object> result = dao.detail(branch, fy, itemId, request.getParameter("type"), range);
+            StockLedgerDAO.putYearChoice(result, canChoose);
             response.getWriter().write(GSON.toJson(result));
         } catch (StockLedgerDAO.NotFound e) {
             sendError(response, HttpServletResponse.SC_NOT_FOUND, e.getMessage());

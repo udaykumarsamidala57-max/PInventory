@@ -5,7 +5,11 @@
  * Any element with class "ledger-link" + data-item="<item id>" + data-type="ALL|OPENING|RECEIPT|ISSUE"
  * opens the pop-up. Page config (set before this script):
  *   window.STOCK_LEDGER = { ctx: '/PInventory', fromDate: 'yyyy-MM-dd' or '', toDate: 'yyyy-MM-dd' or '' }
- * Blank dates = all dates.
+ *
+ * The ledger covers ONE FINANCIAL YEAR (1 April .. 31 March; the current year ends today). The pop-up
+ * opens with the opening balance as on the From date and lists entries from there.
+ * Normal users: current year only. Global role / Finance department also get a "Financial Year"
+ * dropdown for previous years. The server (StockLedgerDAO) enforces both rules.
  *
  * All data from the server is written with textContent (never innerHTML) to prevent XSS.
  */
@@ -18,16 +22,42 @@
     var TO = CFG.toDate || '';
 
     var TITLES = {
-        OPENING: 'Opening Balance – Transactions before From Date',
         RECEIPT: 'Receipts (Inward)',
         ISSUE:   'Issues (Outward)',
         ALL:     'Item Stock Ledger'
     };
 
-    var overlay, titleEl, subEl, sumEl, bodyEl, fromIn, toIn, filterMsg, reqSeq = 0;
-    // What the pop-up is currently showing (dates may be changed inside the pop-up)
-    var cur = { itemId: null, type: null, from: '', to: '' };
+    var overlay, titleEl, subEl, sumEl, bodyEl, fromIn, toIn, filterMsg, fyLbl, fySel, reqSeq = 0;
+    // What the pop-up is currently showing (dates and year may be changed inside the pop-up)
+    var cur = { itemId: null, type: null, from: '', to: '', fy: '' };
     var ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+    // ---- Current academic year: 1 April .. today (the server sends the exact limits too) ----
+    function iso(d) {
+        return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2);
+    }
+    var MAX_DATE = iso(new Date());
+    /** Financial year (start year) a yyyy-MM-dd date belongs to. */
+    function fyOf(isoDate) {
+        var y = parseInt(isoDate.substring(0, 4), 10), m = parseInt(isoDate.substring(5, 7), 10);
+        return m >= 4 ? y : y - 1;
+    }
+    var MIN_DATE = fyOf(MAX_DATE) + '-04-01';
+    function dmy(isoDate) {
+        return isoDate ? isoDate.substring(8, 10) + '-' + isoDate.substring(5, 7) + '-' + isoDate.substring(0, 4) : '';
+    }
+    /** Keeps a period inside 1 April .. today. Blank = whole year. */
+    function clampRange(f, t) {
+        if (!ISO.test(f || '')) f = MIN_DATE;
+        if (!ISO.test(t || '')) t = MAX_DATE;
+        if (f < MIN_DATE) f = MIN_DATE;
+        if (t > MAX_DATE) t = MAX_DATE;
+        if (f > t) { f = MIN_DATE; t = MAX_DATE; }
+        return [f, t];
+    }
+    function setLimits() {
+        [fromIn, toIn].forEach(function (inp) { inp.min = MIN_DATE; inp.max = MAX_DATE; });
+    }
 
     // Indian number format: 1,23,456.78 ; negatives in brackets
     function fmt(n) {
@@ -104,12 +134,21 @@
         var allBtn = el('button', 'ldg-btn');
         allBtn.type = 'button';
         allBtn.appendChild(el('i', 'fa fa-calendar'));
-        allBtn.appendChild(document.createTextNode(' All Dates'));
+        allBtn.appendChild(document.createTextNode(' Full Year'));
+        allBtn.title = 'Whole financial year (1 April onwards)';
         allBtn.addEventListener('click', function () {
-            fromIn.value = '';
-            toIn.value = '';
             filterMsg.textContent = '';
-            load(cur.itemId, cur.type === 'OPENING' ? 'ALL' : cur.type, '', '');
+            load(cur.itemId, cur.type, '', '', cur.fy);   // whole of the year being viewed
+        });
+
+        // Financial Year dropdown: shown only when the server says this user may choose a year
+        fyLbl = el('label', null, 'Financial Year');
+        fySel = el('select');
+        fyLbl.appendChild(fySel);
+        fyLbl.style.display = 'none';
+        fySel.addEventListener('change', function () {
+            filterMsg.textContent = '';
+            load(cur.itemId, cur.type, '', '', fySel.value);   // whole selected year
         });
 
         filterMsg = el('span', 'ldg-filter-msg');
@@ -118,6 +157,7 @@
             inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') applyDates(); });
         });
 
+        bar.appendChild(fyLbl);
         bar.appendChild(fLbl);
         bar.appendChild(tLbl);
         bar.appendChild(applyBtn);
@@ -139,25 +179,31 @@
 
     function open(itemId, type) {
         build();
+        setLimits();
+        // Opening-balance clicks show the ledger from the From date (opening as on that date)
+        if (type === 'OPENING') type = 'ALL';
         filterMsg.textContent = '';
-        fromIn.value = FROM;
-        toIn.value = TO;
-        load(itemId, type, FROM, TO);
+        // Year of the report's From date; the server falls back to the current year if not allowed
+        var fy = ISO.test(FROM) ? String(fyOf(FROM)) : '';
+        var r = clampRange(FROM, TO);
+        fromIn.value = ISO.test(FROM) ? FROM : r[0];
+        toIn.value = ISO.test(TO) ? TO : r[1];
+        load(itemId, type, ISO.test(FROM) ? FROM : '', ISO.test(TO) ? TO : '', fy);
     }
 
     // Apply the From/To dates typed in the pop-up
     function applyDates() {
         var f = fromIn.value, t = toIn.value;
-        if (!f && !t) { filterMsg.textContent = ''; load(cur.itemId, cur.type === 'OPENING' ? 'ALL' : cur.type, '', ''); return; }
         if (!ISO.test(f) || !ISO.test(t)) { filterMsg.textContent = 'Select both From and To dates.'; return; }
+        if (f < MIN_DATE) { filterMsg.textContent = 'From Date cannot be before ' + dmy(MIN_DATE) + ' (start of this financial year).'; return; }
+        if (t > MAX_DATE) { filterMsg.textContent = 'To Date cannot be after ' + dmy(MAX_DATE) + '.'; return; }
         if (f > t) { filterMsg.textContent = 'From Date cannot be after To Date.'; return; }
         filterMsg.textContent = '';
-        // "Opening balance" view has no range; with a chosen range show the full ledger for it
-        load(cur.itemId, cur.type === 'OPENING' ? 'ALL' : cur.type, f, t);
+        load(cur.itemId, cur.type, f, t, cur.fy);
     }
 
-    function load(itemId, type, from, to) {
-        cur = { itemId: itemId, type: type, from: from, to: to };
+    function load(itemId, type, from, to, fy) {
+        cur = { itemId: itemId, type: type, from: from, to: to, fy: fy || '' };
         titleEl.textContent = TITLES[type] || 'Stock Ledger';
         subEl.textContent = 'Loading…';
         message('Loading ledger…', false);
@@ -169,7 +215,8 @@
         var url = CTX + '/stock-ledger-detail?itemId=' + encodeURIComponent(itemId) +
                   '&type=' + encodeURIComponent(type) +
                   '&fromDate=' + encodeURIComponent(from) +
-                  '&toDate=' + encodeURIComponent(to);
+                  '&toDate=' + encodeURIComponent(to) +
+                  '&fy=' + encodeURIComponent(cur.fy);
 
         fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
             .then(function (r) {
@@ -188,17 +235,24 @@
         if (d.error) { subEl.textContent = ''; message(d.error, true); return; }
 
         var t = d.type;
-        var period = d.allDates ? 'All dates'
-                   : (t === 'OPENING' ? 'Before ' + d.fromDate : d.fromDate + ' to ' + d.toDate);
+        // Use the server's limits and the dates it actually used (it never goes before 1 April)
+        if (ISO.test(d.minDate || '')) MIN_DATE = d.minDate;
+        if (ISO.test(d.maxDate || '')) MAX_DATE = d.maxDate;
+        setLimits();
+        if (ISO.test(d.fromIso || '')) fromIn.value = d.fromIso;
+        if (ISO.test(d.toIso || '')) toIn.value = d.toIso;
+        cur.fy = String(d.fy || '');
+        fillYears(d);
+        if (d.clamped) filterMsg.textContent = 'Showing FY ' + d.fyLabel + ' only (' + dmy(MIN_DATE) + ' to ' + dmy(MAX_DATE) + ').';
+        var period = 'FY ' + d.fyLabel + '  |  ' + d.fromDate + ' to ' + d.toDate;
         subEl.textContent = d.itemName + '  |  ' + (d.category || '') +
                             (d.subCategory ? ' / ' + d.subCategory : '') + '  |  ' + period;
 
         clear(sumEl);
-        if (t === 'ALL' && !d.allDates) sumEl.appendChild(chip('Opening:', fmt(d.opening)));
+        if (t === 'ALL') sumEl.appendChild(chip('Opening as on ' + d.fromDate + ':', fmt(d.opening)));
         if (t !== 'ISSUE') sumEl.appendChild(chip('Total Inward:', fmt(d.totalIn)));
         if (t !== 'RECEIPT') sumEl.appendChild(chip('Total Outward:', fmt(d.totalOut)));
         if (t === 'ALL') sumEl.appendChild(chip('Closing Balance:', fmt(d.closing)));
-        if (t === 'OPENING') sumEl.appendChild(chip('Opening Balance:', fmt(d.closing)));
         sumEl.appendChild(chip('Entries:', String(d.rows.length)));
 
         clear(bodyEl);
@@ -206,12 +260,12 @@
             bodyEl.appendChild(el('div', 'ldg-msg err',
                 'Showing first ' + d.rows.length + ' entries only. Narrow the date range to see all.'));
         }
-        if (!d.rows.length) {
+        if (!d.rows.length && t !== 'ALL') {
             bodyEl.appendChild(el('div', 'ldg-msg', 'No transactions found.'));
             return;
         }
 
-        var showIn = t !== 'ISSUE', showOut = t !== 'RECEIPT', showBal = (t === 'ALL' || t === 'OPENING');
+        var showIn = t !== 'ISSUE', showOut = t !== 'RECEIPT', showBal = (t === 'ALL');
         var table = el('table', 'ldg-table');
         var thead = el('thead'), hr = el('tr');
         ['#', 'Date', 'Type', 'Ref No', 'Vendor / Department', 'Remarks'].forEach(function (h) {
@@ -265,6 +319,22 @@
         var wrap = el('div', 'ldg-scroll');
         wrap.appendChild(table);
         bodyEl.appendChild(wrap);
+    }
+
+    /** Financial Year dropdown for Global / Finance users (list comes from the server). */
+    function fillYears(d) {
+        var years = d.years || [];
+        if (!d.canChooseYear || years.length < 2) { fyLbl.style.display = 'none'; return; }
+        if (fySel.options.length !== years.length) {
+            clear(fySel);
+            years.forEach(function (y) {
+                var o = el('option', null, 'FY ' + y.label);
+                o.value = String(y.fy);
+                fySel.appendChild(o);
+            });
+        }
+        fySel.value = String(d.fy);
+        fyLbl.style.display = '';
     }
 
     function close() {

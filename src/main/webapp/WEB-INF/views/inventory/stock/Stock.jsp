@@ -424,9 +424,9 @@ String branch = (String) sess.getAttribute("branch");
 <jsp:include page="/WEB-INF/views/layout/Footer.jsp" />
 
 <%-- Click item name / Total Received / Total Issued / Balance -> ledger pop-up (all dates) --%>
-<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025d">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025f">
 <script>window.STOCK_LEDGER = { ctx: '<%=request.getContextPath()%>', fromDate: '', toDate: '' };</script>
-<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025d"></script>
+<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025f"></script>
 
 <script>
 function filterTable() {

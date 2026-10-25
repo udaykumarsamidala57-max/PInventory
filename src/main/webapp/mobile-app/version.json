@@ -1,8 +1,8 @@
 {
-    "versionCode": 4,
-    "versionName": "1.3",
-    "apk": "mobile-app/pinventory-1.3.apk",
-    "sha256": "8a6b346f14c4eb1833f26b8858291f36f6d3fff0b8c29854364c68a9e1e8cbd8",
-    "notes": "New: Stock Ledger – item-wise In / Out with dates. Tap any item to see its full receipt & issue history.",
+    "versionCode": 6,
+    "versionName": "1.5",
+    "apk": "mobile-app/pinventory-1.5.apk",
+    "sha256": "bc3b346eb79ee83b48e343b7d2fa0d504108f9b1ba09b008c9ee0d537c94950d",
+    "notes": "Stock Ledger: item-wise In / Out with dates for the financial year (from 1 April). Finance & Global users can view previous years.",
     "mandatory": false
 }

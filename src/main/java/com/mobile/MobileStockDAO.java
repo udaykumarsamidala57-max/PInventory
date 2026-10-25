@@ -17,22 +17,33 @@ final class MobileStockDAO {
 
     private final StockLedgerDAO ledger = new StockLedgerDAO();
 
-    /** Stock Ledger Report for the app. from/to = yyyy-MM-dd (both blank = all dates). */
-    Map<String, Object> ledger(MobileApiServlet.Ctx c, String from, String to, String q, String category,
+    /**
+     * Stock Ledger Report for the app. from/to = yyyy-MM-dd (blank = whole year).
+     * fy = financial year start (e.g. 2025); only Global role / Finance department may pick an older year.
+     */
+    Map<String, Object> ledger(MobileApiServlet.Ctx c, String fy, String from, String to, String q, String category,
                                boolean movedOnly) throws SQLException {
+        boolean canChoose = StockLedgerDAO.canChooseYear(c.role, c.department);
         try {
-            return ledger.summary(c.branch, StockLedgerDAO.parseRange(from, to), q, category, movedOnly);
+            Map<String, Object> res = ledger.summary(c.branch, StockLedgerDAO.resolveFy(fy, canChoose),
+                    StockLedgerDAO.parseRange(from, to), q, category, movedOnly);
+            StockLedgerDAO.putYearChoice(res, canChoose);
+            return res;
         } catch (StockLedgerDAO.BadRequest e) {
             throw new ApiException(400, e.getMessage());
         }
     }
 
     /** One item's ledger. type = ALL | RECEIPT | ISSUE | OPENING (default ALL). */
-    Map<String, Object> itemLedger(MobileApiServlet.Ctx c, int itemId, String type, String from, String to)
+    Map<String, Object> itemLedger(MobileApiServlet.Ctx c, String fy, int itemId, String type, String from, String to)
             throws SQLException {
         String t = MobileApiServlet.trim(type).isEmpty() ? "ALL" : MobileApiServlet.trim(type);
+        boolean canChoose = StockLedgerDAO.canChooseYear(c.role, c.department);
         try {
-            return ledger.detail(c.branch, itemId, t, StockLedgerDAO.parseRange(from, to));
+            Map<String, Object> res = ledger.detail(c.branch, StockLedgerDAO.resolveFy(fy, canChoose), itemId, t,
+                    StockLedgerDAO.parseRange(from, to));
+            StockLedgerDAO.putYearChoice(res, canChoose);
+            return res;
         } catch (StockLedgerDAO.NotFound e) {
             throw new ApiException(404, e.getMessage());
         } catch (StockLedgerDAO.BadRequest e) {

@@ -628,7 +628,7 @@ if(!hasData){
 </div>
 
 <% if (!isExcel) { %>
-<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025d">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025f">
 <script>
 window.STOCK_LEDGER = {
     ctx: '<%=request.getContextPath()%>',
@@ -636,7 +636,7 @@ window.STOCK_LEDGER = {
     toDate: '<%=toDate%>'
 };
 </script>
-<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025d"></script>
+<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025f"></script>
 <% } %>
 
 <%-- Only include the layout footer structure if not downloading Excel sheet logs --%>
