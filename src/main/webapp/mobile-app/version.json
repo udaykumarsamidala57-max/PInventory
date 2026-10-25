@@ -1,8 +1,8 @@
 {
-  "versionCode": 3,
-  "versionName": "1.2",
-  "apk": "mobile-app/pinventory.apk",
-  "sha256": "e751b5010bdfd952f76cb262e2caaa8d420fd2ac95434d93a2ad34a3bdaf972c",
-  "notes": "OFC ERP Android app",
-  "mandatory": false
+    "versionCode": 4,
+    "versionName": "1.3",
+    "apk": "mobile-app/pinventory.apk",
+    "sha256": "8a6b346f14c4eb1833f26b8858291f36f6d3fff0b8c29854364c68a9e1e8cbd8",
+    "notes": "New: Stock Ledger – item-wise In / Out with dates. Tap any item to see its full receipt & issue history.",
+    "mandatory": false
 }
