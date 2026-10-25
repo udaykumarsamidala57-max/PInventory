@@ -155,7 +155,7 @@ public class StockAuditServlet extends HttpServlet {
                 "COALESCE(( " +
                 "   SELECT SUM(CASE " +
                 "       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
-                "       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
+                "       WHEN sl.trans_type IN ('ISSUE','WASTAGE') THEN -sl.qty " +
                 "       ELSE 0 END) " +
                 "   FROM stock_ledger sl " +
                 "   WHERE sl.item_id = im.Item_id " +
@@ -184,7 +184,7 @@ public class StockAuditServlet extends HttpServlet {
                 "COALESCE(( " +
                 "   SELECT SUM(CASE " +
                 "       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
-                "       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
+                "       WHEN sl.trans_type IN ('ISSUE','WASTAGE') THEN -sl.qty " +
                 "       ELSE 0 END) " +
                 "   FROM stock_ledger sl " +
                 "   WHERE sl.item_id = im.Item_id " +

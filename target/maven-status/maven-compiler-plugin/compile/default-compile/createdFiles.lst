@@ -4,7 +4,9 @@ com\officecentral\common\db\AdmissionsDB.class
 com\officecentral\inventory\purchase\POMailServlet.class
 com\officecentral\common\web\SelectStoreServlet.class
 com\officecentral\inventory\purchase\POPdf.class
+com\officecentral\inventory\stock\WastageServlet$Line.class
 com\officecentral\inventory\model\GRNItem.class
+com\officecentral\inventory\stock\WastageServlet$UserError.class
 com\controller\Asset\EmployeeController.class
 com\officecentral\common\db\InventoryDB.class
 com\officecentral\inventory\purchase\ApprovePOServlet.class
@@ -81,6 +83,7 @@ com\mobile\MobileStockDAO.class
 com\controller\Asset\DashboardController.class
 com\DAO\LocationDAO.class
 com\officecentral\inventory\indent\IndentItemsServlet.class
+com\officecentral\inventory\stock\WastageServlet.class
 com\officecentral\inventory\model\Indentlist.class
 com\Service\RequestBookingServlet.class
 com\Service\RequestReportServlet.class
@@ -128,6 +131,7 @@ com\controller\Asset\ReportController.class
 com\website\servlet\UpcomingEventsServlet.class
 com\Employee\EmployeeTreeServlet$Employee.class
 com\DAO\AssetDAO.class
+com\officecentral\inventory\stock\WastageReportServlet.class
 com\Service\TrackRequestServlet.class
 com\Service\Assign_ServiceRequestServlet.class
 com\controller\Admissions\UpdateAdmissionStatusServlet.class

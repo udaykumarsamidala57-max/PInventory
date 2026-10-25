@@ -1,8 +1,8 @@
 {
-    "versionCode": 6,
-    "versionName": "1.5",
-    "apk": "mobile-app/pinventory-1.5.apk",
-    "sha256": "bc3b346eb79ee83b48e343b7d2fa0d504108f9b1ba09b008c9ee0d537c94950d",
-    "notes": "Stock Ledger: item-wise In / Out with dates for the financial year (from 1 April). Finance & Global users can view previous years.",
+    "versionCode": 7,
+    "versionName": "1.6",
+    "apk": "mobile-app/pinventory-1.6.apk",
+    "sha256": "1b648fbf8f9d80252a38db81897633866e25c68c0590c3f4c3bdeadd0834597a",
+    "notes": "Stock Ledger now shows damaged / wasted items separately (Wastage). Finance & Global users can view previous financial years.",
     "mandatory": false
 }

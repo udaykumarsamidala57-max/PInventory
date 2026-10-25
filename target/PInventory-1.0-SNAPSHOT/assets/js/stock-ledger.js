@@ -24,6 +24,7 @@
     var TITLES = {
         RECEIPT: 'Receipts (Inward)',
         ISSUE:   'Issues (Outward)',
+        WASTAGE: 'Damage / Wastage',
         ALL:     'Item Stock Ledger'
     };
 
@@ -250,8 +251,9 @@
 
         clear(sumEl);
         if (t === 'ALL') sumEl.appendChild(chip('Opening as on ' + d.fromDate + ':', fmt(d.opening)));
-        if (t !== 'ISSUE') sumEl.appendChild(chip('Total Inward:', fmt(d.totalIn)));
-        if (t !== 'RECEIPT') sumEl.appendChild(chip('Total Outward:', fmt(d.totalOut)));
+        if (t === 'ALL' || t === 'RECEIPT') sumEl.appendChild(chip('Total Inward:', fmt(d.totalIn)));
+        if (t !== 'RECEIPT') sumEl.appendChild(chip(t === 'WASTAGE' ? 'Total Wastage:' : 'Total Outward:', fmt(d.totalOut)));
+        if (t === 'ALL' && Number(d.totalWaste) > 0) sumEl.appendChild(chip('of which Wastage:', fmt(d.totalWaste)));
         if (t === 'ALL') sumEl.appendChild(chip('Closing Balance:', fmt(d.closing)));
         sumEl.appendChild(chip('Entries:', String(d.rows.length)));
 
@@ -265,7 +267,7 @@
             return;
         }
 
-        var showIn = t !== 'ISSUE', showOut = t !== 'RECEIPT', showBal = (t === 'ALL');
+        var showIn = (t === 'ALL' || t === 'RECEIPT'), showOut = t !== 'RECEIPT', showBal = (t === 'ALL');
         var table = el('table', 'ldg-table');
         var thead = el('thead'), hr = el('tr');
         ['#', 'Date', 'Type', 'Ref No', 'Vendor / Department', 'Remarks'].forEach(function (h) {
@@ -294,7 +296,7 @@
             tr.appendChild(el('td', null, String(i + 1)));
             tr.appendChild(el('td', 'nowrap', r.date));
             var tc = el('td');
-            tc.appendChild(el('span', 'ldg-badge ' + (r.type === 'Receipt' ? 'r' : 'i'), r.type));
+            tc.appendChild(el('span', 'ldg-badge ' + (r.type === 'Receipt' ? 'r' : r.type === 'Wastage' ? 'w' : 'i'), r.type));
             tr.appendChild(tc);
             tr.appendChild(el('td', null, r.refNo || '-'));
             tr.appendChild(el('td', null, r.party || '-'));

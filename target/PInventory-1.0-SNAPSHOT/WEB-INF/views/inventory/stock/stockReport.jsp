@@ -71,7 +71,7 @@ try {
      "COALESCE(( " +
      "   SELECT SUM(CASE " +
      "       WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
-     "       WHEN sl.trans_type='ISSUE' THEN -sl.qty " +
+     "       WHEN sl.trans_type IN ('ISSUE','WASTAGE') THEN -sl.qty " +
      "       ELSE 0 END) " +
      "   FROM stock_ledger sl " +
      "   WHERE sl.item_id = im.Item_id " +
@@ -94,7 +94,16 @@ try {
      "   WHERE sl.item_id = im.Item_id " +
      "   AND sl.trans_type='ISSUE' " +
      "   AND sl.trans_date BETWEEN ? AND ? " +
-     "),0) AS issues " +
+     "),0) AS issues, " +
+
+     /* Wastage (damaged / expired / lost – entered in Damage / Wastage Entry) */
+     "COALESCE(( " +
+     "   SELECT SUM(sl.qty) " +
+     "   FROM stock_ledger sl " +
+     "   WHERE sl.item_id = im.Item_id " +
+     "   AND sl.trans_type='WASTAGE' " +
+     "   AND sl.trans_date BETWEEN ? AND ? " +
+     "),0) AS wastage " +
 
      "FROM item_master im " +
      "LEFT JOIN stock s ON im.Item_id = s.item_id ";
@@ -125,8 +134,11 @@ try {
  ps.setString(4, fromDate);
  ps.setString(5, toDate);
 
+ ps.setString(6, fromDate);
+ ps.setString(7, toDate);
+
  // Filter Parameters
- int paramIndex = 6;
+ int paramIndex = 8;
 
  if (category != null && !category.equals("ALL")) {
      ps.setString(paramIndex++, category);
@@ -520,6 +532,7 @@ button{
     <th style="text-align: right;">Opening Balance</th>
     <th style="text-align: right;">Receipts</th>
     <th style="text-align: right;">Issues</th>
+    <th style="text-align: right;">Wastage</th>
     <th style="text-align: right;">Closing Balance</th>
     <th style="text-align: right;">Unit Price (₹)</th>
     <th style="text-align: right;">Closing Value (₹)</th>
@@ -540,7 +553,8 @@ while(rs.next()){
     double opening = rs.getDouble("opening_balance");
     double receipts = rs.getDouble("receipts");
     double issues = rs.getDouble("issues");
-    double closing = opening + receipts - issues;
+    double wastage = rs.getDouble("wastage");
+    double closing = opening + receipts - issues - wastage;
     double lastPrice = rs.getDouble("last_price");
     double closingValue = closing * lastPrice;
     int itemId = rs.getInt("Item_id");
@@ -591,6 +605,13 @@ while(rs.next()){
 <% } %>
     </td>
 
+    <td data-label="Wastage">
+<% if (isExcel || wastage == 0) { %><%=String.format("%.2f", wastage)%><% } else { %>
+        <a href="#" class="ledger-link" data-item="<%=itemId%>" data-type="WASTAGE"
+           title="View damage / wastage"><%=String.format("%.2f", wastage)%></a>
+<% } %>
+    </td>
+
     <td data-label="Closing Balance" class="balance">
         <%=String.format("%.2f", closing)%>
     </td>
@@ -608,7 +629,7 @@ if(!hasData){
 %>
 
 <tr>
-    <td colspan="10" style="text-align:center; color:#c23934; font-weight: 600;">
+    <td colspan="11" style="text-align:center; color:#c23934; font-weight: 600;">
         No Records Found
     </td>
 </tr>
@@ -628,7 +649,7 @@ if(!hasData){
 </div>
 
 <% if (!isExcel) { %>
-<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025f">
+<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025g">
 <script>
 window.STOCK_LEDGER = {
     ctx: '<%=request.getContextPath()%>',
@@ -636,7 +657,7 @@ window.STOCK_LEDGER = {
     toDate: '<%=toDate%>'
 };
 </script>
-<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025f"></script>
+<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025g"></script>
 <% } %>
 
 <%-- Only include the layout footer structure if not downloading Excel sheet logs --%>

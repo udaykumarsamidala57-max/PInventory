@@ -21,9 +21,10 @@ import com.officecentral.common.db.InventoryDB;
  * so both always show the same figures.
  *
  * Date rules are the same as stockReport.jsp:
- *   Opening  = RECEIPT - ISSUE with trans_date &lt; from
+ *   Opening  = RECEIPT - ISSUE - WASTAGE with trans_date &lt; from
  *   Receipts = RECEIPT with trans_date BETWEEN from AND to
  *   Issues   = ISSUE   with trans_date BETWEEN from AND to
+ *   Wastage  = WASTAGE with trans_date BETWEEN from AND to (damaged / expired / lost, see WastageServlet)
  * Ledger is limited to ONE FINANCIAL / ACADEMIC YEAR (1 April .. 31 March; the current year ends today).
  * Normal users: current year only. Global role or Finance department: may choose a previous year.
  * Earlier transactions are never listed; they only make up the opening balance as on the From date.
@@ -199,16 +200,20 @@ public final class StockLedgerDAO {
             " SELECT im.Item_id, im.Item_name, im.Category, im.Sub_Category, im.UOM, " +
             "  COALESCE(s.last_price,0) AS last_price, " +
             "  COALESCE((SELECT SUM(CASE WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
-            "                           WHEN sl.trans_type='ISSUE' THEN -sl.qty ELSE 0 END) " +
+            "                           WHEN sl.trans_type IN ('ISSUE','WASTAGE') THEN -sl.qty ELSE 0 END) " +
             "            FROM stock_ledger sl WHERE sl.item_id = im.Item_id AND sl.trans_date < ?),0) AS opening_balance, " +
             "  COALESCE((SELECT SUM(sl.qty) FROM stock_ledger sl WHERE sl.item_id = im.Item_id " +
             "            AND sl.trans_type='RECEIPT' AND sl.trans_date BETWEEN ? AND ?),0) AS receipts, " +
             "  COALESCE((SELECT SUM(sl.qty) FROM stock_ledger sl WHERE sl.item_id = im.Item_id " +
-            "            AND sl.trans_type='ISSUE' AND sl.trans_date BETWEEN ? AND ?),0) AS issues " +
+            "            AND sl.trans_type='ISSUE' AND sl.trans_date BETWEEN ? AND ?),0) AS issues, " +
+            "  COALESCE((SELECT SUM(sl.qty) FROM stock_ledger sl WHERE sl.item_id = im.Item_id " +
+            "            AND sl.trans_type='WASTAGE' AND sl.trans_date BETWEEN ? AND ?),0) AS wastage " +
             " FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id " +
             " WHERE 1=1 ");
         List<String> params = new ArrayList<>();
         params.add(from.toString());
+        params.add(from.toString());
+        params.add(to.toString());
         params.add(from.toString());
         params.add(to.toString());
         params.add(from.toString());
@@ -227,12 +232,12 @@ public final class StockLedgerDAO {
             params.add(cat);
         }
         sql.append(") t ");
-        if (movedOnly) sql.append("WHERE (t.opening_balance <> 0 OR t.receipts <> 0 OR t.issues <> 0) ");
+        if (movedOnly) sql.append("WHERE (t.opening_balance <> 0 OR t.receipts <> 0 OR t.issues <> 0 OR t.wastage <> 0) ");
         sql.append("ORDER BY t.Category, t.Sub_Category, t.Item_name LIMIT ").append(MAX_SUMMARY_ROWS + 1);
 
         List<Map<String, Object>> items = new ArrayList<>();
         List<String> categories = new ArrayList<>();
-        double totOpen = 0, totIn = 0, totOut = 0, totClose = 0, totValue = 0;
+        double totOpen = 0, totIn = 0, totOut = 0, totWaste = 0, totClose = 0, totValue = 0;
         boolean truncated = false;
 
         try (Connection con = InventoryDB.getConnection(branch)) {
@@ -244,10 +249,12 @@ public final class StockLedgerDAO {
                         double opening = rs.getDouble("opening_balance");
                         double receipts = rs.getDouble("receipts");
                         double issues = rs.getDouble("issues");
-                        double closing = opening + receipts - issues;
+                        double wastage = rs.getDouble("wastage");
+                        double closing = opening + receipts - issues - wastage;
                         double rate = rs.getDouble("last_price");
                         double value = round2(closing * rate);
-                        totOpen += opening; totIn += receipts; totOut += issues; totClose += closing; totValue += value;
+                        totOpen += opening; totIn += receipts; totOut += issues; totWaste += wastage;
+                        totClose += closing; totValue += value;
 
                         Map<String, Object> m = new LinkedHashMap<>();
                         m.put("itemId", rs.getInt("Item_id"));
@@ -258,6 +265,7 @@ public final class StockLedgerDAO {
                         m.put("opening", opening);
                         m.put("receipts", receipts);
                         m.put("issues", issues);
+                        m.put("wastage", wastage);
                         m.put("closing", closing);
                         m.put("rate", rate);
                         m.put("value", value);
@@ -279,6 +287,7 @@ public final class StockLedgerDAO {
         res.put("totalOpening", round3(totOpen));
         res.put("totalReceipts", round3(totIn));
         res.put("totalIssues", round3(totOut));
+        res.put("totalWastage", round3(totWaste));
         res.put("totalClosing", round3(totClose));
         res.put("totalValue", round2(totValue));
         res.put("truncated", truncated);
@@ -299,7 +308,7 @@ public final class StockLedgerDAO {
             throws SQLException {
         if (itemId <= 0) throw new BadRequest("Invalid item.");
         if (type == null || !(type.equals("OPENING") || type.equals("RECEIPT")
-                || type.equals("ISSUE") || type.equals("ALL"))) {
+                || type.equals("ISSUE") || type.equals("WASTAGE") || type.equals("ALL"))) {
             throw new BadRequest("Invalid ledger type.");
         }
         if (type.equals("OPENING")) type = "ALL";
@@ -312,17 +321,23 @@ public final class StockLedgerDAO {
             "SELECT sl.ledger_id, sl.trans_date, sl.trans_type, sl.trans_id, sl.qty, sl.remarks, " +
             " CASE WHEN sl.trans_type='RECEIPT' THEN " +
             "   (SELECT gm.grn_no FROM grn_master gm WHERE CAST(gm.grn_id AS CHAR) = sl.trans_id LIMIT 1) " +
+            "   WHEN sl.trans_type='WASTAGE' THEN " +
+            "   (SELECT w.wastage_no FROM stock_wastage w WHERE w.wastage_id = sl.trans_id LIMIT 1) " +
             "   ELSE sl.trans_id END AS ref_no, " +
             " CASE WHEN sl.trans_type='RECEIPT' THEN " +
             "   (SELECT gm.vendor_name FROM grn_master gm WHERE CAST(gm.grn_id AS CHAR) = sl.trans_id LIMIT 1) " +
+            "   WHEN sl.trans_type='WASTAGE' THEN " +
+            "   (SELECT CONCAT_WS(' / ', w.wastage_type, NULLIF(w.department,'')) " +
+            "      FROM stock_wastage w WHERE w.wastage_id = sl.trans_id LIMIT 1) " +
             "   ELSE (SELECT CONCAT_WS(' / ', NULLIF(si.department,''), NULLIF(si.issued_to,'')) " +
             "         FROM stock_issues si WHERE si.issueno = sl.trans_id AND si.item_id = sl.item_id LIMIT 1) " +
             "   END AS party " +
             "FROM stock_ledger sl " +
-            "WHERE sl.item_id = ? AND sl.trans_type IN ('RECEIPT','ISSUE') ");
+            "WHERE sl.item_id = ? AND sl.trans_type IN ('RECEIPT','ISSUE','WASTAGE') ");
         switch (type) {
             case "RECEIPT": sql.append("AND sl.trans_type='RECEIPT' AND sl.trans_date BETWEEN ? AND ? "); break;
             case "ISSUE":   sql.append("AND sl.trans_type='ISSUE' AND sl.trans_date BETWEEN ? AND ? "); break;
+            case "WASTAGE": sql.append("AND sl.trans_type='WASTAGE' AND sl.trans_date BETWEEN ? AND ? "); break;
             default:        sql.append("AND sl.trans_date BETWEEN ? AND ? "); break; // ALL
         }
         sql.append("ORDER BY sl.trans_date, sl.ledger_id LIMIT ").append(MAX_DETAIL_ROWS + 1);
@@ -348,7 +363,7 @@ public final class StockLedgerDAO {
             if (type.equals("ALL")) {
                 try (PreparedStatement ps = con.prepareStatement(
                         "SELECT COALESCE(SUM(CASE WHEN trans_type='RECEIPT' THEN qty " +
-                        "WHEN trans_type='ISSUE' THEN -qty ELSE 0 END),0) " +
+                        "WHEN trans_type IN ('ISSUE','WASTAGE') THEN -qty ELSE 0 END),0) " +
                         "FROM stock_ledger WHERE item_id = ? AND trans_date < ?")) {
                     ps.setInt(1, itemId);
                     ps.setString(2, from.toString());
@@ -363,19 +378,22 @@ public final class StockLedgerDAO {
                 ps.setString(2, from.toString());
                 ps.setString(3, to.toString());
 
-                double balance = opening, totalIn = 0, totalOut = 0;
+                double balance = opening, totalIn = 0, totalOut = 0, totalWaste = 0;
                 boolean truncated = false;
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
                         if (rows.size() == MAX_DETAIL_ROWS) { truncated = true; break; }
-                        boolean in = "RECEIPT".equals(rs.getString("trans_type"));
+                        String tt = rs.getString("trans_type");
+                        boolean in = "RECEIPT".equals(tt);
+                        boolean waste = "WASTAGE".equals(tt);
                         double qty = rs.getDouble("qty");
                         if (in) { totalIn += qty; balance += qty; } else { totalOut += qty; balance -= qty; }
+                        if (waste) totalWaste += qty;
 
                         java.sql.Date d = rs.getDate("trans_date");
                         Map<String, Object> r = new LinkedHashMap<>();
                         r.put("date", d == null ? "" : d.toLocalDate().format(IN_DATE));
-                        r.put("type", in ? "Receipt" : "Issue");
+                        r.put("type", in ? "Receipt" : waste ? "Wastage" : "Issue");
                         r.put("refNo", nz(rs.getString("ref_no")));
                         r.put("party", nz(rs.getString("party")));
                         r.put("remarks", nz(rs.getString("remarks")));
@@ -387,7 +405,8 @@ public final class StockLedgerDAO {
                 }
                 result.put("opening", round3(opening));
                 result.put("totalIn", round3(totalIn));
-                result.put("totalOut", round3(totalOut));
+                result.put("totalOut", round3(totalOut));          // issues + wastage (all outward)
+                result.put("totalWaste", round3(totalWaste));      // of which wastage
                 result.put("closing", round3(balance));
                 result.put("truncated", truncated);
             }

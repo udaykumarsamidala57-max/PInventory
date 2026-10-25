@@ -99,6 +99,7 @@
 .ldg-badge{ display:inline-block; padding:1px 8px; border-radius:10px; font-size:11px; font-weight:600; }
 .ldg-badge.r{ background:#e3f3e8; color:#2e844a; }
 .ldg-badge.i{ background:#fdeaea; color:#c23934; }
+.ldg-badge.w{ background:#fff1d6; color:#8c4b02; }
 .ldg-msg{ padding:30px; text-align:center; color:#514f4d; }
 .ldg-msg.err{ color:#c23934; font-weight:600; }
 

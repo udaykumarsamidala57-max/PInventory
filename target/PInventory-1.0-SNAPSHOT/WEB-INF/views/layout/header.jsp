@@ -208,6 +208,7 @@ try {
       <a href="stock-ledger"><i class="fa-solid fa-book-open text-primary"></i> Stock Ledger Report</a>
       <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
         <a href="consumption-dashboard"><i class="fa-solid fa-pie-chart text-danger"></i> Consumption Dashboard</a>
+        <a href="wastage-report"><i class="fa-solid fa-file-circle-exclamation text-danger"></i> Wastage Report</a>
       <% } %>
     </div>
   </div>
@@ -218,6 +219,7 @@ try {
     <div class="dropdown-content">
       <a href="items"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
       <a href="add-stock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
+      <a href="wastage"><i class="fa-solid fa-trash-can text-danger"></i> Damage / Wastage Entry</a>
       <a href="menu-items"><i class="fa-solid fa-square-plus text-success"></i> Dining Hall Menu Config</a>
       <a href="stock-audit"><i class="fas fa-clipboard-check text-success"></i> New Audit</a>
       <a href="stock-audit-report"><i class="fas fa-chart-bar text-info"></i> Audit Report</a>
