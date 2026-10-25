@@ -1,8 +1,8 @@
 {
-    "versionCode": 7,
-    "versionName": "1.6",
-    "apk": "mobile-app/pinventory-1.6.apk",
-    "sha256": "1b648fbf8f9d80252a38db81897633866e25c68c0590c3f4c3bdeadd0834597a",
-    "notes": "Stock Ledger now shows damaged / wasted items separately (Wastage). Finance & Global users can view previous financial years.",
-    "mandatory": false
+  "versionCode": 8,
+  "versionName": "1.7",
+  "apk": "mobile-app/pinventory-1.7.apk",
+  "sha256": "f0ee659fa59883897be56396acc00f8c324fe9c24350d4007116669c683fac6f",
+  "notes": "Adds workflow approval alerts, service request notifications and the in-app notification inbox.",
+  "mandatory": false
 }
