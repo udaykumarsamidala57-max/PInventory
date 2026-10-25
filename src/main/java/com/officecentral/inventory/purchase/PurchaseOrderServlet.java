@@ -9,6 +9,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.POItems;
 
 @WebServlet(urlPatterns = {"/purchase-order", "/PurchaseOrderServlet"})   // second one = old address, kept so old links still work
@@ -277,6 +278,8 @@ public class PurchaseOrderServlet extends HttpServlet {
             }
 
             con.commit(); // ✅ Transaction success
+
+            NotificationService.purchaseOrderCreated(branch, poNo);
 
             // E-mail the Global users of this store (in the background; never blocks the PO)
             POAlert.newPO(branch, poNo, (String) sess.getAttribute("username"),

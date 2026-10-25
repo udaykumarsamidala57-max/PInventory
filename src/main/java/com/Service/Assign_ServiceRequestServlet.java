@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.officecentral.common.db.ServiceDB;
+import com.officecentral.common.notification.NotificationService;
 
 @WebServlet("/Assign_ServiceRequestServlet")
 public class Assign_ServiceRequestServlet extends HttpServlet {
@@ -366,6 +367,7 @@ public class Assign_ServiceRequestServlet extends HttpServlet {
              */
             if(updatedRows > 0){
                 con.commit();
+                NotificationService.serviceChanged(branch, requestId, userSessionName);
                 response.sendRedirect(
                     request.getContextPath()
                     + "/Assign_ServiceRequestServlet?msg=success"

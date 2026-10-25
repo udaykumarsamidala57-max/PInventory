@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.IndentItemFull;
 
 @WebServlet(urlPatterns = {"/approve-indent", "/AIndentListServlet"})   // second one = old address, kept so old links still work
@@ -203,7 +204,8 @@ public class ApproveIndentServlet extends HttpServlet {
                     ps.setString(1, user);
                     ps.setDate(2, today);
                     ps.setInt(3, Integer.parseInt(id));
-                    ps.executeUpdate();
+                    int changed = ps.executeUpdate();
+                    if (changed > 0) NotificationService.indentDecisionForId(branch, Integer.parseInt(id), true, !reject);
                 }
             }
 
@@ -219,7 +221,8 @@ public class ApproveIndentServlet extends HttpServlet {
                     try (PreparedStatement ps = con.prepareStatement(cancelSql)) {
                         ps.setDate(1, today);
                         ps.setInt(2, id);
-                        ps.executeUpdate();
+                        int changed = ps.executeUpdate();
+                        if (changed > 0) NotificationService.indentDecisionForId(branch, id, false, false);
                     }
                     response.sendRedirect("approve-indent");
                     return;
@@ -282,7 +285,8 @@ public class ApproveIndentServlet extends HttpServlet {
                         ps.setDate(1, today);
                         ps.setString(2, indentNext);
                         ps.setInt(3, id);
-                        ps.executeUpdate();
+                        int changed = ps.executeUpdate();
+                        if (changed > 0) NotificationService.indentDecisionForId(branch, id, false, true);
                     }
 
                 } else {
@@ -293,7 +297,8 @@ public class ApproveIndentServlet extends HttpServlet {
                         ps.setString(1, indentNext);
                         ps.setDate(2, today);
                         ps.setInt(3, id);
-                        ps.executeUpdate();
+                        int changed = ps.executeUpdate();
+                        if (changed > 0) NotificationService.indentDecisionForId(branch, id, false, true);
                     }
                 }
             }

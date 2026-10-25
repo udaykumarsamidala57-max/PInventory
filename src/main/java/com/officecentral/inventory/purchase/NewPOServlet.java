@@ -17,6 +17,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.POItems;
 
 @WebServlet(urlPatterns = {"/new-po", "/PO"})   // second one = old address, kept so old links still work
@@ -263,6 +264,9 @@ public class NewPOServlet extends HttpServlet {
                 psUpdate.executeUpdate();
                 psUpdate.close();
             }
+
+            // Save an in-app alert and send a push to every Global user for this store.
+            NotificationService.purchaseOrderCreated(branch, poNo);
 
             // E-mail the Global users of this store (in the background; never blocks the PO)
             POAlert.newPO(branch, poNo, (String) sess.getAttribute("username"),

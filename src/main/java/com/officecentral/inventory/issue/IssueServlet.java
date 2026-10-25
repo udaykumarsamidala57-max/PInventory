@@ -1,6 +1,7 @@
 package com.officecentral.inventory.issue;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
@@ -443,6 +444,8 @@ public class IssueServlet extends HttpServlet {
             // =========================================================
 
             con.commit();
+
+            NotificationService.stockIssued(branch, indentNo, issuedTo);
 
             request.setAttribute(
                     "message",

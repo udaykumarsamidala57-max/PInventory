@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 
 import com.officecentral.common.db.ServiceDB;
+import com.officecentral.common.notification.NotificationService;
 
 /**
  * Service requests for the mobile app. Same tables and visibility rules as the website
@@ -218,6 +219,7 @@ final class MobileServiceDAO {
                 con.setAutoCommit(true);
             }
         }
+        NotificationService.complaintCreated(c.branch, requestNo, c.username);
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("requestNo", requestNo);
         return res;
@@ -226,6 +228,9 @@ final class MobileServiceDAO {
     Map<String, Object> followup(MobileApiServlet.Ctx c, int requestId, String status, String remarks) throws SQLException {
         String note = text(remarks, "Remarks", 500, true);
         String st = MobileApiServlet.trim(status).toUpperCase();
+        String requestedBy;
+        String requestNo;
+        String assignedName;
 
         try (Connection con = connect(c)) {
             con.setAutoCommit(false);
@@ -233,13 +238,14 @@ final class MobileServiceDAO {
                 // The user must be able to see this request (same rules as the list).
                 List<String> params = new ArrayList<>();
                 String sql = SELECT + "WHERE sr.id=? AND " + visibleSql(c, params) + " FOR UPDATE";
-                String requestedBy;
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     ps.setInt(1, requestId);
                     for (int i = 0; i < params.size(); i++) ps.setString(i + 2, params.get(i));
                     try (ResultSet rs = ps.executeQuery()) {
                         if (!rs.next()) throw new ApiException(404, "Request not found.");
                         requestedBy = rs.getString("requested_by");
+                        requestNo = rs.getString("request_no");
+                        assignedName = rs.getString("assigned_name");
                     }
                 }
                 if (!allowedStatuses(c, requestedBy).contains(st)) {
@@ -267,6 +273,7 @@ final class MobileServiceDAO {
                 con.setAutoCommit(true);
             }
         }
+        NotificationService.serviceUpdated(c.branch, requestNo, requestedBy, assignedName, c.username, st);
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("message", "Status updated to " + st + ".");
         return res;

@@ -31,6 +31,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.officecentral.common.dao.StoreAccessDAO;
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 
 /**
  * JSON API for the PInventory Android app: /api/mobile/*
@@ -105,6 +106,11 @@ public class MobileApiServlet extends HttpServlet {
 
     private Map<String, Object> routeGet(String path, HttpServletRequest req) throws Exception {
         HttpSession s = requireUser(req);
+        if ("/notifications/list".equals(path)) {
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("notifications", NotificationService.list((Integer) s.getAttribute("userId"), 100));
+            return out;
+        }
         String branch = requireStore(s);
         Ctx c = new Ctx(s, branch);
         switch (path) {
@@ -151,6 +157,24 @@ public class MobileApiServlet extends HttpServlet {
         }
         if ("/store".equals(path)) {
             return selectStore(req, s);
+        }
+        if ("/push/register".equals(path)) {
+            JsonObject body = readJson(req);
+            NotificationService.registerDevice((Integer) s.getAttribute("userId"),
+                    body.has("token") ? body.get("token").getAsString() : "");
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("message", "Push notifications enabled for this device.");
+            return out;
+        }
+        if ("/push/unregister".equals(path)) {
+            JsonObject body = readJson(req);
+            NotificationService.unregisterDevice((Integer) s.getAttribute("userId"),
+                    body.has("token") ? body.get("token").getAsString() : "");
+            return new LinkedHashMap<>();
+        }
+        if ("/notifications/read".equals(path)) {
+            NotificationService.markRead((Integer) s.getAttribute("userId"), intParam(req, "id"));
+            return new LinkedHashMap<>();
         }
         String branch = requireStore(s);
         Ctx c = new Ctx(s, branch);
@@ -278,6 +302,7 @@ public class MobileApiServlet extends HttpServlet {
     /** Logged-in user's details, read from the session. */
     static final class Ctx {
         final String username;
+        final int userId;
         final String role;
         final String department;
         final String branch;
@@ -286,6 +311,8 @@ public class MobileApiServlet extends HttpServlet {
         Ctx(HttpSession s, String branch) {
             this.session = s;
             this.username = String.valueOf(s.getAttribute("username")).trim();
+            this.userId = s.getAttribute("userId") instanceof Integer
+                    ? (Integer) s.getAttribute("userId") : 0;
             this.role = s.getAttribute("role") == null ? "" : String.valueOf(s.getAttribute("role")).trim();
             this.department = s.getAttribute("department") == null ? "" : String.valueOf(s.getAttribute("department")).trim();
             this.branch = branch;

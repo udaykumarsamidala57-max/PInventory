@@ -8,6 +8,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.IndentItemFull;
 
 @WebServlet(urlPatterns = {"/approve-issue", "/IssueApprove"})   // second one = old address, kept so old links still work
@@ -113,7 +114,8 @@ public class ApproveIssueServlet extends HttpServlet {
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     ps.setString(1, today.toString());
                     ps.setInt(2, Integer.parseInt(idStr));
-                    ps.executeUpdate();
+                    int changed = ps.executeUpdate();
+                    if (changed > 0) NotificationService.issueReadyForId(branch, Integer.parseInt(idStr));
                     System.out.println("[DEBUG] Updated indent_id " + idStr + " -> Issue Approved");
                 }
             } catch (SQLException e) {

@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.officecentral.common.db.ServiceDB;
+import com.officecentral.common.notification.NotificationService;
 
 @WebServlet("/RequestBookingServlet")
 public class RequestBookingServlet extends HttpServlet {
@@ -248,6 +249,8 @@ public class RequestBookingServlet extends HttpServlet {
                     ps.setString(9, "OPEN");
 
                     int i = ps.executeUpdate();
+
+                    if (i > 0) NotificationService.complaintCreated(branch, requestNo, requestedBy);
 
                     if (ajax) {
                         response.setContentType("application/json;charset=UTF-8");

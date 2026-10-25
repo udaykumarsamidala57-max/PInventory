@@ -17,6 +17,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 
 /**
  * Indent process for the mobile app. Follows the website's rules exactly:
@@ -136,6 +137,12 @@ final class MobileIndentDAO {
             if (in(istatus, "Approved")) return "INCHARGE APPROVED";
             return "PENDING";
         }
+    }
+
+    private static final class ApprovalEvent {
+        final Line line;
+        final boolean levelOne;
+        ApprovalEvent(Line line, boolean levelOne) { this.line = line; this.levelOne = levelOne; }
     }
 
     private static boolean canAct(MobileApiServlet.Ctx c, Line l) {
@@ -309,17 +316,20 @@ final class MobileIndentDAO {
 
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
         int done = 0;
+        List<ApprovalEvent> events = new ArrayList<>();
         try (Connection con = InventoryDB.getConnection(c.branch)) {
             con.setAutoCommit(false);
             try {
                 List<Line> lines = loadIndent(con, indentId, true);
                 for (Line l : lines) {
                     if (!canAct(c, l)) continue;
-                    if (l.level1Open()) {
+                    boolean levelOne = l.level1Open();
+                    if (levelOne) {
                         level1(con, l, approve, c.username, today);
                     } else {
                         level2(con, l, approve, today);
                     }
+                    events.add(new ApprovalEvent(l, levelOne));
                     if (!note.isEmpty()) addRemark(con, l.id, (approve ? "Approved by " : "Rejected by ") + c.username + ": " + note);
                     done++;
                 }
@@ -331,6 +341,13 @@ final class MobileIndentDAO {
             } finally {
                 con.setAutoCommit(true);
             }
+        }
+        Set<String> sent = new HashSet<>();
+        for (ApprovalEvent event : events) {
+            Line line = event.line;
+            String key = line.indentNo + "|" + line.department + "|" + line.requestedBy + "|" + event.levelOne;
+            if (sent.add(key)) NotificationService.indentDecision(c.branch, line.requestedBy, line.department,
+                    line.indentNo, line.type, event.levelOne, approve);
         }
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("message", done + (done == 1 ? " item " : " items ") + (approve ? "approved." : "rejected."));
@@ -696,6 +713,7 @@ final class MobileIndentDAO {
             if (refs.size() > 100) refs.clear();
             refs.put(clientRef, indentNo);
         }
+        NotificationService.indentSubmitted(c.branch, c.userId, indentNo, department, type);
         Map<String, Object> res = new LinkedHashMap<>();
         res.put("indentNo", indentNo);
         return res;

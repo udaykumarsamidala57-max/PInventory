@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.officecentral.common.db.ServiceDB;
+import com.officecentral.common.notification.NotificationService;
 
 @WebServlet("/Incharge")
 public class Incharge extends HttpServlet {
@@ -450,6 +451,8 @@ public class Incharge extends HttpServlet {
              */
 
             if (inserted > 0) {
+
+                NotificationService.serviceChanged(branch, requestId, username);
 
                 response.sendRedirect(
                         request.getContextPath()

@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.PO;
 import com.officecentral.inventory.model.POItems;
 
@@ -67,7 +68,8 @@ public class ApprovePOServlet extends HttpServlet {
 
                 ps.setString(1, "Approved");
                 ps.setString(2, approveId);
-                ps.executeUpdate();
+                int changed = ps.executeUpdate();
+                if (changed > 0) NotificationService.purchaseOrderApproved(branch, approveId);
 
             } catch (Exception e) {
                 e.printStackTrace();

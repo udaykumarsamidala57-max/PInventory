@@ -55,6 +55,13 @@
   <version>2.10.1</version>
 </dependency>
 
+        <!-- Trusted server-side delivery of Firebase Cloud Messaging notifications -->
+        <dependency>
+            <groupId>com.google.firebase</groupId>
+            <artifactId>firebase-admin</artifactId>
+            <version>9.11.0</version>
+        </dependency>
+
 
         <!-- JSTL -->
         <dependency>

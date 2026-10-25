@@ -25,6 +25,9 @@ import java.util.Properties;
  *   BREVO_API_KEY                 e-mail (OTP, pending indent report) through Brevo - needed on Railway
  *   GMAIL_USER, GMAIL_APP_PASSWORD  e-mail straight through Gmail, used when BREVO_API_KEY is not set
  *   MAIL_FROM (optional)          sender address shown on the e-mails
+ *   FIREBASE_PROJECT_ID           Firebase project for Android push, defaults to office-central-erp
+ *   FIREBASE_SERVICE_ACCOUNT_JSON (optional) service-account JSON supplied as a protected environment variable
+ *   FIREBASE_SERVICE_ACCOUNT_FILE (optional) path to a protected service-account JSON file for local Tomcat
  */
 public final class AppConfig {
 
