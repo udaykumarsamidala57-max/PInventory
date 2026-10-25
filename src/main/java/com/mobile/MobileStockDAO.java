@@ -10,9 +10,35 @@ import java.util.List;
 import java.util.Map;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.inventory.stock.StockLedgerDAO;
 
 /** Current stock (same data as the website's Stock page: stock + item_master, value = balance x last price). */
 final class MobileStockDAO {
+
+    private final StockLedgerDAO ledger = new StockLedgerDAO();
+
+    /** Stock Ledger Report for the app. from/to = yyyy-MM-dd (both blank = all dates). */
+    Map<String, Object> ledger(MobileApiServlet.Ctx c, String from, String to, String q, String category,
+                               boolean movedOnly) throws SQLException {
+        try {
+            return ledger.summary(c.branch, StockLedgerDAO.parseRange(from, to), q, category, movedOnly);
+        } catch (StockLedgerDAO.BadRequest e) {
+            throw new ApiException(400, e.getMessage());
+        }
+    }
+
+    /** One item's ledger. type = ALL | RECEIPT | ISSUE | OPENING (default ALL). */
+    Map<String, Object> itemLedger(MobileApiServlet.Ctx c, int itemId, String type, String from, String to)
+            throws SQLException {
+        String t = MobileApiServlet.trim(type).isEmpty() ? "ALL" : MobileApiServlet.trim(type);
+        try {
+            return ledger.detail(c.branch, itemId, t, StockLedgerDAO.parseRange(from, to));
+        } catch (StockLedgerDAO.NotFound e) {
+            throw new ApiException(404, e.getMessage());
+        } catch (StockLedgerDAO.BadRequest e) {
+            throw new ApiException(400, e.getMessage());
+        }
+    }
 
     Map<String, Object> report(MobileApiServlet.Ctx c, String q, String category, boolean outOfStockOnly)
             throws SQLException {

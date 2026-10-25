@@ -16,8 +16,10 @@ com\officecentral\common\web\SendOTPServlet.class
 com\website\bean\PhotoStore$Item.class
 com\controller\Asset\AssetLocationController.class
 com\officecentral\inventory\issue\ApproveIssueServlet.class
+com\officecentral\inventory\stock\StockLedgerDAO$BadRequest.class
 com\officecentral\common\db\HrDB.class
 com\officecentral\inventory\indent\EventsServlet.class
+com\officecentral\inventory\stock\StockLedgerDAO.class
 com\officecentral\inventory\purchase\POAlert$Line.class
 com\officecentral\inventory\purchase\POAlert.class
 com\DAO\AssetLocationDAO.class
@@ -84,6 +86,7 @@ com\Service\RequestBookingServlet.class
 com\Service\RequestReportServlet.class
 com\website\servlet\PageServlet.class
 com\DAO\MaintenanceDAO.class
+com\officecentral\inventory\stock\StockLedgerDAO$NotFound.class
 com\mobile\MobileApiServlet$Ctx.class
 com\mobile\MobileIndentDAO.class
 com\DAO\AuditDAO.class
@@ -116,6 +119,7 @@ com\officecentral\common\web\SwitchStoreServlet.class
 com\DAO\TransferDAO.class
 com\DAO\EmployeeDAO.class
 com\officecentral\inventory\model\AggregatedItem.class
+com\officecentral\inventory\stock\StockLedgerDetailServlet.class
 com\mobile\MobileApiServlet$LoginThrottle.class
 com\controller\Asset\LocationController.class
 com\officecentral\common\web\VerifyOtpServlet.class

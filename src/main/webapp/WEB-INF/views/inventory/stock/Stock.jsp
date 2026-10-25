@@ -391,16 +391,19 @@ String branch = (String) sess.getAttribute("branch");
                                 double balance = rs.getDouble("balance_qty");
                                 double unitPrice = rs.getDouble("last_price");
                                 double totalValue = balance * unitPrice;
+                                int itemId = rs.getInt("item_id");
+                                double totalReceived = rs.getDouble("total_received");
+                                double totalIssued = rs.getDouble("total_issued");
                 %>
                     <tr>
-                        <td data-label="Item ID" class="num"><%= rs.getInt("item_id") %></td>
-                        <td data-label="Item Name" class="text"><%= rs.getString("Item_name") %></td>
+                        <td data-label="Item ID" class="num"><%= itemId %></td>
+                        <td data-label="Item Name" class="text"><a href="#" class="ledger-link item-link" data-item="<%= itemId %>" data-type="ALL" title="View full stock ledger"><%= rs.getString("Item_name") %></a></td>
                         <td data-label="Category" class="text"><%= rs.getString("Category") %></td>
                         <td data-label="Sub Category" class="text"><%= rs.getString("Sub_Category") %></td>
                         <td data-label="UOM" class="text"><%= rs.getString("UOM") %></td>
-                        <td data-label="Total Received" class="num"><%= String.format("%.2f", rs.getDouble("total_received")) %></td>
-                        <td data-label="Total Issued" class="num"><%= String.format("%.2f", rs.getDouble("total_issued")) %></td>
-                        <td data-label="Balance Qty" class="num"><%= String.format("%.2f", balance) %></td>
+                        <td data-label="Total Received" class="num"><% if (totalReceived == 0) { %><%= String.format("%.2f", totalReceived) %><% } else { %><a href="#" class="ledger-link" data-item="<%= itemId %>" data-type="RECEIPT" title="View receipts"><%= String.format("%.2f", totalReceived) %></a><% } %></td>
+                        <td data-label="Total Issued" class="num"><% if (totalIssued == 0) { %><%= String.format("%.2f", totalIssued) %><% } else { %><a href="#" class="ledger-link" data-item="<%= itemId %>" data-type="ISSUE" title="View issues"><%= String.format("%.2f", totalIssued) %></a><% } %></td>
+                        <td data-label="Balance Qty" class="num"><a href="#" class="ledger-link" data-item="<%= itemId %>" data-type="ALL" title="View full stock ledger"><%= String.format("%.2f", balance) %></a></td>
                         <td data-label="Unit Price (₹)" class="num"><%= String.format("%.2f", unitPrice) %></td>
                         <td data-label="Total Value (₹)" class="num"><%= String.format("%.2f", totalValue) %></td>
                         <td data-label="Last Updated" class="text"><%= rs.getTimestamp("last_updated") %></td>
@@ -419,6 +422,11 @@ String branch = (String) sess.getAttribute("branch");
 </div>
 
 <jsp:include page="/WEB-INF/views/layout/Footer.jsp" />
+
+<%-- Click item name / Total Received / Total Issued / Balance -> ledger pop-up (all dates) --%>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025d">
+<script>window.STOCK_LEDGER = { ctx: '<%=request.getContextPath()%>', fromDate: '', toDate: '' };</script>
+<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025d"></script>
 
 <script>
 function filterTable() {

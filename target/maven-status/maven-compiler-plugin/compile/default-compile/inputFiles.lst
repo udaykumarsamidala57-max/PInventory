@@ -34,6 +34,7 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\comm
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\MealSummaryServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\CategoryDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\DAO\LocationDAO.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\stock\StockLedgerDetailServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\purchase\POPdf.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\DashboardServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\ConsumptionFetchServlet.java
@@ -119,3 +120,4 @@ C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Asset\L
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\dining\ConsumptionUpdateServlet.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\common\dao\StoreAccessDAO.java
 C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\controller\Admissions\SaveEnquiryServlet.java
+C:\Users\srsad\eclipse-workspace\PInventory\src\main\java\com\officecentral\inventory\stock\StockLedgerDAO.java

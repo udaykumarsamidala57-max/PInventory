@@ -19,6 +19,11 @@ String export = request.getParameter("export");
 
 java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd");
 
+// Accept only yyyy-MM-dd; anything else falls back to the defaults below (prevents XSS / bad SQL dates)
+if (fromDate != null && !fromDate.matches("\\d{4}-\\d{2}-\\d{2}")) fromDate = null;
+if (toDate != null && !toDate.matches("\\d{4}-\\d{2}-\\d{2}")) toDate = null;
+boolean isExcel = "excel".equals(export);
+
 if (fromDate == null || fromDate.isEmpty()) {
     Calendar cal = Calendar.getInstance();
     cal.set(Calendar.DAY_OF_MONTH, 1);
@@ -538,6 +543,7 @@ while(rs.next()){
     double closing = opening + receipts - issues;
     double lastPrice = rs.getDouble("last_price");
     double closingValue = closing * lastPrice;
+    int itemId = rs.getInt("Item_id");
 
 %>
 
@@ -548,22 +554,42 @@ while(rs.next()){
     <%=rs.getString("Sub_Category")%>
 </td>
 
-    <td data-label="Item ID"><%=rs.getInt("Item_id")%></td>
+    <td data-label="Item ID"><%=itemId%></td>
 
     <td data-label="Item Name" class="txt-align-left">
+<% if (isExcel) { %>
         <%=rs.getString("Item_name")%>
+<% } else { %>
+        <a href="#" class="ledger-link item-link" data-item="<%=itemId%>" data-type="ALL"
+           title="View full ledger"><%=rs.getString("Item_name")%></a>
+<% } %>
     </td>
 
-    <td data-label="Opening Balance">
-<%= opening < 0
+<%
+    String openingTxt = opening < 0
         ? "(" + String.format("%.2f", Math.abs(opening)) + ")"
-        : String.format("%.2f", opening)
+        : String.format("%.2f", opening);
 %>
-</td>
+    <td data-label="Opening Balance">
+<% if (isExcel || opening == 0) { %><%=openingTxt%><% } else { %>
+        <a href="#" class="ledger-link" data-item="<%=itemId%>" data-type="OPENING"
+           title="View transactions before From Date"><%=openingTxt%></a>
+<% } %>
+    </td>
 
-    <td data-label="Receipts"><%=String.format("%.2f", receipts)%></td>
+    <td data-label="Receipts">
+<% if (isExcel || receipts == 0) { %><%=String.format("%.2f", receipts)%><% } else { %>
+        <a href="#" class="ledger-link" data-item="<%=itemId%>" data-type="RECEIPT"
+           title="View receipts"><%=String.format("%.2f", receipts)%></a>
+<% } %>
+    </td>
 
-    <td data-label="Issues"><%=String.format("%.2f", issues)%></td>
+    <td data-label="Issues">
+<% if (isExcel || issues == 0) { %><%=String.format("%.2f", issues)%><% } else { %>
+        <a href="#" class="ledger-link" data-item="<%=itemId%>" data-type="ISSUE"
+           title="View issues"><%=String.format("%.2f", issues)%></a>
+<% } %>
+    </td>
 
     <td data-label="Closing Balance" class="balance">
         <%=String.format("%.2f", closing)%>
@@ -600,6 +626,18 @@ if(!hasData){
 </div>
 
 </div>
+
+<% if (!isExcel) { %>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/CSS/stock-ledger.css?v=20261025d">
+<script>
+window.STOCK_LEDGER = {
+    ctx: '<%=request.getContextPath()%>',
+    fromDate: '<%=fromDate%>',   // validated yyyy-MM-dd above
+    toDate: '<%=toDate%>'
+};
+</script>
+<script src="<%=request.getContextPath()%>/assets/js/stock-ledger.js?v=20261025d"></script>
+<% } %>
 
 <%-- Only include the layout footer structure if not downloading Excel sheet logs --%>
 <% if (!"excel".equals(export)) { %>

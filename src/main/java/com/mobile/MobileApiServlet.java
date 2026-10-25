@@ -122,6 +122,14 @@ public class MobileApiServlet extends HttpServlet {
             case "/stock/report":
                 return stock.report(c, req.getParameter("q"), req.getParameter("category"),
                         "1".equals(req.getParameter("low")));
+            case "/stock/ledger":
+                // Item-wise Opening / Receipts / Issues / Closing (same as web Stock Ledger Report)
+                return stock.ledger(c, req.getParameter("from"), req.getParameter("to"),
+                        req.getParameter("q"), req.getParameter("category"), !"0".equals(req.getParameter("moved")));
+            case "/stock/ledger/item":
+                // One item's receipts & issues with running balance (same as web ledger pop-up)
+                return stock.itemLedger(c, intParam(req, "itemId"), req.getParameter("type"),
+                        req.getParameter("from"), req.getParameter("to"));
             case "/service/categories":
                 return service.categories(c);
             case "/service/list":
