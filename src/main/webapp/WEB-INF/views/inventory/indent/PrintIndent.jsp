@@ -141,7 +141,7 @@ body.paper-a5 .sign-title { font-size: 10px; }
 <body class="<%= "A5".equals(paper) ? "paper-a5" : "paper-a4" %>">
 
 <div class="container">
-    <div class="header"><div style="text-align:center;font-weight:700;color:#032d60;letter-spacing:.5px;margin:8px 0 4px;">OFFICE CENTRAL ERP</div></div>
+    <div class="header"><img src="${pageContext.request.contextPath}/assets/branding/PO and Indent Header.png" alt="Indent Header" style="max-width: 100%; height: auto;"></div>
     <div class="document-title">Indent Details</div>
 
 <% if (error != null) { %>

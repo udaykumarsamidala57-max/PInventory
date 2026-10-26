@@ -282,8 +282,9 @@ public class PurchaseOrderServlet extends HttpServlet {
             NotificationService.purchaseOrderCreated(branch, poNo);
 
             // E-mail the Global users of this store (in the background; never blocks the PO)
+            // Mail is sent only if PO amount >= 10,000
             POAlert.newPO(branch, poNo, (String) sess.getAttribute("username"),
-                    POAlert.approveUrl(request), POAlert.headerImage(getServletContext()));
+                    POAlert.approveUrl(request), POAlert.headerImage(getServletContext()), totalAmount);
 
             response.sendRedirect("approve-po");
 

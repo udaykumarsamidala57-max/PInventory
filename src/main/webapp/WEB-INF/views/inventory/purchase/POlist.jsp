@@ -9,6 +9,18 @@
 
     String user = (String) sess.getAttribute("username");
     String role = (String) sess.getAttribute("role");
+    // Set by ApprovePOServlet (/approve-po), which also checks roles and the CSRF token on every action
+    String poCsrf = (String) request.getAttribute("poCsrf");
+    boolean canApprovePo = Boolean.TRUE.equals(request.getAttribute("canApprove"));
+    boolean canDeletePo = Boolean.TRUE.equals(request.getAttribute("canDelete"));
+    String poMessage = (String) request.getAttribute("poMessage");
+%>
+<%!
+    private static String escPo(Object o) {
+        if (o == null) return "";
+        return String.valueOf(o).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+                .replace("\"", "&quot;").replace("'", "&#39;");
+    }
 %>
 <!DOCTYPE html>
 <html>
@@ -713,6 +725,11 @@
 
 <body>
 <jsp:include page="/WEB-INF/views/layout/header.jsp" />
+<% if (poMessage != null && !poMessage.isEmpty()) { %>
+<div style="max-width:1400px;margin:12px auto 0;padding:10px 14px;border-radius:6px;font-size:14px;background:#eef4fe;border:1px solid #aacbfa;color:#1d2d3e;" role="status">
+    <%= escPo(poMessage) %>
+</div>
+<% } %>
 
 <div class="sap-fiori-container">
     
@@ -831,17 +848,23 @@
 
                         <td data-label="Action">
                            <div class="sap-flex-cell">
-                            <form action="approve-po" method="get" style="margin:0;">
-                                <input type="hidden" name="delete_id" value="<%= po.getPoNumber() %>">
+                            <% if (canDeletePo) { %>
+                            <form action="approve-po" method="post" style="margin:0;">
+                                <input type="hidden" name="csrf" value="<%= escPo(poCsrf) %>">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="poNumber" value="<%= escPo(po.getPoNumber()) %>">
                                 <input type="submit" value="Delete"
                                     class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "delete-btn" : "disabled" %>"
                                     <%= !"Approved".equalsIgnoreCase(approval) ? "" : "disabled" %>
                                     onclick="return confirm('Are you sure you want to delete this record?');" />
                             </form>
+                            <% } %>
 
-                            <% if ("Global".equalsIgnoreCase(role)) { %>
-                            <form action="approve-po" method="get" style="margin:0;">
-                                <input type="hidden" name="Approve_id" value="<%= po.getPoNumber() %>">
+                            <% if (canApprovePo) { %>
+                            <form action="approve-po" method="post" style="margin:0;">
+                                <input type="hidden" name="csrf" value="<%= escPo(poCsrf) %>">
+                                <input type="hidden" name="action" value="approve">
+                                <input type="hidden" name="poNumber" value="<%= escPo(po.getPoNumber()) %>">
                                 <input type="submit" value="Approve"
                                     class="action-btn <%= !"Approved".equalsIgnoreCase(approval) ? "approve-btn" : "disabled" %>"
                                     <%= (!"Approved".equalsIgnoreCase(approval)) ? "" : "disabled" %>

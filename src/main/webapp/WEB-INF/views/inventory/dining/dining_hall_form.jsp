@@ -384,7 +384,8 @@
 
                 <div class="form-group">
                     <label for="issue_date">Issue Date</label>
-                    <input type="date" name="issue_date" id="issue_date" required>
+                    <input type="date" name="issue_date" id="issue_date" required
+                           min="${minDate}" max="${maxDate}" value="${maxDate}">
                 </div>
             </div>
 
@@ -420,10 +421,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const issueDate = document.getElementById("issue_date");
-    if (issueDate) {
-        issueDate.value = new Date().toISOString().split("T")[0];
-    }
+    // Issue date default (today, India time), min and max (10 days back) come from the server
 
     const categories = [];
     <c:forEach var="c" items="${masterData.categories}">
