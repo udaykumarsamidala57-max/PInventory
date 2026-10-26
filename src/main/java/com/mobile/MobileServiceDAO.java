@@ -96,7 +96,7 @@ final class MobileServiceDAO {
         return res;
     }
 
-    Map<String, Object> list(MobileApiServlet.Ctx c) throws SQLException {
+    Map<String, Object> list(MobileApiServlet.Ctx c, boolean canUpdate) throws SQLException {
         List<String> params = new ArrayList<>();
         String sql = SELECT + "WHERE " + visibleSql(c, params) + " ORDER BY sr.id DESC LIMIT 300";
         List<Map<String, Object>> rows = new ArrayList<>();
@@ -120,8 +120,8 @@ final class MobileServiceDAO {
                         m.put("priority", rs.getString("priority"));
                         m.put("status", rs.getString("status"));
                         m.put("assignedName", rs.getString("assigned_name"));
-                        m.put("canUpdate", true);
-                        m.put("allowedStatuses", allowedStatuses(c, by));
+                        m.put("canUpdate", canUpdate);
+                        m.put("allowedStatuses", canUpdate ? allowedStatuses(c, by) : new ArrayList<String>());
                         m.put("followups", new ArrayList<Map<String, Object>>());
                         rows.add(m);
                         byId.put(id, m);

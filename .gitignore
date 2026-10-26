@@ -1,3 +1,15 @@
 # Local settings with passwords - never commit
 pinventory.properties
 *.local.properties
+
+# Build output (Maven / Eclipse) - rebuilt by mvn package, never commit
+target/
+build/
+*.war
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
+
+# Eclipse workspace metadata
+.metadata/

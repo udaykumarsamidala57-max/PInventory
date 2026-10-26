@@ -14,6 +14,9 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import javax.imageio.ImageIO;
 
@@ -58,6 +61,7 @@ public final class POPdf {
     private static final BaseColor GREEN_BG = new BaseColor(0xea, 0xf5, 0xea);
 
     private static volatile byte[] logoCache;
+    private static volatile byte[] brandingHeaderCache;
 
     private POPdf() { }
 
@@ -129,6 +133,20 @@ public final class POPdf {
         Font grandF   = font(10, Font.BOLD, BLUE);
         Font secF     = font(9, Font.BOLD, BLUE);
         Font condF    = font(8.5f, Font.NORMAL, INK);
+
+        // ---- branding header (PO and Indent Header.png)
+        byte[] brandingHeader = loadBrandingHeader();
+        if (brandingHeader != null) {
+            try {
+                Image brandImg = Image.getInstance(brandingHeader);
+                brandImg.scaleToFit(doc.right() - doc.left(), 80f);       // max-height ~80px
+                brandImg.setAlignment(Element.ALIGN_CENTER);
+                brandImg.setSpacingAfter(6f);
+                doc.add(brandImg);
+            } catch (Exception e) {
+                System.err.println("[PDF] Failed to add branding header: " + e.getMessage());
+            }
+        }
 
         // ---- header banner
         byte[] logo = logo(headerPng);
@@ -435,6 +453,42 @@ public final class POPdf {
                     .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
         } catch (Exception e) {
             return raw;
+        }
+    }
+
+    /** Load branding header from assets/branding/PO and Indent Header.png */
+    private static byte[] loadBrandingHeader() {
+        byte[] cached = brandingHeaderCache;
+        if (cached != null) return cached;
+        try {
+            // Try to load from the application's resources
+            String catalinaBase = System.getProperty("catalina.base");
+            String basePath = catalinaBase != null ? catalinaBase : System.getProperty("user.dir");
+
+            // Try multiple possible paths
+            String[] possiblePaths = {
+                basePath + File.separator + "webapps" + File.separator + "PInventory" + File.separator + "assets" + File.separator + "branding" + File.separator + "PO and Indent Header.png",
+                basePath + "/webapps/PInventory/assets/branding/PO and Indent Header.png",
+                "webapps/PInventory/assets/branding/PO and Indent Header.png",
+                "assets/branding/PO and Indent Header.png"
+            };
+
+            for (String headerPath : possiblePaths) {
+                java.nio.file.Path path = Paths.get(headerPath);
+                if (Files.exists(path)) {
+                    byte[] data = Files.readAllBytes(path);
+                    brandingHeaderCache = data;
+                    System.out.println("[PDF] Branding header loaded from: " + path.toAbsolutePath());
+                    return data;
+                }
+            }
+
+            System.err.println("[PDF] Branding header not found in any expected location");
+            return null;
+        } catch (Exception e) {
+            System.err.println("[PDF] Could not load branding header: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 

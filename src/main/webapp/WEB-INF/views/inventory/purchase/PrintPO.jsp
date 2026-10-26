@@ -362,14 +362,11 @@ if (poNumber != null && !poNumber.trim().isEmpty()) {
             String serviceCharge = rsPO.getString("Servicecharge");
             String approvalStatus = rsPO.getString("Approval");
 
-            PreparedStatement updateIndent = con.prepareStatement(
-                "UPDATE indent SET status = 'Approved' WHERE Indentnext = 'PO' AND status <> 'Approved'"
-            );
-            updateIndent.executeUpdate();
+            // Print page is read-only: it must never change indents or any other data.
 %>
 
 <header>
-    <div style="text-align:center;font-weight:700;color:#032d60;letter-spacing:.5px;margin:8px 0 4px;">OFFICE CENTRAL ERP</div>
+    <img src="${pageContext.request.contextPath}/assets/branding/PO and Indent Header.png" alt="PO Header" style="max-width: 100%; height: auto; display: block;">
 </header>
 
 <div class="contact-line">

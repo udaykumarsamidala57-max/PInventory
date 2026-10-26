@@ -65,6 +65,11 @@ public class MobileApiServlet extends HttpServlet {
     private final transient MobileIndentDAO indents = new MobileIndentDAO();
     private final transient MobileStockDAO stock = new MobileStockDAO();
     private final transient MobileServiceDAO service = new MobileServiceDAO();
+    private final transient MobileAccessDAO access = new MobileAccessDAO();
+
+    static final String S_FEATURES = "mobileFeatures";
+    static final String S_FEATURES_AT = "mobileFeaturesAt";
+    private static final long FEATURE_REFRESH_MS = 2 * 60 * 1000L;
 
     // ------------------------------------------------------------------ routing
 
@@ -115,31 +120,42 @@ public class MobileApiServlet extends HttpServlet {
         Ctx c = new Ctx(s, branch);
         switch (path) {
             case "/indent/list":
+                boolean approval = "approval".equalsIgnoreCase(req.getParameter("scope"));
+                require(s, approval ? "indent.approve" : "indent.view");
                 return indents.list(c, req.getParameter("scope"));
             case "/indent/detail":
+                require(s, "indent.view", "indent.approve");
                 return indents.detail(c, intParam(req, "id"));
             case "/indent/items":
+                require(s, "indent.create");
                 return indents.items(c, req.getParameter("q"));
             case "/indent/meta":
+                require(s, "indent.create");
                 return indents.meta(c);
             case "/indent/catalog":
+                require(s, "indent.create");
                 return indents.catalog(c, req.getParameter("department"), req.getParameter("category"),
                         req.getParameter("subcategory"), req.getParameter("q"));
             case "/stock/report":
+                require(s, "stock.view");
                 return stock.report(c, req.getParameter("q"), req.getParameter("category"),
                         "1".equals(req.getParameter("low")));
             case "/stock/ledger":
+                require(s, "stock.view");
                 // Item-wise Opening / Receipts / Issues / Closing (same as web Stock Ledger Report)
                 return stock.ledger(c, req.getParameter("fy"), req.getParameter("from"), req.getParameter("to"),
                         req.getParameter("q"), req.getParameter("category"), !"0".equals(req.getParameter("moved")));
             case "/stock/ledger/item":
+                require(s, "stock.view");
                 // One item's receipts & issues with running balance (same as web ledger pop-up)
                 return stock.itemLedger(c, req.getParameter("fy"), intParam(req, "itemId"), req.getParameter("type"),
                         req.getParameter("from"), req.getParameter("to"));
             case "/service/categories":
+                require(s, "service.create");
                 return service.categories(c);
             case "/service/list":
-                return service.list(c);
+                require(s, "service.view");
+                return service.list(c, features(s).contains("service.update"));
             default:
                 throw new ApiException(404, "Unknown request.");
         }
@@ -180,12 +196,16 @@ public class MobileApiServlet extends HttpServlet {
         Ctx c = new Ctx(s, branch);
         switch (path) {
             case "/indent/create":
+                require(s, "indent.create");
                 return indents.create(c, readJson(req));
             case "/indent/approve":
+                require(s, "indent.approve");
                 return indents.approve(c, intParam(req, "id"), req.getParameter("action"), req.getParameter("remarks"));
             case "/service/create":
+                require(s, "service.create");
                 return service.create(c, req);
             case "/service/followup":
+                require(s, "service.update");
                 return service.followup(c, intParam(req, "request_id"), req.getParameter("status"),
                         req.getParameter("remarks"));
             default:
@@ -229,6 +249,12 @@ public class MobileApiServlet extends HttpServlet {
         }
         LoginThrottle.reset(throttleKey);
 
+        // Android app access switched on for this role/department? (Mobile App Access page)
+        java.util.Set<String> features = access.featuresFor(role, department);
+        if (!features.contains("app.login")) {
+            throw new ApiException(403, "Android app access is not enabled for your role. Please contact the administrator.");
+        }
+
         // New session id on login.
         HttpSession old = req.getSession(false);
         if (old != null) old.invalidate();
@@ -242,6 +268,8 @@ public class MobileApiServlet extends HttpServlet {
         s.setAttribute("branch", branch);
         String token = newToken();
         s.setAttribute(S_CSRF, token);
+        s.setAttribute(S_FEATURES, new java.util.LinkedHashSet<>(features));
+        s.setAttribute(S_FEATURES_AT, System.currentTimeMillis());
 
         List<String> codes = storeAccess.findAllowedStores(userId, branch);
 
@@ -254,6 +282,7 @@ public class MobileApiServlet extends HttpServlet {
         out.put("user", user);
         out.put("stores", storeList(codes));
         out.put("csrfToken", token);
+        out.put("features", new ArrayList<>(features));
         return out;
     }
 
@@ -283,6 +312,7 @@ public class MobileApiServlet extends HttpServlet {
 
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("store", storeList(List.of(canonical)).get(0));
+        out.put("features", new ArrayList<>(features(s)));
         return out;
     }
 
@@ -326,6 +356,31 @@ public class MobileApiServlet extends HttpServlet {
             throw new ApiException(401, "Session expired. Please log in again.");
         }
         return s;
+    }
+
+    /** Current Android features for the session user (re-read from the database every 2 minutes). */
+    @SuppressWarnings("unchecked")
+    private java.util.Set<String> features(HttpSession s) throws SQLException {
+        Object at = s.getAttribute(S_FEATURES_AT);
+        java.util.Set<String> f = (java.util.Set<String>) s.getAttribute(S_FEATURES);
+        if (f == null || !(at instanceof Long) || System.currentTimeMillis() - (Long) at > FEATURE_REFRESH_MS) {
+            f = new java.util.LinkedHashSet<>(access.featuresFor(
+                    String.valueOf(s.getAttribute("role")), String.valueOf(s.getAttribute("department"))));
+            s.setAttribute(S_FEATURES, f);
+            s.setAttribute(S_FEATURES_AT, System.currentTimeMillis());
+        }
+        if (!f.contains("app.login")) {
+            s.invalidate();
+            throw new ApiException(401, "Android app access has been turned off for your account.");
+        }
+        return f;
+    }
+
+    /** Allows the request if the user has at least one of the given features. */
+    private void require(HttpSession s, String... anyOf) throws SQLException {
+        java.util.Set<String> f = features(s);
+        for (String k : anyOf) if (f.contains(k)) return;
+        throw new ApiException(403, "This option is turned off for your role. Please contact the administrator.");
     }
 
     private static String requireStore(HttpSession s) {

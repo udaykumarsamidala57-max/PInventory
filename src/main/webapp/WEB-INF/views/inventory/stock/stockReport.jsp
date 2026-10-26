@@ -65,7 +65,7 @@ try {
      "im.Item_name, " +
      "im.Category, " +
      "im.Sub_Category, " +
-     "s.last_price, " +
+     "COALESCE(ic.unit_cost, s.last_price, 0) AS last_price, " +   /* Item Cost master first */
 
      /* Opening Balance */
      "COALESCE(( " +
@@ -106,7 +106,8 @@ try {
      "),0) AS wastage " +
 
      "FROM item_master im " +
-     "LEFT JOIN stock s ON im.Item_id = s.item_id ";
+     "LEFT JOIN stock s ON im.Item_id = s.item_id " +
+     "LEFT JOIN item_cost ic ON ic.item_id = im.Item_id ";
 
  boolean hasWhere = false;
 

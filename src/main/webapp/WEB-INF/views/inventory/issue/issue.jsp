@@ -1,5 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+<fmt:setLocale value="en_IN" />
 <%
 HttpSession sess = request.getSession(false);
 if (sess == null || sess.getAttribute("username") == null) {
@@ -114,6 +116,22 @@ input[type="text"] {
 .btn-green:hover {
     background: #17a673;
 }
+
+.no-cost {
+    color: #c23934;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.no-cost a { color: #c23934; }
+
+.price { font-weight: 600; white-space: nowrap; }
+
+.value-note { font-size: 12px; color: #555; margin-top: 2px; }
+
+.date-note { text-align: center; font-size: 12.5px; color: #555; margin: 4px 0 0; }
+
+.btn-green:disabled { background: #b0b0b0; cursor: not-allowed; }
 
 .message {
     text-align: center;
@@ -240,6 +258,11 @@ input[type="text"] {
     <div class="card">
         <h2>Issue Stock</h2>
         <h3>Approved Indents Pending Issue</h3>
+        <c:if test="${not empty message}">
+            <p class="message" style="color:${message.startsWith('✅') ? 'green' : 'red'};"><c:out value="${message}" /></p>
+        </c:if>
+        <p class="date-note">The full indent quantity is issued at the Item Cost price (incl. GST).
+            Issue date: today or up to <c:out value="${backDays}" /> days back.</p>
 
         <table>
             <thead>
@@ -261,12 +284,12 @@ input[type="text"] {
             <tbody>
                 <c:forEach var="i" items="${indentList}">
                     <tr>
-                        <form action="issue" method="post">
-                            <td data-label="Indent No">${i.indent_no}</td>
-                            <td data-label="Requested By">${i.requested_by}</td>
-                            <td data-label="Department">${i.department}</td>
-                            <td data-label="Item">${i.item_name}</td>
-                            <td data-label="Qty Requested">${i.qty_requested}</td>
+                        <form action="issue" method="post" onsubmit="if (!confirm('Issue the full indent quantity? This cannot be changed later.')) return false; for (var k = 0; k < this.elements.length; k++) { if (this.elements[k].type === 'submit') this.elements[k].disabled = true; } return true;">
+                            <td data-label="Indent No"><c:out value="${i.indent_no}" /></td>
+                            <td data-label="Requested By"><c:out value="${i.requested_by}" /></td>
+                            <td data-label="Department"><c:out value="${i.department}" /></td>
+                            <td data-label="Item"><c:out value="${i.item_name}" /></td>
+                            <td data-label="Qty Requested"><c:out value="${i.qty_requested}" /></td>
                             <td data-label="Available Stock">
                                 <c:choose>
                                     <c:when test="${i.available_stock lt i.qty_requested}">
@@ -277,23 +300,40 @@ input[type="text"] {
                                     </c:otherwise>
                                 </c:choose>
                             </td>
-                            <td data-label="UOM">${i.UOM}</td>
+                            <td data-label="UOM"><c:out value="${i.UOM}" /></td>
                             <td data-label="Unit Price">
-                                <input type="text" name="unitPrice" value="${i.unit_price}">
+                                <%-- Price comes from the Item Cost master on the server; it cannot be edited here --%>
+                                <c:choose>
+                                    <c:when test="${i.has_cost}">
+                                        <span class="price">&#8377;<fmt:formatNumber value="${i.unit_price}" minFractionDigits="2" maxFractionDigits="2" /></span>
+                                    </c:when>
+                                    <c:otherwise>
+                                        <span class="no-cost">No cost set<br><a href="item-cost">Set in Item Cost</a></span>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
-                            <td data-label="Purpose">${i.purpose}</td>
+                            <td data-label="Purpose"><c:out value="${i.purpose}" /></td>
                             <td data-label="Qty To Issue">
-                                <input type="number" name="qtyIssued" min="0" max="${i.qty_requested}" step="0.01" required>
+                                <%-- Always the full indent quantity; it cannot be changed here --%>
+                                <span class="price"><c:out value="${i.qty_requested}" /> <c:out value="${i.UOM}" /></span>
+                                <c:if test="${i.has_cost}">
+                                    <div class="value-note">&#8377;<fmt:formatNumber value="${i.total_value}" minFractionDigits="2" maxFractionDigits="2" /></div>
+                                </c:if>
                             </td>
                             <td data-label="Issue Date">
-                            <input type="date" name="issueDate" required>
+                                <input type="date" name="issueDate" required min="${minDate}" max="${maxDate}" value="${maxDate}">
                             </td>
                             <td data-label="Action">
-                                <input type="hidden" name="indentNo" value="${i.indent_no}">
-                                <input type="hidden" name="indentId" value="${i.indent_id}">
-                                <input type="hidden" name="itemId" value="${i.item_id}">
-                                <input type="hidden" name="department" value="${i.department}">
-                                <input type="submit" class="btn-green" value="Issue">
+                                <input type="hidden" name="indentId" value="<c:out value='${i.indent_id}' />">
+                                <c:choose>
+                                    <c:when test="${i.can_issue}">
+                                        <input type="submit" class="btn-green" value="Issue">
+                                    </c:when>
+                                    <c:otherwise>
+                                        <input type="submit" class="btn-green" value="Issue" disabled>
+                                        <c:if test="${not empty i.block_reason}"><div class="no-cost"><c:out value="${i.block_reason}" /></div></c:if>
+                                    </c:otherwise>
+                                </c:choose>
                             </td>
                         </form>
                     </tr>
@@ -301,9 +341,6 @@ input[type="text"] {
             </tbody>
         </table>
 
-        <c:if test="${not empty message}">
-            <p class="message" style="color:${message.startsWith('✅') ? 'green' : 'red'};">${message}</p>
-        </c:if>
     </div>
 </div>
 

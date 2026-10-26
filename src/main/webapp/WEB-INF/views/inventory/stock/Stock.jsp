@@ -383,8 +383,10 @@ String branch = (String) sess.getAttribute("branch");
                     try (Connection con = InventoryDB.getConnection(branch);
                          PreparedStatement ps = con.prepareStatement(
                             "SELECT s.item_id, i.Item_name, i.Category, i.Sub_Category, i.UOM, " +
-                            "s.total_received, s.total_issued, s.total_wasted, s.balance_qty, s.last_price, s.last_updated " +
+                            "s.total_received, s.total_issued, s.total_wasted, s.balance_qty, " +
+                            "COALESCE(ic.unit_cost, s.last_price, 0) AS last_price, s.last_updated " +   /* Item Cost master first */
                             "FROM stock s JOIN item_master i ON s.item_id = i.Item_id " +
+                            "LEFT JOIN item_cost ic ON ic.item_id = s.item_id " +
                             "ORDER BY i.Item_name")) {
 
                         try (ResultSet rs = ps.executeQuery()) {

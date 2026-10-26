@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page session="true" %>
 <%@ page import="java.util.Calendar, java.text.SimpleDateFormat" %>
+<%@ page import="com.officecentral.common.web.Csrf, com.officecentral.common.web.SettingsMenu" %>
 <%
     HttpSession sesso = request.getSession(false);
 
@@ -214,17 +215,8 @@ try {
   </div>
 
   <% if ("Global".equalsIgnoreCase(roles.trim()) ||  "Finance".equalsIgnoreCase(depts.trim())){ %>
-  <div class="dropdown">
-    <button class="dropdown-btn"><i class="fa-solid fa-sliders text-secondary"></i> System Masters <i class="fa-solid fa-caret-down"></i></button>
-    <div class="dropdown-content">
-      <a href="items"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
-      <a href="add-stock"><i class="fa-solid fa-square-plus text-success"></i> Add Stock</a>
-      <a href="wastage"><i class="fa-solid fa-trash-can text-danger"></i> Damage / Wastage Entry</a>
-      <a href="menu-items"><i class="fa-solid fa-square-plus text-success"></i> Dining Hall Menu Config</a>
-      <a href="stock-audit"><i class="fas fa-clipboard-check text-success"></i> New Audit</a>
-      <a href="stock-audit-report"><i class="fas fa-chart-bar text-info"></i> Audit Report</a>
-    </div>
-  </div>
+  <%-- System Masters live in Settings Master (its pages are listed in SettingsMenu and shown as a sidebar there) --%>
+  <a href="settings"><i class="fa-solid fa-gear text-secondary"></i> Settings Master</a>
   <% } %>
 
   <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
@@ -316,6 +308,7 @@ try {
    
 <% if ("Global".equalsIgnoreCase(roles)) { %>
 <a href="<%= request.getContextPath() %>/store-access"><i class="fa-solid fa-user-lock"></i> Assign Stores</a>
+<a href="<%= request.getContextPath() %>/mobile-access"><i class="fa-brands fa-android"></i> Mobile App Access</a>
 <% } %>
 <a href="<%= request.getContextPath() %>/select-store"><i class="fa-solid fa-code-branch"></i> Change Store</a>
 <a href="<%= request.getContextPath() %>/Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
@@ -339,6 +332,18 @@ try {
   </div>
 
   <div class="header-right-group">
+    <!-- Download OFC ERP Android app -->
+    <a class="app-download-btn" href="<%= request.getContextPath() %>/mobile-app/pinventory.apk" download="OFC-ERP.apk"
+       title="Download the OFC ERP Android app"><i class="fa-brands fa-android"></i><span>Android App</span></a>
+    <style>
+      .app-download-btn{display:inline-flex;align-items:center;gap:8px;height:36px;padding:0 14px;margin-right:10px;
+        border-radius:50px;background:linear-gradient(135deg,#032d60 0%,#0176d3 100%);color:#fff !important;
+        font-weight:600;font-size:13px;text-decoration:none;white-space:nowrap;box-shadow:0 4px 12px rgba(3,45,96,.25);
+        transition:transform .15s ease,box-shadow .15s ease}
+      .app-download-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(3,45,96,.35)}
+      .app-download-btn i{font-size:18px;color:#3ddc84}
+      @media (max-width:768px){.app-download-btn span{display:none}.app-download-btn{width:36px;padding:0;justify-content:center;margin-right:6px}}
+    </style>
     <% if ("Admin".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Global".equalsIgnoreCase(roles)) { %>    
        <% if(urgentCount > 0){ %>
         <div class="urgent-wrapper">
@@ -532,6 +537,57 @@ try {
 <main>
 </main>
 
+<%
+    // ---- Settings Master sidebar: shown on /settings and on every System Masters page (Global / Finance only)
+    String hdrFwdPath = (String) request.getAttribute("javax.servlet.forward.servlet_path");
+    String hdrPath = hdrFwdPath != null ? hdrFwdPath : request.getServletPath();
+    String setKey = SettingsMenu.keyFor(hdrPath);
+    boolean setAllowed = "Global".equalsIgnoreCase(roles.trim()) || "Finance".equalsIgnoreCase(depts.trim());
+    if (setKey != null && setAllowed) {
+        String setCtx = request.getContextPath();
+        String setGroup = null;
+%>
+<style>
+.set-nav { position: fixed; top: 70px; left: 0; bottom: 0; width: 232px; background: #fff; border-right: 1px solid #dddbda;
+           overflow-y: auto; z-index: 900; padding: 14px 10px 70px; font-family: 'Salesforce Sans','Inter',sans-serif; }
+.set-nav-title { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; color: #181818;
+                 padding: 4px 10px 12px; border-bottom: 1px solid #e5e5e5; margin-bottom: 8px; text-decoration: none; }
+.set-nav-group { font-size: 10.5px; font-weight: 700; color: #706e6b; text-transform: uppercase; letter-spacing: .6px; padding: 12px 10px 4px; }
+.set-link { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 4px; font-size: 13.5px;
+            color: #181818; text-decoration: none; border-left: 3px solid transparent; }
+.set-link i { width: 18px; text-align: center; color: #514f4d; }
+.set-link:hover { background: #f3f3f3; }
+.set-link.active { background: #eef4fe; border-left-color: #0176d3; color: #014486; font-weight: 600; }
+.set-link.active i { color: #0176d3; }
+body.has-settings-nav, body.has-settings-nav.sidebar-collapsed { padding-left: 232px !important; }
+body.has-settings-nav footer, body.has-settings-nav.sidebar-collapsed footer { left: 232px !important; }
+@media (max-width: 900px) {
+    .set-nav { position: static; width: auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px; border-right: 0;
+               border-bottom: 1px solid #dddbda; margin: -14px 0 12px; }
+    .set-nav-title, .set-nav-group { display: none; }
+    .set-link { white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; }
+    .set-link.active { border-bottom-color: #0176d3; }
+    body.has-settings-nav, body.has-settings-nav.sidebar-collapsed { padding-left: 0 !important; }
+    body.has-settings-nav footer, body.has-settings-nav.sidebar-collapsed footer { left: 0 !important; }
+}
+</style>
+<aside class="set-nav" aria-label="Settings Master">
+    <a class="set-nav-title" href="<%= setCtx %>/settings"><i class="fa-solid fa-gear"></i> Settings Master</a>
+    <a class="set-link<%= "settings".equals(setKey) ? " active" : "" %>" href="<%= setCtx %>/settings"
+       <%= "settings".equals(setKey) ? "aria-current=\"page\"" : "" %>><i class="fa-solid fa-table-cells-large"></i> Overview</a>
+    <% for (SettingsMenu.Page sp : SettingsMenu.PAGES) {
+           if (!sp.group.equals(setGroup)) { setGroup = sp.group; %>
+    <div class="set-nav-group"><%= sp.group %></div>
+    <%     } %>
+    <a class="set-link<%= sp.key.equals(setKey) ? " active" : "" %>" href="<%= setCtx %>/<%= sp.key %>"
+       <%= sp.key.equals(setKey) ? "aria-current=\"page\"" : "" %>><i class="<%= sp.icon %>"></i> <%= sp.title %></a>
+    <% } %>
+</aside>
+<script>document.body.classList.add('has-settings-nav');</script>
+<%
+    }
+%>
+
 <footer>
     <div class="footer-badge">
         <i class="fa-solid fa-code-branch text-primary"></i>
@@ -692,7 +748,7 @@ document.addEventListener("click", function(event){
     if (h && !/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(h)) a.setAttribute('href', CTX + '/' + h);
   });
 
-  var FOOT = ['select-store', 'store-access', 'Logout.jsp'];
+  var FOOT = ['select-store', 'store-access', 'mobile-access', 'Logout.jsp'];
   var TONES = /\btext-(primary|success|info|warning|danger|purple|secondary)\b/;
   var modules = [], current = null, sections = [], section = null;
   function clean(t) { return (t || '').replace(/\s+/g, ' ').trim(); }
@@ -830,6 +886,37 @@ document.addEventListener("click", function(event){
 
   document.addEventListener('click', function () { open(false); subOpen(false); });
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { open(false); subOpen(false); } });
+})();
+</script>
+<script>
+/* CSRF protection: the server (AccessFilter) rejects saves without this token. */
+(function () {
+  var T = '<%= Csrf.token(sesso) %>', P = '<%= Csrf.PARAM %>', H = '<%= Csrf.HEADER %>';
+  window.CSRF_TOKEN = T;
+  function sameSite(url) { try { return new URL(url, location.href).origin === location.origin; } catch (e) { return false; } }
+  function addTo(f) {
+    if (!f || f.tagName !== 'FORM' || (f.getAttribute('method') || 'get').toLowerCase() !== 'post') return;
+    if (!sameSite(f.getAttribute('action') || location.href) || f.querySelector('input[name="' + P + '"]')) return;
+    var i = document.createElement('input'); i.type = 'hidden'; i.name = P; i.value = T; f.appendChild(i);
+  }
+  document.addEventListener('submit', function (e) { addTo(e.target); }, true);          // forms submitted by the user
+  function addAll() { Array.prototype.forEach.call(document.forms, addTo); }               // also covers form.submit()
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addAll); else addAll();
+  window.addEventListener('load', addAll);
+  if (window.fetch) {
+    var of = window.fetch;
+    window.fetch = function (input, init) {
+      init = init || {};
+      var m = (init.method || (input && input.method) || 'GET').toUpperCase();
+      var url = typeof input === 'string' ? input : (input && input.url);
+      if (m !== 'GET' && m !== 'HEAD' && sameSite(url)) {
+        var h = new Headers(init.headers || (input && input.headers) || {});
+        if (!h.has(H)) h.set(H, T);
+        init.headers = h;
+      }
+      return of.call(this, input, init);
+    };
+  }
 })();
 </script>
 </body>

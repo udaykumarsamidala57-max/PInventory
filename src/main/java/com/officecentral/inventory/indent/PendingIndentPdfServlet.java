@@ -2,6 +2,8 @@ package com.officecentral.inventory.indent;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import javax.servlet.annotation.WebServlet;
@@ -14,6 +16,7 @@ import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
+import com.itextpdf.text.Image;
 import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
@@ -118,6 +121,20 @@ public class PendingIndentPdfServlet extends HttpServlet {
             Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
             Font textFont = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
 
+            // ---- Add branding header (PO and Indent Header.png)
+            byte[] brandingHeader = loadBrandingHeaderImage();
+            if (brandingHeader != null) {
+                try {
+                    Image brandImg = Image.getInstance(brandingHeader);
+                    brandImg.scaleToFit(document.getPageSize().getWidth() - 72, 80f);  // max-height ~80px
+                    brandImg.setAlignment(Element.ALIGN_CENTER);
+                    brandImg.setSpacingAfter(8f);
+                    document.add(brandImg);
+                } catch (Exception e) {
+                    System.err.println("[PDF] Failed to add branding header: " + e.getMessage());
+                }
+            }
+
             // Header
             Paragraph schoolName = new Paragraph("SANDUR RESIDENTIAL SCHOOL", schoolFont);
             schoolName.setAlignment(Element.ALIGN_CENTER);
@@ -171,6 +188,38 @@ public class PendingIndentPdfServlet extends HttpServlet {
 
         } catch (Exception e) {
             throw new RuntimeException("PDF generation failed: " + e.getMessage());
+        }
+    }
+
+    // -------------------- BRANDING HEADER LOADER --------------------
+    private static byte[] loadBrandingHeaderImage() {
+        try {
+            String catalinaBase = System.getProperty("catalina.base");
+            String basePath = catalinaBase != null ? catalinaBase : System.getProperty("user.dir");
+
+            // Try multiple possible paths
+            String[] possiblePaths = {
+                basePath + File.separator + "webapps" + File.separator + "PInventory" + File.separator + "assets" + File.separator + "branding" + File.separator + "PO and Indent Header.png",
+                basePath + "/webapps/PInventory/assets/branding/PO and Indent Header.png",
+                "webapps/PInventory/assets/branding/PO and Indent Header.png",
+                "assets/branding/PO and Indent Header.png"
+            };
+
+            for (String headerPath : possiblePaths) {
+                java.nio.file.Path path = Paths.get(headerPath);
+                if (Files.exists(path)) {
+                    byte[] data = Files.readAllBytes(path);
+                    System.out.println("[PDF] Branding header loaded from: " + path.toAbsolutePath());
+                    return data;
+                }
+            }
+
+            System.err.println("[PDF] Branding header not found in any expected location");
+            return null;
+        } catch (Exception e) {
+            System.err.println("[PDF] Could not load branding header: " + e.getMessage());
+            e.printStackTrace();
+            return null;
         }
     }
 

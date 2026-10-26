@@ -165,6 +165,17 @@
                     </div>
                 </div>
             </c:if>
+            <c:if test="${param.msg == 'error' and not empty sessionScope.consumptionError}">
+                <div class="slds-notify_container slds-is-relative slds-m-bottom_medium">
+                    <div class="slds-notify slds-notify_toast slds-theme_error" role="alert">
+                        <span class="slds-assistive-text">Error</span>
+                        <div class="slds-notify__content">
+                            <h2 class="slds-text-heading_small"><c:out value="${sessionScope.consumptionError}" /></h2>
+                        </div>
+                    </div>
+                </div>
+                <c:remove var="consumptionError" scope="session" />
+            </c:if>
             <c:if test="${param.msg == 'notfound'}">
                 <div class="slds-notify_container slds-is-relative slds-m-bottom_medium">
                     <div class="slds-notify slds-notify_toast slds-theme_error" role="status">

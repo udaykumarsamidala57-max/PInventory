@@ -54,11 +54,18 @@ public final class POAlert {
 
     /**
      * Queues the alert with the PO as a PDF (same layout as the print page). Never throws.
+     * Only sends the alert if totalAmount >= 10,000.
      * headerPng = the school banner (see {@link #headerImage}).
      */
-    public static void newPO(String branch, String poNo, String createdBy, String approveUrl, byte[] headerPng) {
+    public static void newPO(String branch, String poNo, String createdBy, String approveUrl, byte[] headerPng, double totalAmount) {
         SENDER.submit(() -> {
             try {
+                // Only send alert if PO amount is >= 10,000
+                if (totalAmount < 10000.0) {
+                    System.out.println("[mail] New PO " + poNo + ": amount ₹" + totalAmount + " is below threshold (10,000); alert not sent");
+                    return;
+                }
+
                 List<String> to = globalUsersOf(branch);
                 if (to.isEmpty()) {
                     System.out.println("[mail] New PO " + poNo + ": no Global user with an e-mail is assigned to " + branch);

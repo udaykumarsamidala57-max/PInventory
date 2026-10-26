@@ -59,8 +59,10 @@ final class MobileStockDAO {
         if (cat.length() > 100) cat = cat.substring(0, 100);
 
         StringBuilder sql = new StringBuilder(
-                "SELECT s.item_id, i.Item_name, i.Category, i.UOM, s.balance_qty, s.last_price "
-                + "FROM stock s JOIN item_master i ON s.item_id = i.Item_id WHERE 1=1 ");
+                "SELECT s.item_id, i.Item_name, i.Category, i.UOM, s.balance_qty, "
+                + "COALESCE(ic.unit_cost, s.last_price, 0) AS last_price "      // Item Cost master first
+                + "FROM stock s JOIN item_master i ON s.item_id = i.Item_id "
+                + "LEFT JOIN item_cost ic ON ic.item_id = s.item_id WHERE 1=1 ");
         List<String> params = new ArrayList<>();
         if (!term.isEmpty()) {
             sql.append("AND i.Item_name LIKE ? ");

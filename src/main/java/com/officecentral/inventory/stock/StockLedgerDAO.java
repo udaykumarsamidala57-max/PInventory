@@ -198,7 +198,7 @@ public final class StockLedgerDAO {
         StringBuilder sql = new StringBuilder(
             "SELECT * FROM ( " +
             " SELECT im.Item_id, im.Item_name, im.Category, im.Sub_Category, im.UOM, " +
-            "  COALESCE(s.last_price,0) AS last_price, " +
+            "  COALESCE(ic.unit_cost, s.last_price, 0) AS last_price, " +   // Item Cost master first
             "  COALESCE((SELECT SUM(CASE WHEN sl.trans_type='RECEIPT' THEN sl.qty " +
             "                           WHEN sl.trans_type IN ('ISSUE','WASTAGE') THEN -sl.qty ELSE 0 END) " +
             "            FROM stock_ledger sl WHERE sl.item_id = im.Item_id AND sl.trans_date < ?),0) AS opening_balance, " +
@@ -209,6 +209,7 @@ public final class StockLedgerDAO {
             "  COALESCE((SELECT SUM(sl.qty) FROM stock_ledger sl WHERE sl.item_id = im.Item_id " +
             "            AND sl.trans_type='WASTAGE' AND sl.trans_date BETWEEN ? AND ?),0) AS wastage " +
             " FROM item_master im LEFT JOIN stock s ON im.Item_id = s.item_id " +
+            " LEFT JOIN item_cost ic ON ic.item_id = im.Item_id " +
             " WHERE 1=1 ");
         List<String> params = new ArrayList<>();
         params.add(from.toString());
@@ -323,12 +324,18 @@ public final class StockLedgerDAO {
             "   (SELECT gm.grn_no FROM grn_master gm WHERE CAST(gm.grn_id AS CHAR) = sl.trans_id LIMIT 1) " +
             "   WHEN sl.trans_type='WASTAGE' THEN " +
             "   (SELECT w.wastage_no FROM stock_wastage w WHERE w.wastage_id = sl.trans_id LIMIT 1) " +
+            "   WHEN sl.consumption_id IS NOT NULL THEN " +
+            "   COALESCE((SELECT d.issueno FROM dining_hall_consumption d WHERE d.issue_id = sl.consumption_id LIMIT 1), " +
+            "            sl.trans_id) " +
             "   ELSE sl.trans_id END AS ref_no, " +
             " CASE WHEN sl.trans_type='RECEIPT' THEN " +
             "   (SELECT gm.vendor_name FROM grn_master gm WHERE CAST(gm.grn_id AS CHAR) = sl.trans_id LIMIT 1) " +
             "   WHEN sl.trans_type='WASTAGE' THEN " +
             "   (SELECT CONCAT_WS(' / ', w.wastage_type, NULLIF(w.department,'')) " +
             "      FROM stock_wastage w WHERE w.wastage_id = sl.trans_id LIMIT 1) " +
+            "   WHEN sl.consumption_id IS NOT NULL THEN " +
+            "   (SELECT CONCAT_WS(' / ', NULLIF(d.department,''), NULLIF(d.issued_to,'')) " +
+            "      FROM dining_hall_consumption d WHERE d.issue_id = sl.consumption_id LIMIT 1) " +
             "   ELSE (SELECT CONCAT_WS(' / ', NULLIF(si.department,''), NULLIF(si.issued_to,'')) " +
             "         FROM stock_issues si WHERE si.issueno = sl.trans_id AND si.item_id = sl.item_id LIMIT 1) " +
             "   END AS party " +

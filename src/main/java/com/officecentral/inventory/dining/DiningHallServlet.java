@@ -11,6 +11,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
 import com.officecentral.common.db.InventoryDB;
+import com.officecentral.inventory.stock.ItemCostDAO;
+import com.officecentral.inventory.stock.StockEntryRules;
+import java.time.LocalDate;
 
 /**
  * Dining Hall consumption.
@@ -67,6 +70,8 @@ public class DiningHallServlet extends HttpServlet {
             request.setAttribute("nextIssueNo", nextNo);
             request.setAttribute("masterData", master);
             request.setAttribute("selectedDept", DEPARTMENT);
+            request.setAttribute("minDate", StockEntryRules.earliestDate().toString());
+            request.setAttribute("maxDate", StockEntryRules.latestDate().toString());
             request.getRequestDispatcher("/WEB-INF/views/inventory/dining/dining_hall_form.jsp").forward(request, response);
         } catch (SQLException e) {
             throw new ServletException("Database Error: " + e.getMessage(), e);
@@ -87,12 +92,18 @@ public class DiningHallServlet extends HttpServlet {
 
         // ---- 1. Validate everything BEFORE touching the database
         List<Line> lines;
+        LocalDate issueDay;
         try {
             if (branch.isEmpty())   throw new IllegalArgumentException("Branch information is missing.");
             if (issueNo.isEmpty())  throw new IllegalArgumentException("Issue number is missing.");
             if (issuedTo.isEmpty()) throw new IllegalArgumentException("Issued To is required.");
             if (session.isEmpty())  throw new IllegalArgumentException("Session is required.");
             if (date.isEmpty())     throw new IllegalArgumentException("Issue date is required.");
+            try {
+                issueDay = StockEntryRules.checkEntryDate(date);      // today .. 10 days back
+            } catch (StockEntryRules.EntryError e) {
+                throw new IllegalArgumentException("Issue date: " + e.getMessage());
+            }
             lines = readLines(request);
         } catch (IllegalArgumentException e) {
             finish(sess, response, false, e.getMessage());
@@ -106,7 +117,9 @@ public class DiningHallServlet extends HttpServlet {
             if (con == null) throw new SQLException("Unable to connect to the database.");
             con.setAutoCommit(false);
             try {
-                saveIssue(con, issueNo, issuedTo, session, date, lines);
+                saveIssue(con, issueNo, issuedTo, session, issueDay.toString(), lines);
+                // back-dated entries: keep stock_ledger running balances in date order
+                for (Line ln : lines) StockEntryRules.recalcRunningBalance(con, ln.itemId, issueDay);
                 con.commit();
                 ok = true;
                 message = "Issue " + issueNo + " saved: " + lines.size() + " item(s).";
@@ -140,9 +153,7 @@ public class DiningHallServlet extends HttpServlet {
         }
 
         try (PreparedStatement psStock  = con.prepareStatement(
-                     "SELECT balance_qty, last_price FROM stock WHERE item_id = ? FOR UPDATE");
-             PreparedStatement psPrice  = con.prepareStatement(
-                     "SELECT net_amount, qty FROM po_items WHERE item_id = ? AND qty > 0 ORDER BY po_id DESC LIMIT 1");
+                     "SELECT balance_qty FROM stock WHERE item_id = ? FOR UPDATE");
              PreparedStatement psCons   = con.prepareStatement(
                      "INSERT INTO dining_hall_consumption (issueno, item_id, department, issued_to, qty_issued, remarks, " +
                      "unit_price, total_value, session, issue_date) VALUES (?,?,?,?,?,?,?,?,?,?)",
@@ -162,26 +173,18 @@ public class DiningHallServlet extends HttpServlet {
                 String tag = "Item ID " + ln.itemId;
 
                 // a. lock the stock row and check availability
-                BigDecimal balance, lastPrice;
+                BigDecimal balance;
                 psStock.setInt(1, ln.itemId);
                 try (ResultSet rs = psStock.executeQuery()) {
                     if (!rs.next()) throw new SQLException(tag + ": no stock record exists.");
                     balance   = nz(rs.getBigDecimal("balance_qty"));
-                    lastPrice = nz(rs.getBigDecimal("last_price"));
                 }
                 if (ln.qty.compareTo(balance) > 0)
                     throw new SQLException(tag + ": insufficient stock. Requested " + ln.qty.stripTrailingZeros().toPlainString()
                             + ", available " + balance.stripTrailingZeros().toPlainString() + ".");
 
-                // b. unit price: latest PO line (net incl. GST / qty), else stock last price
-                BigDecimal price = lastPrice;
-                psPrice.setInt(1, ln.itemId);
-                try (ResultSet rs = psPrice.executeQuery()) {
-                    if (rs.next()) {
-                        BigDecimal net = rs.getBigDecimal("net_amount"), q = rs.getBigDecimal("qty");
-                        if (net != null && q != null && q.signum() > 0) price = net.divide(q, 6, RoundingMode.HALF_UP);
-                    }
-                }
+                // b. unit price (incl. GST): ONLY from the Item Cost master. No cost = the whole issue is not saved.
+                BigDecimal price      = ItemCostDAO.requireCost(con, ln.itemId);
                 BigDecimal total      = ln.qty.multiply(price).setScale(2, RoundingMode.HALF_UP);
                 BigDecimal newBalance = balance.subtract(ln.qty);
 

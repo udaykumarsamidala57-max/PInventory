@@ -94,8 +94,9 @@ public class WastageServlet extends HttpServlet {
         try (Connection con = InventoryDB.getConnection(branch)) {
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT im.Item_id, im.Item_name, im.Category, im.UOM, "
-                    + "COALESCE(st.balance_qty,0) AS balance, COALESCE(st.last_price,0) AS rate "
+                    + "COALESCE(st.balance_qty,0) AS balance, COALESCE(ic.unit_cost, st.last_price, 0) AS rate "
                     + "FROM item_master im LEFT JOIN stock st ON st.item_id = im.Item_id "
+                    + "LEFT JOIN item_cost ic ON ic.item_id = im.Item_id "
                     + "WHERE COALESCE(st.balance_qty,0) > 0 "
                     + "ORDER BY im.Category, im.Item_name");
                  ResultSet rs = ps.executeQuery()) {
@@ -290,8 +291,9 @@ public class WastageServlet extends HttpServlet {
                 String no = nextNumber(con);
                 Set<Integer> items = new LinkedHashSet<>();
                 try (PreparedStatement lock = con.prepareStatement(
-                             "SELECT st.balance_qty, st.last_price, im.Item_name, im.UOM FROM stock st "
-                             + "JOIN item_master im ON im.Item_id = st.item_id WHERE st.item_id = ? FOR UPDATE");
+                             "SELECT st.balance_qty, COALESCE(ic.unit_cost, st.last_price, 0) AS last_price, im.Item_name, im.UOM "
+                             + "FROM stock st JOIN item_master im ON im.Item_id = st.item_id "
+                             + "LEFT JOIN item_cost ic ON ic.item_id = st.item_id WHERE st.item_id = ? FOR UPDATE OF st");
                      PreparedStatement insW = con.prepareStatement(
                              "INSERT INTO stock_wastage (wastage_no, item_id, wastage_date, wastage_type, qty, unit_price, "
                              + "total_value, department, reason, entered_by) VALUES (?,?,?,?,?,?,?,?,?,?)",

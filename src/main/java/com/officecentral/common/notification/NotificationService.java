@@ -109,8 +109,9 @@ public final class NotificationService {
     }
 
     public static void indentSubmitted(String branch, int requesterId, String indentNo, String department, String type) {
-        Event e = new Event("INDENT_SUBMITTED", "Indent needs approval", "Indent " + indentNo
-                + " is waiting for department approval.", "indent", indentNo, branch);
+        Event e = new Event("INDENT_SUBMITTED", "Indent needs approval",
+                indentMessage(branch, indentNo, "Indent " + indentNo + " is waiting for department approval."),
+                "indent", indentNo, branch);
         Set<Integer> targets = storeUsers(branch, u -> {
             if ("Incharge".equalsIgnoreCase(u.role) && eq(u.department, department)) return true;
             if (isGlobal(u.role) && !eq(department, "Dining Hall")) return true;
@@ -127,7 +128,8 @@ public final class NotificationService {
         String title = levelOne ? "Indent " + result : "Final indent " + result;
         Event e = new Event(levelOne ? "INDENT_LEVEL1_" + (approved ? "APPROVED" : "REJECTED")
                 : "INDENT_LEVEL2_" + (approved ? "APPROVED" : "REJECTED"), title,
-                "Indent " + indentNo + " was " + result + " at the " + stage + " approval stage.",
+                indentMessage(branch, indentNo, "Indent " + indentNo + " was " + result
+                        + " at the " + stage + " approval stage."),
                 "indent", indentNo, branch);
         Set<Integer> requesterIds = userIds(java.util.Arrays.asList(requester));
         publish(requesterIds, e);
@@ -135,14 +137,16 @@ public final class NotificationService {
             Set<Integer> next = storeUsers(branch, u -> isGlobal(u.role)
                     && !eq(department, "Dining Hall"));
             publish(next, new Event("INDENT_AWAITING_FINAL", "Indent needs final approval",
-                    "Indent " + indentNo + " has department approval and is ready for final review.",
+                    indentMessage(branch, indentNo, "Indent " + indentNo
+                            + " has department approval and is ready for final review."),
                     "indent", indentNo, branch));
         }
         if (!levelOne && approved && "Issue".equalsIgnoreCase(type)) {
             Set<Integer> store = storeUsers(branch, u -> "Store".equalsIgnoreCase(u.department)
                     || "Store".equalsIgnoreCase(u.role));
             publish(store, new Event("ISSUE_READY", "Approved issue is ready",
-                    "Issue indent " + indentNo + " is approved and ready for the store to issue.",
+                    indentMessage(branch, indentNo, "Issue indent " + indentNo
+                            + " is approved and ready for the store to issue."),
                     "indent", indentNo, branch));
         }
     }
@@ -207,7 +211,8 @@ public final class NotificationService {
 
     public static void stockIssued(String branch, String indentNo, String requester) {
         publish(userIds(java.util.Arrays.asList(requester)), new Event("STOCK_ISSUED", "Stock issued",
-                "Items for indent " + indentNo + " have been issued by the store.", "indent", indentNo, branch));
+                indentMessage(branch, indentNo, "Items for indent " + indentNo
+                        + " have been issued by the store."), "indent", indentNo, branch));
     }
 
     public static void issueReadyForId(String branch, int indentId) {
@@ -219,12 +224,47 @@ public final class NotificationService {
                 if (rs.next()) publish(storeUsers(branch, u -> "Store".equalsIgnoreCase(u.department)
                                 || "Store".equalsIgnoreCase(u.role)),
                         new Event("ISSUE_READY", "Approved issue is ready",
-                                "Issue indent " + rs.getString("indent_no") + " is approved and ready for the store to issue.",
+                                indentMessage(branch, rs.getString("indent_no"), "Issue indent "
+                                        + rs.getString("indent_no") + " is approved and ready for the store to issue."),
                                 "indent", rs.getString("indent_no"), branch));
             }
         } catch (SQLException ex) {
             LOG.log(Level.WARNING, "Could not create store issue notification", ex);
         }
+    }
+
+    /** Adds a short item/quantity summary to every indent-related push and inbox entry. */
+    private static String indentMessage(String branch, String indentNo, String message) {
+        String items = indentItemSummary(branch, indentNo);
+        return items.isEmpty() ? message : message + "\nItems: " + items;
+    }
+
+    private static String indentItemSummary(String branch, String indentNo) {
+        List<String> items = new ArrayList<>();
+        int count = 0;
+        try (Connection con = InventoryDB.getConnection(branch);
+             PreparedStatement ps = con.prepareStatement(
+                     "SELECT item_name,qty,uom FROM indent WHERE indent_no=? ORDER BY item_name")) {
+            ps.setString(1, indentNo);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    count++;
+                    if (items.size() >= 4) continue;
+                    String name = clean(rs.getString("item_name"), 45);
+                    String quantity = java.math.BigDecimal.valueOf(rs.getDouble("qty"))
+                            .stripTrailingZeros().toPlainString();
+                    String unit = clean(rs.getString("uom"), 16);
+                    items.add(name + " x " + quantity + (unit.isEmpty() ? "" : " " + unit));
+                }
+            }
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Could not load indent items for notification " + indentNo, ex);
+            return "";
+        }
+        if (items.isEmpty()) return "";
+        String summary = String.join(", ", items);
+        if (count > items.size()) summary += " (plus " + (count - items.size()) + " more)";
+        return summary;
     }
 
     private static Set<Integer> adminUsers(String branch) {
