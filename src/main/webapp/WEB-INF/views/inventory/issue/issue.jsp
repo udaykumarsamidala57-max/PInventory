@@ -257,7 +257,7 @@ input[type="text"] {
 <div class="main-content">
     <div class="card">
         <h2>Issue Stock</h2>
-        <h3>Approved Indents Pending Issue</h3>
+        <h3>Approved. Indents Pending Issue</h3>
         <c:if test="${not empty message}">
             <p class="message" style="color:${message.startsWith('✅') ? 'green' : 'red'};"><c:out value="${message}" /></p>
         </c:if>
