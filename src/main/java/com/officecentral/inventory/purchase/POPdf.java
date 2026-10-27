@@ -1,10 +1,5 @@
 package com.officecentral.inventory.purchase;
 
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,11 +9,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
-import javax.imageio.ImageIO;
 
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
@@ -60,8 +51,6 @@ public final class POPdf {
     private static final BaseColor GREEN  = new BaseColor(0x2e, 0x84, 0x4a);
     private static final BaseColor GREEN_BG = new BaseColor(0xea, 0xf5, 0xea);
 
-    private static volatile byte[] logoCache;
-    private static volatile byte[] brandingHeaderCache;
 
     private POPdf() { }
 
@@ -111,7 +100,7 @@ public final class POPdf {
         }
     }
 
-    /** The PDF bytes. headerPng = the school banner (Header.png), may be null. */
+    /** The PDF bytes. headerPng = the school banner from Branding.headerForPdf(ctx); may be null (no banner). */
     public static byte[] build(Data d, byte[] headerPng) throws Exception {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         float mm = 72f / 25.4f;
@@ -134,28 +123,17 @@ public final class POPdf {
         Font secF     = font(9, Font.BOLD, BLUE);
         Font condF    = font(8.5f, Font.NORMAL, INK);
 
-        // ---- branding header (PO and Indent Header.png)
-        byte[] brandingHeader = loadBrandingHeader();
-        if (brandingHeader != null) {
+        // ---- school header banner (assets/branding/PO and Indent Header.png, see Branding.headerForPdf)
+        if (headerPng != null) {
             try {
-                Image brandImg = Image.getInstance(brandingHeader);
-                brandImg.scaleToFit(doc.right() - doc.left(), 80f);       // max-height ~80px
-                brandImg.setAlignment(Element.ALIGN_CENTER);
-                brandImg.setSpacingAfter(6f);
-                doc.add(brandImg);
+                Image img = Image.getInstance(headerPng);
+                img.scaleToFit(doc.right() - doc.left(), 80f);
+                img.setAlignment(Element.ALIGN_CENTER);
+                img.setSpacingAfter(6f);
+                doc.add(img);
             } catch (Exception e) {
-                System.err.println("[PDF] Failed to add branding header: " + e.getMessage());
+                System.err.println("[PDF] PO " + nz(d.poNumber) + ": header image not added: " + e.getMessage());
             }
-        }
-
-        // ---- header banner
-        byte[] logo = logo(headerPng);
-        if (logo != null) {
-            Image img = Image.getInstance(logo);
-            img.scaleToFit(doc.right() - doc.left(), 60f);       // max-height ~80px
-            img.setAlignment(Element.ALIGN_CENTER);
-            img.setSpacingAfter(4f);
-            doc.add(img);
         }
 
         // ---- contact line
@@ -453,69 +431,6 @@ public final class POPdf {
                     .format(DateTimeFormatter.ofPattern("dd MMMM yyyy"));
         } catch (Exception e) {
             return raw;
-        }
-    }
-
-    /** Load branding header from assets/branding/PO and Indent Header.png */
-    private static byte[] loadBrandingHeader() {
-        byte[] cached = brandingHeaderCache;
-        if (cached != null) return cached;
-        try {
-            // Try to load from the application's resources
-            String catalinaBase = System.getProperty("catalina.base");
-            String basePath = catalinaBase != null ? catalinaBase : System.getProperty("user.dir");
-
-            // Try multiple possible paths
-            String[] possiblePaths = {
-                basePath + File.separator + "webapps" + File.separator + "PInventory" + File.separator + "assets" + File.separator + "branding" + File.separator + "PO and Indent Header.png",
-                basePath + "/webapps/PInventory/assets/branding/PO and Indent Header.png",
-                "webapps/PInventory/assets/branding/PO and Indent Header.png",
-                "assets/branding/PO and Indent Header.png"
-            };
-
-            for (String headerPath : possiblePaths) {
-                java.nio.file.Path path = Paths.get(headerPath);
-                if (Files.exists(path)) {
-                    byte[] data = Files.readAllBytes(path);
-                    brandingHeaderCache = data;
-                    System.out.println("[PDF] Branding header loaded from: " + path.toAbsolutePath());
-                    return data;
-                }
-            }
-
-            System.err.println("[PDF] Branding header not found in any expected location");
-            return null;
-        } catch (Exception e) {
-            System.err.println("[PDF] Could not load branding header: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    /** Header.png is very large; shrink it once (on a white background) so the PDF stays small. */
-    private static byte[] logo(byte[] png) {
-        if (png == null) return null;
-        byte[] cached = logoCache;
-        if (cached != null) return cached;
-        try {
-            BufferedImage src = ImageIO.read(new ByteArrayInputStream(png));
-            if (src == null) return null;
-            int w = Math.min(1600, src.getWidth());
-            int h = Math.max(1, Math.round(src.getHeight() * (w / (float) src.getWidth())));
-            BufferedImage dst = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = dst.createGraphics();
-            g.setColor(Color.WHITE);
-            g.fillRect(0, 0, w, h);
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
-            g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            g.drawImage(src, 0, 0, w, h, null);
-            g.dispose();
-            ByteArrayOutputStream o = new ByteArrayOutputStream();
-            ImageIO.write(dst, "png", o);
-            logoCache = o.toByteArray();
-            return logoCache;
-        } catch (Exception e) {
-            return null;
         }
     }
 }

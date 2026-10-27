@@ -103,13 +103,9 @@ public final class POAlert {
         });
     }
 
-    /** The school banner used at the top of the PO print (webapp/Header.png), or null. */
+    /** The school banner for the PO PDF (webapp/assets/branding/PO and Indent Header.png), or null. */
     public static byte[] headerImage(javax.servlet.ServletContext ctx) {
-        try (java.io.InputStream in = ctx.getResourceAsStream("/Header.png")) {
-            return in == null ? null : in.readAllBytes();
-        } catch (Exception e) {
-            return null;
-        }
+        return com.officecentral.common.web.Branding.headerForPdf(ctx);
     }
 
     private static double num(String s) {
@@ -237,15 +233,7 @@ public final class POAlert {
 
     /** Link to the PO approval page, as seen from the browser (works behind Railway's proxy too). */
     public static String approveUrl(javax.servlet.http.HttpServletRequest req) {
-        String proto = req.getHeader("X-Forwarded-Proto");
-        String host = req.getHeader("X-Forwarded-Host");
-        if (proto == null || proto.isEmpty()) proto = req.getScheme();
-        if (host == null || host.isEmpty()) {
-            int port = req.getServerPort();
-            boolean normal = ("http".equals(proto) && port == 80) || ("https".equals(proto) && port == 443);
-            host = req.getServerName() + (normal ? "" : ":" + port);
-        }
-        return proto + "://" + host + req.getContextPath() + "/approve-po";
+        return com.officecentral.common.web.Branding.baseUrl(req) + "/approve-po";
     }
 
     private static String storeName(String branch) {
@@ -274,7 +262,12 @@ public final class POAlert {
                 .append("</tr>");
         }
 
+        // School header banner at the top of the mail, linked from the site itself (approveUrl = <site>/approve-po)
+        String site = approveUrl == null ? null
+                : approveUrl.endsWith("/approve-po") ? approveUrl.substring(0, approveUrl.length() - "/approve-po".length())
+                : null;
         return "<div style='font-family:Segoe UI,Arial,sans-serif;color:#1f2937;max-width:680px;'>"
+            + com.officecentral.common.web.Branding.emailHeaderHtml(site)
             + "<div style='background:#032d60;color:#fff;padding:14px 18px;border-radius:8px 8px 0 0;'>"
             + "<div style='font-size:12px;opacity:.8;'>PInventory &middot; " + esc(storeName(branch)) + "</div>"
             + "<div style='font-size:18px;font-weight:700;'>New Purchase Order created</div></div>"

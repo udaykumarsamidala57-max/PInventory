@@ -2,8 +2,6 @@ package com.officecentral.inventory.indent;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.sql.*;
 import java.util.*;
 import javax.servlet.annotation.WebServlet;
@@ -50,16 +48,32 @@ public class PendingIndentPdfServlet extends HttpServlet {
                 return;
             }
 
-            sendPendingIndentReport(toEmail);
-            out.println("<h3 style='color:green;'>✅ Email sent successfully to " + toEmail + "</h3>");
+            // Header image read from inside the web app; banner in the mail linked from this site
+            sendPendingIndentReport(toEmail,
+                    com.officecentral.common.web.Branding.headerForPdf(getServletContext()),
+                    com.officecentral.common.web.Branding.baseUrl(request));
+            out.println("<h3 style='color:green;'>✅ Email sent successfully to " + html(toEmail) + "</h3>");
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("<h3 style='color:red;'>❌ Error: " + e.getMessage() + "</h3>");
+            response.getWriter().println("<h3 style='color:red;'>❌ Error: " + html(e.getMessage()) + "</h3>");
         }
     }
 
+    private static String html(String s) {
+        return s == null ? "" : s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
     // -------------------- MAIN LOGIC --------------------
+    /** Kept for old callers: report without the header image. */
     public static void sendPendingIndentReport(String toEmail) {
+        sendPendingIndentReport(toEmail, null, null);
+    }
+
+    /**
+     * @param headerPng school banner for the PDF (Branding.headerForPdf), may be null
+     * @param siteUrl   the site's address (Branding.baseUrl), used for the banner at the top of the mail; may be null
+     */
+    public static void sendPendingIndentReport(String toEmail, byte[] headerPng, String siteUrl) {
     	
     	
         java.util.List<Map<String, Object>> pendingIndents = new ArrayList<>();
@@ -102,14 +116,14 @@ public class PendingIndentPdfServlet extends HttpServlet {
 
         // ✅ Generate PDF file
         String pdfPath = System.getProperty("java.io.tmpdir") + File.separator + "PendingIndentsReport.pdf";
-        generatePDF(pendingIndents, pdfPath);
+        generatePDF(pendingIndents, pdfPath, headerPng);
 
         // ✅ Send Email
-        sendBrevoEmailWithAttachment(toEmail, pdfPath);
+        sendBrevoEmailWithAttachment(toEmail, pdfPath, siteUrl);
     }
 
     // -------------------- PDF CREATION --------------------
-    private static void generatePDF(java.util.List<Map<String, Object>> data, String filePath) {
+    private static void generatePDF(java.util.List<Map<String, Object>> data, String filePath, byte[] brandingHeader) {
         try {
             Document document = new Document(PageSize.A4, 36, 36, 50, 50);
             PdfWriter.getInstance(document, new FileOutputStream(filePath));
@@ -121,8 +135,7 @@ public class PendingIndentPdfServlet extends HttpServlet {
             Font headerFont = new Font(Font.FontFamily.HELVETICA, 12, Font.BOLD, BaseColor.WHITE);
             Font textFont = new Font(Font.FontFamily.HELVETICA, 11, Font.NORMAL, BaseColor.BLACK);
 
-            // ---- Add branding header (PO and Indent Header.png)
-            byte[] brandingHeader = loadBrandingHeaderImage();
+            // ---- School header banner (assets/branding/PO and Indent Header.png, read via Branding)
             if (brandingHeader != null) {
                 try {
                     Image brandImg = Image.getInstance(brandingHeader);
@@ -191,47 +204,15 @@ public class PendingIndentPdfServlet extends HttpServlet {
         }
     }
 
-    // -------------------- BRANDING HEADER LOADER --------------------
-    private static byte[] loadBrandingHeaderImage() {
-        try {
-            String catalinaBase = System.getProperty("catalina.base");
-            String basePath = catalinaBase != null ? catalinaBase : System.getProperty("user.dir");
-
-            // Try multiple possible paths
-            String[] possiblePaths = {
-                basePath + File.separator + "webapps" + File.separator + "PInventory" + File.separator + "assets" + File.separator + "branding" + File.separator + "PO and Indent Header.png",
-                basePath + "/webapps/PInventory/assets/branding/PO and Indent Header.png",
-                "webapps/PInventory/assets/branding/PO and Indent Header.png",
-                "assets/branding/PO and Indent Header.png"
-            };
-
-            for (String headerPath : possiblePaths) {
-                java.nio.file.Path path = Paths.get(headerPath);
-                if (Files.exists(path)) {
-                    byte[] data = Files.readAllBytes(path);
-                    System.out.println("[PDF] Branding header loaded from: " + path.toAbsolutePath());
-                    return data;
-                }
-            }
-
-            System.err.println("[PDF] Branding header not found in any expected location");
-            return null;
-        } catch (Exception e) {
-            System.err.println("[PDF] Could not load branding header: " + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     // -------------------- BREVO EMAIL --------------------
-    private static void sendBrevoEmailWithAttachment(String to, String pdfPath) {
+    private static void sendBrevoEmailWithAttachment(String to, String pdfPath, String siteUrl) {
         try {
             // Read PDF file and convert to Base64
             File pdfFile = new File(pdfPath);
             byte[] pdfBytes = java.nio.file.Files.readAllBytes(pdfFile.toPath());
 
             // ✅ Build HTML content (fully escaped)
-            String html = """
+            String html = com.officecentral.common.web.Branding.emailHeaderHtml(siteUrl) + """
             <div style='font-family:Poppins,Arial,sans-serif;background:#f8fafc;color:#1f2937;border-radius:8px;overflow:hidden;'>
               <div style='background:linear-gradient(90deg,#2563eb,#1d4ed8);padding:15px;text-align:center;color:white;'>
                 <h2 style='margin:0;font-weight:700;'>Sandur Residential School</h2>
