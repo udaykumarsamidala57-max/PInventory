@@ -1,8 +1,8 @@
 {
-  "mandatory": false,
-  "sha256": "7873c585a5cee8ff2df7134defe7ac9917cd2868a9a6d806ea24151f2caa0344",
-  "apk": "mobile-app/pinventory-1.8.apk",
-  "versionCode": 9,
-  "versionName": "1.8",
-  "notes": "Adds visitor request push notifications with Approve and Reject actions."
+    "versionCode":  11,
+    "versionName":  "2.0",
+    "apk":  "mobile-app/pinventory-2.0.apk",
+    "sha256":  "0fdcd4ab47550e0547d63810f0a0e55772e4f6de6f5734d048f2b1f2c834867f",
+    "notes":  "New Visitor Management module",
+    "mandatory":  false
 }
