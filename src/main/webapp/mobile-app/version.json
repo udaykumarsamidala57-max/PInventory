@@ -1,8 +1,8 @@
 {
-    "versionCode": 12,
-    "versionName": "2.1",
-    "apk": "mobile-app/pinventory-2.1.apk",
-    "sha256": "a0f2921b2e34e7fec2d751d167e8691c7f168261c3e20089e11418e9e019d7ee",
-    "notes": "Visitor Management: visitors for you on the home screen, photos, one-tap exit",
-    "mandatory": false
+    "versionCode":  13,
+    "versionName":  "2.2",
+    "apk":  "mobile-app/pinventory-2.2.apk",
+    "sha256":  "ebf3b7487f47c147435cc06567b9fec10a72367e7b8ab2e06d365e2967e23fa9",
+    "notes":  "Visitor alerts fixed: notifications now arrive, alert shows even when the app is open",
+    "mandatory":  true
 }
