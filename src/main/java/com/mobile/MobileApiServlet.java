@@ -321,6 +321,10 @@ public class MobileApiServlet extends HttpServlet {
                 fields.put("visitorId", positiveLong(readJson(req), "visitorId"));
                 return visitorReply(SchoolOperationsMobileClient.visitors("complete", userId, fields));
             }
+            case "/visitors/exit": {
+                fields.put("visitorId", positiveLong(readJson(req), "visitorId"));
+                return visitorReply(SchoolOperationsMobileClient.visitors("exit", userId, fields));
+            }
             case "/visitors/checkout": {
                 fields.put("passCode", str(readJson(req), "passCode", 16).toUpperCase(java.util.Locale.ROOT));
                 return visitorReply(SchoolOperationsMobileClient.visitors("checkout", userId, fields));
