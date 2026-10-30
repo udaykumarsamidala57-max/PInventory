@@ -5,6 +5,8 @@ import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 import com.google.firebase.messaging.AndroidConfig;
 import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingException;
+import com.google.firebase.messaging.MessagingErrorCode;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
 import com.officecentral.common.config.AppConfig;
@@ -341,35 +343,63 @@ public final class NotificationService {
     }
 
     private static void send(Map<Integer, List<String>> devices, Event e) {
+        FirebaseMessaging messaging;
         try {
-            FirebaseMessaging messaging = FirebaseMessaging.getInstance(firebaseApp());
-            Map<String, String> data = new LinkedHashMap<>();
-            data.put("eventType", e.type);
-            data.put("entityType", e.entityType);
-            data.put("entityId", e.entityId);
-            data.put("store", e.branch);
-            boolean actionableVisitor = "VISITOR_REQUEST".equals(e.type);
-            if (actionableVisitor) {
-                data.put("title", e.title);
-                data.put("body", e.body);
-            }
-            for (List<String> tokens : devices.values()) {
-                for (String token : tokens) {
-                    Message.Builder builder = Message.builder().setToken(token).putAllData(data);
-                    if (actionableVisitor) {
-                        // Data-only/high-priority delivery lets Android attach Approve/Reject actions.
-                        builder.setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH)
-                                .setTtl(900_000L).build()); // 15 min: phone may be offline briefly while the visitor waits
+            messaging = FirebaseMessaging.getInstance(firebaseApp());
+        } catch (Exception ex) {
+            LOG.log(Level.WARNING, "FCM is not configured; " + e.type + " saved in the in-app inbox only.", ex);
+            return;
+        }
+        Map<String, String> data = new LinkedHashMap<>();
+        data.put("eventType", e.type);
+        data.put("entityType", e.entityType);
+        data.put("entityId", e.entityId);
+        data.put("store", e.branch);
+        boolean actionableVisitor = "VISITOR_REQUEST".equals(e.type);
+        if (actionableVisitor) {
+            data.put("title", e.title);
+            data.put("body", e.body);
+        }
+        // Each phone is sent separately: one old or broken token must not stop delivery to the others.
+        for (Map.Entry<Integer, List<String>> user : devices.entrySet()) {
+            for (String token : user.getValue()) {
+                Message.Builder builder = Message.builder().setToken(token).putAllData(data);
+                if (actionableVisitor) {
+                    // Data-only/high-priority delivery lets Android attach Approve/Reject actions.
+                    builder.setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH)
+                            .setTtl(900_000L).build()); // 15 min: phone may be offline briefly while the visitor waits
+                } else {
+                    builder.setNotification(Notification.builder().setTitle(e.title).setBody(e.body).build())
+                            .setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.NORMAL).build());
+                }
+                try {
+                    messaging.send(builder.build());
+                } catch (FirebaseMessagingException ex) {
+                    MessagingErrorCode code = ex.getMessagingErrorCode();
+                    if (code == MessagingErrorCode.UNREGISTERED || code == MessagingErrorCode.INVALID_ARGUMENT
+                            || code == MessagingErrorCode.SENDER_ID_MISMATCH) {
+                        deactivateToken(token);
+                        LOG.info("Removed an expired push token for user " + user.getKey() + " (" + code + ").");
                     } else {
-                        builder.setNotification(Notification.builder().setTitle(e.title).setBody(e.body).build())
-                                .setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.NORMAL).build());
+                        LOG.log(Level.WARNING, "FCM delivery failed for " + e.type + " to user " + user.getKey()
+                                + " (" + code + "). In-app notification remains saved.", ex);
                     }
-                    Message message = builder.build();
-                    messaging.sendAsync(message).get();
+                } catch (Exception ex) {
+                    LOG.log(Level.WARNING, "FCM delivery failed for " + e.type + " to user " + user.getKey()
+                            + ". In-app notification remains saved.", ex);
                 }
             }
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "FCM delivery failed for " + e.type + ". In-app notifications remain saved.", ex);
+        }
+    }
+
+    /** A phone that uninstalled the app or got a new token: stop sending to it. */
+    private static void deactivateToken(String token) {
+        try (Connection con = InventoryDB.getAuthConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE mobile_push_devices SET active=0,updated_at=NOW() WHERE fcm_token=?")) {
+            ps.setString(1, token);
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            LOG.log(Level.WARNING, "Could not deactivate an expired push token", ex);
         }
     }
 
