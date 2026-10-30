@@ -1,8 +1,8 @@
 {
-    "versionCode":  11,
-    "versionName":  "2.0",
-    "apk":  "mobile-app/pinventory-2.0.apk",
-    "sha256":  "b7578939edeb0b823f2d843eb8b8ec3df8816796ee147b789161470f944ce97c",
-    "notes":  "New Visitor Management module",
-    "mandatory":  false
+    "versionCode": 12,
+    "versionName": "2.1",
+    "apk": "mobile-app/pinventory-2.1.apk",
+    "sha256": "a0f2921b2e34e7fec2d751d167e8691c7f168261c3e20089e11418e9e019d7ee",
+    "notes": "Visitor Management: visitors for you on the home screen, photos, one-tap exit",
+    "mandatory": false
 }
