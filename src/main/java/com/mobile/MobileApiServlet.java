@@ -58,6 +58,8 @@ public class MobileApiServlet extends HttpServlet {
 
     private static final int SESSION_SECONDS = 30 * 60;
     private static final int MAX_BODY_CHARS = 64 * 1024;
+    /** Visitor registration carries one camera photo (the app sends a compressed JPEG, ~0.5 MB). */
+    private static final int MAX_PHOTO_BODY_CHARS = 3 * 1024 * 1024;
 
     private static final Gson GSON = new GsonBuilder().serializeNulls().create();
     private static final SecureRandom RANDOM = new SecureRandom();
@@ -116,6 +118,9 @@ public class MobileApiServlet extends HttpServlet {
             Map<String, Object> out = new LinkedHashMap<>();
             out.put("notifications", NotificationService.list((Integer) s.getAttribute("userId"), 100));
             return out;
+        }
+        if (path.startsWith("/visitors/")) {
+            return visitorGet(path, req, s);
         }
         String branch = requireStore(s);
         Ctx c = new Ctx(s, branch);
@@ -220,6 +225,9 @@ public class MobileApiServlet extends HttpServlet {
             return SchoolOperationsMobileClient.decide((Integer) s.getAttribute("userId"), visitorId,
                     decision, reason);
         }
+        if (path.startsWith("/visitors/")) {
+            return visitorPost(path, req, s);
+        }
         String branch = requireStore(s);
         Ctx c = new Ctx(s, branch);
         switch (path) {
@@ -272,6 +280,67 @@ public class MobileApiServlet extends HttpServlet {
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("message", "Visitor request notification accepted.");
         return response;
+    }
+
+    // ------------------------------------------------------------------ visitor management (School Operations)
+
+    /** Visitor desk reads. School Operations checks the user's reception / security role. */
+    private Map<String, Object> visitorGet(String path, HttpServletRequest req, HttpSession s) {
+        Map<String, Object> fields = new LinkedHashMap<>();
+        String action;
+        switch (path) {
+            case "/visitors/access": action = "access"; break;
+            case "/visitors/users": action = "users"; break;
+            case "/visitors/mine": action = "mine"; break;
+            case "/visitors/counts": action = "counts"; break;
+            case "/visitors/queue":
+                action = "queue";
+                fields.put("status", trim(req.getParameter("status")).toUpperCase(java.util.Locale.ROOT));
+                break;
+            default: throw new ApiException(404, "Unknown request.");
+        }
+        return visitorReply(SchoolOperationsMobileClient.visitors(action, (Integer) s.getAttribute("userId"), fields));
+    }
+
+    /** Visitor desk actions. Only the listed fields are forwarded; the user id always comes from the session. */
+    private Map<String, Object> visitorPost(String path, HttpServletRequest req, HttpSession s) throws IOException {
+        int userId = (Integer) s.getAttribute("userId");
+        Map<String, Object> fields = new LinkedHashMap<>();
+        switch (path) {
+            case "/visitors/register": {
+                JsonObject body = parseJson(readRawBody(req, MAX_PHOTO_BODY_CHARS));
+                fields.put("fullName", str(body, "fullName", 160));
+                fields.put("phone", str(body, "phone", 20));
+                fields.put("personToMeetUserId", positiveLong(body, "personToMeetUserId"));
+                fields.put("purpose", str(body, "purpose", 240));
+                fields.put("durationMinutes", positiveLong(body, "durationMinutes"));
+                fields.put("photoBase64", str(body, "photoBase64", MAX_PHOTO_BODY_CHARS));
+                return visitorReply(SchoolOperationsMobileClient.visitors("register", userId, fields));
+            }
+            case "/visitors/complete": {
+                fields.put("visitorId", positiveLong(readJson(req), "visitorId"));
+                return visitorReply(SchoolOperationsMobileClient.visitors("complete", userId, fields));
+            }
+            case "/visitors/checkout": {
+                fields.put("passCode", str(readJson(req), "passCode", 16).toUpperCase(java.util.Locale.ROOT));
+                return visitorReply(SchoolOperationsMobileClient.visitors("checkout", userId, fields));
+            }
+            default:
+                throw new ApiException(404, "Unknown request.");
+        }
+    }
+
+    private static Map<String, Object> visitorReply(String rawJson) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        JsonObject reply = parseJson(rawJson);
+        for (Map.Entry<String, com.google.gson.JsonElement> e : reply.entrySet()) out.put(e.getKey(), e.getValue());
+        return out;
+    }
+
+    private static String str(JsonObject body, String name, int maxLength) {
+        String value = body.has(name) && body.get(name).isJsonPrimitive() ? trim(body.get(name).getAsString()) : "";
+        if (value.length() > maxLength) throw new ApiException(400, "The " + name + " is too long.");
+        return value;
     }
 
     private static long positiveLong(JsonObject body, String name) {
@@ -488,13 +557,17 @@ public class MobileApiServlet extends HttpServlet {
     }
 
     private static String readRawBody(HttpServletRequest req) throws IOException {
+        return readRawBody(req, MAX_BODY_CHARS);
+    }
+
+    private static String readRawBody(HttpServletRequest req, int maxChars) throws IOException {
         StringBuilder sb = new StringBuilder();
         char[] buf = new char[4096];
         try (BufferedReader r = req.getReader()) {
             int n;
             while ((n = r.read(buf)) != -1) {
                 sb.append(buf, 0, n);
-                if (sb.length() > MAX_BODY_CHARS) throw new ApiException(400, "Request too large.");
+                if (sb.length() > maxChars) throw new ApiException(400, "Request too large.");
             }
         }
         return sb.toString();
