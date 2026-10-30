@@ -293,6 +293,16 @@ public class MobileApiServlet extends HttpServlet {
             case "/visitors/users": action = "users"; break;
             case "/visitors/mine": action = "mine"; break;
             case "/visitors/counts": action = "counts"; break;
+            case "/visitors/photo":
+                action = "photo";
+                try {
+                    long id = Long.parseLong(trim(req.getParameter("visitorId")));
+                    if (id <= 0) throw new NumberFormatException();
+                    fields.put("visitorId", id);
+                } catch (NumberFormatException e) {
+                    throw new ApiException(400, "Invalid visitorId.");
+                }
+                break;
             case "/visitors/queue":
                 action = "queue";
                 fields.put("status", trim(req.getParameter("status")).toUpperCase(java.util.Locale.ROOT));
