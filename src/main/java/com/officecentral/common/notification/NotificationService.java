@@ -61,6 +61,7 @@ public final class NotificationService {
             ps.setInt(2, userId);
             ps.executeUpdate();
         }
+        LOG.info("Push: phone registered for user " + userId + ".");
     }
 
     public static void unregisterDevice(int userId, String token) throws SQLException {
@@ -338,7 +339,11 @@ public final class NotificationService {
             LOG.log(Level.WARNING, "Could not save mobile notification " + e.type, ex);
             return;
         }
-        if (devices.isEmpty()) return;
+        if (devices.isEmpty()) {
+            LOG.warning("Push: " + e.type + " saved in the inbox only. No registered phone for user(s) " + newlyNotified
+                    + " (they must sign in to the Android app 2.2+ and allow notifications).");
+            return;
+        }
         SENDER.submit(() -> send(devices, e));
     }
 
@@ -374,6 +379,7 @@ public final class NotificationService {
                 }
                 try {
                     messaging.send(builder.build());
+                    LOG.info("Push: " + e.type + " sent to user " + user.getKey() + ".");
                 } catch (FirebaseMessagingException ex) {
                     MessagingErrorCode code = ex.getMessagingErrorCode();
                     if (code == MessagingErrorCode.UNREGISTERED || code == MessagingErrorCode.INVALID_ARGUMENT
