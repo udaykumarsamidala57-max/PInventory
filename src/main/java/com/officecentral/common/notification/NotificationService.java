@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -106,6 +107,22 @@ public final class NotificationService {
             ps.setInt(2, userId);
             ps.executeUpdate();
         }
+    }
+
+    /** Sends one actionable alert only to the PInventory account being visited. */
+    public static void visitorRequest(int userId, long visitorId, String visitorName, String purpose, int durationMinutes) {
+        if (userId <= 0 || visitorId <= 0) return;
+        String name = clean(visitorName, 100);
+        if (name.isEmpty()) name = "A visitor";
+        String visitPurpose = clean(purpose, 220);
+        String body = name + " is waiting to meet you."
+                + (visitPurpose.isEmpty() ? "" : " Purpose: " + visitPurpose + ".")
+                + (durationMinutes > 0 ? " Expected duration: " + durationMinutes + " minutes." : "");
+        Event event = new Event("VISITOR_REQUEST", "Visitor waiting for approval", body,
+                "school_visitor", String.valueOf(visitorId), "");
+        String eventId = UUID.nameUUIDFromBytes(
+                ("SCHOOL_VISITOR_REQUEST:" + visitorId + ":" + userId).getBytes(StandardCharsets.UTF_8)).toString();
+        publish(List.of(userId), event, eventId);
     }
 
     public static void indentSubmitted(String branch, int requesterId, String indentNo, String department, String type) {
@@ -273,15 +290,22 @@ public final class NotificationService {
     }
 
     private static void publish(Collection<Integer> userIds, Event e) {
+        publish(userIds, e, UUID.randomUUID().toString());
+    }
+
+    private static void publish(Collection<Integer> userIds, Event e, String eventId) {
         if (userIds == null || userIds.isEmpty()) return;
-        String eventId = UUID.randomUUID().toString();
+        Set<Integer> targets = new LinkedHashSet<>();
+        for (Integer uid : userIds) if (uid != null && uid > 0) targets.add(uid);
+        if (targets.isEmpty()) return;
+        Set<Integer> newlyNotified = new LinkedHashSet<>();
         Map<Integer, List<String>> devices = new LinkedHashMap<>();
         try (Connection con = InventoryDB.getAuthConnection()) {
             try (PreparedStatement ps = con.prepareStatement(
                     "INSERT IGNORE INTO mobile_notifications(event_id,user_id,event_type,title,message,entity_type,entity_id,store_code,created_at) "
                     + "VALUES(?,?,?,?,?,?,?,?,NOW())")) {
-                for (Integer uid : new LinkedHashSet<>(userIds)) {
-                    if (uid == null || uid <= 0) continue;
+                List<Integer> orderedTargets = new ArrayList<>(targets);
+                for (Integer uid : orderedTargets) {
                     ps.setString(1, eventId);
                     ps.setInt(2, uid);
                     ps.setString(3, e.type);
@@ -292,13 +316,17 @@ public final class NotificationService {
                     ps.setString(8, e.branch);
                     ps.addBatch();
                 }
-                ps.executeBatch();
+                int[] inserted = ps.executeBatch();
+                for (int i = 0; i < inserted.length && i < orderedTargets.size(); i++) {
+                    if (inserted[i] > 0 || inserted[i] == Statement.SUCCESS_NO_INFO) newlyNotified.add(orderedTargets.get(i));
+                }
             }
+            if (newlyNotified.isEmpty()) return;
             try (PreparedStatement ps = con.prepareStatement(
                     "SELECT fcm_token,user_id FROM mobile_push_devices WHERE active=1 AND user_id IN ("
-                    + placeholders(userIds.size()) + ")")) {
+                    + placeholders(newlyNotified.size()) + ")")) {
                 int i = 1;
-                for (Integer uid : new LinkedHashSet<>(userIds)) ps.setInt(i++, uid);
+                for (Integer uid : newlyNotified) ps.setInt(i++, uid);
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) devices.computeIfAbsent(rs.getInt("user_id"), k -> new ArrayList<>())
                             .add(rs.getString("fcm_token"));
@@ -320,12 +348,23 @@ public final class NotificationService {
             data.put("entityType", e.entityType);
             data.put("entityId", e.entityId);
             data.put("store", e.branch);
+            boolean actionableVisitor = "VISITOR_REQUEST".equals(e.type);
+            if (actionableVisitor) {
+                data.put("title", e.title);
+                data.put("body", e.body);
+            }
             for (List<String> tokens : devices.values()) {
                 for (String token : tokens) {
-                    Message message = Message.builder().setToken(token)
-                            .setNotification(Notification.builder().setTitle(e.title).setBody(e.body).build())
-                            .setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.NORMAL).build())
-                            .putAllData(data).build();
+                    Message.Builder builder = Message.builder().setToken(token).putAllData(data);
+                    if (actionableVisitor) {
+                        // Data-only/high-priority delivery lets Android attach Approve/Reject actions.
+                        builder.setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.HIGH)
+                                .setTtl(900_000L).build()); // 15 min: phone may be offline briefly while the visitor waits
+                    } else {
+                        builder.setNotification(Notification.builder().setTitle(e.title).setBody(e.body).build())
+                                .setAndroidConfig(AndroidConfig.builder().setPriority(AndroidConfig.Priority.NORMAL).build());
+                    }
+                    Message message = builder.build();
                     messaging.sendAsync(message).get();
                 }
             }

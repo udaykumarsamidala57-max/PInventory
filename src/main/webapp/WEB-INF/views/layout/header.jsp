@@ -14,7 +14,6 @@
     String roles = (String) sesso.getAttribute("role");
     String depts = (String) sesso.getAttribute("department");
     String branchess = (String) sesso.getAttribute("branch");
-
     if (users == null) users = "";
     if (roles == null) roles = "";
     if (depts == null) depts = "";
@@ -247,6 +246,9 @@ try {
   </div>
   <% } %>
 <% } %>  
+
+<div class="sidebar-label">School Management</div>
+<a href="<%= request.getContextPath() %>/school-operations/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-school text-success"></i> School Operations</a>
 
 <div class="sidebar-label">Core Operations Desk</div>
 <div class="dropdown Service-menu">

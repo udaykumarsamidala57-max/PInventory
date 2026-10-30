@@ -1,8 +1,8 @@
 {
-  "versionCode": 8,
-  "versionName": "1.7",
-  "apk": "mobile-app/pinventory-1.7.apk",
-  "sha256": "f0ee659fa59883897be56396acc00f8c324fe9c24350d4007116669c683fac6f",
-  "notes": "Adds workflow approval alerts, service request notifications and the in-app notification inbox.",
-  "mandatory": false
+  "mandatory": false,
+  "sha256": "7873c585a5cee8ff2df7134defe7ac9917cd2868a9a6d806ea24151f2caa0344",
+  "apk": "mobile-app/pinventory-1.8.apk",
+  "versionCode": 9,
+  "versionName": "1.8",
+  "notes": "Adds visitor request push notifications with Approve and Reject actions."
 }

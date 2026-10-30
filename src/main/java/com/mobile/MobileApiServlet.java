@@ -32,6 +32,7 @@ import com.google.gson.JsonParser;
 import com.officecentral.common.dao.StoreAccessDAO;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.common.notification.NotificationService;
+import com.officecentral.common.sso.SchoolOperationsRequestSignature;
 
 /**
  * JSON API for the PInventory Android app: /api/mobile/*
@@ -162,6 +163,9 @@ public class MobileApiServlet extends HttpServlet {
     }
 
     private Map<String, Object> routePost(String path, HttpServletRequest req) throws Exception {
+        if ("/school-operations/visitor-request".equals(path)) {
+            return receiveVisitorRequestNotification(req);
+        }
         if ("/login".equals(path)) {
             return login(req);
         }
@@ -192,6 +196,30 @@ public class MobileApiServlet extends HttpServlet {
             NotificationService.markRead((Integer) s.getAttribute("userId"), intParam(req, "id"));
             return new LinkedHashMap<>();
         }
+        if ("/visitors/decision".equals(path)) {
+            features(s);
+            JsonObject body = readJson(req);
+            long visitorId = positiveLong(body, "visitorId");
+            String decision;
+            if (body.has("decision") && body.get("decision").isJsonPrimitive()
+                    && body.getAsJsonPrimitive("decision").isString()) {
+                decision = trim(body.get("decision").getAsString()).toUpperCase(java.util.Locale.ROOT);
+            } else if (body.has("approved") && body.get("approved").isJsonPrimitive()
+                    && body.getAsJsonPrimitive("approved").isBoolean()) {
+                // Android 1.8 and older send only approved=true/false.
+                decision = body.get("approved").getAsBoolean() ? "APPROVE" : "REJECT";
+            } else {
+                throw new ApiException(400, "Choose wait, approve or reject.");
+            }
+            if (!"WAIT".equals(decision) && !"APPROVE".equals(decision) && !"REJECT".equals(decision)) {
+                throw new ApiException(400, "Choose wait, approve or reject.");
+            }
+            String reason = body.has("rejectionReason") && !body.get("rejectionReason").isJsonNull()
+                    ? trim(body.get("rejectionReason").getAsString()) : "";
+            if (reason.length() > 500) throw new ApiException(400, "Rejection reason is too long.");
+            return SchoolOperationsMobileClient.decide((Integer) s.getAttribute("userId"), visitorId,
+                    decision, reason);
+        }
         String branch = requireStore(s);
         Ctx c = new Ctx(s, branch);
         switch (path) {
@@ -211,6 +239,47 @@ public class MobileApiServlet extends HttpServlet {
             default:
                 throw new ApiException(404, "Unknown request.");
         }
+    }
+
+    private Map<String, Object> receiveVisitorRequestNotification(HttpServletRequest req) throws IOException {
+        String body = readRawBody(req);
+        String timestamp = req.getHeader("X-School-Operations-Timestamp");
+        String signature = req.getHeader("X-School-Operations-Signature");
+        if (!SchoolOperationsRequestSignature.verify("POST", "/api/mobile/school-operations/visitor-request",
+                timestamp, signature, body)) {
+            throw new ApiException(401, "Invalid School Operations integration signature.");
+        }
+        JsonObject request = parseJson(body);
+        int recipientUserId;
+        long visitorId;
+        int durationMinutes;
+        String visitorName;
+        String purpose;
+        try {
+            recipientUserId = request.get("recipientUserId").getAsInt();
+            visitorId = request.get("visitorId").getAsLong();
+            visitorName = request.get("visitorName").getAsString();
+            purpose = request.has("purpose") ? request.get("purpose").getAsString() : "";
+            durationMinutes = request.has("durationMinutes") ? request.get("durationMinutes").getAsInt() : 0;
+        } catch (RuntimeException ex) {
+            throw new ApiException(400, "Visitor notification details are incomplete.");
+        }
+        if (recipientUserId <= 0 || visitorId <= 0 || trim(visitorName).isEmpty() || visitorName.length() > 160
+                || purpose.length() > 240 || durationMinutes < 0 || durationMinutes > 1440) {
+            throw new ApiException(400, "Visitor notification details are invalid.");
+        }
+        NotificationService.visitorRequest(recipientUserId, visitorId, visitorName, purpose, durationMinutes);
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("message", "Visitor request notification accepted.");
+        return response;
+    }
+
+    private static long positiveLong(JsonObject body, String name) {
+        try {
+            long value = body.get(name).getAsLong();
+            if (value > 0) return value;
+        } catch (RuntimeException ignored) { }
+        throw new ApiException(400, "Invalid " + name + ".");
     }
 
     // ------------------------------------------------------------------ login / store
@@ -415,6 +484,10 @@ public class MobileApiServlet extends HttpServlet {
     }
 
     private static JsonObject readJson(HttpServletRequest req) throws IOException {
+        return parseJson(readRawBody(req));
+    }
+
+    private static String readRawBody(HttpServletRequest req) throws IOException {
         StringBuilder sb = new StringBuilder();
         char[] buf = new char[4096];
         try (BufferedReader r = req.getReader()) {
@@ -424,8 +497,12 @@ public class MobileApiServlet extends HttpServlet {
                 if (sb.length() > MAX_BODY_CHARS) throw new ApiException(400, "Request too large.");
             }
         }
+        return sb.toString();
+    }
+
+    private static JsonObject parseJson(String raw) {
         try {
-            return JsonParser.parseString(sb.toString()).getAsJsonObject();
+            return JsonParser.parseString(raw).getAsJsonObject();
         } catch (RuntimeException e) {
             throw new ApiException(400, "Invalid request data.");
         }

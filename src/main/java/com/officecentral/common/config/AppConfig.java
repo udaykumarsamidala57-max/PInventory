@@ -28,6 +28,8 @@ import java.util.Properties;
  *   FIREBASE_PROJECT_ID           Firebase project for Android push, defaults to office-central-erp
  *   FIREBASE_SERVICE_ACCOUNT_JSON (optional) service-account JSON supplied as a protected environment variable
  *   FIREBASE_SERVICE_ACCOUNT_FILE (optional) path to a protected service-account JSON file for local Tomcat
+ *   SCHOOL_OPERATIONS_BASE_URL     School Operations app menu link (defaults to http://localhost:8083/)
+ *   SCHOOL_OPERATIONS_SSO_SECRET   shared 32-byte HMAC key for sign-on and the signed mobile visitor bridge
  */
 public final class AppConfig {
 
