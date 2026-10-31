@@ -782,6 +782,42 @@
     .range-inline.loading { opacity: .6; }
     .range-inline.loading .fa-calendar-check { animation: rngpulse .8s ease-in-out infinite alternate; }
     @keyframes rngpulse { from { opacity: .3; } to { opacity: 1; } }
+    /* ---------- Visitors for you (Visitor Management) ---------- */
+    .vin-card .card-title .ti { background: #fdecea; color: #c0392b; }
+    .vin-count { background: #c0392b; color: #fff; border-radius: 10px; padding: 1px 8px; font-size: 11.5px; font-weight: 600; }
+    .vin-list { display: flex; flex-direction: column; }
+    .vin-row { border-bottom: 1px solid var(--border); }
+    .vin-row:last-child { border-bottom: 0; }
+    .vin-head { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: none; border: 0;
+        text-align: left; cursor: pointer; font: inherit; color: inherit; }
+    .vin-head:hover { background: var(--surface-2); }
+    .vin-head:focus-visible { outline: none; box-shadow: var(--focus); }
+    .vin-photo { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; flex: none; background: var(--accent-soft);
+        display: inline-flex; align-items: center; justify-content: center; color: var(--accent); font-size: 18px; }
+    .vin-photo.big { width: 150px; height: 150px; font-size: 48px; }
+    .vin-main { flex: 1; min-width: 0; }
+    .vin-name { font-weight: 600; color: var(--text-heading); font-size: 14px; }
+    .vin-sub { color: var(--text-muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .vin-chip { flex: none; border-radius: 10px; padding: 2px 9px; font-size: 11.5px; font-weight: 600; }
+    .vin-chip.wait { background: #fef1d8; color: #8c6302; }
+    .vin-chip.in { background: #ebf7e6; color: #2e844a; }
+    .vin-more { display: flex; gap: 18px; padding: 4px 14px 14px 70px; flex-wrap: wrap; align-items: flex-start; }
+    .vin-facts { flex: 1; min-width: 220px; display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; font-size: 13px; }
+    .vin-facts dt { color: var(--text-muted); }
+    .vin-facts dd { margin: 0; color: var(--text-body); }
+    .vin-actions { grid-column: 1 / -1; display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+    .vin-btn { border: 1px solid transparent; border-radius: var(--radius); padding: 7px 14px; font: 600 12.5px/1.2 inherit;
+        font-family: inherit; cursor: pointer; color: #fff; }
+    .vin-btn:disabled { opacity: .6; cursor: wait; }
+    .vin-btn:focus-visible { outline: none; box-shadow: var(--focus); }
+    .vin-btn.ok { background: #2e844a; } .vin-btn.ok:hover { background: #22683a; }
+    .vin-btn.warn { background: #b78103; } .vin-btn.warn:hover { background: #8c6302; }
+    .vin-btn.bad { background: #fff; color: #c0392b; border-color: #e3b4ae; } .vin-btn.bad:hover { background: #fdecea; }
+    .vin-btn.main { background: var(--accent); } .vin-btn.main:hover { background: var(--accent-hover); }
+    .vin-reason { flex: 1; min-width: 200px; padding: 7px 9px; border: 1px solid var(--border-strong); border-radius: var(--radius); font: inherit; }
+    .vin-msg { padding: 8px 14px; font-size: 12.5px; }
+    .vin-msg.bad { color: #c0392b; } .vin-msg.ok { color: #2e844a; }
+    @media (max-width: 600px) { .vin-more { padding-left: 14px; } .vin-photo.big { width: 120px; height: 120px; } }
 </style>
 </head>
 <body>
@@ -806,6 +842,17 @@
                 <i class="fas fa-plus"></i><span class="srm-trigger-text">Open Service Request</span>
             </button>
         </div>
+    </div>
+
+    <!-- Visitors for you: visitors waiting to meet the signed-in user (hidden when there are none) -->
+    <div class="card vin-card" id="visitorInbox" hidden>
+        <div class="card-header">
+            <h2 class="card-title"><span class="ti"><i class="fas fa-user-clock"></i></span> Visitors for you
+                <span class="vin-count" id="vinCount" hidden></span></h2>
+            <span class="card-meta">Click a visitor to see details and answer</span>
+        </div>
+        <div class="vin-msg" id="vinMsg" role="status" aria-live="polite" hidden></div>
+        <div class="vin-list" id="vinList"></div>
     </div>
 
     <!-- Consumption cost by department (This Year -> 60 -> 30 -> 7 days -> Today -> Between dates) -->
@@ -1568,6 +1615,123 @@ function switchTab(evt, tabId) {
             if (f && e.target.value) f.classList.remove("has-error");
         });
     });
+})();
+</script>
+<script>
+/* Visitors for you: loads every 20 s; Approve / Wait / Reject / Meeting over go through /visitor-inbox (CSRF added by header.jsp). */
+(function () {
+  var BASE = '<%= request.getContextPath() %>/visitor-inbox';
+  var card = document.getElementById('visitorInbox'), list = document.getElementById('vinList'),
+      count = document.getElementById('vinCount'), msg = document.getElementById('vinMsg');
+  if (!card) return;
+  var open = {}, photos = {}, busy = false, timer = null;
+
+  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  function t(v) { return v == null ? '' : String(v); }
+  function clock(iso) { if (!iso) return ''; var d = new Date(iso); return isNaN(d) ? '' : d.toLocaleTimeString('en-IN', {hour: '2-digit', minute: '2-digit'}); }
+  function since(iso) { var m = Math.max(0, Math.round((Date.now() - new Date(iso)) / 60000)); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : Math.floor(m / 60) + ' h ' + (m % 60) + ' min ago'; }
+  function duration(min) { min = +min || 0; return min >= 60 ? (min / 60) + (min === 60 ? ' hour' : ' hours') : min + ' minutes'; }
+  function api(path, body) {
+    var o = body ? {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {};
+    o.credentials = 'same-origin';
+    return fetch(BASE + path, o).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) { if (!r.ok) throw new Error(j.message || 'Request failed'); return j; });
+    });
+  }
+  function note(text, kind) { msg.textContent = text || ''; msg.className = 'vin-msg ' + (kind || ''); msg.hidden = !text; }
+
+  function photo(v, big) {
+    var box = el('span', 'vin-photo' + (big ? ' big' : '')); box.appendChild(el('i', 'fas fa-user'));
+    if (!v.hasPhoto) return box;
+    var show = function (src) { var img = el('img', 'vin-photo' + (big ? ' big' : '')); img.alt = 'Photo of ' + t(v.fullName); img.src = src; box.replaceWith(img); };
+    if (photos[v.id]) { setTimeout(function () { show(photos[v.id]); }, 0); return box; }
+    api('/photo?visitorId=' + encodeURIComponent(v.id)).then(function (j) {
+      if (j.photoBase64) { photos[v.id] = 'data:image/jpeg;base64,' + j.photoBase64; if (box.isConnected) show(photos[v.id]); }
+    }).catch(function () { /* keep the icon */ });
+    return box;
+  }
+
+  function act(btn, path, body, done) {
+    if (busy) return; busy = true; btn.disabled = true; note('');
+    api(path, body).then(function () { note(done, 'ok'); })
+      .catch(function (e) { note(e.message, 'bad'); })
+      .then(function () { busy = false; load(true); });
+  }
+
+  function row(v) {
+    var waiting = v.status === 'WAITING', r = el('div', 'vin-row');
+    var head = el('button', 'vin-head'); head.type = 'button'; head.setAttribute('aria-expanded', open[v.id] ? 'true' : 'false');
+    head.appendChild(photo(v, false));
+    var main = el('div', 'vin-main');
+    main.appendChild(el('div', 'vin-name', t(v.fullName)));
+    main.appendChild(el('div', 'vin-sub', t(v.purpose) + '  ·  ' + (waiting ? 'arrived ' + since(v.checkedInAt) : 'with you since ' + clock(v.checkedInAt))
+        + (v.personToMeet ? '  ·  to meet ' + t(v.personToMeet) : '')));
+    head.appendChild(main);
+    head.appendChild(el('span', 'vin-chip ' + (waiting ? 'wait' : 'in'), waiting ? (v.hostResponse === 'WAIT' ? 'ASKED TO WAIT' : 'WAITING') : 'IN MEETING'));
+    r.appendChild(head);
+
+    var more = el('div', 'vin-more'); more.hidden = !open[v.id];
+    head.addEventListener('click', function () {
+      open[v.id] = !open[v.id]; more.hidden = !open[v.id]; head.setAttribute('aria-expanded', open[v.id] ? 'true' : 'false');
+      if (open[v.id] && !more.firstChild) details(more, v);
+    });
+    if (open[v.id]) details(more, v);
+    r.appendChild(more);
+    return r;
+  }
+
+  function details(more, v) {
+    more.appendChild(photo(v, true));
+    var dl = el('dl', 'vin-facts');
+    [['Visitor', v.fullName], ['Mobile', v.phone], ['Visitor type', v.visitorType], ['To meet', v.personToMeet], ['Purpose', v.purpose],
+     ['Expected', duration(v.durationMinutes)], ['Arrived', clock(v.checkedInAt) + ' (' + since(v.checkedInAt) + ')']]
+      .forEach(function (p) { if (p[1]) { dl.appendChild(el('dt', null, p[0])); dl.appendChild(el('dd', null, t(p[1]))); } });
+    var bar = el('div', 'vin-actions');
+    if (v.status === 'WAITING') {
+      var ok = el('button', 'vin-btn ok', 'Approve'); ok.type = 'button';
+      ok.onclick = function () { act(ok, '/decision', {visitorId: v.id, decision: 'APPROVE'}, 'Approved. Reception will send ' + t(v.fullName) + ' in.'); };
+      bar.appendChild(ok);
+      if (v.hostResponse !== 'WAIT') {
+        var w = el('button', 'vin-btn warn', 'Ask to wait'); w.type = 'button';
+        w.onclick = function () { act(w, '/decision', {visitorId: v.id, decision: 'WAIT'}, 'Reception will ask ' + t(v.fullName) + ' to wait.'); };
+        bar.appendChild(w);
+      }
+      var rj = el('button', 'vin-btn bad', 'Reject…'); rj.type = 'button';
+      rj.onclick = function () {
+        if (bar.querySelector('.vin-reason')) return;
+        var reason = el('input', 'vin-reason'); reason.maxLength = 500; reason.placeholder = 'Reason for reception (optional)';
+        reason.setAttribute('aria-label', 'Rejection reason');
+        var go = el('button', 'vin-btn bad', 'Reject visit'); go.type = 'button';
+        go.onclick = function () { act(go, '/decision', {visitorId: v.id, decision: 'REJECT', reason: reason.value.trim()}, 'Visit rejected. Reception has been told.'); };
+        bar.appendChild(reason); bar.appendChild(go); reason.focus();
+      };
+      bar.appendChild(rj);
+    } else {
+      var done = el('button', 'vin-btn main', 'Meeting over — let visitor leave'); done.type = 'button';
+      done.onclick = function () { act(done, '/complete', {visitorId: v.id}, 'Meeting marked over. Security can now record the exit.'); };
+      bar.appendChild(done);
+    }
+    dl.appendChild(bar);
+    more.appendChild(dl);
+  }
+
+  function load(force) {
+    if (busy || (document.hidden && !force)) return;
+    if (!force && list.querySelector('.vin-reason')) return;   // do not wipe a reason being typed
+    api('/mine').then(function (j) {
+      var rows = (j.visitors || []).filter(function (v) { return v.status === 'WAITING' || v.status === 'APPROVED'; });
+      rows.sort(function (a, b) { return (a.status === 'WAITING' ? 0 : 1) - (b.status === 'WAITING' ? 0 : 1); });
+      var waiting = rows.filter(function (v) { return v.status === 'WAITING'; }).length;
+      list.textContent = '';
+      rows.forEach(function (v) { list.appendChild(row(v)); });
+      count.textContent = waiting + ' waiting'; count.hidden = waiting === 0;
+      card.hidden = rows.length === 0 && msg.hidden;
+    }).catch(function () { if (!list.firstChild) card.hidden = true; });   // Visitor Management offline: keep Home clean
+  }
+
+  load();
+  timer = setInterval(load, 20000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
 })();
 </script>
 </body>

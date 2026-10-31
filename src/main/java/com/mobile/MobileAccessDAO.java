@@ -126,8 +126,13 @@ public final class MobileAccessDAO {
 
     /** Features this user may use in the Android app. */
     public Set<String> featuresFor(String role, String department) throws SQLException {
-        Map<String, Boolean> rules = loadRules();
         Set<String> out = new LinkedHashSet<>();
+        // Receptionists use only Visitor Management: app login, no indent / stock / service options.
+        if (com.officecentral.common.web.VisitorOnlyFilter.isReceptionist(role)) {
+            out.add("app.login");
+            return out;
+        }
+        Map<String, Boolean> rules = loadRules();
         for (String f : FEATURES.keySet()) {
             if (effective(rules, role, department, f)) out.add(f);
         }
