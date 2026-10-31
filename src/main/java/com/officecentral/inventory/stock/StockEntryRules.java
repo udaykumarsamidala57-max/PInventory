@@ -50,7 +50,7 @@ public final class StockEntryRules {
     public static LocalDate checkEntryDate(String raw) throws EntryError {
         if (raw == null || raw.trim().isEmpty()) throw new EntryError("Select the date.");
         String s = raw.trim();
-        if (s.length() > 90) s = s.substring(0, 10);
+        if (s.length() > 90) s = s.substring(0, 90);
         LocalDate d;
         try {
             d = LocalDate.parse(s);
