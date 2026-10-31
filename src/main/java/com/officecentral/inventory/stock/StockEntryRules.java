@@ -21,7 +21,7 @@ import java.time.format.DateTimeParseException;
 public final class StockEntryRules {
 
     /** How many days back an issue / consumption may be dated or edited. */
-    public static final int BACKDATE_DAYS = 10;
+    public static final int BACKDATE_DAYS = 90;
 
     private static final DateTimeFormatter DMY = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 
@@ -50,7 +50,7 @@ public final class StockEntryRules {
     public static LocalDate checkEntryDate(String raw) throws EntryError {
         if (raw == null || raw.trim().isEmpty()) throw new EntryError("Select the date.");
         String s = raw.trim();
-        if (s.length() > 90) s = s.substring(0, 90);
+        if (s.length() > 10) s = s.substring(0, 10);
         LocalDate d;
         try {
             d = LocalDate.parse(s);
