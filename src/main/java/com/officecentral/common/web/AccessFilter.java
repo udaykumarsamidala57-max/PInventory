@@ -25,7 +25,7 @@ import javax.servlet.http.HttpSession;
  *   2. role / department rule → 403 when not allowed (the menu only hides links; this is the real check)
  *   3. POST / PUT / DELETE    → must carry the session CSRF token (added automatically by header.jsp)
  *
- * Rules (same as the menu):
+ * Rules (used until the Access Control settings exist; after that the settings decide):
  *   Settings Master pages            : Global role or Finance department
  *   Issue Stock                      : Global role or Store department
  *   Dining Hall consumption entry    : Global or Admin role; Finance, Store or Dining Hall department
@@ -115,7 +115,14 @@ public class AccessFilter implements Filter {
             resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
         }
-        if (!rule.allow.test(s)) {
+        // Once the Access Control settings exist they decide (PermissionFilter checks the same thing);
+        // until then the fixed rule below applies.
+        String path = req.getServletPath();
+        boolean allowed = com.officecentral.common.access.AccessControl.isActive()
+                && com.officecentral.common.access.AccessControl.isMapped(path)
+                ? com.officecentral.common.access.AccessControl.canPath(s, path)
+                : rule.allow.test(s);
+        if (!allowed) {
             LOG.warning("[access] DENIED " + req.getMethod() + " " + req.getServletPath() + " for user "
                     + s.getAttribute("username") + " (role " + s.getAttribute("role") + ", dept "
                     + s.getAttribute("department") + ")");

@@ -26,8 +26,11 @@ public class SettingsServlet extends HttpServlet {
             resp.sendRedirect(req.getContextPath() + "/login.jsp");
             return;
         }
-        if (!AccessFilter.isGlobalOrFinance(s)) {
-            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Settings Master is available only to Global and Finance users.");
+        boolean allowed = com.officecentral.common.access.AccessControl.isActive()
+                ? com.officecentral.common.access.AccessControl.canPath(s, "/settings")
+                : AccessFilter.isGlobalOrFinance(s);
+        if (!allowed) {
+            resp.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have access to Settings Master.");
             return;
         }
         req.getRequestDispatcher("/WEB-INF/views/common/settings.jsp").forward(req, resp);

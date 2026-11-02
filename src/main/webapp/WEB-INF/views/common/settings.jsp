@@ -1,5 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*, com.officecentral.common.web.SettingsMenu" %>
+<%@ page import="java.util.*, com.officecentral.common.web.SettingsMenu, com.officecentral.common.access.AccessControl" %>
 <%!
     private static String esc(Object o) {
         if (o == null) return "";
@@ -11,7 +11,12 @@
     // Opened through SettingsServlet (/settings), which checks Global / Finance access.
     String ctx = request.getContextPath();
     Map<String, List<SettingsMenu.Page>> groups = new LinkedHashMap<>();
-    for (SettingsMenu.Page p : SettingsMenu.PAGES) groups.computeIfAbsent(p.group, k -> new ArrayList<>()).add(p);
+    for (SettingsMenu.Page p : SettingsMenu.PAGES) {
+        if (!AccessControl.canPath(session, "/" + p.key)) continue;   // only pages this user may open
+        groups.computeIfAbsent(p.group, k -> new ArrayList<>()).add(p);
+    }
+    Object setRole = session.getAttribute("role");
+    boolean setGlobal = setRole != null && "Global".equalsIgnoreCase(String.valueOf(setRole).trim());
 %>
 <!DOCTYPE html>
 <html>
@@ -51,10 +56,19 @@ h2 { margin: 0; font-size: 20px; font-weight: 700; }
         <div class="ico"><i class="fa-solid fa-gear"></i></div>
         <div>
             <h2>Settings Master</h2>
-            <div class="sub">Masters and stock adjustments. Available only to Global and Finance users. Use the sidebar to move between them.</div>
+            <div class="sub">Masters and stock adjustments. Use the sidebar to move between them.</div>
         </div>
     </div>
 
+    <% if (setGlobal) { %>
+        <div class="group">Security</div>
+        <div class="grid">
+            <a class="tile" href="<%= ctx %>/access-control">
+                <i class="fa-solid fa-user-shield t-primary"></i>
+                <div><b>Access Control</b><span>Choose which roles and departments may open each page and use each button (PInventory and School Operations).</span></div>
+            </a>
+        </div>
+    <% } %>
     <% for (Map.Entry<String, List<SettingsMenu.Page>> g : groups.entrySet()) { %>
         <div class="group"><%= esc(g.getKey()) %></div>
         <div class="grid">
@@ -66,7 +80,7 @@ h2 { margin: 0; font-size: 20px; font-weight: 700; }
         <% } %>
         </div>
     <% } %>
-    <div class="note"><i class="fa-solid fa-shield-halved"></i> Every page here also checks your role on the server, so the links work only for Global and Finance users.</div>
+    <div class="note"><i class="fa-solid fa-shield-halved"></i> Every page here also checks your access on the server.</div>
 </div>
 </div>
 

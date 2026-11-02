@@ -1,7 +1,13 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page session="true" %>
 <%@ page import="java.util.Calendar, java.text.SimpleDateFormat" %>
-<%@ page import="com.officecentral.common.web.Csrf, com.officecentral.common.web.SettingsMenu" %>
+<%@ page import="com.officecentral.common.web.Csrf, com.officecentral.common.web.SettingsMenu, com.officecentral.common.access.AccessControl" %>
+<%!
+    /** Menu link visibility: Access Control settings when they exist, otherwise the old fixed rule. */
+    private static boolean show(javax.servlet.http.HttpSession s, String key, boolean oldRule) {
+        return AccessControl.show(s, key, oldRule);
+    }
+%>
 <%
     HttpSession sesso = request.getSession(false);
 
@@ -18,6 +24,7 @@
     if (roles == null) roles = "";
     if (depts == null) depts = "";
     if (branchess == null || branchess.trim().isEmpty()) branchess = "SRS";
+    boolean acOn = AccessControl.isActive();   // true once the access tables exist (then they decide every link)
 
     SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd MMMM yyyy");
     String todayDate = sdf.format(Calendar.getInstance().getTime());
@@ -129,20 +136,28 @@ try {
 
 <div class="sidebar" id="sidebar">
   <h2><i class="fa-solid fa-layer-group"></i> <%= branchess.toUpperCase() %> Workspace</h2>
-<% if (!"HOSTEL".equalsIgnoreCase(depts)){ %>
+<% if (acOn || !"HOSTEL".equalsIgnoreCase(depts)){ %>
   <div class="sidebar-label">Inventory</div>
+  <% if (show(sesso, "inv.home", true)) { %>
   <a href="home"><i class="fa-solid fa-chart-pie text-success"></i> Dashboard</a>
+  <% } %>
 
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-file-invoice text-primary"></i> Indent Process <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <% if (show(sesso, "inv.indent", true)) { %>
       <a href="<%= request.getContextPath() %>/indent"><i class="fa-solid fa-square-plus text-success"></i> Item Requisition Form</a>
+      <% } %>
+      <% if (show(sesso, "inv.indent-report", true)) { %>
       <a href="<%= request.getContextPath() %>/indent-report"><i class="fa-solid fa-list-check text-info"></i> Indent Report</a>
+      <% } %>
+      <% if (show(sesso, "inv.item-master", true)) { %>
       <a href="item-master"><i class="fa-solid fa-box text-primary"></i> Item Master</a>
-      <% if ("Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles)) { %>
+      <% } %>
+      <% if (show(sesso, "inv.approve-indent", "Global".equalsIgnoreCase(roles) || "Incharge".equalsIgnoreCase(roles) || "Admin".equalsIgnoreCase(roles))) { %>
         <a href="<%= request.getContextPath() %>/approve-indent"><i class="fa-solid fa-clipboard-check text-warning"></i> Approve Indent</a>
       <% } %>
-      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users)) { %>
+      <% if (show(sesso, "inv.approve-dining-indent", "Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users))) { %>
         <a href="approve-dining-indent"><i class="fa-solid fa-utensils text-warning"></i> Approve Dining Indent</a>
       <% } %>
     </div>
@@ -151,12 +166,16 @@ try {
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-cart-shopping text-danger"></i> Purchase Execution <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts)) { %>
+      <% if (show(sesso, "pur.approve-po", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts))) { %>
         <a href="approve-po"><i class="fa-solid fa-file-circle-check text-success"></i> Approve PO</a>
+      <% } %>
+      <% if (show(sesso, "pur.po-report", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts) || "Store".equalsIgnoreCase(depts))) { %>
         <a href="po-report"><i class="fa-solid fa-clipboard-list text-warning"></i> PO Report</a>
       <% } %>
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+      <% if (show(sesso, "pur.create-po", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts))) { %>
         <a href="create-po"><i class="fa-solid fa-file-circle-plus text-primary"></i> Create Purchase Order</a>
+      <% } %>
+      <% if (show(sesso, "pur.vendors", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts))) { %>
         <a href="vendors"><i class="fa-solid fa-address-book text-info"></i> Vendor Master</a>
       <% } %>
     </div>
@@ -165,36 +184,42 @@ try {
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-warehouse text-success"></i> GRN <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+      <% if (show(sesso, "grn.entry", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts))) { %>
         <a href="grn"><i class="fa-solid fa-warehouse text-success"></i> GRN Entry</a>
       <% } %>
-      <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts)){ %>
+      <% if (show(sesso, "grn.report", "Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(roles) || "Store".equalsIgnoreCase(depts))){ %>
         <a href="grn-report"><i class="fa-solid fa-chart-simple text-success"></i> GRN Report</a>
       <% } %>
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles) ||
+  <% if (acOn || "Global".equalsIgnoreCase(roles) ||
        "Store".equalsIgnoreCase(depts) ||
        "finance".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-truck-ramp-box text-warning"></i> Stock Dispersal <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
-       <% if ("Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts)) { %>
+       <% if (show(sesso, "iss.issue", "Global".equalsIgnoreCase(roles)|| "Store".equalsIgnoreCase(depts))) { %>
       <a href="issue"><i class="fa-solid fa-dolly text-info"></i> Issue Items</a>
        <% } %>
+      <% if (show(sesso, "iss.issue-report", true)) { %>
       <a href="issue-report"><i class="fa-solid fa-receipt text-danger"></i> Issue Report</a>
+      <% } %>
     </div>
   </div>
   <% } %>
 
-  <% if ("Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)) { %>
+  <% if (acOn || "Global".equalsIgnoreCase(roles)|| "Finance".equalsIgnoreCase(depts)|| "Store".equalsIgnoreCase(depts)||"Admin".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)) { %>
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-bowl-food text-warning"></i> Dining Hall <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <% if (show(sesso, "din.entry", true)) { %>
       <a href="dining-hall"><i class="fa-solid fa-kitchen-set text-primary"></i> DH Consumption Entry</a>
+      <% } %>
+      <% if (show(sesso, "din.dashboard", true)) { %>
       <a href="dining-dashboard"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
-      <% if ("Global".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts)){ %>
+      <% } %>
+      <% if (show(sesso, "din.edit", "Global".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts))){ %>
        <a href="edit-consumption"><i class="fa-solid fa-chart-line text-success"></i> Edit Consumption</a>
        <% } %>
     </div>
@@ -204,51 +229,81 @@ try {
   <div class="dropdown">
     <button class="dropdown-btn"><i class="fa-solid fa-chart-gantt text-purple"></i> Analytics Hub <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <% if (show(sesso, "ana.stock-report", true)) { %>
       <a href="stock-report"><i class="fa-solid fa-boxes-stacked text-info"></i> Stock Report</a>
+      <% } %>
+      <% if (show(sesso, "ana.stock-ledger", true)) { %>
       <a href="stock-ledger"><i class="fa-solid fa-book-open text-primary"></i> Stock Ledger Report</a>
-      <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+      <% } %>
+      <% if (show(sesso, "ana.consumption-dashboard", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts))) { %>
         <a href="consumption-dashboard"><i class="fa-solid fa-pie-chart text-danger"></i> Consumption Dashboard</a>
+      <% } %>
+      <% if (show(sesso, "ana.wastage-report", "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts))) { %>
         <a href="wastage-report"><i class="fa-solid fa-file-circle-exclamation text-danger"></i> Wastage Report</a>
       <% } %>
     </div>
   </div>
 
-  <% if ("Global".equalsIgnoreCase(roles.trim()) ||  "Finance".equalsIgnoreCase(depts.trim())){ %>
+  <% if (show(sesso, "set.overview", "Global".equalsIgnoreCase(roles.trim()) ||  "Finance".equalsIgnoreCase(depts.trim()))){ %>
   <%-- System Masters live in Settings Master (its pages are listed in SettingsMenu and shown as a sidebar there) --%>
   <a href="settings"><i class="fa-solid fa-gear text-secondary"></i> Settings Master</a>
   <% } %>
 
-  <% if ("Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
+  <% if (acOn || "Global".equalsIgnoreCase(roles) || "Finance".equalsIgnoreCase(depts)) { %>
   <div class="dropdown asset-menu">
     <button class="dropdown-btn"><i class="fa-solid fa-building text-warning"></i> Fixed Assets <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <% if (show(sesso, "fa.locations", true)) { %>
       <a href="LocationController"><i class="fa-solid fa-map-location-dot"></i> Locations</a>
+      <% } %>
+      <% if (show(sesso, "fa.staff", true)) { %>
       <a href="Staff"><i class="fa-solid fa-users-gear"></i> Employee Matrix</a>
+      <% } %>
+      <% if (show(sesso, "fa.categories", true)) { %>
       <a href="CategoryController"><i class="fa-solid fa-tags"></i> Categories</a>
+      <% } %>
+      <% if (show(sesso, "fa.assets", true)) { %>
       <a href="AssetServlet"><i class="fa-solid fa-cubes"></i> Asset Creation</a>
+      <% } %>
+      <% if (show(sesso, "fa.relocation", true)) { %>
       <a href="AssetLocationController"><i class="fa-solid fa-route"></i> Asset Relocation</a>
+      <% } %>
+      <% if (show(sesso, "fa.staff-issued", true)) { %>
       <a href="StaffIssued"><i class="fa-solid fa-route"></i> Staff Issued Items</a>
+      <% } %>
     </div>
   </div>
   <% } %>
 
-  <% if ("Global".equalsIgnoreCase(roles == null ? "" : roles.trim())) {   /* Website: Global users only */ %>
+  <% if (acOn || "Global".equalsIgnoreCase(roles == null ? "" : roles.trim())) {   /* Website: Global users only */ %>
   <div class="sidebar-label">Website</div>
   <div class="dropdown website-menu">
     <button class="dropdown-btn"><i class="fa-solid fa-globe text-info"></i> Website <i class="fa-solid fa-caret-down"></i></button>
     <div class="dropdown-content">
+      <% if (show(sesso, "web.media", true)) { %>
       <a href="<%= request.getContextPath() %>/website/media"><i class="fa-solid fa-images text-primary"></i> Photo Library</a>
+      <% } %>
+      <% if (show(sesso, "web.pages", true)) { %>
       <a href="<%= request.getContextPath() %>/website/pages"><i class="fa-solid fa-sitemap text-info"></i> Page Builder</a>
+      <% } %>
+      <% if (show(sesso, "web.news", true)) { %>
       <a href="<%= request.getContextPath() %>/website/latestNews.jsp"><i class="fa-solid fa-newspaper text-warning"></i> Latest News</a>
+      <% } %>
+      <% if (show(sesso, "web.events", true)) { %>
       <a href="<%= request.getContextPath() %>/website/upcoming-events"><i class="fa-solid fa-calendar-days text-success"></i> Upcoming Events</a>
+      <% } %>
+      <% if (show(sesso, "web.photos", true)) { %>
       <a href="<%= request.getContextPath() %>/website/move-photos"><i class="fa-solid fa-cloud-arrow-up text-purple"></i> Photo Storage</a>
+      <% } %>
     </div>
   </div>
   <% } %>
 <% } %>  
 
 <div class="sidebar-label">School Management</div>
+<% if (show(sesso, "so.link", true)) { %>
 <a href="<%= request.getContextPath() %>/school-operations/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-school text-success"></i> School Operations</a>
+<% } %>
 
 <div class="sidebar-label">Core Operations Desk</div>
 <div class="dropdown Service-menu">
@@ -258,17 +313,27 @@ try {
         <i class="fa-solid fa-caret-down"></i>
     </button>
     <div class="dropdown-content">
-      <% if ("Global".equalsIgnoreCase(roles) ) { %>
+      <% if (show(sesso, "svc.departments", "Global".equalsIgnoreCase(roles))) { %>
         <a href="<%=request.getContextPath()%>/MasterServlet"><i class="fa-solid fa-network-wired text-danger"></i> Departments</a>
       <% } %>
+      <% if (show(sesso, "svc.book", true)) { %>
       <a href="<%=request.getContextPath()%>/RequestBookingServlet"><i class="fa-solid fa-calendar-plus text-success"></i> Book a Request</a>
-      <% if ("Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles)) { %>
+      <% } %>
+      <% if (show(sesso, "svc.assign", "Global".equalsIgnoreCase(roles) || "A_Veeresh".equalsIgnoreCase(users) || "Admin".equalsIgnoreCase(roles))) { %>
         <a href="<%=request.getContextPath()%>/Assign_ServiceRequestServlet"><i class="fa-solid fa-user-plus text-info"></i> Assign Incharge</a>
       <% } %>
+      <% if (show(sesso, "svc.mine", true)) { %>
       <a href="<%=request.getContextPath()%>/Incharge"><i class="fa-solid fa-user-check text-info"></i> Assigned to Me</a>
+      <% } %>
+      <% if (show(sesso, "svc.track", true)) { %>
       <a href="<%=request.getContextPath()%>/TrackRequestServlet"><i class="fa-solid fa-magnifying-glass-location text-info"></i> Track Your Request</a>
+      <% } %>
+      <% if (show(sesso, "svc.closed", true)) { %>
       <a href="<%=request.getContextPath()%>/Service/Closed.jsp"><i class="fa-solid fa-circle-check text-success"></i> Closed Requests</a>
+      <% } %>
+      <% if (show(sesso, "svc.report", true)) { %>
       <a href="<%=request.getContextPath()%>/RequestReport"><i class="fas fa-chart-bar text-info"></i> Report</a>
+      <% } %>
     </div>
 </div>
 
@@ -297,20 +362,29 @@ try {
   </div>
 </div>
 
-<% if ("karthik".equalsIgnoreCase(users) || "Principal".equalsIgnoreCase(roles) || "Global".equalsIgnoreCase(roles)) { %>
+<% if (acOn || "karthik".equalsIgnoreCase(users) || "Principal".equalsIgnoreCase(roles) || "Global".equalsIgnoreCase(roles)) { %>
 <div class="sidebar-label">Talent Management</div>
 <div class="dropdown recruitment-menu">
   <button class="dropdown-btn"><i class="fa-solid fa-briefcase text-purple"></i> Recruitment <i class="fa-solid fa-caret-down"></i></button>
   <div class="dropdown-content">
+    <% if (show(sesso, "hr.form", true)) { %>
     <a href="candidateForm.jsp"><i class="fa-solid fa-file-invoice-dollar"></i> Recruitment Form</a>
+    <% } %>
+    <% if (show(sesso, "hr.applications", true)) { %>
     <a href="resume"><i class="fa-solid fa-id-card"></i> Applications View</a>
+    <% } %>
   </div>
 </div>
 <% } %>
    
-<% if ("Global".equalsIgnoreCase(roles)) { %>
+<% if (show(sesso, "adm.store-access", "Global".equalsIgnoreCase(roles))) { %>
 <a href="<%= request.getContextPath() %>/store-access"><i class="fa-solid fa-user-lock"></i> Assign Stores</a>
+<% } %>
+<% if (show(sesso, "adm.mobile-access", "Global".equalsIgnoreCase(roles))) { %>
 <a href="<%= request.getContextPath() %>/mobile-access"><i class="fa-brands fa-android"></i> Mobile App Access</a>
+<% } %>
+<% if ("Global".equalsIgnoreCase(roles.trim())) {   /* Access Control: Global only, fixed */ %>
+<a href="<%= request.getContextPath() %>/access-control"><i class="fa-solid fa-user-shield"></i> Access Control</a>
 <% } %>
 <a href="<%= request.getContextPath() %>/select-store"><i class="fa-solid fa-code-branch"></i> Change Store</a>
 <a href="<%= request.getContextPath() %>/Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
@@ -544,7 +618,8 @@ try {
     String hdrFwdPath = (String) request.getAttribute("javax.servlet.forward.servlet_path");
     String hdrPath = hdrFwdPath != null ? hdrFwdPath : request.getServletPath();
     String setKey = SettingsMenu.keyFor(hdrPath);
-    boolean setAllowed = "Global".equalsIgnoreCase(roles.trim()) || "Finance".equalsIgnoreCase(depts.trim());
+    boolean setAllowed = acOn ? AccessControl.canPath(sesso, "/settings")
+            : ("Global".equalsIgnoreCase(roles.trim()) || "Finance".equalsIgnoreCase(depts.trim()));
     if (setKey != null && setAllowed) {
         String setCtx = request.getContextPath();
         String setGroup = null;
@@ -578,6 +653,7 @@ body.has-settings-nav footer, body.has-settings-nav.sidebar-collapsed footer { l
     <a class="set-link<%= "settings".equals(setKey) ? " active" : "" %>" href="<%= setCtx %>/settings"
        <%= "settings".equals(setKey) ? "aria-current=\"page\"" : "" %>><i class="fa-solid fa-table-cells-large"></i> Overview</a>
     <% for (SettingsMenu.Page sp : SettingsMenu.PAGES) {
+           if (!AccessControl.canPath(sesso, "/" + sp.key)) continue;   // hide pages this user may not open
            if (!sp.group.equals(setGroup)) { setGroup = sp.group; %>
     <div class="set-nav-group"><%= sp.group %></div>
     <%     } %>
@@ -750,7 +826,7 @@ document.addEventListener("click", function(event){
     if (h && !/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(h)) a.setAttribute('href', CTX + '/' + h);
   });
 
-  var FOOT = ['select-store', 'store-access', 'mobile-access', 'Logout.jsp'];
+  var FOOT = ['select-store', 'store-access', 'mobile-access', 'access-control', 'Logout.jsp'];
   var TONES = /\btext-(primary|success|info|warning|danger|purple|secondary)\b/;
   var modules = [], current = null, sections = [], section = null;
   function clean(t) { return (t || '').replace(/\s+/g, ' ').trim(); }
