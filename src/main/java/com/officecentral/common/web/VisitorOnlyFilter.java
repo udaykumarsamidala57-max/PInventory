@@ -27,7 +27,7 @@ public class VisitorOnlyFilter implements Filter {
 
     /** Pages a receptionist still needs: sign in / out, the hand-over to Visitor Management, the Android API. */
     private static final Set<String> ALLOWED_PATHS = Set.of(
-            "/school-operations/sso", "/login", "/LoginServlet", "/login.jsp", "/Logout.jsp",
+            "/school-operations/sso", "/phrms/sso", "/login", "/LoginServlet", "/login.jsp", "/Logout.jsp",
             "/verify-otp", "/VerifyOtpServlet", "/SendOTPServlet", "/Androidapp.jsp");
 
     public static boolean isReceptionist(Object role) {

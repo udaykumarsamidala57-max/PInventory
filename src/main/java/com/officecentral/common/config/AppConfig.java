@@ -30,6 +30,8 @@ import java.util.Properties;
  *   FIREBASE_SERVICE_ACCOUNT_FILE (optional) path to a protected service-account JSON file for local Tomcat
  *   SCHOOL_OPERATIONS_BASE_URL     School Operations app menu link (defaults to http://localhost:8083/)
  *   SCHOOL_OPERATIONS_SSO_SECRET   shared 32-byte HMAC key for sign-on and the signed mobile visitor bridge
+ *   PHRMS_BASE_URL                 HR & Payroll app base URL (defaults to http://localhost:8084/)
+ *   PHRMS_SSO_SECRET               separate shared 32-byte HMAC key for PHRMS single sign-on
  */
 public final class AppConfig {
 

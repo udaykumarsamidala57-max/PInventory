@@ -30,11 +30,12 @@
     int id = 0;
 
     if (editId != null && !editId.trim().isEmpty()) {
-        String sql = "SELECT * FROM latest_news WHERE id=?";
+        String sql = "SELECT * FROM latest_news WHERE id=? AND site=?";
         try (Connection con = WebsiteDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, Integer.parseInt(editId));
+            ps.setString(2, WebsiteDB.siteKey(branch));
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -567,11 +568,12 @@
                     </thead>
                     <tbody>
                         <%
-                            String sqlList = "SELECT * FROM latest_news ORDER BY created_at DESC";
+                            String sqlList = "SELECT * FROM latest_news WHERE site = ? ORDER BY created_at DESC";
 
                             try (Connection con = WebsiteDB.getConnection(branch);
-                                 PreparedStatement ps = con.prepareStatement(sqlList);
-                                 ResultSet rs = ps.executeQuery()) {
+                                 PreparedStatement ps = con.prepareStatement(sqlList)) {
+                                ps.setString(1, WebsiteDB.siteKey(branch));
+                                try (ResultSet rs = ps.executeQuery()) {
 
                                 boolean found = false;
 
@@ -616,6 +618,7 @@
                             </td>
                         </tr>
                         <%
+                                }
                                 }
                             } catch (Exception e) {
                                 e.printStackTrace();

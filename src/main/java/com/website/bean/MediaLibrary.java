@@ -13,7 +13,7 @@ import java.util.Locale;
 /**
  * Photo Library: folders of photos / videos in the bucket, used by the Page Builder.
  *
- * Every website has its own library:  srs/library/...   sanpoly/library/...
+ * Every website has its own library:  srs/library/...   SANPOLY-WEBSITE/library/...
  * A folder is a name ending in "/" (an empty folder keeps a small ".folder" marker file).
  * Library files are never removed when a page, section or photo is deleted in the Page Builder -
  * only from the Photo Library itself, and only when no page uses them any more.
@@ -24,10 +24,9 @@ public final class MediaLibrary {
 
     private MediaLibrary() { }
 
-    /** e.g. "srs/library/" */
+    /** e.g. "srs/library/" or "SANPOLY-WEBSITE/library/" (bucket folder of the website, see WebsiteDB.folder) */
     public static String root(String site) {
-        String s = site == null ? "site" : site.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]", "");
-        return s + "/library/";
+        return WebsiteDB.folder(site) + "/library/";
     }
 
     /** true for any file inside a Photo Library (such files are protected from automatic clean-up) */

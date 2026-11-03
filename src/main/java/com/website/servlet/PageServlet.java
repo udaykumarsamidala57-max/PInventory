@@ -84,7 +84,15 @@ public class PageServlet extends HttpServlet {
             action = "list";
         }
 
+        // All websites share one database: work only on rows of this store's website.
+        final String site = WebsiteDB.siteKey(branch);
+
         try (Connection conn = WebsiteDB.getConnection(branch)) {
+
+            if (!com.website.bean.WebsiteScope.pageBuilderParamsAllowed(conn, req, site)) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "This item belongs to another website.");
+                return;
+            }
 
             switch (action) {
 
@@ -214,7 +222,7 @@ public class PageServlet extends HttpServlet {
 
                     req.setAttribute(
                             "pages",
-                            getAllPages(conn)
+                            getAllPages(conn, site)
                     );
 
                     req.getRequestDispatcher(
@@ -233,7 +241,7 @@ public class PageServlet extends HttpServlet {
 
                     req.setAttribute(
                             "pages",
-                            getAllPages(conn)
+                            getAllPages(conn, site)
                     );
 
                     req.getRequestDispatcher(
@@ -292,7 +300,15 @@ public class PageServlet extends HttpServlet {
             return;
         }
 
+        // All websites share one database: work only on rows of this store's website.
+        final String site = WebsiteDB.siteKey(branch);
+
         try (Connection conn = WebsiteDB.getConnection(branch)) {
+
+            if (!com.website.bean.WebsiteScope.pageBuilderParamsAllowed(conn, req, site)) {
+                resp.sendError(HttpServletResponse.SC_FORBIDDEN, "This item belongs to another website.");
+                return;
+            }
 
             // =====================================================
             // CREATE PAGE
@@ -311,7 +327,8 @@ public class PageServlet extends HttpServlet {
                         conn,
                         title,
                         slug,
-                        parentId
+                        parentId,
+                        site
                 );
 
                 resp.sendRedirect(
@@ -975,6 +992,10 @@ public class PageServlet extends HttpServlet {
             String branch)
             throws SQLException {
 
+        // photos are stored only in the bucket, never in MySQL
+        PhotoUpload.requireBucket();
+
+
         // SRS: picture goes to the bucket, MySQL keeps only its place
         if (PhotoUpload.on(branch)) {
             long newId;
@@ -1071,6 +1092,10 @@ public class PageServlet extends HttpServlet {
             long size,
             String branch)
             throws SQLException {
+
+        // photos are stored only in the bucket, never in MySQL
+        PhotoUpload.requireBucket();
+
 
         // SRS: new picture goes to the bucket, the old file is removed
         if (PhotoUpload.on(branch)) {
@@ -1196,7 +1221,8 @@ public class PageServlet extends HttpServlet {
     // =========================================================
 
     private List<PageBean> getAllPages(
-            Connection conn)
+            Connection conn,
+            String site)
             throws SQLException {
 
         List<PageBean> list =
@@ -1205,11 +1231,12 @@ public class PageServlet extends HttpServlet {
         String sql =
                 "SELECT id, parent_id, title, slug, created_at " +
                 "FROM pages " +
+                "WHERE site = ? " +
                 "ORDER BY id DESC";
 
         try (
                 PreparedStatement ps =
-                        conn.prepareStatement(sql);
+                        prepareForSite(conn, sql, site);
 
                 ResultSet rs =
                         ps.executeQuery()
@@ -1493,13 +1520,14 @@ public class PageServlet extends HttpServlet {
             Connection conn,
             String title,
             String slug,
-            Long parentId)
+            Long parentId,
+            String site)
             throws SQLException {
 
         String sql =
                 "INSERT INTO pages " +
-                "(title, slug, parent_id) " +
-                "VALUES (?, ?, ?)";
+                "(title, slug, parent_id, site) " +
+                "VALUES (?, ?, ?, ?)";
 
         try (
                 PreparedStatement ps =
@@ -1533,6 +1561,8 @@ public class PageServlet extends HttpServlet {
                         Types.BIGINT
                 );
             }
+
+            ps.setString(4, site);
 
             ps.executeUpdate();
 
@@ -1796,5 +1826,11 @@ public class PageServlet extends HttpServlet {
         }
 
         PhotoUpload.deleteFilesIfUnused(conn, "section_images", files);
+    }
+
+    private static PreparedStatement prepareForSite(Connection conn, String sql, String site) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, site);
+        return ps;
     }
 }

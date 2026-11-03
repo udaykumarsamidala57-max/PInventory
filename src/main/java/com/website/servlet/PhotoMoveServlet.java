@@ -99,7 +99,7 @@ public class PhotoMoveServlet extends HttpServlet {
                     for (String[] t : TABLES) {
                         if (!tableExists(conn, t[0])) continue;
                         ensureKeyColumn(conn, t[0]);
-                        for (long id : pendingIds(conn, t, failed, 200)) {
+                        for (long id : pendingIds(conn, t, failed, 200, WebsiteDB.siteKey(branch))) {
                             if (System.currentTimeMillis() - start > BATCH_MS) { timeUp = true; break; }
                             try {
                                 String key = moveOne(conn, t, id, branch);
@@ -114,7 +114,7 @@ public class PhotoMoveServlet extends HttpServlet {
                 }
             }
 
-            for (String[] t : TABLES) counts.add(count(conn, t));
+            for (String[] t : TABLES) counts.add(count(conn, t, WebsiteDB.siteKey(branch)));
 
         } catch (SQLException e) {
             fatal = "Database error: " + e.getMessage();
@@ -244,11 +244,18 @@ public class PhotoMoveServlet extends HttpServlet {
         }
     }
 
-    private List<Long> pendingIds(Connection conn, String[] t, Set<String> failed, int max) throws SQLException {
+    /** Only rows of this website: own site column, or (photos) the page their section is on. */
+    private static String siteFilter(String[] t) {
+        return "section_images".equals(t[0])
+                ? " section_id IN (SELECT s.id FROM sections s JOIN pages p ON p.id = s.page_id WHERE p.site = ?)"
+                : " site = ?";
+    }
+
+    private List<Long> pendingIds(Connection conn, String[] t, Set<String> failed, int max, String site) throws SQLException {
         List<Long> ids = new ArrayList<>();
         String sql = "SELECT " + t[1] + " FROM " + t[0] + " WHERE " + t[2] + " IS NOT NULL AND OCTET_LENGTH(" + t[2] + ") > 0"
-                + " AND (file_key IS NULL OR file_key = '') ORDER BY " + t[1];
-        try (Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql)) {
+                + " AND (file_key IS NULL OR file_key = '') AND" + siteFilter(t) + " ORDER BY " + t[1];
+        try (PreparedStatement s = prepareForSite(conn, sql, site); ResultSet rs = s.executeQuery()) {
             while (rs.next() && ids.size() < max) {
                 long id = rs.getLong(1);
                 if (!failed.contains(t[0] + ":" + id)) ids.add(id);
@@ -258,15 +265,16 @@ public class PhotoMoveServlet extends HttpServlet {
     }
 
     /** {total photos, moved, still only in MySQL} */
-    private long[] count(Connection conn, String[] t) throws SQLException {
+    private long[] count(Connection conn, String[] t, String site) throws SQLException {
         if (!tableExists(conn, t[0])) return new long[]{0, 0, 0};
         boolean hasKey = columnExists(conn, t[0], "file_key");
         String photo = t[2] + " IS NOT NULL AND OCTET_LENGTH(" + t[2] + ") > 0";
         String moved = hasKey ? "(file_key IS NOT NULL AND file_key <> '')" : "0";
         String sql = "SELECT SUM(CASE WHEN " + photo + " OR " + moved + " THEN 1 ELSE 0 END),"
                 + " SUM(CASE WHEN " + moved + " THEN 1 ELSE 0 END),"
-                + " SUM(CASE WHEN " + photo + " AND NOT " + moved + " THEN 1 ELSE 0 END) FROM " + t[0];
-        try (Statement s = conn.createStatement(); ResultSet rs = s.executeQuery(sql)) {
+                + " SUM(CASE WHEN " + photo + " AND NOT " + moved + " THEN 1 ELSE 0 END) FROM " + t[0]
+                + " WHERE" + siteFilter(t);
+        try (PreparedStatement s = prepareForSite(conn, sql, site); ResultSet rs = s.executeQuery()) {
             rs.next();
             return new long[]{rs.getLong(1), rs.getLong(2), rs.getLong(3)};
         }
@@ -301,5 +309,11 @@ public class PhotoMoveServlet extends HttpServlet {
     private static String esc(String s) {
         if (s == null) return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("'", "&#39;").replace("\"", "&quot;");
+    }
+
+    private static PreparedStatement prepareForSite(Connection conn, String sql, String site) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, site);
+        return ps;
     }
 }

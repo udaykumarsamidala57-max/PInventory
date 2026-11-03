@@ -128,7 +128,7 @@ public final class AccessControl {
     public static String firstAllowedPage(HttpSession s) {
         for (Permission p : current().permissions) {
             if (!"PINVENTORY".equals(p.app) || !"PAGE".equals(p.kind) || p.paths.isEmpty()) continue;
-            if ("inv.home".equals(p.key) || "so.link".equals(p.key)) continue;
+            if ("inv.home".equals(p.key) || "so.link".equals(p.key) || "phrms.link".equals(p.key)) continue;
             if (can(s, p.key)) return p.paths.get(0);
         }
         return null;

@@ -12,16 +12,20 @@ import com.officecentral.common.config.AppConfig;
 
 /**
  * Database for the Website module (the school website content: pages, news, upcoming events).
- * Moved here from the SWebsite project. The website has two databases, SRS and Sanpoly;
- * the PInventory store the user is working in decides which one is used:
- *   SRS, SRS_HOSTEL                                    -> SRS website
- *   SANPOLY BOYS, SANPOLY GIRLS, Sanpoly, Sanpoly2     -> Sanpoly website
+ *
+ * ONE database ("website") holds every school website. Each page, news item and event row has
+ * a "site" column ('srs', 'sanpoly', ...); sections and photos belong to a site through their page.
+ * The PInventory store the user is working in decides the website:
+ *   SRS, SRS_HOSTEL                                    -> SRS website      (site 'srs',     bucket folder srs/)
+ *   SANPOLY BOYS, SANPOLY GIRLS, Sanpoly, Sanpoly2     -> Sanpoly website  (site 'sanpoly', bucket folder SANPOLY-WEBSITE/)
+ * Photos are kept ONLY in the bucket; MySQL keeps just the path (file_key).
+ * Must match SRSWebsite: src/main/webapp/WEB-INF/sites.properties.
  */
 public class WebsiteDB {
 
 
     // Server, user and password are not kept in the code: see com.officecentral.common.config.AppConfig
-    // (WEBSITE_SRS_DB_HOST / _PORT / _USER / _PASSWORD and WEBSITE_SANPOLY_DB_...).
+    // (WEBSITE_SRS_DB_HOST / _PORT / _USER / _PASSWORD). All websites use this one database.
 
     static {
         try {
@@ -34,6 +38,16 @@ public class WebsiteDB {
     /** Website ("SRS" or "Sanpoly") for a PInventory store code. */
     public static String siteOf(String store) {
         return store != null && store.toUpperCase().contains("SANPOLY") ? "Sanpoly" : "SRS";
+    }
+
+    /** Value of the "site" column for a website ("SRS" -> "srs", "Sanpoly" -> "sanpoly"). */
+    public static String siteKey(String site) {
+        return "Sanpoly".equalsIgnoreCase(siteOf(site)) ? "sanpoly" : "srs";
+    }
+
+    /** Bucket folder of a website's photos ("SRS" -> "srs", "Sanpoly" -> "SANPOLY-WEBSITE"). */
+    public static String folder(String site) {
+        return "Sanpoly".equalsIgnoreCase(siteOf(site)) ? "SANPOLY-WEBSITE" : "srs";
     }
 
     /** Website for the store selected in this session. */
@@ -84,9 +98,8 @@ public class WebsiteDB {
         return true;
     }
 
+    /** The one website database (all sites). Rows are kept apart by the "site" column. */
     public static Connection getConnection(String branch) throws SQLException {
-        return "SRS".equalsIgnoreCase(siteOf(branch))
-                ? AppConfig.connect("WEBSITE_SRS_DB_", "website")
-                : AppConfig.connect("WEBSITE_SANPOLY_DB_", "SanWeb");
+        return AppConfig.connect("WEBSITE_SRS_DB_", "website");
     }
 }

@@ -58,9 +58,9 @@ public class UpcomingEventsServlet extends HttpServlet {
                          (withKey
                              ? "file_key, CASE WHEN file_key IS NULL OR file_key = '' THEN image_blob END AS image_blob "
                              : "NULL AS file_key, image_blob ") +
-                         "FROM upcoming_events ORDER BY event_date ASC";
+                         "FROM upcoming_events WHERE site = ? ORDER BY event_date ASC";
 
-            try (PreparedStatement ps = conn.prepareStatement(sql);
+            try (PreparedStatement ps = prepareForSite(conn, sql, WebsiteDB.siteKey(branch));
                  ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
@@ -143,12 +143,14 @@ public class UpcomingEventsServlet extends HttpServlet {
         Part imagePart = request.getPart("image_blob");
         boolean toBucket = PhotoUpload.on(branch) && imagePart != null && imagePart.getSize() > 0;
 
-        String sql = "INSERT INTO upcoming_events (event_date, event_name, time_from, time_to, place, event_description, image_blob) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO upcoming_events (event_date, event_name, time_from, time_to, place, event_description, image_blob, site) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = WebsiteDB.getConnection(branch);
              PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
+            PhotoUpload.requireBucketFor(imagePart);      // photos only in the bucket
+            ps.setString(8, WebsiteDB.siteKey(branch));
             ps.setDate(1, Date.valueOf(eventDateStr));
             ps.setString(2, eventName);
 
@@ -223,6 +225,11 @@ public class UpcomingEventsServlet extends HttpServlet {
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
             int id = Integer.parseInt(idStr);
+            if (!com.website.bean.WebsiteScope.rowInSite(conn, "upcoming_events", id, WebsiteDB.siteKey(branch))) {
+                request.setAttribute("errorMessage", "This event belongs to another website.");
+                return;
+            }
+            PhotoUpload.requireBucketFor(imagePart);      // photos only in the bucket
 
             ps.setDate(1, Date.valueOf(eventDateStr));
             ps.setString(2, eventName);
@@ -274,6 +281,10 @@ public class UpcomingEventsServlet extends HttpServlet {
         try (Connection conn = WebsiteDB.getConnection(branch);
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            if (!com.website.bean.WebsiteScope.rowInSite(conn, "upcoming_events", Integer.parseInt(idStr), WebsiteDB.siteKey(branch))) {
+                request.setAttribute("errorMessage", "This event belongs to another website.");
+                return;
+            }
             java.util.List<String> files = PhotoUpload.keys(conn,
                     "SELECT file_key FROM upcoming_events WHERE id = ?", Integer.parseInt(idStr));
 
@@ -301,5 +312,11 @@ public class UpcomingEventsServlet extends HttpServlet {
         } else {
             ps.setNull(paramIndex, Types.TIME);
         }
+    }
+
+    private static PreparedStatement prepareForSite(Connection conn, String sql, String site) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, site);
+        return ps;
     }
 }

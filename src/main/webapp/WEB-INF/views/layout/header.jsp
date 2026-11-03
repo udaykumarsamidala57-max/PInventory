@@ -304,6 +304,9 @@ try {
 <% if (show(sesso, "so.link", true)) { %>
 <a href="<%= request.getContextPath() %>/school-operations/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-school text-success"></i> School Operations</a>
 <% } %>
+<% if (show(sesso, "phrms.link", "Global".equalsIgnoreCase(roles))) { %>
+<a href="<%= request.getContextPath() %>/phrms/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-id-badge text-info"></i> HR &amp; Payroll</a>
+<% } %>
 
 <div class="sidebar-label">Core Operations Desk</div>
 <div class="dropdown Service-menu">

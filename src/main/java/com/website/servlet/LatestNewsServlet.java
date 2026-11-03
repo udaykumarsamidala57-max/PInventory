@@ -82,17 +82,19 @@ public class LatestNewsServlet extends HttpServlet {
         String eventName = request.getParameter("event_name");
         String description = request.getParameter("description");
         Part imagePart = request.getPart("image");
+        PhotoUpload.requireBucketFor(imagePart);      // photos only in the bucket
 
-        // SRS: picture goes to the bucket, MySQL keeps only its place
+        // picture goes to the bucket, MySQL keeps only its place
         if (PhotoUpload.on(branch) && imagePart != null && imagePart.getSize() > 0) {
             try (Connection con = WebsiteDB.getConnection(branch)) {
                 long newId;
                 try (PreparedStatement ps = con.prepareStatement(
-                        "INSERT INTO latest_news (event_name, description, image) VALUES (?, ?, ?)",
+                        "INSERT INTO latest_news (event_name, description, image, site) VALUES (?, ?, ?, ?)",
                         Statement.RETURN_GENERATED_KEYS)) {
                     ps.setString(1, eventName);
                     ps.setString(2, description);
                     ps.setBytes(3, new byte[0]);
+                    ps.setString(4, WebsiteDB.siteKey(branch));
                     ps.executeUpdate();
                     try (ResultSet keys = ps.getGeneratedKeys()) {
                         keys.next();
@@ -114,13 +116,14 @@ public class LatestNewsServlet extends HttpServlet {
             return;
         }
 
-        String sql = "INSERT INTO latest_news (event_name, description, image) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO latest_news (event_name, description, image, site) VALUES (?, ?, ?, ?)";
 
         try (Connection con = WebsiteDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setString(1, eventName);
             ps.setString(2, description);
+            ps.setString(4, WebsiteDB.siteKey(branch));
 
             if (imagePart != null && imagePart.getSize() > 0) {
                 try (InputStream inputStream = imagePart.getInputStream()) {
@@ -140,9 +143,14 @@ public class LatestNewsServlet extends HttpServlet {
             throws Exception {
 
         int id = Integer.parseInt(request.getParameter("id"));
+        if (!ownedBySite(id, branch)) {
+            response.sendRedirect("latestNews.jsp?error=1");
+            return;
+        }
         String eventName = request.getParameter("event_name");
         String description = request.getParameter("description");
         Part imagePart = request.getPart("image");
+        PhotoUpload.requireBucketFor(imagePart);      // photos only in the bucket
 
         if (PhotoUpload.on(branch) && imagePart != null && imagePart.getSize() > 0) {
             // SRS: text in MySQL, new picture in the bucket (old file removed)
@@ -196,6 +204,10 @@ public class LatestNewsServlet extends HttpServlet {
             throws Exception {
 
         int id = Integer.parseInt(request.getParameter("id"));
+        if (!ownedBySite(id, branch)) {
+            response.sendRedirect("latestNews.jsp?error=1");
+            return;
+        }
         String deleteSQL = "DELETE FROM latest_news WHERE id=?";
 
         try (Connection con = WebsiteDB.getConnection(branch)) {
@@ -209,5 +221,12 @@ public class LatestNewsServlet extends HttpServlet {
         }
 
         response.sendRedirect("latestNews.jsp?success=deleted");
+    }
+
+    /** News of all websites share one table; a user may change only their own website's rows. */
+    private static boolean ownedBySite(long id, String branch) throws SQLException {
+        try (Connection con = WebsiteDB.getConnection(branch)) {
+            return com.website.bean.WebsiteScope.rowInSite(con, "latest_news", id, WebsiteDB.siteKey(branch));
+        }
     }
 }

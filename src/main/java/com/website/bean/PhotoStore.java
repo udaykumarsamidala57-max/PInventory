@@ -67,7 +67,8 @@ public final class PhotoStore {
 
     /** e.g. srs/sections/123-1a2b3c4d.jpg */
     public static String newKey(String branch, String kind, long id, String contentType) {
-        String b = branch == null ? "site" : branch.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]", "");
+        // each website has its own bucket folder: srs/..., SANPOLY-WEBSITE/...
+        String b = WebsiteDB.folder(branch);
         String k = kind == null ? "files" : kind.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9_-]", "");
         return b + "/" + k + "/" + id + "-" + UUID.randomUUID().toString().substring(0, 8) + extension(contentType);
     }

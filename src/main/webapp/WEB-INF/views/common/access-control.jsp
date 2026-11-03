@@ -15,7 +15,7 @@
         --ok:#2e844a; --ok-bg:#ebf7e6; --no:#ba0517; --no-bg:#feded8; --warn:#a96404; --warn-bg:#fef1d6; }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--soft); color: var(--ink); font: 14px/1.45 'Salesforce Sans', Inter, 'Segoe UI', Arial, sans-serif; }
-.ac { max-width: 1320px; margin: 0 auto; padding: 14px 16px 90px; }
+.ac { max-width: 1320px; margin: 0 auto; padding: 14px 16px 140px; }
 .card { background: #fff; border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 2px 2px rgba(0,0,0,.06); }
 .ac-head { display: flex; gap: 14px; align-items: center; padding: 16px 20px; flex-wrap: wrap; }
 .ac-head .ico { width: 40px; height: 40px; border-radius: 4px; background: var(--navy); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 18px; }
@@ -80,9 +80,11 @@ td.who { color: var(--muted); font-size: 12px; }
 .chip.me { outline: 1px solid var(--blue); }
 .chip.g { background: #e5e5e5; color: #444; }
 .empty { padding: 26px; text-align: center; color: var(--muted); }
-.savebar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 950; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -2px 6px rgba(0,0,0,.08);
+.savebar { position: fixed; left: 0; right: 0; bottom: 46px; z-index: 1001; background: #fff; border-top: 1px solid var(--line); box-shadow: 0 -2px 6px rgba(0,0,0,.08);
            display: none; align-items: center; gap: 10px; padding: 10px max(16px, calc((100% - 1290px)/2)); }
 .savebar.show { display: flex; }
+.toolbar .save-group { display: flex; gap: 8px; align-items: center; }
+.toolbar .save-group .msg { font-size: 12.5px; font-weight: 600; color: var(--warn); }
 .savebar .msg { margin-right: auto; font-weight: 600; color: var(--warn); }
 .pane { display: none; }
 .pane.on { display: block; }
@@ -145,6 +147,11 @@ td.who { color: var(--muted); font-size: 12px; }
           <label style="display:flex;gap:6px;align-items:center;font-size:13px">Copy from
             <select id="copyFrom"><option value="">&mdash; choose &mdash;</option></select></label>
           <button type="button" class="btn line small" id="copyBtn">Copy</button>
+          <div class="save-group">
+            <span class="msg" id="topMsg"></span>
+            <button type="button" class="btn line" id="discardTop" disabled>Discard</button>
+            <button type="button" class="btn" id="saveTop" disabled><i class="fa-solid fa-floppy-disk"></i> Save</button>
+          </div>
         </div>
         <div id="modules"><div class="empty">Loading&hellip;</div></div>
       </section>
@@ -407,11 +414,15 @@ td.who { color: var(--muted); font-size: 12px; }
     var n = Object.keys(changes).length;
     $('saveBar').classList.toggle('show', n > 0);
     $('saveMsg').textContent = n + ' unsaved change' + (n === 1 ? '' : 's') + (subject ? ' for ' + subject.name : '');
+    $('saveTop').disabled = n === 0; $('discardTop').disabled = n === 0;
+    $('topMsg').textContent = n ? n + ' unsaved' : '';
   }
+  $('saveTop').addEventListener('click', function () { $('saveBtn').click(); });
+  $('discardTop').addEventListener('click', function () { $('discardBtn').click(); });
   $('discardBtn').addEventListener('click', function () { changes = {}; updateBar(); renderModules(); });
   $('saveBtn').addEventListener('click', async function () {
     var keys = Object.keys(changes); if (!keys.length) return;
-    var b = $('saveBtn'); b.disabled = true;
+    var b = $('saveBtn'); b.disabled = true; $('saveTop').disabled = true;
     try {
       var res = await api(BASE + '/save', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ subjectType: subject.type, subject: subject.subject,
@@ -420,7 +431,7 @@ td.who { color: var(--muted); font-size: 12px; }
       toast(res.saved + ' change(s) saved for ' + subject.name + '.');
       await load();
     } catch (e) { toast(e.message, true); }
-    finally { b.disabled = false; }
+    finally { b.disabled = false; updateBar(); }
   });
   window.addEventListener('beforeunload', function (e) { if (Object.keys(changes).length) { e.preventDefault(); e.returnValue = ''; } });
 

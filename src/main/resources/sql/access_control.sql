@@ -87,6 +87,7 @@ INSERT INTO access_permission (perm_key, app, module, kind, parent_key, label, d
   ('web.events', 'PINVENTORY', 'Website', 'PAGE', NULL, 'Upcoming Events', 'The page itself also allows Global only (until Phase 2).', '/website/upcoming-events,/website/upcoming_events.jsp', 390),
   ('web.photos', 'PINVENTORY', 'Website', 'PAGE', NULL, 'Photo Storage', 'The page itself also allows Global only (until Phase 2).', '/website/move-photos', 400),
   ('so.link', 'PINVENTORY', 'School Management', 'PAGE', NULL, 'School Operations (sign-in link)', NULL, '/school-operations/sso', 410),
+  ('phrms.link', 'PINVENTORY', 'School Management', 'PAGE', NULL, 'HR & Payroll (sign-in link)', 'Opens PHRMS with the PInventory sign-in.', '/phrms/sso', 415),
   ('svc.departments', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Departments', NULL, '/MasterServlet,/Service/Mater.jsp', 420),
   ('svc.book', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Book a Request', NULL, '/RequestBookingServlet,/Service/request_booking.jsp', 430),
   ('svc.assign', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Assign Incharge', NULL, '/Assign_ServiceRequestServlet,/Service/AssignService.jsp', 440),

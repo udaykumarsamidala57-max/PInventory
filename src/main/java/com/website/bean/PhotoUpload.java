@@ -18,8 +18,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * MySQL keeps only the photo's place in the bucket (column file_key);
  * the old picture column is left empty for new uploads.
  *
- * Bucket uploads are used for the SRS branch. Other branches (Sanpoly) keep
- * saving into MySQL until their public website reads from the bucket too.
+ * Every website (SRS, Sanpoly, ...) keeps its photos ONLY in the bucket, in its own folder.
+ * MySQL never stores picture bytes: inserting, replacing and deleting a photo always goes
+ * through the bucket and only the path (file_key) is written to MySQL.
  */
 public final class PhotoUpload {
 
@@ -27,9 +28,22 @@ public final class PhotoUpload {
 
     private static final Map<String, Boolean> KEY_COLUMN = new ConcurrentHashMap<>();
 
-    /** true when new uploads for this branch go to the bucket */
+    /** true when the bucket is set up (all websites upload to the bucket) */
     public static boolean on(String branch) {
-        return PhotoStore.enabled() && "SRS".equalsIgnoreCase(branch);
+        return PhotoStore.enabled();
+    }
+
+    /** Photos are never saved in MySQL: stop when the bucket is not set up. */
+    public static void requireBucket() throws SQLException {
+        if (!PhotoStore.enabled()) {
+            throw new SQLException("The photo bucket is not set up on this server "
+                    + "(BUCKET, ACCESS_KEY_ID, SECRET_ACCESS_KEY). Photos are stored only in the bucket.");
+        }
+    }
+
+    /** As requireBucket(), but only when a file was actually uploaded. */
+    public static void requireBucketFor(javax.servlet.http.Part part) throws SQLException {
+        if (part != null && part.getSize() > 0) requireBucket();
     }
 
     /** does this table have the file_key column (added by /admin/move-photos)? */
