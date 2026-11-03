@@ -50,16 +50,34 @@ public class WebsiteDB {
         return "Sanpoly".equalsIgnoreCase(siteOf(site)) ? "SANPOLY-WEBSITE" : "srs";
     }
 
-    /** Website for the store selected in this session. */
+    /**
+     * Website for this session. Global users: the store they selected.
+     * Website-role users: ALWAYS their own branch from the users table (assignedBranch, set at login),
+     * so they can never reach another school's website by choosing or faking a store.
+     */
     public static String site(HttpSession sess) {
-        return siteOf(sess == null ? null : (String) sess.getAttribute("branch"));
+        if (sess == null) return siteOf(null);
+        if (isWebsiteUser(sess)) return siteOf((String) sess.getAttribute("assignedBranch"));
+        return siteOf((String) sess.getAttribute("branch"));
     }
 
-    /** Website pages are for users with role Global only (same rule as the Website menu). */
+    /** Role "Website": may use only the Website pages, and only for their own branch's website. */
+    public static boolean isWebsiteUser(HttpSession sess) {
+        if (sess == null) return false;
+        Object role = sess.getAttribute("role");
+        return role != null && "Website".equalsIgnoreCase(String.valueOf(role).trim());
+    }
+
+    /** Website pages are for role Global, and for role Website when the user has a branch assigned. */
     public static boolean allowed(HttpSession sess) {
         if (sess == null || sess.getAttribute("username") == null) return false;
         String role = (String) sess.getAttribute("role");
-        return role != null && "Global".equalsIgnoreCase(role.trim());
+        if (role != null && "Global".equalsIgnoreCase(role.trim())) return true;
+        if (isWebsiteUser(sess)) {
+            Object b = sess.getAttribute("assignedBranch");
+            return b != null && !String.valueOf(b).trim().isEmpty();   // no branch = no website
+        }
+        return false;
     }
 
     /**
