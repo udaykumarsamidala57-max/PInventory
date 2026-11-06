@@ -13,6 +13,9 @@
     String poCsrf = (String) request.getAttribute("poCsrf");
     boolean canApprovePo = Boolean.TRUE.equals(request.getAttribute("canApprove"));
     boolean canDeletePo = Boolean.TRUE.equals(request.getAttribute("canDelete"));
+    boolean canPrintPo = Boolean.TRUE.equals(request.getAttribute("canPrint"));
+    boolean canMailPo = Boolean.TRUE.equals(request.getAttribute("canMail"));
+    boolean canGrnPo = Boolean.TRUE.equals(request.getAttribute("canGrn"));
     String poMessage = (String) request.getAttribute("poMessage");
 %>
 <%!
@@ -875,22 +878,28 @@
                         </td>
 
                         <td data-label="Print">
+                            <% if (canPrintPo) { %>
                             <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
-                                <input type="hidden" name="poNumber" value="<%= po.getPoNumber() %>">
+                                <input type="hidden" name="poNumber" value="<%= escPo(po.getPoNumber()) %>">
                                 <input type="submit" value="View / Print" class="action-btn print-btn" />
                             </form>
+                            <% } %>
+                            <% if (canMailPo) { %>
                             <button type="button" class="action-btn mail-btn"
                                 data-po="<%= String.valueOf(po.getPoNumber()).replace("&", "&amp;").replace("\"", "&quot;").replace("<", "&lt;") %>"
                                 onclick="openPoMail(this.dataset.po)">Send Mail</button>
+                            <% } %>
                         </td>
 
                         <td data-label="GRN">
+                            <% if (canGrnPo) { %>
                             <form action="grn" method="get" style="margin:0;">
-                                <input type="hidden" name="po_number" value="<%= po.getPoNumber() %>">
+                                <input type="hidden" name="po_number" value="<%= escPo(po.getPoNumber()) %>">
                                 <input type="submit" value="GRN"
                                     class="action-btn <%= "Approved".equalsIgnoreCase(approval) ? "grn-btn" : "disabled" %>"
                                     <%= "Approved".equalsIgnoreCase(approval) ? "" : "disabled" %> />
                             </form>
+                            <% } %>
                         </td>
 
                         <td data-label="Items">

@@ -113,9 +113,9 @@ td.who { color: var(--muted); font-size: 12px; }
       <div class="ico"><i class="fa-solid fa-user-shield"></i></div>
       <div class="grow">
         <h1>Access Control</h1>
-        <div class="sub">Choose which roles and departments may open each page and use each button in PInventory and School Operations.
-          Global users always have full access. Changes apply within 30 seconds.</div>
+        <div class="sub">Set page and action access. PHRMS access is role-based; each user can hold multiple roles. Global users always have full access.</div>
       </div>
+      <a class="btn line" href="<%= acCtx %>/user-roles"><i class="fa-solid fa-users-gear"></i> Assign user roles</a>
       <a class="btn line" href="<%= acCtx %>/settings"><i class="fa-solid fa-gear"></i> Settings Master</a>
     </div>
     <div class="tabs" role="tablist">
@@ -139,6 +139,7 @@ td.who { color: var(--muted); font-size: 12px; }
           <div class="who" id="whoTitle">Select who to edit<small id="whoSub"></small></div>
           <div class="apps" id="appTabs">
             <button type="button" class="on" data-app="PINVENTORY">PInventory</button>
+            <button type="button" data-app="PHRMS">PHRMS</button>
             <button type="button" data-app="SCHOOLOPS">School Operations</button>
           </div>
         </div>
@@ -222,7 +223,12 @@ td.who { color: var(--muted); font-size: 12px; }
     var b = e.target.closest('button'); if (!b) return;
     app = b.dataset.app;
     $('appTabs').querySelectorAll('button').forEach(function (x) { x.classList.toggle('on', x === b); });
-    renderModules();
+    renderSubjects();
+    if (app === 'PHRMS' && (!subject || subject.type !== 'ROLE')) {
+      var firstRole = subjectList().filter(function (x) { return x.type === 'ROLE'; })[0];
+      if (firstRole) pick(firstRole);
+      else { subject = null; $('whoTitle').firstChild.textContent = 'Select a PHRMS role'; $('whoSub').textContent = ''; renderModules(); }
+    } else renderModules();
   });
 
   // ---------- load
@@ -243,6 +249,18 @@ td.who { color: var(--muted); font-size: 12px; }
   }
 
   function subjectList() {
+    if (app === 'PHRMS') {
+      var roleOnly = [];
+      data.roles.forEach(function (r) { roleOnly.push({ type: 'ROLE', subject: r.subject, name: r.name, users: r.users, group: 'Roles' }); });
+      var knownRole = {}; roleOnly.forEach(function (r) { knownRole[r.subject] = true; });
+      data.grants.forEach(function (g) {
+        if (g.type === 'ROLE' && g.subject !== 'GLOBAL' && !knownRole[g.subject]) {
+          knownRole[g.subject] = true;
+          roleOnly.push({ type: 'ROLE', subject: g.subject, name: g.subject, users: 0, group: 'Roles' });
+        }
+      });
+      return roleOnly.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    }
     var out = [{ type: 'ALL', subject: '*', name: 'All users', users: users.length, group: 'Everyone' }];
     data.roles.forEach(function (r) { out.push({ type: 'ROLE', subject: r.subject, name: r.name, users: r.users, group: 'Roles' }); });
     data.departments.forEach(function (d) { out.push({ type: 'DEPT', subject: d.subject, name: d.name, users: d.users, group: 'Departments' }); });
@@ -302,7 +320,8 @@ td.who { color: var(--muted); font-size: 12px; }
     if (Object.keys(changes).length && !confirm('You have unsaved changes for ' + subject.name + '. Discard them?')) return;
     changes = {}; subject = s; updateBar();
     $('whoTitle').firstChild.textContent = (s.type === 'ALL' ? '' : TYPE_LABEL[s.type] + ': ') + s.name;
-    $('whoSub').textContent = s.type === 'ALL' ? 'Applies to every signed-in user (a role or department "Deny" still removes it).'
+    $('whoSub').textContent = app === 'PHRMS' ? (s.users != null ? s.users + ' user(s) have this access role. PHRMS permissions apply through assigned roles.' : 'PHRMS permissions apply through assigned roles.')
+      : s.type === 'ALL' ? 'Applies to every signed-in user (a role or department "Deny" still removes it).'
       : s.type === 'USER' ? 'Personal exception: overrides this user\'s role and department.'
       : (s.users != null ? s.users + ' user(s) have this ' + (s.type === 'ROLE' ? 'role' : 'department') + '.' : '');
     renderSubjects(); renderModules();
@@ -320,6 +339,7 @@ td.who { color: var(--muted); font-size: 12px; }
     td.appendChild(el('span', 'chip g', 'Global'));
     ids.forEach(function (id) {
       var p = id.split(':'), type = p[0], name = p.slice(1).join(':');
+      if (app === 'PHRMS' && type !== 'ROLE') return;
       var label = type === 'ALL' ? 'All users' : TYPE_LABEL[type] + ': ' + name;
       var c = el('span', 'chip' + (g[id] === 'DENY' ? ' deny' : '') + (id === me ? ' me' : ''), (g[id] === 'DENY' ? '\u2715 ' : '') + label);
       td.appendChild(c);
@@ -356,6 +376,10 @@ td.who { color: var(--muted); font-size: 12px; }
     if (!data || !subject) return;
     var q = $('permSearch').value.trim().toLowerCase();
     var perms = data.permissions.filter(function (p) { return p.app === app; });
+    if (app === 'PHRMS' && (!subject || subject.type !== 'ROLE')) {
+      box.appendChild(el('div', 'empty', 'Choose a role to manage PHRMS access.'));
+      return;
+    }
     var children = {};
     perms.forEach(function (p) { if (p.parent) (children[p.parent] = children[p.parent] || []).push(p); });
     var mods = [], byMod = {};
@@ -443,13 +467,13 @@ td.who { color: var(--muted); font-size: 12px; }
       var r = await api(BASE + '/effective?username=' + encodeURIComponent(u));
       out.innerHTML = '';
       if (!r.found) { $('checkWho').textContent = ''; out.appendChild(el('div', 'empty', 'No user named "' + u + '".')); return; }
-      $('checkWho').textContent = 'Role: ' + (r.role || '\u2014') + ' \u00b7 Department: ' + (r.department || '\u2014')
+      $('checkWho').textContent = 'Roles: ' + ((r.roles || []).join(', ') || r.role || '\u2014') + ' \u00b7 Department: ' + (r.department || '\u2014')
         + ((r.role || '').trim().toLowerCase() === 'global' ? ' \u00b7 Global: full access' : '');
       var ok = {}; r.allowed.forEach(function (k) { ok[k] = true; });
-      ['PINVENTORY', 'SCHOOLOPS'].forEach(function (a) {
+      ['PINVENTORY', 'PHRMS', 'SCHOOLOPS'].forEach(function (a) {
         var perms = data.permissions.filter(function (p) { return p.app === a; });
         var sec = el('div', 'module'), head = el('div', 'mod-head');
-        head.appendChild(el('h3', null, a === 'PINVENTORY' ? 'PInventory' : 'School Operations'));
+        head.appendChild(el('h3', null, a === 'PINVENTORY' ? 'PInventory' : a === 'PHRMS' ? 'PHRMS' : 'School Operations'));
         var yes = perms.filter(function (p) { return ok[p.key]; }).length;
         head.appendChild(el('span', 'cnt', yes + ' of ' + perms.length + ' allowed'));
         var t = el('table', 'res'), tb = el('tbody'); t.appendChild(tb);

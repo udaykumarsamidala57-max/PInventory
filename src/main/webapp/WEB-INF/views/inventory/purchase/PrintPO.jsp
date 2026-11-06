@@ -1,3 +1,4 @@
+<%@ page import="com.officecentral.common.access.ButtonAccess" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="com.officecentral.common.db.InventoryDB" %>
 <%@ page import="java.time.LocalDate" %>
@@ -7,6 +8,10 @@
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) {
         response.sendRedirect("login.jsp");
+        return;
+    }
+    if (!(ButtonAccess.allows(sess, ButtonAccess.PO_PRINT, true) || ButtonAccess.allows(sess, ButtonAccess.PO_REPORT_PRINT, true))) {   // Print button permission (UAMS)
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to print Purchase Orders.");
         return;
     }
 

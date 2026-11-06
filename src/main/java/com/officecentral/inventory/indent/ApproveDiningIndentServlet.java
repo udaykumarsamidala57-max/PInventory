@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.inventory.model.IndentItemFull;
 
@@ -29,12 +30,17 @@ public class ApproveDiningIndentServlet extends HttpServlet {
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
 
-        if (!"Global".equalsIgnoreCase(role)
-                && !"Incharge".equalsIgnoreCase(role)
-                && !"Admin".equalsIgnoreCase(role)) {
+        // Page access is decided in UAMS (old fixed rule until the catalogue has the page)
+        boolean oldPage = "Global".equalsIgnoreCase(role) || "Incharge".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role);
+        if (!ButtonAccess.allows(sess, ButtonAccess.APPROVE_DINING, oldPage)) {
             response.setContentType("text/html");
             response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
             return;
+        }
+        // Which buttons this user may see (the same checks are made again when a button is used)
+        for (String b : new String[] {"approve", "reject", "final"}) {
+            String key = ButtonAccess.APPROVE_DINING + "." + b;
+            request.setAttribute("can_" + b, ButtonAccess.allows(sess, key, ButtonAccess.oldIndentRule(sess, key)));
         }
 
         List<IndentItemFull> indentList = new ArrayList<>();
@@ -140,6 +146,20 @@ public class ApproveDiningIndentServlet extends HttpServlet {
             response.sendRedirect("approve-dining-indent");
             return;
         }
+        if (!com.officecentral.common.web.Csrf.valid(request, sess)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "This page has expired. Please reload it and try again.");
+            return;
+        }
+        // Every button is checked here (hiding it on the page is not enough)
+        String buttonKey = ButtonAccess.indentKey(ButtonAccess.APPROVE_DINING, action, request.getParameter("status"));
+        if (buttonKey == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown action.");
+            return;
+        }
+        if (!ButtonAccess.allows(sess, buttonKey, ButtonAccess.oldIndentRule(sess, buttonKey))) {
+            ButtonAccess.refuse(response, "do this on the indent");
+            return;
+        }
 
         java.sql.Date today = new java.sql.Date(System.currentTimeMillis());
 
@@ -187,7 +207,12 @@ public class ApproveDiningIndentServlet extends HttpServlet {
             // ---------- 🟢 FIRST-LEVEL APPROVAL ----------
             else if ("Iapprove".equalsIgnoreCase(action)) {
                 String id = idStr;
-                String sql = "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
+                // Reject used to approve here as well: honour the status sent by the Reject button
+                String reqStatus = request.getParameter("status");
+                boolean reject = "Rejected".equalsIgnoreCase(reqStatus) || "Cancelled".equalsIgnoreCase(reqStatus);
+                String sql = reject
+                        ? "UPDATE indent SET istatus='Cancelled', status='Cancelled', IstausApprove=?, Iapprovedate=? WHERE indent_id=?"
+                        : "UPDATE indent SET istatus='Approved', IstausApprove=?, Iapprovedate=? WHERE indent_id=?";
                 try (PreparedStatement ps = con.prepareStatement(sql)) {
                     ps.setString(1, user);
                     ps.setDate(2, today);

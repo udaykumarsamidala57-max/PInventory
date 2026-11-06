@@ -16,6 +16,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.POItems;
@@ -110,6 +111,14 @@ public class NewPOServlet extends HttpServlet {
             return;
         }
 
+        if (!com.officecentral.common.web.Csrf.valid(request, sess)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "This page has expired. Please reload it and try again.");
+            return;
+        }
+        if (!ButtonAccess.allows(sess, ButtonAccess.PO_CREATE, true)) {
+            ButtonAccess.refuse(response, "create Purchase Orders");
+            return;
+        }
         String role = (String) sess.getAttribute("role");
         String dept = (String) sess.getAttribute("department");
         String branch = (String) sess.getAttribute("branch");

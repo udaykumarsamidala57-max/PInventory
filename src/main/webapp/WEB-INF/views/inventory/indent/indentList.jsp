@@ -1,3 +1,4 @@
+<%@ page import="com.officecentral.common.access.ButtonAccess" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.*, com.officecentral.inventory.model.IndentItemFull" %>
 
@@ -559,12 +560,14 @@ body {
               </td>
 
               <td>
+                <% if (ButtonAccess.allows(sess, ButtonAccess.INDENT_PRINT, true)) { %>
                 <form action="PrintIndent.jsp" method="get" class="print-form">
                   <input type="hidden" name="IndentNumber" value="<%= esc(ind.getIndentNo()) %>">
                   <button type="submit" class="print-action-btn" title="View / Print">
                     <i class="fa fa-print"></i>
                   </button>
                 </form>
+                <% } %>
               </td>
             </tr>
           <% } } %>

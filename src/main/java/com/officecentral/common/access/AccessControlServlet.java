@@ -35,6 +35,10 @@ import com.officecentral.common.web.Csrf;
 /**
  * Access Control settings page (Global role only, fixed in code so nobody can lock Global out).
  *
+ * UAMS note: this page edits the OLD rules (role / department / user grants). PInventory, School Operations and
+ * HR use them only until the switch to UAMS roles (UAMS > Migration); after the switch this page is read-only and
+ * they are kept only for switching back. Roles, assignments and permissions are managed in UAMS (/uams).
+ *
  *   GET  /access-control            the page
  *   GET  /access-control/data       catalogue, grants, roles, departments and users (JSON)
  *   POST /access-control/save       {subjectType, subject, changes:[{key, effect: "ALLOW"|"DENY"|null}]}
@@ -94,7 +98,13 @@ public class AccessControlServlet extends HttpServlet {
             error(resp, 400, "Choose who the access is for."); return;
         }
         JsonArray changes = body.has("changes") && body.get("changes").isJsonArray() ? body.getAsJsonArray("changes") : new JsonArray();
+        if (AccessControl.uamsMode()) {
+            error(resp, 409, "The old rules are not used while UAMS roles are on. Make changes in Access Management (UAMS)."); return;
+        }
         if (changes.size() == 0) { error(resp, 400, "There are no changes to save."); return; }
+        if ("ROLE".equals(type) && subject != null && subject.startsWith(UamsService.ROLE_PREFIX)) {
+            error(resp, 400, "This is a UAMS role. Change its permissions in Access Management (UAMS)."); return;
+        }
         if (changes.size() > 500) { error(resp, 400, "Too many changes at once."); return; }
         Map<String, String> wanted = new LinkedHashMap<>();
         for (JsonElement el : changes) {
@@ -134,7 +144,7 @@ public class AccessControlServlet extends HttpServlet {
         List<Map<String, Object>> users = new ArrayList<>();
         try (Connection c = InventoryDB.getAuthConnection()) {
             try (PreparedStatement ps = c.prepareStatement("SELECT perm_key, app, module, kind, parent_key, label, description, "
-                    + "paths FROM access_permission ORDER BY sort_order, perm_key"); ResultSet rs = ps.executeQuery()) {
+                    + "paths FROM access_permission WHERE kind IN ('PAGE','ACTION') ORDER BY sort_order, perm_key"); ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     Map<String, Object> p = new LinkedHashMap<>();
                     p.put("key", rs.getString(1)); p.put("app", rs.getString(2)); p.put("module", rs.getString(3));
@@ -160,8 +170,17 @@ public class AccessControlServlet extends HttpServlet {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("username", u); m.put("role", r); m.put("department", d);
                     users.add(m);
-                    count(roles, roleNames, r);
                     count(depts, deptNames, d);
+                }
+            }
+            try (PreparedStatement ps = c.prepareStatement("SELECT ar.role_key, ar.role_name, COUNT(ur.user_id) AS member_count "
+                    + "FROM access_role ar LEFT JOIN access_user_role ur ON ur.role_key=ar.role_key "
+                    + "WHERE ar.role_key <> 'GLOBAL' GROUP BY ar.role_key, ar.role_name ORDER BY ar.role_name, ar.role_key");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String key = rs.getString(1);
+                    roles.put(key, rs.getInt(3));
+                    roleNames.put(key, rs.getString(2));
                 }
             }
         }
@@ -204,12 +223,14 @@ public class AccessControlServlet extends HttpServlet {
         }
         out.put("found", found);
         if (!found) return out;
-        out.put("username", username.trim()); out.put("role", role); out.put("department", dept);
+        Set<String> roles = AccessControl.rolesForUser(username.trim(), role);
+        out.put("username", username.trim()); out.put("role", role); out.put("roles", roles); out.put("department", dept);
         Map<String, List<AccessControl.Grant>> byKey = new LinkedHashMap<>();
         for (AccessControl.Grant g : AccessControl.grants()) byKey.computeIfAbsent(g.key, k -> new ArrayList<>()).add(g);
         List<String> allowed = new ArrayList<>();
         for (AccessControl.Permission p : AccessControl.permissions()) {
-            if (AccessControl.evaluate(role, dept, username, byKey.get(p.key))) allowed.add(p.key);
+            if (!AccessControl.PAGE.equals(p.kind) && !AccessControl.ACTION.equals(p.kind)) continue;   // UAMS levels
+            if (AccessControl.evaluateFor(p, role, dept, username, roles, byKey.get(p.key))) allowed.add(p.key);
         }
         out.put("allowed", allowed);
         return out;
@@ -240,10 +261,10 @@ public class AccessControlServlet extends HttpServlet {
             boolean auto = c.getAutoCommit();
             c.setAutoCommit(false);
             try {
-                Set<String> known = new HashSet<>();
-                try (PreparedStatement ps = c.prepareStatement("SELECT perm_key FROM access_permission");
+                Map<String, String> known = new LinkedHashMap<>();
+                try (PreparedStatement ps = c.prepareStatement("SELECT perm_key, app FROM access_permission");
                      ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) known.add(rs.getString(1));
+                    while (rs.next()) known.put(rs.getString(1), rs.getString(2));
                 }
                 int n = 0;
                 try (PreparedStatement get = c.prepareStatement("SELECT effect FROM access_grant WHERE perm_key=? AND "
@@ -256,7 +277,10 @@ public class AccessControlServlet extends HttpServlet {
                              + "old_effect, new_effect, changed_by) VALUES (?,?,?,?,?,?)")) {
                     for (Map.Entry<String, String> e : wanted.entrySet()) {
                         String key = e.getKey(), effect = e.getValue();
-                        if (!known.contains(key)) throw new IllegalArgumentException("Unknown page or button: " + key);
+                        if (!known.containsKey(key)) throw new IllegalArgumentException("Unknown page or button: " + key);
+                        if ("PHRMS".equals(known.get(key)) && !"ROLE".equals(type)) {
+                            throw new IllegalArgumentException("PHRMS options can only be assigned to roles. Select a role and try again.");
+                        }
                         String old = null;
                         get.setString(1, key); get.setString(2, type); get.setString(3, subject);
                         try (ResultSet rs = get.executeQuery()) { if (rs.next()) old = rs.getString(1); }

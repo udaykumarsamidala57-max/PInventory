@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.common.notification.NotificationService;
 import com.officecentral.inventory.model.IndentItemFull;
@@ -31,12 +32,17 @@ public class ApproveIndentServlet extends HttpServlet {
         String branch = (String) sess.getAttribute("branch");
 
 
-        if (!"Global".equalsIgnoreCase(role)
-                && !"Incharge".equalsIgnoreCase(role)
-                && !"Admin".equalsIgnoreCase(role)) {
+        // Page access is decided in UAMS (old fixed rule until the catalogue has the page)
+        boolean oldPage = "Global".equalsIgnoreCase(role) || "Incharge".equalsIgnoreCase(role) || "Admin".equalsIgnoreCase(role);
+        if (!ButtonAccess.allows(sess, ButtonAccess.APPROVE_INDENT, oldPage)) {
             response.setContentType("text/html");
             response.getWriter().println("<h3 style='color:red;'>Access Denied</h3>");
             return;
+        }
+        // Which buttons this user may see (the same checks are made again when a button is used)
+        for (String b : new String[] {"approve", "reject", "final"}) {
+            String key = ButtonAccess.APPROVE_INDENT + "." + b;
+            request.setAttribute("can_" + b, ButtonAccess.allows(sess, key, ButtonAccess.oldIndentRule(sess, key)));
         }
 
         List<IndentItemFull> indentList = new ArrayList<>();
@@ -146,6 +152,20 @@ public class ApproveIndentServlet extends HttpServlet {
 
         if (action == null) {
             response.sendRedirect("approve-indent");
+            return;
+        }
+        if (!com.officecentral.common.web.Csrf.valid(request, sess)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "This page has expired. Please reload it and try again.");
+            return;
+        }
+        // Every button is checked here (hiding it on the page is not enough)
+        String buttonKey = ButtonAccess.indentKey(ButtonAccess.APPROVE_INDENT, action, request.getParameter("status"));
+        if (buttonKey == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Unknown action.");
+            return;
+        }
+        if (!ButtonAccess.allows(sess, buttonKey, ButtonAccess.oldIndentRule(sess, buttonKey))) {
+            ButtonAccess.refuse(response, "do this on the indent");
             return;
         }
 

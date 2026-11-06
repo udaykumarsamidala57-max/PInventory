@@ -38,6 +38,10 @@ public class POMailServlet extends HttpServlet {
             json(resp, 401, error("Your session has ended. Please log in again."));
             return;
         }
+        if (!com.officecentral.common.access.ButtonAccess.allows(s, com.officecentral.common.access.ButtonAccess.PO_MAIL, true)) {
+            json(resp, 403, error("You do not have permission to send Purchase Orders by e-mail."));
+            return;
+        }
         String branch = (String) s.getAttribute("branch");
         try {
             JsonArray users = new JsonArray();
@@ -65,6 +69,14 @@ public class POMailServlet extends HttpServlet {
         HttpSession s = req.getSession(false);
         if (s == null || s.getAttribute("username") == null) {
             json(resp, 401, error("Your session has ended. Please log in again."));
+            return;
+        }
+        if (!com.officecentral.common.access.ButtonAccess.allows(s, com.officecentral.common.access.ButtonAccess.PO_MAIL, true)) {
+            json(resp, 403, error("You do not have permission to send Purchase Orders by e-mail."));
+            return;
+        }
+        if (!com.officecentral.common.web.Csrf.valid(req, s)) {
+            json(resp, 403, error("This page has expired. Please reload it and try again."));
             return;
         }
         String branch = (String) s.getAttribute("branch");

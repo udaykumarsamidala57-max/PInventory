@@ -217,6 +217,8 @@ if(vendorMap == null) vendorMap = new LinkedHashMap<>();
 %>
 
 <form method="post" action="<%=request.getContextPath()%>/purchase-order">
+    <%-- This page has no common header, so it adds the security token itself --%>
+    <input type="hidden" name="<%= com.officecentral.common.web.Csrf.PARAM %>" value="<%= com.officecentral.common.web.Csrf.token(request.getSession()) %>">
     <table class="form-section">
         <tr>
             <td><strong>Vendor:</strong></td>

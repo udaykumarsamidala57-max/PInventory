@@ -1,5 +1,5 @@
 -- =====================================================================================
--- Access control (pages and buttons) for PInventory and SchoolOperations.
+-- Access control (pages and buttons) for PInventory, PHRMS and SchoolOperations.
 -- Run in MySQL Workbench against the `inventory` database (the one that holds `users`).
 -- Safe to run again: it adds new pages/buttons and their default access, and never changes
 -- access that a Global user has already edited on the Access Control page.
@@ -10,7 +10,7 @@ SET SQL_SAFE_UPDATES = 0;
 
 CREATE TABLE IF NOT EXISTS access_permission (
   perm_key         VARCHAR(80)  NOT NULL PRIMARY KEY,
-  app              VARCHAR(20)  NOT NULL,              -- PINVENTORY or SCHOOLOPS
+  app              VARCHAR(20)  NOT NULL,              -- PINVENTORY, PHRMS or SCHOOLOPS
   module           VARCHAR(60)  NOT NULL,
   kind             VARCHAR(10)  NOT NULL,              -- PAGE or ACTION (button)
   parent_key       VARCHAR(80)  NULL,
@@ -42,6 +42,39 @@ CREATE TABLE IF NOT EXISTS access_grant_audit (
   changed_by   VARCHAR(100) NOT NULL,
   changed_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_access_grant_audit_changed (changed_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Access roles are separate from users.role so a user may hold several access roles without
+-- changing the single legacy role used by older PInventory screens.
+CREATE TABLE IF NOT EXISTS access_role (
+  role_key   VARCHAR(80)  NOT NULL PRIMARY KEY,
+  role_name  VARCHAR(100) NOT NULL,
+  created_by VARCHAR(100) NULL,
+  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS access_user_role (
+  user_id    INT          NOT NULL,
+  role_key   VARCHAR(80)  NOT NULL,
+  is_primary TINYINT(1)   NOT NULL DEFAULT 0,
+  assigned_by VARCHAR(100) NULL,
+  assigned_at TIMESTAMP   NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, role_key),
+  KEY idx_access_user_role_role (role_key),
+  CONSTRAINT fk_access_user_role_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  CONSTRAINT fk_access_user_role_role FOREIGN KEY (role_key) REFERENCES access_role (role_key) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS access_user_role_audit (
+  id         BIGINT       NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id    INT          NOT NULL,
+  username   VARCHAR(50)  NOT NULL,
+  role_key   VARCHAR(80)  NOT NULL,
+  change_type VARCHAR(10) NOT NULL,
+  changed_by VARCHAR(100) NOT NULL,
+  changed_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_access_user_role_audit_user (user_id, changed_at),
+  KEY idx_access_user_role_audit_changed (changed_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- 1. Catalogue: every page and button (labels and addresses are refreshed on every run).
@@ -87,7 +120,8 @@ INSERT INTO access_permission (perm_key, app, module, kind, parent_key, label, d
   ('web.events', 'PINVENTORY', 'Website', 'PAGE', NULL, 'Upcoming Events', 'The page itself also allows Global only (until Phase 2).', '/website/upcoming-events,/website/upcoming_events.jsp', 390),
   ('web.photos', 'PINVENTORY', 'Website', 'PAGE', NULL, 'Photo Storage', 'The page itself also allows Global only (until Phase 2).', '/website/move-photos', 400),
   ('so.link', 'PINVENTORY', 'School Management', 'PAGE', NULL, 'School Operations (sign-in link)', NULL, '/school-operations/sso', 410),
-  ('phrms.link', 'PINVENTORY', 'School Management', 'PAGE', NULL, 'HR & Payroll (sign-in link)', 'Opens PHRMS with the PInventory sign-in.', '/phrms/sso', 415),
+  ('phrms.link', 'PHRMS', 'HR & Payroll', 'PAGE', NULL, 'HR & Payroll (sign-in link)', 'Opens PHRMS with the PInventory sign-in.', '/phrms/sso', 895),
+  ('sec.user-roles', 'PINVENTORY', 'Security', 'PAGE', NULL, 'User Role Assignments', 'Assign one or more access roles to each user.', '/user-roles', 890),
   ('svc.departments', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Departments', NULL, '/MasterServlet,/Service/Mater.jsp', 420),
   ('svc.book', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Book a Request', NULL, '/RequestBookingServlet,/Service/request_booking.jsp', 430),
   ('svc.assign', 'PINVENTORY', 'Core Operations Desk', 'PAGE', NULL, 'Assign Incharge', NULL, '/Assign_ServiceRequestServlet,/Service/AssignService.jsp', 440),
@@ -129,7 +163,16 @@ INSERT INTO access_permission (perm_key, app, module, kind, parent_key, label, d
   ('so.adm.students.tc-override', 'SCHOOLOPS', 'Admissions', 'ACTION', 'so.adm.students', 'Change TC of a student who has left', NULL, NULL, 800),
   ('so.adm.students.upload', 'SCHOOLOPS', 'Admissions', 'ACTION', 'so.adm.students', 'Upload students (CSV)', NULL, NULL, 810),
   ('so.transport', 'SCHOOLOPS', 'Other services', 'PAGE', NULL, 'Transport assignments', NULL, NULL, 820),
-  ('so.students.lookup', 'SCHOOLOPS', 'Other services', 'PAGE', NULL, 'Student directory lookup', NULL, NULL, 830)
+  ('so.students.lookup', 'SCHOOLOPS', 'Other services', 'PAGE', NULL, 'Student directory lookup', NULL, NULL, 830),
+  ('phrms.rec', 'PHRMS', 'Recruitment & Onboarding', 'PAGE', NULL, 'Recruitment & Onboarding', NULL, NULL, 900),
+  ('phrms.rec.approve', 'PHRMS', 'Recruitment & Onboarding', 'ACTION', 'phrms.rec', 'Approve salary & management note', 'Approve or reject management notes, cancel offer / appointment letters, and edit the letterhead.', NULL, 905),
+  ('phrms.staff', 'PHRMS', 'Staff Details', 'PAGE', NULL, 'Staff Details', 'Employee records, departments, employment history and status.', NULL, 908),
+  ('phrms.att', 'PHRMS', 'Biometric Attendance', 'PAGE', NULL, 'Biometric Attendance', NULL, NULL, 910),
+  ('phrms.leave', 'PHRMS', 'Staff Leave', 'PAGE', NULL, 'Staff Leave', NULL, NULL, 920),
+  ('phrms.pay', 'PHRMS', 'Payroll', 'PAGE', NULL, 'Payroll', NULL, NULL, 930),
+  ('phrms.stat', 'PHRMS', 'Statutory Compliance', 'PAGE', NULL, 'Statutory Compliance', NULL, NULL, 940),
+  ('phrms.grat', 'PHRMS', 'Gratuity', 'PAGE', NULL, 'Gratuity', NULL, NULL, 950),
+  ('phrms.encash', 'PHRMS', 'Leave Encashment', 'PAGE', NULL, 'Leave Encashment', NULL, NULL, 960)
 ON DUPLICATE KEY UPDATE app = VALUES(app), module = VALUES(module), kind = VALUES(kind), parent_key = VALUES(parent_key),
   label = VALUES(label), description = VALUES(description), paths = VALUES(paths), sort_order = VALUES(sort_order);
 
@@ -433,6 +476,9 @@ SELECT d.perm_key, d.subject_type, d.subject, d.effect, 'system-default'
 FROM access_default_grant d JOIN access_permission p ON p.perm_key = d.perm_key AND p.defaults_applied = 0;
 UPDATE access_permission SET defaults_applied = 1 WHERE defaults_applied = 0;
 DROP TEMPORARY TABLE access_default_grant;
+
+-- Roles and user-role assignments are managed only in UAMS (PInventory > UAMS, see uams.sql).
+-- This script no longer creates roles from the old users.role values or assigns them automatically.
 
 -- 3. SchoolOperations reads these tables with its own (read-only) database user, e.g.:
 --    GRANT SELECT ON inventory.access_permission TO '<schoolops_user>'@'%';

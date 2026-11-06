@@ -86,7 +86,7 @@
 
       <div class="center-buttons">
         <button type="button" class="btn btn-add-item" id="addItemBtn">+ Add Item</button>
-        <button type="submit" class="btn btn-green">Save Indent</button>
+        <% if (!Boolean.FALSE.equals(request.getAttribute("can_save"))) { %><button type="submit" class="btn btn-green">Save Indent</button><% } %>
       </div>
 
       <input type="hidden" name="itemIds">

@@ -1,3 +1,4 @@
+<%@ page import="com.officecentral.common.access.ButtonAccess" %>
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="java.sql.*, java.util.*, com.officecentral.common.db.InventoryDB" %>
 <%@ page import="java.time.LocalDate, java.time.format.DateTimeFormatter" %>
@@ -10,16 +11,36 @@
         return String.valueOf(o).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
     }
     private static String dash(String s) { return (s == null || s.trim().isEmpty()) ? "-" : s.trim(); }
+    private static boolean is(Object v, String... any) {
+        if (v == null) return false;
+        String t = String.valueOf(v).trim();
+        for (String a : any) if (a.equalsIgnoreCase(t)) return true;
+        return false;
+    }
+    /** Cancelled at level 1 (istatus), at level 2 (status) or as next step. Such lines are not printed. */
+    private static boolean cancelled(Map<String, Object> r) {
+        return is(r.get("status"), "Cancelled", "Rejected") || is(r.get("istatus"), "Cancelled", "Rejected")
+                || is(r.get("Indentnext"), "Cancelled");
+    }
+    /** Approved at the 2nd (final) level: status Approved and sent on to Issue or PO (ApproveIndentServlet / MobileIndentDAO). */
+    private static boolean finalApproved(Map<String, Object> r) {
+        return is(r.get("status"), "Approved") && is(r.get("Indentnext"), "Issue", "PO", "Issued", "PO Raised");
+    }
 %>
 <%
     HttpSession sess = request.getSession(false);
     if (sess == null || sess.getAttribute("username") == null) { response.sendRedirect("login.jsp"); return; }
+    if (!(ButtonAccess.allows(sess, ButtonAccess.INDENT_PRINT, true))) {   // Print button permission (UAMS)
+        response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to print indents.");
+        return;
+    }
 
     String indentNumber = request.getParameter("IndentNumber");
     String branch = (String) sess.getAttribute("branch");
 
     // ---- Load the indent first, so the paper size can be chosen from the number of items
     List<Map<String, Object>> rows = new ArrayList<>();
+    int cancelledCount = 0;
     String error = null;
     if (indentNumber == null || indentNumber.trim().isEmpty()) {
         error = "Invalid or missing Indent Number parameter.";
@@ -27,7 +48,7 @@
         try (Connection con = InventoryDB.getConnection(branch);
              PreparedStatement pst = con.prepareStatement(
                  "SELECT i.indent_no, i.PurchaseorIssue, i.indent_date, i.item_name, i.qty, i.department, i.requested_by, " +
-                 "i.status, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty, m.UOM " +
+                 "i.status, i.istatus, i.purpose, i.Indentnext, COALESCE(s.balance_qty, 0) AS balance_qty, m.UOM " +
                  "FROM indent i LEFT JOIN stock s ON i.item_id = s.item_id " +
                  "LEFT JOIN item_master m ON i.item_id = m.Item_id WHERE i.indent_no = ?")) {
             pst.setString(1, indentNumber.trim());
@@ -35,13 +56,15 @@
                 while (rs.next()) {
                     Map<String, Object> r = new HashMap<>();
                     for (String c : new String[] { "PurchaseorIssue", "indent_date", "item_name", "qty", "department",
-                                                   "requested_by", "status", "purpose", "Indentnext", "UOM" })
+                                                   "requested_by", "status", "istatus", "purpose", "Indentnext", "UOM" })
                         r.put(c, rs.getString(c));
                     r.put("balance_qty", rs.getBigDecimal("balance_qty"));
-                    rows.add(r);
+                    if (!cancelled(r)) rows.add(r);   // cancelled items are not printed
+                    else cancelledCount++;
                 }
             }
-            if (rows.isEmpty()) error = "No record found for this indent number.";
+            if (rows.isEmpty()) error = cancelledCount > 0 ? "All items of this indent are cancelled; there is nothing to print."
+                                                           : "No record found for this indent number.";
         } catch (Exception e) {
             e.printStackTrace();
             error = "Error rendering report: " + e.getMessage();
@@ -149,17 +172,14 @@ body.paper-a5 .sign-title { font-size: 10px; }
 <% } else {
        Map<String, Object> first = rows.get(0);
        String type       = (String) first.get("PurchaseorIssue");
-       String indentNext = (String) first.get("Indentnext");
        boolean isIssue   = "Issue".equalsIgnoreCase(type);
-       boolean viaPO     = indentNext != null && "PO".equalsIgnoreCase(indentNext.trim());
 
        String indentDate = (String) first.get("indent_date"), shownDate = dash(indentDate);
        try { shownDate = LocalDate.parse(indentDate.trim()).format(DateTimeFormatter.ofPattern("dd MMMM yyyy")); } catch (Exception ignore) { }
 
-       boolean allApproved = true;
+       boolean allApproved = true;   // the APPROVED stamp only when every printed item passed the 2nd level
        for (Map<String, Object> r : rows) {
-           String st = (String) r.get("status");
-           if (!viaPO && (st == null || !"Approved".equalsIgnoreCase(st.trim()))) allApproved = false;
+           if (!finalApproved(r)) allApproved = false;
        }
 %>
     <div class="indent-info">
@@ -187,9 +207,8 @@ body.paper-a5 .sign-title { font-size: 10px; }
         <tbody>
         <% int n = 1;
            for (Map<String, Object> r : rows) {
-               String st = (String) r.get("status");
-               String shown = viaPO ? "Approved" : (st != null ? st : "Pending");
-               boolean ok = "Approved".equalsIgnoreCase(shown);
+               boolean ok = finalApproved(r);
+               String shown = ok ? "Approved" : "Pending";   // "Approved" only after the 2nd level approval
         %>
             <tr>
                 <td><%= n++ %></td>

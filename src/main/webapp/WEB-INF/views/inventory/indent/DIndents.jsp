@@ -21,6 +21,10 @@ if (sess == null || sess.getAttribute("username") == null) {
 
 String role = (String) sess.getAttribute("role");
 String loginUser = (String) sess.getAttribute("username");
+// Buttons this user may use (set by the servlet from UAMS; the servlet checks again on every click)
+boolean canL1Approve = Boolean.TRUE.equals(request.getAttribute("can_approve"));
+boolean canL1Reject  = Boolean.TRUE.equals(request.getAttribute("can_reject"));
+boolean canFinal     = Boolean.TRUE.equals(request.getAttribute("can_final"));
 
 Map<Integer, Double> pendingMap = (Map<Integer, Double>) request.getAttribute("pendingPerItem");
 if (pendingMap == null) pendingMap = new HashMap<>();
@@ -137,8 +141,9 @@ var LOGIN_USER = "<%= esc(loginUser) %>";
                 <% } else if ("Rejected".equalsIgnoreCase(l1)) { %>
                     <span class="rejected-badge">&#10008; Rejected</span>
                 <% } else { %>
-                    <button class="btn-green" onclick="ajaxApproveIC(<%= ind.getId() %>, 'Approved')">Approve</button>
-                    <button class="btn-red" onclick="ajaxApproveIC(<%= ind.getId() %>, 'Rejected')">Reject</button>
+                    <% if (canL1Approve) { %><button class="btn-green" onclick="ajaxApproveIC(<%= ind.getId() %>, 'Approved')">Approve</button><% } %>
+                    <% if (canL1Reject) { %><button class="btn-red" onclick="ajaxApproveIC(<%= ind.getId() %>, 'Rejected')">Reject</button><% } %>
+                    <% if (!canL1Approve && !canL1Reject) { %><span class="pill" data-s="pending">Pending</span><% } %>
                 <% } %>
                 </span>
                 <span class="approved-by" id="approvedBy-<%= ind.getId() %>"><%= by.isEmpty() ? "" : esc(by) %></span>
@@ -147,7 +152,7 @@ var LOGIN_USER = "<%= esc(loginUser) %>";
             <td>
                 <span class="pill l2-status" data-s="<%= esc(l2.toLowerCase()) %>"><%= esc(l2) %></span>
 
-                <% if ("Global".equalsIgnoreCase(role)
+                <% if (canFinal
                        && "Approved".equalsIgnoreCase(ind.getIstatus())
                        && !"Approved".equalsIgnoreCase(ind.getStatus())
                        && !"Rejected".equalsIgnoreCase(ind.getStatus())
@@ -186,14 +191,15 @@ function ajaxApproveIC(id, status){
         method:"POST",
         headers:{'Content-Type':'application/x-www-form-urlencoded'},
         body:"action=Iapprove&id="+id+"&status="+encodeURIComponent(status)
-    }).then(function(){
+    }).then(function(r){
+        if(!r.ok) throw new Error(r.status === 403 ? "You do not have permission for this action." : "Action failed.");
         if(status === 'Approved'){
             document.querySelector("#row-"+id+" .ic-status").innerHTML = '<span class="approved-badge">&#10004; Approved</span>';
         } else {
             document.querySelector("#row-"+id+" .ic-status").innerHTML = '<span class="rejected-badge">&#10008; Rejected</span>';
         }
         document.getElementById("approvedBy-"+id).innerText = LOGIN_USER;
-    }).catch(function(){ alert("Action failed. Please try again."); });
+    }).catch(function(e){ alert(e && e.message ? e.message : "Action failed. Please try again."); });
 }
 
 function ajaxFinalApprove(id, next, qty, balance, pending){
@@ -205,13 +211,14 @@ function ajaxFinalApprove(id, next, qty, balance, pending){
         method:"POST",
         headers:{'Content-Type':'application/x-www-form-urlencoded'},
         body:"action=approve&id="+id+"&indentnext="+encodeURIComponent(next)
-    }).then(function(){
+    }).then(function(r){
+        if(!r.ok) throw new Error(r.status === 403 ? "You do not have permission for this action." : "Action failed.");
         var pill = document.querySelector("#row-"+id+" .l2-status");
         pill.innerText = next;
         pill.setAttribute("data-s", next.toLowerCase());
         var el = document.getElementById("final-action-"+id);
         if(el) el.remove();
-    }).catch(function(){ alert("Action failed. Please try again."); });
+    }).catch(function(e){ alert(e && e.message ? e.message : "Action failed. Please try again."); });
 }
 </script>
 

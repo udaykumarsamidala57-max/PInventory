@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.common.notification.NotificationService;
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.inventory.model.PO;
 import com.officecentral.inventory.model.POItems;
 import com.officecentral.inventory.stock.ItemCostDAO;
@@ -48,14 +49,21 @@ public class ApprovePOServlet extends HttpServlet {
     static final String FLASH = "approvePoMessage";
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    static boolean canApprove(HttpSession s) {
+    /** Old fixed rules, used only until UAMS has the page and button keys. */
+    static boolean oldApprove(HttpSession s) {
         return "Global".equalsIgnoreCase(trim((String) s.getAttribute("role")));
     }
 
-    static boolean canDelete(HttpSession s) {
+    static boolean oldPage(HttpSession s) {
         String dept = trim((String) s.getAttribute("department"));
-        return canApprove(s) || "Finance".equalsIgnoreCase(dept) || "Store".equalsIgnoreCase(dept);
+        return oldApprove(s) || "Finance".equalsIgnoreCase(dept) || "Store".equalsIgnoreCase(dept);
     }
+
+    // Buttons, managed in UAMS > Roles & Permissions
+    static boolean canApprove(HttpSession s) { return ButtonAccess.allows(s, ButtonAccess.PO_APPROVE, oldApprove(s)); }
+    static boolean canDelete(HttpSession s)  { return ButtonAccess.allows(s, ButtonAccess.PO_DELETE, oldPage(s)); }
+    static boolean canPrint(HttpSession s)   { return ButtonAccess.allows(s, ButtonAccess.PO_PRINT, true); }
+    static boolean canMail(HttpSession s)    { return ButtonAccess.allows(s, ButtonAccess.PO_MAIL, true); }
 
     // ------------------------------------------------------------------ GET: list only
 
@@ -68,7 +76,7 @@ public class ApprovePOServlet extends HttpServlet {
             response.sendRedirect("login.jsp");
             return;
         }
-        if (!canDelete(sess)) {   // canDelete = everyone allowed to see this page
+        if (!ButtonAccess.allows(sess, "pur.approve-po", oldPage(sess))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "Purchase Orders are available only to Global, Finance and Store users.");
             return;
         }
@@ -137,6 +145,9 @@ public class ApprovePOServlet extends HttpServlet {
         request.setAttribute("poCsrf", token(sess));
         request.setAttribute("canApprove", canApprove(sess));
         request.setAttribute("canDelete", canDelete(sess));
+        request.setAttribute("canPrint", canPrint(sess));
+        request.setAttribute("canMail", canMail(sess));
+        request.setAttribute("canGrn", ButtonAccess.allows(sess, ButtonAccess.GRN_SAVE, true));
         RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/inventory/purchase/POlist.jsp");
         rd.forward(request, response);
     }
@@ -173,7 +184,7 @@ public class ApprovePOServlet extends HttpServlet {
         String message;
         if ("approve".equals(action)) {
             if (!canApprove(sess)) {
-                response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only Global users can approve Purchase Orders.");
+                response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to approve Purchase Orders.");
                 return;
             }
             message = approve(branch, poNumber, user);

@@ -7,6 +7,7 @@ import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.inventory.model.IndentItem;
 
@@ -33,21 +34,8 @@ public class IndentServlet extends HttpServlet {
         try (Connection con = InventoryDB.getConnection(branch)) {
 
             // 1. Fetch Next Indent Number
-            int nextIndentNo = 1;
-            String sqlNext = "SELECT next_val + 1 AS next_no FROM id_sequences WHERE seq_name = 'indent_no'";
-            try (PreparedStatement ps = con.prepareStatement(sqlNext);
-                 ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    nextIndentNo = rs.getInt("next_no");
-                } else {
-                    String sqlFallback = "SELECT COALESCE(MAX(CAST(indent_no AS UNSIGNED)),0)+1 FROM indent";
-                    try (Statement st = con.createStatement();
-                         ResultSet rs2 = st.executeQuery(sqlFallback)) {
-                        if (rs2.next()) nextIndentNo = rs2.getInt(1);
-                    }
-                }
-            }
-            request.setAttribute("nextIndentNo", nextIndentNo);
+            // Running databases: next running number; new databases: year + running number (260001). See IndentNumbers.
+            request.setAttribute("nextIndentNo", IndentNumbers.peek(con, java.time.LocalDate.now()));
 
             Map<String, Object> masterData = new HashMap<>();
             List<Map<String, String>> departments = new ArrayList<>();
@@ -146,6 +134,7 @@ public class IndentServlet extends HttpServlet {
 
             request.setAttribute("masterData", masterData);
             request.setAttribute("selectedDept", selectedDept);
+            request.setAttribute("can_save", ButtonAccess.allows(sess, ButtonAccess.INDENT_SAVE, true));
             request.getRequestDispatcher("/WEB-INF/views/inventory/indent/indent.jsp").forward(request, response);
 
         } catch (SQLException e) {
@@ -160,6 +149,15 @@ public class IndentServlet extends HttpServlet {
         HttpSession sess = request.getSession(false);
         if (sess == null || sess.getAttribute("username") == null) {
             response.sendRedirect("login.jsp");
+            return;
+        }
+
+        if (!com.officecentral.common.web.Csrf.valid(request, sess)) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "This page has expired. Please reload it and try again.");
+            return;
+        }
+        if (!ButtonAccess.allows(sess, ButtonAccess.INDENT_SAVE, true)) {
+            ButtonAccess.refuse(response, "save indents");
             return;
         }
 
@@ -213,18 +211,8 @@ public class IndentServlet extends HttpServlet {
 
             con.setAutoCommit(false);
 
-            try (PreparedStatement psSeqUpdate = con.prepareStatement(
-                    "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name='indent_no'")) {
-                psSeqUpdate.executeUpdate();
-            }
-
-            try (PreparedStatement psSeqSelect = con.prepareStatement(
-                    "SELECT next_val FROM id_sequences WHERE seq_name='indent_no'");
-                 ResultSet rs = psSeqSelect.executeQuery()) {
-                if (rs.next()) {
-                    finalIndentNo = rs.getString(1);
-                }
-            }
+            // Same numbering as the Android app; the sequence row stays locked until commit.
+            finalIndentNo = IndentNumbers.next(con, indentDate(date));
 
             String insertSql =
                 "INSERT INTO indent (" +
@@ -271,6 +259,12 @@ public class IndentServlet extends HttpServlet {
         }
 
         response.sendRedirect("home");
+    }
+
+    /** Year of the indent date on the form (yyyy-MM-dd); today if it cannot be read. */
+    private static java.time.LocalDate indentDate(String date) {
+        try { return java.time.LocalDate.parse(date == null ? "" : date.trim()); }
+        catch (java.time.format.DateTimeParseException e) { return java.time.LocalDate.now(); }
     }
 
     private String[] splitSafe(String s) {

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.officecentral.common.access.ButtonAccess;
 import com.officecentral.common.db.InventoryDB;
 import com.officecentral.common.notification.NotificationService;
 
@@ -146,8 +147,19 @@ final class MobileIndentDAO {
     }
 
     private static boolean canAct(MobileApiServlet.Ctx c, Line l) {
-        if (!isApprover(c.role) || !l.stillPending() || !inScope(c, l.department)) return false;
-        return l.level1Open() || (isGlobal(c.role) && l.level2Open());
+        if (!l.stillPending() || !inScope(c, l.department)) return false;
+        return (l.level1Open() && (level1Allowed(c, true) || level1Allowed(c, false)))
+                || (l.level2Open() && level2Allowed(c));
+    }
+
+    // Same buttons as the website's Approve Indent page, managed in UAMS (old fixed rule until the keys exist)
+    private static boolean level1Allowed(MobileApiServlet.Ctx c, boolean approve) {
+        String key = ButtonAccess.APPROVE_INDENT + (approve ? ".approve" : ".reject");
+        return ButtonAccess.allows(c.session, key, isApprover(c.role));
+    }
+
+    private static boolean level2Allowed(MobileApiServlet.Ctx c) {
+        return ButtonAccess.allows(c.session, ButtonAccess.APPROVE_INDENT + ".final", isGlobal(c.role));
     }
 
     private static String t(String s) {
@@ -307,8 +319,10 @@ final class MobileIndentDAO {
     // ------------------------------------------------------------------ approve / reject
 
     Map<String, Object> approve(MobileApiServlet.Ctx c, int indentId, String action, String remarks) throws SQLException {
-        if (!isApprover(c.role)) throw new ApiException(403, "You do not have permission to approve indents.");
         boolean approve = "APPROVE".equalsIgnoreCase(action);
+        if (!level1Allowed(c, approve) && !level2Allowed(c)) {
+            throw new ApiException(403, "You do not have permission to " + (approve ? "approve" : "reject") + " indents.");
+        }
         if (!approve && !"REJECT".equalsIgnoreCase(action)) throw new ApiException(400, "Invalid action.");
         String note = MobileApiServlet.trim(remarks);
         if (note.length() > 500) throw new ApiException(400, "Remarks are too long (max 500 characters).");
@@ -324,6 +338,7 @@ final class MobileIndentDAO {
                 for (Line l : lines) {
                     if (!canAct(c, l)) continue;
                     boolean levelOne = l.level1Open();
+                    if (levelOne ? !level1Allowed(c, approve) : !level2Allowed(c)) continue;   // this button is not allowed
                     if (levelOne) {
                         level1(con, l, approve, c.username, today);
                     } else {
@@ -667,16 +682,8 @@ final class MobileIndentDAO {
                     }
                 }
 
-                // Indent number: same sequence as the website.
-                try (PreparedStatement ps = con.prepareStatement(
-                        "UPDATE id_sequences SET next_val = next_val + 1 WHERE seq_name='indent_no'")) {
-                    if (ps.executeUpdate() != 1) throw new SQLException("id_sequences row 'indent_no' missing");
-                }
-                try (PreparedStatement ps = con.prepareStatement(
-                        "SELECT next_val FROM id_sequences WHERE seq_name='indent_no'");
-                     ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) indentNo = rs.getString(1);
-                }
+                // Indent number: same numbering as the website (running number, or year + number on new databases).
+                indentNo = com.officecentral.inventory.indent.IndentNumbers.next(con, java.time.LocalDate.now());
 
                 String today = java.time.LocalDate.now().toString(); // yyyy-MM-dd, as the web form sends
                 try (PreparedStatement ps = con.prepareStatement(

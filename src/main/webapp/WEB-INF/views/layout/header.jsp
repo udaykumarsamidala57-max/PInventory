@@ -386,8 +386,11 @@ try {
 <% if (show(sesso, "adm.mobile-access", "Global".equalsIgnoreCase(roles))) { %>
 <a href="<%= request.getContextPath() %>/mobile-access"><i class="fa-brands fa-android"></i> Mobile App Access</a>
 <% } %>
-<% if ("Global".equalsIgnoreCase(roles.trim())) {   /* Access Control: Global only, fixed */ %>
-<a href="<%= request.getContextPath() %>/access-control"><i class="fa-solid fa-user-shield"></i> Access Control</a>
+<% if ("Global".equalsIgnoreCase(roles.trim())) {   /* UAMS and old rules: Global only, fixed */ %>
+<a href="<%= request.getContextPath() %>/uams"><i class="fa-solid fa-user-shield"></i> Access Management (UAMS)</a>
+<% if (!AccessControl.uamsMode()) { /* old rules: needed only until the switch to UAMS roles */ %>
+<a href="<%= request.getContextPath() %>/access-control" title="Old role / department rules, used by all three projects until the switch to UAMS roles"><i class="fa-solid fa-scroll"></i> Old Access Rules</a>
+<% } %>
 <% } %>
 <a href="<%= request.getContextPath() %>/select-store"><i class="fa-solid fa-code-branch"></i> Change Store</a>
 <a href="<%= request.getContextPath() %>/Logout.jsp" style="margin-top: auto; border-top:1px solid rgba(255,255,255,0.1); background: rgba(234, 0, 30, 0.08); color: #ff5f73;"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</a>
@@ -829,7 +832,7 @@ document.addEventListener("click", function(event){
     if (h && !/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(h)) a.setAttribute('href', CTX + '/' + h);
   });
 
-  var FOOT = ['select-store', 'store-access', 'mobile-access', 'access-control', 'Logout.jsp'];
+  var FOOT = ['select-store', 'store-access', 'mobile-access', 'uams', 'access-control', 'Logout.jsp'];
   var TONES = /\btext-(primary|success|info|warning|danger|purple|secondary)\b/;
   var modules = [], current = null, sections = [], section = null;
   function clean(t) { return (t || '').replace(/\s+/g, ' ').trim(); }

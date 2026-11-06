@@ -1,3 +1,4 @@
+<%@ page import="com.officecentral.common.access.ButtonAccess" %>
 <%@ page import="java.util.*" %>
 <%@ page contentType="text/html; charset=UTF-8" %>
 <!DOCTYPE html>
@@ -642,9 +643,11 @@ function printGRN(grnNo){
                 <button class="sap-btn sap-btn-ghost" onclick="toggleItems('<%=index%>')">
                     <i class="fa fa-eye"></i> Items
                 </button>
+                <% if (ButtonAccess.allows(request.getSession(false), ButtonAccess.GRN_PRINT, true)) { %>
                 <button class="sap-btn sap-btn-primary" onclick="printGRN('<%=grnNo%>')">
                     <i class="fa fa-print"></i> Print
                 </button>
+                <% } %>
             </div>
         </div>
 

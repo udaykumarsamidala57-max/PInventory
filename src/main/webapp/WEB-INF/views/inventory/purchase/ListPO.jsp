@@ -1,3 +1,4 @@
+<%@ page import="com.officecentral.common.access.ButtonAccess" %>
 <%@ page import="java.sql.*" %>
 <%@ page import="java.util.*" %>
 <%@ page import ="com.officecentral.common.db.InventoryDB" %>
@@ -619,10 +620,12 @@ try {
                             <input type="button" id="btn-<%= poId %>" class="action-btn expand-btn" value="Show Items" onclick="toggleItems(<%= poId %>)">
                         </td>
                         <td data-label="Print">
+                            <% if (ButtonAccess.allows(sess, ButtonAccess.PO_REPORT_PRINT, true)) { %>
                             <form action="PrintPO.jsp" method="get" target="_blank" style="margin:0;">
                                 <input type="hidden" name="poNumber" value="<%= poNumStr %>">
                                 <input type="submit" value="View / Print" class="action-btn print-btn" />
                             </form>
+                            <% } %>
                         </td>
                     </tr>
 

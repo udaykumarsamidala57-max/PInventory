@@ -65,7 +65,11 @@ h2 { margin: 0; font-size: 20px; font-weight: 700; }
         <div class="grid">
             <a class="tile" href="<%= ctx %>/access-control">
                 <i class="fa-solid fa-user-shield t-primary"></i>
-                <div><b>Access Control</b><span>Choose which roles and departments may open each page and use each button (PInventory and School Operations).</span></div>
+                <div><b>Access Control</b><span>Choose which roles and departments may open pages and use actions. PHRMS access is role-based.</span></div>
+            </a>
+            <a class="tile" href="<%= ctx %>/user-roles">
+                <i class="fa-solid fa-users-gear t-info"></i>
+                <div><b>User Role Assignments</b><span>Assign one or more access roles to each user.</span></div>
             </a>
         </div>
     <% } %>
