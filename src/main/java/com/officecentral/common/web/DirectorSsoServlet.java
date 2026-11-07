@@ -27,8 +27,9 @@ public class DirectorSsoServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login.jsp");
             return;
         }
-        // Server-side check (the menu only hides the link). Default before Access Control is set up: Global only.
-        if (!AccessControl.show(session, "dir.link", "Global".equalsIgnoreCase(String.valueOf(session.getAttribute("role"))))) {
+        // Server-side check (the menu only hides the link). Default before Access Control is set up: Global and Director.
+        if (!AccessControl.show(session, "dir.link",
+                "Global".equalsIgnoreCase(String.valueOf(session.getAttribute("role"))) || DirectorOnlyFilter.isDirector(session))) {
             response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have access to Director Portal.");
             return;
         }
