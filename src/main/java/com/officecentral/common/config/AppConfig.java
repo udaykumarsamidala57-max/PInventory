@@ -32,6 +32,9 @@ import java.util.Properties;
  *   SCHOOL_OPERATIONS_SSO_SECRET   shared 32-byte HMAC key for sign-on and the signed mobile visitor bridge
  *   PHRMS_BASE_URL                 HR & Payroll app base URL (defaults to http://localhost:8084/)
  *   PHRMS_SSO_SECRET               separate shared 32-byte HMAC key for PHRMS single sign-on
+ *   DIRECTOR_PORTAL_BASE_URL       Director Portal base URL (defaults to http://localhost:8085/)
+ *   DIRECTOR_SSO_SECRET            separate 32-byte HMAC key for Director Portal single sign-on
+ *   DIRECTOR_PINVENTORY_API_SECRET separate 32-byte HMAC key for the Director Portal's signed approval calls
  */
 public final class AppConfig {
 

@@ -29,6 +29,7 @@ import javax.servlet.http.HttpSession;
  *   Settings Master pages            : Global role or Finance department
  *   Issue Stock                      : Global role or Store department
  *   Dining Hall consumption entry    : Global or Admin role; Finance, Store or Dining Hall department
+ *   Dining Hall meal cost report     : same as the consumption entry
  *   Dining Hall consumption edit     : Global role or Dining Hall department
  */
 @WebFilter(urlPatterns = {
@@ -45,6 +46,8 @@ import javax.servlet.http.HttpSession;
         "/issue", "/IssueServlet",
         // Dining Hall entry
         "/dining-hall", "/DiningHallServlet",
+        // Dining Hall meal cost report (strength + cost per head)
+        "/meal-cost",
         // Dining Hall edit
         "/edit-consumption", "/editConsumption.jsp",
         "/dining-consumption", "/FetchConsumptionByDateServlet",
@@ -83,6 +86,7 @@ public class AccessFilter implements Filter {
         RULES.put("/IssueServlet", ISSUE);
         RULES.put("/dining-hall", DINING_ENTRY);
         RULES.put("/DiningHallServlet", DINING_ENTRY);
+        RULES.put("/meal-cost", DINING_ENTRY);          // same people as the consumption entry
         for (String p : new String[] {"/edit-consumption", "/editConsumption.jsp", "/dining-consumption",
                 "/FetchConsumptionByDateServlet", "/dining-consumption-update", "/UpdateConsumptionByDateServlet"}) {
             RULES.put(p, DINING_EDIT);

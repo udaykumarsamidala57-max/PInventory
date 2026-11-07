@@ -219,6 +219,9 @@ try {
       <% if (show(sesso, "din.dashboard", true)) { %>
       <a href="dining-dashboard"><i class="fa-solid fa-chart-line text-success"></i> Dashboard</a>
       <% } %>
+      <% if (show(sesso, "din.meal-cost", true)) { %>
+      <a href="meal-cost"><i class="fa-solid fa-indian-rupee-sign text-danger"></i> Meal Cost per Head</a>
+      <% } %>
       <% if (show(sesso, "din.edit", "Global".equalsIgnoreCase(roles)||"Dining Hall".equalsIgnoreCase(depts))){ %>
        <a href="edit-consumption"><i class="fa-solid fa-chart-line text-success"></i> Edit Consumption</a>
        <% } %>
@@ -306,6 +309,9 @@ try {
 <% } %>
 <% if (show(sesso, "phrms.link", "Global".equalsIgnoreCase(roles))) { %>
 <a href="<%= request.getContextPath() %>/phrms/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-id-badge text-info"></i> HR &amp; Payroll</a>
+<% } %>
+<% if (show(sesso, "dir.link", "Global".equalsIgnoreCase(roles))) { %>
+<a href="<%= request.getContextPath() %>/director/sso" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-chart-line text-primary"></i> Director Portal</a>
 <% } %>
 
 <div class="sidebar-label">Core Operations Desk</div>

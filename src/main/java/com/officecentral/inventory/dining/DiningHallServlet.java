@@ -28,6 +28,8 @@ public class DiningHallServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private static final String DEPARTMENT = "Dining Hall";
+    /** Upper limit of lines in one issue (one database transaction). */
+    private static final int MAX_LINES = 500;
 
     /** One validated form row. */
     private static final class Line {
@@ -43,6 +45,12 @@ public class DiningHallServlet extends HttpServlet {
 
         String branch = trim((String) sess.getAttribute("branch"));
         if (branch.isEmpty()) throw new ServletException("Branch information is missing from session.");
+
+        // The form asks for the strength already saved for a date + session (shared by all issues of that session)
+        if ("strength".equals(request.getParameter("action"))) {
+            sendStrength(request, response, branch);
+            return;
+        }
 
         try (Connection con = InventoryDB.getConnection(branch)) {
             String nextNo = "ISS1";
@@ -69,6 +77,8 @@ public class DiningHallServlet extends HttpServlet {
 
             request.setAttribute("nextIssueNo", nextNo);
             request.setAttribute("masterData", master);
+            // Same data as JSON for the form script (Gson escapes < > & ' so names can never break the page)
+            request.setAttribute("masterJson", new com.google.gson.Gson().toJson(master));
             request.setAttribute("selectedDept", DEPARTMENT);
             request.setAttribute("minDate", StockEntryRules.earliestDate().toString());
             request.setAttribute("maxDate", StockEntryRules.latestDate().toString());
@@ -93,6 +103,7 @@ public class DiningHallServlet extends HttpServlet {
         // ---- 1. Validate everything BEFORE touching the database
         List<Line> lines;
         LocalDate issueDay;
+        MealStrength strength;
         try {
             if (branch.isEmpty())   throw new IllegalArgumentException("Branch information is missing.");
             if (issueNo.isEmpty())  throw new IllegalArgumentException("Issue number is missing.");
@@ -105,6 +116,11 @@ public class DiningHallServlet extends HttpServlet {
                 throw new IllegalArgumentException("Issue date: " + e.getMessage());
             }
             lines = readLines(request);
+            strength = MealStrength.fromForm(request.getParameter("boarding_students"), request.getParameter("day_boarding_students"),
+                    request.getParameter("day_scholars"), request.getParameter("staff_count"));
+            if (!"Adjustment".equals(session) && strength.total() <= 0) {
+                throw new IllegalArgumentException("Enter the strength (Boarding, Day Boarding, Dayscholars, Staff) for this session.");
+            }
         } catch (IllegalArgumentException e) {
             finish(sess, response, false, e.getMessage());
             return;
@@ -118,11 +134,13 @@ public class DiningHallServlet extends HttpServlet {
             con.setAutoCommit(false);
             try {
                 saveIssue(con, issueNo, issuedTo, session, issueDay.toString(), lines);
+                // strength of this date + session (shared by all its issues); an Adjustment without strength keeps what is there
+                if (strength.total() > 0) strength.save(con, issueDay.toString(), session, trim((String) sess.getAttribute("username")));
                 // back-dated entries: keep stock_ledger running balances in date order
                 for (Line ln : lines) StockEntryRules.recalcRunningBalance(con, ln.itemId, issueDay);
                 con.commit();
                 ok = true;
-                message = "Issue " + issueNo + " saved: " + lines.size() + " item(s).";
+                message = "Issue " + issueNo + " saved: " + lines.size() + " item(s)." + costLine(con, issueDay, session);
                 System.out.println("[DiningHall] COMMITTED " + issueNo + " (" + lines.size() + " items)");
             } catch (Exception e) {
                 con.rollback();
@@ -207,6 +225,46 @@ public class DiningHallServlet extends HttpServlet {
         }
     }
 
+    // ============================================================ strength and meal cost
+
+    /** "Lunch on 07-11-2026: meal cost Rs.x for n people = Rs.y per head." after saving. */
+    private static String costLine(Connection con, LocalDate day, String session) {
+        try {
+            MealStrength st = MealStrength.find(con, day.toString(), session);
+            java.math.BigDecimal cost = MealStrength.sessionCost(con, day.toString(), session);
+            String d = day.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy"));
+            if (st == null || st.total() <= 0) return " " + session + " on " + d + ": meal cost " + MealStrength.rupees(cost) + " (no strength entered).";
+            return " " + session + " on " + d + ": meal cost " + MealStrength.rupees(cost) + " for " + st.total() + " people = "
+                    + MealStrength.rupees(MealStrength.perHead(cost, st.total())) + " per head.";
+        } catch (SQLException e) {
+            return "";
+        }
+    }
+
+    /** JSON {"found":true,"boarding":..} for ?action=strength&date=yyyy-MM-dd&session=... */
+    private static void sendStrength(HttpServletRequest request, HttpServletResponse response, String branch) throws IOException {
+        response.setContentType("application/json;charset=UTF-8");
+        response.setHeader("Cache-Control", "no-store");
+        String date = trim(request.getParameter("date")), session = trim(request.getParameter("session"));
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}") || session.isEmpty() || session.length() > 50) {
+            response.getWriter().write("{\"found\":false}");
+            return;
+        }
+        try (Connection con = InventoryDB.getConnection(branch)) {
+            MealStrength st = MealStrength.find(con, date, session);
+            java.math.BigDecimal cost = MealStrength.sessionCost(con, date, session);
+            StringBuilder b = new StringBuilder("{\"found\":").append(st != null);
+            if (st != null) {
+                b.append(",\"boarding\":").append(st.boarding).append(",\"dayBoarding\":").append(st.dayBoarding)
+                 .append(",\"dayScholars\":").append(st.dayScholars).append(",\"staff\":").append(st.staff);
+            }
+            b.append(",\"costSoFar\":\"").append(MealStrength.rupees(cost)).append("\"}");
+            response.getWriter().write(b.toString());
+        } catch (SQLException e) {
+            response.getWriter().write("{\"found\":false,\"error\":\"The strength could not be read. Has the strength SQL been run on this branch?\"}");
+        }
+    }
+
     // ============================================================ helpers
 
     /** Reads and validates the item rows. Fully empty rows are skipped. */
@@ -235,6 +293,7 @@ public class DiningHallServlet extends HttpServlet {
             lines.add(new Line(itemId, qtyIssued, rem != null && i < rem.length ? trim(rem[i]) : ""));
         }
         if (lines.isEmpty()) throw new IllegalArgumentException("No valid items were submitted.");
+        if (lines.size() > MAX_LINES) throw new IllegalArgumentException("At most " + MAX_LINES + " items can be saved in one issue. Split it into two issues.");
         return lines;
     }
 

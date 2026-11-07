@@ -18,22 +18,49 @@ import com.officecentral.common.db.AdmissionsDB;
 public class UpdateAdmissionStatusServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
 
+    /** Decisions the Approve Admission page sends (Approve = Selected, Reject = Rejected). */
+    static final java.util.Set<String> DECISIONS = java.util.Set.of("Selected", "Rejected");
+
+    /** Who may decide: same rule as the Approve / Reject buttons on ApproveAdmission.jsp. */
+    static boolean mayDecide(String username, String role) {
+        return "Global".equalsIgnoreCase(role == null ? "" : role.trim())
+                || "Tejkumar".equalsIgnoreCase(username == null ? "" : username.trim());
+    }
+
+    /** Sets the admission decision of one enquiry; returns the number of rows changed (0 = not found). */
+    static int setStatus(int enquiryId, String status) throws java.sql.SQLException {
+        try (Connection con = AdmissionsDB.getConnection();
+             PreparedStatement ps = con.prepareStatement("UPDATE admission_enquiry SET Admission_status = ? WHERE enquiry_id = ?")) {
+            ps.setString(1, status);
+            ps.setInt(2, enquiryId);
+            return ps.executeUpdate();
+        }
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        // Signed-in users with the Approve / Reject buttons only (the page itself shows them to the same users).
+        javax.servlet.http.HttpSession sess = request.getSession(false);
+        if (sess == null || sess.getAttribute("username") == null
+                || !mayDecide(String.valueOf(sess.getAttribute("username")), (String) sess.getAttribute("role"))) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write("Error");
+            return;
+        }
         String enquiryId = request.getParameter("enquiry_id");
         String status = request.getParameter("status"); 
-
-        try (Connection con = AdmissionsDB.getConnection()) {
-            String sql = "UPDATE admission_enquiry SET Admission_status = ? WHERE enquiry_id = ?";
-            try (PreparedStatement ps = con.prepareStatement(sql)) {
-                ps.setString(1, status);
-                ps.setInt(2, Integer.parseInt(enquiryId));
-                int rowsUpdated = ps.executeUpdate();
-                response.getWriter().write(rowsUpdated > 0 ? "Success" : "Error");
-            }
+        if (enquiryId == null || !enquiryId.trim().matches("\\d{1,9}") || !DECISIONS.contains(status)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("Error");
+            return;
+        }
+        try {
+            int rowsUpdated = setStatus(Integer.parseInt(enquiryId.trim()), status);
+            response.getWriter().write(rowsUpdated > 0 ? "Success" : "Error");
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(500);
-            response.getWriter().write(e.getMessage());
+            response.getWriter().write("Error");
         }
     }
 

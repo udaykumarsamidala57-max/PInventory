@@ -57,7 +57,8 @@ public final class AccessControl {
     /** PInventory pages that open another project: in UAMS mode they also need that project. */
     private static final Map<String, String> LINK_PROJECT = Map.of(
             "so.link", "proj.SCHOOLOPS",
-            "phrms.link", "proj.PHRMS");
+            "phrms.link", "proj.PHRMS",
+            "dir.link", "proj.DIRECTOR");
 
     private static final class RoleCache {
         final Set<String> roles;
@@ -165,16 +166,32 @@ public final class AccessControl {
     /** May this signed-in user use the page or button? */
     public static boolean can(HttpSession s, String key) {
         if (s == null || s.getAttribute("username") == null) return false;
+        return canUser(str(s, "username"), str(s, "role"), str(s, "department"), key);
+    }
+
+    /**
+     * Same rule as can(session, key) for a user who is not signed in here (server-to-server calls, e.g. the
+     * Director Portal): username, role and department as stored in the users table.
+     */
+    public static boolean canUser(String username, String role, String department, String key) {
+        if (username == null) return false;
         Snapshot snap = current();
         if (snap.active && MODE_ROLES.equals(snap.mode)) {
-            if ("GLOBAL".equals(normalize(str(s, "role")))) return true;
-            return uamsAllowed(snap, uamsRolesFor(str(s, "username")), snap.roleGrants, key);
+            if ("GLOBAL".equals(normalize(role))) return true;
+            return uamsAllowed(snap, uamsRolesFor(username), snap.roleGrants, key);
         }
         Permission permission = snap.byKey.get(key);
         if (isRoleOnly(permission)) {
-            return evaluateRoles(str(s, "role"), rolesForUser(str(s, "username"), str(s, "role")), snap.grants.get(key));
+            return evaluateRoles(role, rolesForUser(username, role), snap.grants.get(key));
         }
-        return evaluate(str(s, "role"), str(s, "department"), str(s, "username"), snap.grants.get(key));
+        return evaluate(role, department, username, snap.grants.get(key));
+    }
+
+    /** show(session, key, oldRule) for a user who is not signed in here. */
+    public static boolean showUser(String username, String role, String department, String key, boolean oldRule) {
+        Snapshot snap = current();
+        if (!snap.active || !snap.byKey.containsKey(key)) return oldRule;
+        return canUser(username, role, department, key);
     }
 
     /**

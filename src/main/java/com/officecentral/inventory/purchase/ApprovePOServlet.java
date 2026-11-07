@@ -202,7 +202,8 @@ public class ApprovePOServlet extends HttpServlet {
         response.sendRedirect("approve-po");
     }
 
-    private String approve(String branch, String poNumber, String user) {
+    /** Approves one PO (also used by DirectorPoApiServlet for the Director Portal, so both follow the same rules). */
+    static String approve(String branch, String poNumber, String user) {
         int changed;
         try (Connection con = InventoryDB.getConnection(branch);
              PreparedStatement ps = con.prepareStatement(
